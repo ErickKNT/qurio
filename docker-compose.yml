@@ -1,0 +1,33 @@
+services:
+  # ============================================================================
+  # Qurio: Isolated PostgreSQL Sandbox for Untrusted Student Queries
+  # ============================================================================
+  postgres-sandbox:
+    image: postgres:16-alpine
+    container_name: qurio-postgres-sandbox
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ecommerce_sandbox
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_sandbox_master_pass
+    volumes:
+      - ./database/sandbox/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./database/sandbox/ecommerce_seed.sql:/docker-entrypoint-initdb.d/02_ecommerce_seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ecommerce_sandbox"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    networks:
+      - qurio-network
+
+networks:
+  qurio-network:
+    driver: bridge
