@@ -6,12 +6,13 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 2: Motor de Ejecución y Evaluación en FastAPI (`feat/fastapi-runner-evaluator`) — Concluida**  
-* **Próxima Fase:** **Fase 3: Frontend Base & Atomic Design Pragmático (`feat/web-atomic-design`)**  
-* **Rama Git Activa:** `feat/fastapi-runner-evaluator` (en proceso de merge a `main` y push a GitHub)  
+* **Fase Actual:** **Fase 3: Frontend Base & Atomic Design Pragmático (`feat/web-atomic-design`) — Concluida**  
+* **Próxima Fase:** **Fase 4: Flujo End-to-End del Ejercicio (`feat/exercise-ide-flow`)**  
+* **Rama Git Activa:** `feat/web-atomic-design` (en proceso de merge a `main` y push a GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
   * API FastAPI con pool asíncrono `asyncpg` y evaluador semántico (26/26 pruebas superadas).
+  * Frontend React 18 + Vite + TypeScript + Tailwind CSS con Atomic Design Pragmático (Build de producción validado al 100%).
   * Proyecto Supabase en la nube con esquemas DDL `01_schema.sql` y catálogo semilla `02_seed_curriculum.sql` desplegados.
 
 ---
@@ -23,8 +24,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **0** | **Definición y Especificación** | ✅ Concluida | `main` | Declaración de intención, PRD, SAD, Sistema de Diseño y Reglas. |
 | **1** | **Cimientos de Datos & Docker** | ✅ Concluida | `feat/database-and-docker-infra` | Sandbox PostgreSQL aislado, dataset de 10 tablas, esquemas Supabase y docker-compose. |
 | **2** | **Motor de Ejecución y Evaluación** | ✅ Concluida | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y 26 tests automatizados. |
-| **3** | **Frontend Base & Atomic Design** | ⏳ Próxima | `feat/web-atomic-design` | React + Vite + Tailwind, árbol de componentes (átomos/moléculas) y auth con Supabase. |
-| **4** | **Flujo Principal End-to-End** | ⏹️ Pendiente | `feat/exercise-ide-flow` | Monaco Editor, Data Grid de resultados, resolución y verificación completa de un reto. |
+| **3** | **Frontend Base & Atomic Design** | ✅ Concluida | `feat/web-atomic-design` | React + Vite + Tailwind, árbol de componentes (átomos/moléculas/organismos/plantillas), auth y build validado. |
+| **4** | **Flujo Principal End-to-End** | ⏳ Próxima | `feat/exercise-ide-flow` | Monaco Editor, Data Grid de resultados, resolución y verificación completa de un reto. |
 | **5** | **Catálogo, Playground & Gamificación** | ⏹️ Pendiente | `feat/curriculum-and-gamification` | Dashboard, rutas/syllabus, consola libre de Playground, niveles, XP y rachas. |
 | **6** | **Autenticidad, Calidad & Despliegue** | ⏹️ Pendiente | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG, adaptabilidad responsive móvil y checklist de lanzamiento. |
 
@@ -124,6 +125,41 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
     * 8 pruebas unitarias del algoritmo de evaluación semántica (`test_evaluator.py`).
     * 8 pruebas de integración de endpoints en vivo contra el Sandbox PostgreSQL local (`test_integration.py`).
   * Resultado: **26/26 pruebas aprobadas en 0.17 segundos**.
+
+---
+
+### [2026-11-08] — Entrada 09: Fase 3 — Frontend Base & Atomic Design Pragmático
+* **Rama:** `feat/web-atomic-design`
+* **Entregables de Frontend:**
+  * **Setup e Infraestructura Web:**
+    * Inicialización de `apps/web` con Vite + React 18 + TypeScript estricto.
+    * Configuración de Tailwind CSS 3.4 con los tokens de *Terminal Glow Minimal* (`#0B1020`, `#111827`, `#172033`, `#1E293B`, `#6366F1`, `#38BDF8`, `#22C55E`, `#F59E0B`).
+    * Tipografía oficial dual: `Plus Jakarta Sans` / `Inter` para narrativa y UI, y `JetBrains Mono` para código, metadatos, latencias y atajos de teclado.
+    * Isotipo SVG oficial de Qurio integrado en `favicon.svg` (cilindro relacional en capas con núcleo verde esmeralda activo).
+  * **Estructura Estricta bajo Atomic Design Pragmático:**
+    * **Átomos (`src/components/atoms/`):**
+      * `Button`: 6 variantes (`primary`, `secondary`, `emerald`, `ghost`, `outline`, `danger`), soporte de estados de carga, iconos y atajo de teclado integrado (`kbdShortcut`).
+      * `Badge`: Variantes cromáticas (`cyan`, `emerald`, `amber`, `error`, `mono`, `default`) con opacidad al 10% y borde contrastado.
+      * `TextInput`: Entrada con foco luminiscente y variantes de iconos laterales.
+      * `KbdShortcut`: Visualizador de combinación de teclas en `JetBrains Mono`.
+      * `RadioTab`: Selector de pestaña/segmento interactivo con punto activo.
+    * **Moléculas (`src/components/molecules/`):**
+      * `SearchInput`: Campo de búsqueda con atajo global `⌘K` y botón de limpieza rápida.
+      * `StreakPill`: Cápsula de racha con llama animada y conteo en `JetBrains Mono`.
+      * `FormField`: Formulario con validación rigurosa inline (`#ffb4ab`), cumpliendo con la regla Anti-AI Slop (cero `alert()`).
+      * `MetricTile`: Métrica de estación de trabajo con tipografía técnica y acentos cromáticos.
+    * **Organismos (`src/components/organisms/`):**
+      * `SidebarNav`: Navegación lateral persistente y colapsable, con indicador de base de datos en vivo (*PostgreSQL 16 • Online*), avatar de estudiante y barra de progreso de XP.
+      * `TopHeader`: Barra superior con desenfoque (`backdrop-blur-xl`), buscador integrado, contador de XP, cápsula de racha y campana de notificaciones.
+    * **Plantillas (`src/components/templates/`):**
+      * `DashboardLayout`: Estructura general con navegación desacoplada y área de trabajo adaptable.
+      * `WorkspaceLayout`: Layout de 2 paneles (30% consigna / 70% editor y data grid) con adaptación responsiva a móvil mediante pestañas apiladas (*Consigna*, *Editor SQL*, *Resultados*).
+  * **Autenticación e Integración:**
+    * Módulo de cliente `@supabase/supabase-js` con fallback seguro local.
+    * Hook reactivo `useAuth` con sincronización de perfiles, niveles y rachas.
+* **Verificación y Calidad:**
+  * Compilación TypeScript (`tsc`) sin errores con tipado estricto.
+  * Build de producción Vite completado exitosamente en 5.67s.
 
 ---
 

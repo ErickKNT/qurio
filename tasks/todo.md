@@ -28,11 +28,23 @@
 - [x] **T2.9:** `Dockerfile` para la API y orquestación unificada en `docker-compose.yml`.
 - [x] **T2.10:** Commit en `feat/fastapi-runner-evaluator`, merge a `main` y sincronización con GitHub (`git push`).
 
-## Fase 3: Frontend Base & Atomic Design Pragmático (`feat/web-atomic-design`) — Siguiente
-- [ ] **T3.1:** Inicializar `apps/web` con Vite + React 18 + TypeScript estricto.
-- [ ] **T3.2:** Configurar Tailwind CSS 3.4 con tokens de diseño *Terminal Glow Minimal* y fuentes tipográficas (`Plus Jakarta Sans` y `JetBrains Mono`).
-- [ ] **T3.3:** Crear estructura de carpetas bajo Atomic Design Pragmático (`src/components/{atoms,molecules,organisms,templates}`).
-- [ ] **T3.4:** Implementar Átomos: `Button`, `Badge`, `TextInput`, `KbdShortcut`, `RadioTab`.
-- [ ] **T3.5:** Implementar Moléculas: `SearchInput`, `StreakPill`, `FormField`, `MetricTile`.
-- [ ] **T3.6:** Implementar Organismos: `SidebarNav`, `TopHeader`.
-- [ ] **T3.7:** Integrar cliente `@supabase/supabase-js` para autenticación y hook `useAuth`.
+## Fase 3: Frontend Base & Atomic Design Pragmático (`feat/web-atomic-design`) — Completada
+
+- [x] **T3.1:** Inicializar `apps/web` con Vite + React 18 + TypeScript estricto.
+- [x] **T3.2:** Configurar Tailwind CSS 3.4 con tokens de diseño *Terminal Glow Minimal* y fuentes tipográficas (`Plus Jakarta Sans` y `JetBrains Mono`).
+- [x] **T3.3:** Crear estructura de carpetas bajo Atomic Design Pragmático (`src/components/{atoms,molecules,organisms,templates}`).
+- [x] **T3.4:** Implementar Átomos: `Button`, `Badge`, `TextInput`, `KbdShortcut`, `RadioTab`.
+- [x] **T3.5:** Implementar Moléculas: `SearchInput`, `StreakPill`, `FormField` (con validación de error inline rigurosa Anti-AI Slop), `MetricTile`.
+- [x] **T3.6:** Implementar Organismos: `SidebarNav` (con isotipo SVG de Qurio y status de DB), `TopHeader`.
+- [x] **T3.7:** Implementar Plantillas: `DashboardLayout`, `WorkspaceLayout` (con adaptación móvil de pestañas apiladas).
+- [x] **T3.8:** Integrar cliente `@supabase/supabase-js` para autenticación y hook `useAuth` con perfil reactivo.
+- [x] **T3.9:** Verificación de compilación TypeScript y empaquetado de producción con Vite (`built in 5.67s`, 0 errores).
+- [x] **T3.10:** Commit en `feat/web-atomic-design`, merge a `main` y push a GitHub.
+
+## Fase 4: Flujo End-to-End del Ejercicio (`feat/exercise-ide-flow`) — Siguiente
+
+- [ ] **T4.1:** Integración de Monaco Editor con configuración de tema oscuro, atajos (`⌘ + Enter` para ejecutar) y resaltado SQL.
+- [ ] **T4.2:** Organismo `DataGridResults` para visualización tabular de resultados, tipos de datos en JetBrains Mono y chips `NULL`.
+- [ ] **T4.3:** Organismo `ExerciseSpecPanel` (consigna, objetivos, pistas progresivas con penalización visual de XP).
+- [ ] **T4.4:** Conexión del frontend con la API FastAPI (`/api/v1/exercises/{id}/submit` y `/api/v1/playground/execute`).
+- [ ] **T4.5:** Modal/Banner de resolución exitosa con recompensa de XP y avance.

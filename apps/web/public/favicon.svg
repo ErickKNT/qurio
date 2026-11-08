@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Fondo cilíndrico relacional Qurio -->
+  <rect width="32" height="32" rx="8" fill="#0B1020"/>
+  <!-- Capa superior del cilindro -->
+  <ellipse cx="16" cy="9" rx="10" ry="3.5" stroke="#6366F1" stroke-width="1.8" fill="#111827"/>
+  <!-- Núcleo de datos activo (Verde Esmeralda) -->
+  <ellipse cx="16" cy="9" rx="4" ry="1.5" fill="#22C55E"/>
+  <!-- Capa media del cilindro relacional -->
+  <path d="M6 9v7c0 1.93 4.48 3.5 10 3.5s10-1.57 10-3.5V9" stroke="#6366F1" stroke-width="1.8" fill="none"/>
+  <!-- Capa base del cilindro relacional -->
+  <path d="M6 16v7c0 1.93 4.48 3.5 10 3.5s10-1.57 10-3.5v-7" stroke="#38BDF8" stroke-width="1.8" fill="none"/>
+</svg>
