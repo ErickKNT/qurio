@@ -58,3 +58,7 @@ Toda la interfaz visual de Qurio en React debe estructurarse obligatoriamente ba
 * **Backend:** FastAPI (Python 3.12) con tipado Pydantic estricto en todos los esquemas de entrada y salida.
 * **Seguridad de Ejecución (Regla de Oro):** Ninguna consulta introducida por un usuario debe tener conectividad ni ejecutarse jamás contra la base de datos de producción (Supabase). Todas las queries de práctica corren exclusivamente en el PostgreSQL Sandbox aislado en Docker bajo el rol `readonly_student` y con `statement_timeout = 2000ms`.
 * **Evaluación Semántica:** Las aserciones deben evaluar conjuntos de datos (filas, columnas, nulos y tipos), no comparar cadenas de texto SQL.
+* **Flujo Git y Ramas (Obligatorio):**
+  * Toda implementación grande o nueva funcionalidad debe trabajarse en su propia rama de características (`feat/...`, `infra/...`, `fix/...`).
+  * Solo se fusiona (`merge`) a `main` cuando la funcionalidad esté completada y verificada.
+  * Todos los cambios y ramas deben sincronizarse y enviarse a GitHub (`git push`).
