@@ -62,3 +62,5 @@ Toda la interfaz visual de Qurio en React debe estructurarse obligatoriamente ba
   * Toda implementación grande o nueva funcionalidad debe trabajarse en su propia rama de características (`feat/...`, `infra/...`, `fix/...`).
   * Solo se fusiona (`merge`) a `main` cuando la funcionalidad esté completada y verificada.
   * Todos los cambios y ramas deben sincronizarse y enviarse a GitHub (`git push`).
+* **Bitácora de Proyecto (Obligatorio):**
+  * Se debe mantener actualizado el archivo [`docs/BITACORA.md`](file:///c:/Desarrollo/Qurio/docs/BITACORA.md) registrando el estado de cada fase, decisiones y avances técnicos entregados en cada iteración.
