@@ -28,6 +28,29 @@ services:
     networks:
       - qurio-network
 
+  # ============================================================================
+  # Qurio: Execution & Semantic Evaluation API (FastAPI)
+  # ============================================================================
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: qurio-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      SANDBOX_DB_HOST: postgres-sandbox
+      SANDBOX_DB_PORT: 5432
+      SANDBOX_DB_NAME: ecommerce_sandbox
+      SANDBOX_DB_USER: readonly_student
+      SANDBOX_DB_PASSWORD: student_safe_pass
+    depends_on:
+      postgres-sandbox:
+        condition: service_healthy
+    networks:
+      - qurio-network
+
 networks:
   qurio-network:
     driver: bridge
