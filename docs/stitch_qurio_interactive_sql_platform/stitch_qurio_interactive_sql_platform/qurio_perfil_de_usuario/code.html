@@ -1,0 +1,886 @@
+<!DOCTYPE html><html class="dark" lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-highest": "#2f3446", "surface": "#0e1323", "on-error": "#690005", "on-surface-variant": "#c7c4d7", "on-primary-container": "#0d0096", "on-tertiary": "#003915", "surface-dim": "#0e1323", "inverse-surface": "#dee1f9", "surface-bright": "#34394a", "tertiary-fixed-dim": "#4ae176", "on-secondary-fixed-variant": "#004c69", "primary-container": "#8083ff", "surface-tint": "#c0c1ff", "on-background": "#dee1f9", "secondary-container": "#00a6e0", "surface-container-lowest": "#080d1d", "surface-container-low": "#161b2b", "on-secondary-container": "#00374d", "secondary-fixed-dim": "#7bd0ff", "primary-fixed": "#e1e0ff", "on-secondary-fixed": "#001e2c", "error": "#ffb4ab", "on-surface": "#dee1f9", "outline": "#908fa0", "surface-variant": "#2f3446", "on-tertiary-fixed-variant": "#005321", "primary": "#c0c1ff", "on-primary-fixed-variant": "#2f2ebe", "on-tertiary-container": "#003111", "tertiary-fixed": "#6bff8f", "tertiary-container": "#00a74b", "on-tertiary-fixed": "#002109", "background": "#0e1323", "secondary": "#7bd0ff", "on-primary": "#1000a9", "inverse-on-surface": "#2b3041", "on-secondary": "#00354a", "secondary-fixed": "#c4e7ff", "outline-variant": "#464554", "on-primary-fixed": "#07006c", "error-container": "#93000a", "on-error-container": "#ffdad6", "primary-fixed-dim": "#c0c1ff", "surface-container-high": "#25293a", "inverse-primary": "#494bd6", "surface-container": "#1a1f30", "tertiary": "#4ae176" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xs": "0.25rem", "gutter-desktop": "1.5rem", "space-md": "0.75rem", "space-lg": "1.25rem", "margin-desktop": "2rem", "margin": "1rem", "space-xl": "2rem", "space-sm": "0.5rem", "gutter": "1rem" }, "fontFamily": { "code-md": ["JetBrains Mono"], "body-lg": ["Inter"], "label-sm": ["JetBrains Mono"], "code-lg": ["JetBrains Mono"], "headline-xl": ["Inter"], "headline-xl-mobile": ["Inter"], "headline-lg": ["Inter"], "code-sm": ["JetBrains Mono"], "label-md": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "code-md": ["0.8125rem", { "lineHeight": "1.45rem", "fontWeight": "400" }], "body-lg": ["1rem", { "lineHeight": "1.625rem", "fontWeight": "400" }], "label-sm": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "500" }], "code-lg": ["0.9375rem", { "lineHeight": "1.6rem", "fontWeight": "500" }], "headline-xl": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.025em", "fontWeight": "700" }], "headline-xl-mobile": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }], "code-sm": ["0.6875rem", { "lineHeight": "1.125rem", "fontWeight": "400" }], "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-sm": ["0.75rem", { "lineHeight": "1.25rem", "fontWeight": "400" }], "body-md": ["0.875rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "headline-md": ["1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest z-50 flex flex-col justify-between overflow-y-auto"><div class="flex flex-col"><div class="p-space-lg flex flex-col gap-space-sm bg-surface-container-lowest"><div class="flex items-center gap-space-md"><div class="w-8 h-8 shrink-0 flex items-center justify-center"><svg class="w-8 h-8 rounded-lg shadow-sm" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#161b2b" stroke="#8083ff" stroke-width="1.5" stroke-opacity="0.4"></rect><ellipse cx="16" cy="9.5" rx="7.5" ry="3" fill="#7bd0ff" fill-opacity="0.2" stroke="#7bd0ff" stroke-width="1.5"></ellipse><path d="M8.5 9.5V16C8.5 17.65 11.85 19 16 19C20.15 19 23.5 17.65 23.5 16V9.5" stroke="#8083ff" stroke-width="1.5" stroke-linecap="round"></path><path d="M8.5 16V22.5C8.5 24.15 11.85 25.5 16 25.5C20.15 25.5 23.5 22.5V16" stroke="#7bd0ff" stroke-width="1.5" stroke-linecap="round"></path><circle cx="16" cy="16" r="1.5" fill="#4ae176"></circle></svg></div><div class="flex flex-col"><span class="font-headline-md text-headline-md tracking-tight text-on-surface">Qurio</span></div></div><p class="font-body-sm text-body-sm text-on-surface-variant">Aprende SQL. Piensa en queries.</p><div class="mt-space-xs inline-flex items-center gap-space-sm px-space-sm py-space-xs rounded-full bg-surface-container-low w-fit"><span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(74,225,118,0.8)]"></span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">PostgreSQL 16 • Online</span></div></div><div class="px-space-md py-space-sm"><div class="px-space-sm pb-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider">Navegación</div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-semibold shadow-[0_0_0_1px_rgba(192,193,255,0.3)]"><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-all bg-surface-container-high text-on-surface font-semibold shadow-[0_0_0_1px_rgba(192,193,255,0.3)]" data-path="dashboard" href="#"><span class="material-symbols-outlined text-secondary">space_dashboard</span><span class="font-body-md text-body-md flex-1">Dashboard</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="rutas-de-aprendizaje" href="#"><span class="material-symbols-outlined text-secondary">alt_route</span><span class="font-body-md text-body-md flex-1">Rutas de Aprendizaje</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="desafios-diarios" href="#"><span class="material-symbols-outlined text-secondary">bolt</span><span class="font-body-md text-body-md flex-1">Desafíos Diarios</span><span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-secondary-container text-on-secondary-container font-semibold">3 nuevos</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="sql-playground" href="#"><span class="material-symbols-outlined text-secondary">terminal</span><span class="font-body-md text-body-md flex-1">SQL Playground</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="laboratorios-db" href="#"><span class="material-symbols-outlined text-secondary">database</span><span class="font-body-md text-body-md flex-1">Laboratorios DB</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="proyectos-practicos" href="#"><span class="material-symbols-outlined text-secondary">folder_special</span><span class="font-body-md text-body-md flex-1">Proyectos Prácticos</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="logros-rangos" href="#"><span class="material-symbols-outlined text-secondary">military_tech</span><span class="font-body-md text-body-md flex-1">Logros &amp; Rangos</span></a></nav></div></div><div class="p-space-md flex flex-col gap-space-md bg-surface-container-lowest"><div class="flex items-center justify-between px-space-sm py-space-xs rounded-lg bg-surface-container-low text-on-surface-variant"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-outline">dark_mode</span><span class="font-label-sm text-label-sm uppercase">Tema Oscuro</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface font-semibold">⌘K</span></div><div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-sm"><div class="flex items-center gap-space-md"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCV5DRYMHUW0u7_n4DiB-lKunv4E0vf5--7hyZcbolzdTd1GQcEDGhJVwEah4iFdrKSn_n-r6cTLLmmm45jwlH4WUUC9s4jwD82FdEJwmsjQPTqQkqAUW0KwT_eV-seT_m8gFrlY3VWbHEDj2CeasjzQa4rF2LI8gd0t0CKERny6anaKpDNXtuSXfx0kNqfeahD2EplHKeoLJG4q6XJ5GsXdaPg8DsUrrALjhGkmA"><div class="flex flex-col min-w-0 flex-1"><span class="font-body-md text-body-md font-semibold text-on-surface truncate">Alex Dev</span><span class="font-label-sm text-label-sm text-secondary truncate">Nivel 4 • SQL Explorer</span></div><div class="flex items-center gap-0.5 px-space-xs py-0.5 rounded bg-surface-container-highest text-tertiary font-label-sm text-label-sm"><span class="material-symbols-outlined text-sm">local_fire_department</span><span class="">7d</span></div></div><div class="flex flex-col gap-1"><div class="flex justify-between font-label-sm text-label-sm text-outline"><span class="font-code-sm text-code-sm">1,250 / 2,000 XP</span><span class="">62%</span></div><div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden"><div class="h-full bg-primary-container rounded-full w-[62%]"></div></div></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 px-gutter-desktop flex items-center justify-between"><div class="flex items-center gap-space-md w-96"><div class="flex items-center gap-space-sm w-full px-space-md py-space-sm rounded-lg bg-surface-container-low text-outline"><span class="material-symbols-outlined text-outline">search</span><span class="font-body-sm text-body-sm text-outline truncate flex-1">Buscar consultas, lecciones...</span><kbd class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant">⌘K</kbd></div></div><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-low"><span class="material-symbols-outlined text-tertiary">local_fire_department</span><span class="font-code-md text-code-md text-on-surface font-semibold">7 días</span></div><div class="flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-low"><span class="material-symbols-outlined text-secondary">bolt</span><span class="font-code-md text-code-md text-on-surface font-semibold">1,250 XP</span></div><button class="relative p-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface"></span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCV5DRYMHUW0u7_n4DiB-lKunv4E0vf5--7hyZcbolzdTd1GQcEDGhJVwEah4iFdrKSn_n-r6cTLLmmm45jwlH4WUUC9s4jwD82FdEJwmsjQPTqQkqAUW0KwT_eV-seT_m8gFrlY3VWbHEDj2CeasjzQa4rF2LI8gd0t0CKERny6anaKpDNXtuSXfx0kNqfeahD2EplHKeoLJG4q6XJ5GsXdaPg8DsUrrALjhGkmA"></div></header><main class="relative pt-16 bg-surface w-full px-gutter-desktop min-h-screen"><div class="flex flex-col w-full pb-space-xl">
+<!-- Profile Header Banner / Bento Card -->
+<section class="relative w-full rounded-2xl bg-surface-container-low p-space-lg md:p-space-xl overflow-hidden shadow-xl">
+<!-- Atmospheric glows -->
+<div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
+<div class="absolute right-1/3 -bottom-20 w-80 h-80 rounded-full bg-secondary-container/10 blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
+<!-- Left: Avatar + Details -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-space-lg">
+<div class="relative group">
+<div class="absolute -inset-1 rounded-full bg-gradient-to-tr from-primary to-secondary opacity-75 blur group-hover:opacity-100 transition duration-300"></div>
+<div class="relative w-28 h-28 rounded-full overflow-hidden bg-surface-container-highest ring-4 ring-surface">
+<img alt="Alex Dev" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCV5DRYMHUW0u7_n4DiB-lKunv4E0vf5--7hyZcbolzdTd1GQcEDGhJVwEah4iFdrKSn_n-r6cTLLmmm45jwlH4WUUC9s4jwD82FdEJwmsjQPTqQkqAUW0KwT_eV-seT_m8gFrlY3VWbHEDj2CeasjzQa4rF2LI8gd0t0CKERny6anaKpDNXtuSXfx0kNqfeahD2EplHKeoLJG4q6XJ5GsXdaPg8DsUrrALjhGkmA">
+</div>
+<!-- Online status dot with ping -->
+<div class="absolute bottom-1 right-1 flex items-center justify-center">
+<span class="absolute inline-flex h-4 w-4 rounded-full bg-tertiary opacity-75 animate-ping"></span>
+<span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-tertiary shadow-[0_0_10px_rgba(74,225,118,0.9)]"></span>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<div class="flex flex-wrap items-center gap-x-space-md gap-y-1">
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface">Alex Dev</h1>
+<span class="font-code-md text-code-md text-secondary">@alex_developer</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-highest text-tertiary font-label-sm text-label-sm uppercase tracking-wider font-semibold">
+<span class="material-symbols-outlined text-xs">verified</span> Verificado
+            </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant font-medium">
+            Software Engineer &amp; Data Enthusiast
+          </p>
+<div class="flex flex-wrap items-center gap-x-space-lg gap-y-1 pt-1 text-outline font-body-sm text-body-sm">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+              Miembro desde Enero 2024
+            </span>
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm">location_on</span>
+              Madrid, España
+            </span>
+<span class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-sm">link</span>
+              alexdev.io
+            </span>
+</div>
+<!-- Stack Tags -->
+<div class="flex flex-wrap items-center gap-1.5 pt-2">
+<span class="px-2.5 py-1 rounded bg-surface-container font-code-sm text-code-sm text-primary font-medium hover:bg-surface-container-high transition-colors cursor-default">PostgreSQL</span>
+<span class="px-2.5 py-1 rounded bg-surface-container font-code-sm text-code-sm text-secondary font-medium hover:bg-surface-container-high transition-colors cursor-default">SQLite</span>
+<span class="px-2.5 py-1 rounded bg-surface-container font-code-sm text-code-sm text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors cursor-default">Data Modeling</span>
+<span class="px-2.5 py-1 rounded bg-surface-container font-code-sm text-code-sm text-tertiary font-medium hover:bg-surface-container-high transition-colors cursor-default">Query Tuning</span>
+</div>
+</div>
+</div>
+<!-- Right: Level Badge, XP & Profile Action CTAs -->
+<div class="flex flex-col gap-space-md sm:min-w-[280px] bg-surface-container/60 p-space-md rounded-xl backdrop-blur-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-xl">military_tech</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">Nivel 4</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-primary-container/20 text-primary font-label-sm text-label-sm uppercase tracking-wider font-semibold">SQL Explorer</span>
+</div>
+<!-- XP Linear Meter -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Progreso de Nivel</span>
+<span class="text-primary font-semibold">1,250 <span class="text-outline">/ 2,000 XP</span></span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden p-0.5">
+<div class="h-full bg-gradient-to-r from-primary to-secondary rounded-full w-[62.5%] transition-all duration-500 shadow-[0_0_12px_rgba(192,193,255,0.6)]"></div>
+</div>
+<div class="flex justify-between items-center font-label-sm text-label-sm text-outline">
+<span class="">Faltan 750 XP para Nivel 5</span>
+<span class="text-tertiary">62.5%</span>
+</div>
+</div>
+<!-- Action CTAs -->
+<div class="flex items-center gap-2 pt-1">
+<button class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-sm text-body-sm font-semibold transition-all">
+<span class="material-symbols-outlined text-base">edit</span>
+            Editar Perfil
+          </button>
+<button class="inline-flex items-center justify-center p-2 rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-all shadow-[0_0_15px_rgba(128,131,255,0.35)]" title="Compartir Perfil Público">
+<span class="material-symbols-outlined text-lg">share</span>
+</button>
+<button class="inline-flex items-center justify-center p-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-bright transition-all" title="Ajustes de Privacidad">
+<span class="material-symbols-outlined text-lg">settings</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Key Metrics Row (4 Linear-style metric cards) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md mt-space-lg">
+<!-- Stat 1 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md flex flex-col justify-between gap-space-sm shadow-md hover:bg-surface-container transition-all group">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Ejercicios Resueltos</span>
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">task_alt</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-xl text-headline-xl font-bold text-on-surface">142</span>
+<span class="font-body-md text-body-md text-outline">/ 160</span>
+</div>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-tertiary">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="">88% acierto en 1° intento</span>
+</div>
+<div class="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-primary/5 pointer-events-none"></div>
+</div>
+<!-- Stat 2 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md flex flex-col justify-between gap-space-sm shadow-md hover:bg-surface-container transition-all group">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Consultas Ejecutadas</span>
+<span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">terminal</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-xl text-headline-xl font-bold text-on-surface">1,420</span>
+<span class="font-body-sm text-body-sm text-secondary font-code-sm">queries</span>
+</div>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="">Playground &amp; Labs de producción</span>
+</div>
+<div class="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-secondary/5 pointer-events-none"></div>
+</div>
+<!-- Stat 3 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md flex flex-col justify-between gap-space-sm shadow-md hover:bg-surface-container transition-all group">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Racha Máxima</span>
+<span class="material-symbols-outlined text-tertiary group-hover:scale-110 transition-transform">local_fire_department</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-xl text-headline-xl font-bold text-on-surface">14</span>
+<span class="font-body-md text-body-md text-outline">Días</span>
+</div>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-tertiary font-semibold">
+<span class="material-symbols-outlined text-sm">local_fire_department</span>
+<span class="">Racha activa: 7 días seguidos</span>
+</div>
+<div class="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-tertiary/5 pointer-events-none"></div>
+</div>
+<!-- Stat 4 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md flex flex-col justify-between gap-space-sm shadow-md hover:bg-surface-container transition-all group">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Rutas Completadas</span>
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">workspace_premium</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-xl text-headline-xl font-bold text-on-surface">1</span>
+<span class="font-body-md text-body-md text-outline">de 6 rutas</span>
+</div>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-primary">
+<span class="material-symbols-outlined text-sm">verified</span>
+<span class="truncate">Fundamentos de SQL • Certificado</span>
+</div>
+<div class="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-primary-container/5 pointer-events-none"></div>
+</div>
+</section>
+<!-- Main Content Split: Left (65%) & Right (35%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg mt-space-lg">
+<!-- LEFT COLUMN (65% width => 8 cols on 12-grid) -->
+<div class="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
+<!-- 1. Learning Activity Heatmap (GitHub Style) -->
+<section class="rounded-2xl bg-surface-container-low p-space-lg shadow-md flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">calendar_view_week</span>
+<h2 class="font-headline-md text-headline-md font-semibold text-on-surface">Mapa de Calor de Actividad</h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+<strong class="text-tertiary font-code-md">482</strong> actividades en el último año
+          </span>
+</div>
+<!-- Heatmap Container -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest overflow-x-auto">
+<!-- Month labels -->
+<div class="flex justify-between text-outline font-label-sm text-label-sm mb-2 min-w-[620px] px-6">
+<span class="">May</span><span class="">Jun</span><span class="">Jul</span><span class="">Ago</span><span class="">Sep</span><span class="">Oct</span><span class="">Nov</span><span class="">Dic</span><span class="">Ene</span><span class="">Feb</span><span class="">Mar</span><span class="">Abr</span>
+</div>
+<div class="flex gap-1 min-w-[620px]">
+<!-- Day of week labels -->
+<div class="flex flex-col justify-between text-outline font-code-sm text-code-sm pr-2 text-right">
+<span class="">Lun</span>
+<span class="">Mié</span>
+<span class="">Vie</span>
+</div>
+<!-- Heatmap grid generated cleanly with SVG or CSS grid -->
+<!-- 52 columns x 7 rows -->
+<div class="grid grid-flow-col grid-rows-7 gap-1 flex-1" id="heatmap-cells">
+<!-- Dynamically structured week matrix (sample visual density representation) -->
+<!-- Repeating varied tone blocks representing 52 weeks -->
+<!-- Week 1 - 4: Low density -->
+<span class="w-3 h-3 rounded-xs bg-surface-container-high" title="0 queries"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high" title="0 queries"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40" title="2 queries"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/70"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<!-- Weeks 5-16: Moderate build-up -->
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/70"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<!-- Weeks 13-24: Summer Consistency -->
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<!-- Weeks 25-36: Autumn Surge -->
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<!-- Weeks 37-52: High streak leading to current active days -->
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/50"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-container/40"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<span class="w-3 h-3 rounded-xs bg-surface-container-high"></span>
+<!-- Current active streak (last 7 days glowing) -->
+<span class="w-3 h-3 rounded-xs bg-tertiary"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed shadow-[0_0_8px_rgba(74,225,118,0.7)]"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed shadow-[0_0_8px_rgba(74,225,118,0.7)]"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed shadow-[0_0_8px_rgba(74,225,118,0.7)]"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed shadow-[0_0_8px_rgba(74,225,118,0.7)]"></span>
+<span class="w-3 h-3 rounded-xs bg-tertiary-fixed shadow-[0_0_10px_rgba(74,225,118,0.9)] animate-pulse"></span>
+</div>
+</div>
+<!-- Heatmap Legend -->
+<div class="flex items-center justify-between pt-space-sm mt-space-sm border-t border-surface-container-high text-outline font-label-sm text-label-sm min-w-[620px]">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs text-tertiary">bolt</span>
+              Mayor actividad: Martes y Jueves (19:00 - 22:00 CET)
+            </span>
+<div class="flex items-center gap-1.5">
+<span class="">Menos</span>
+<span class="w-2.5 h-2.5 rounded-xs bg-surface-container-high inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-xs bg-tertiary-container/40 inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-xs bg-tertiary-container inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-xs bg-tertiary inline-block"></span>
+<span class="w-2.5 h-2.5 rounded-xs bg-tertiary-fixed inline-block"></span>
+<span class="">Más</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Learning Tracks in Progress -->
+<section class="rounded-2xl bg-surface-container-low p-space-lg shadow-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">alt_route</span>
+<h2 class="font-headline-md text-headline-md font-semibold text-on-surface">Rutas de Aprendizaje en Progreso</h2>
+</div>
+<a class="font-body-sm text-body-sm text-secondary hover:text-on-surface transition-colors flex items-center gap-1" href="#">
+            Ver catálogo completo <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</a>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Track 1: Completed -->
+<div class="p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all flex flex-col gap-space-sm group">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface flex items-center gap-2">
+                    SQL Foundations
+                    <span class="px-2 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary font-label-sm text-label-sm font-semibold">Completada</span>
+</span>
+<span class="font-body-sm text-body-sm text-outline">12 de 12 lecciones dominadas • Sintaxis DDL &amp; DML básica</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm self-end sm:self-center">
+<span class="font-code-sm text-code-sm text-tertiary font-semibold">100%</span>
+<a class="px-3 py-1.5 rounded-lg bg-surface-container-highest hover:bg-primary-container hover:text-on-primary text-on-surface font-label-sm text-label-sm font-semibold transition-all flex items-center gap-1.5" href="#cert-section">
+<span class="material-symbols-outlined text-sm">workspace_premium</span> Credencial #QURIO-SQL-101
+                </a>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1.5 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-tertiary rounded-full w-full shadow-[0_0_8px_rgba(74,225,118,0.5)]"></div>
+</div>
+</div>
+<!-- Track 2: In Progress 68% -->
+<div class="p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all flex flex-col gap-space-sm group">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-xl">hub</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface flex items-center gap-2">
+                    SQL Relacional y Relaciones
+                    <span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold">En curso</span>
+</span>
+<span class="font-body-sm text-body-sm text-outline">11 de 16 lecciones • Próxima: LEFT vs INNER JOIN en cascada</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm self-end sm:self-center">
+<span class="font-code-sm text-code-sm text-secondary font-semibold">68%</span>
+<button class="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold transition-all flex items-center gap-1 shadow-[0_0_10px_rgba(192,193,255,0.3)]">
+<span class="">Continuar</span> <span class="material-symbols-outlined text-sm">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1.5 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-secondary rounded-full w-[68%] shadow-[0_0_8px_rgba(123,208,255,0.5)]"></div>
+</div>
+</div>
+<!-- Track 3: In Progress 15% -->
+<div class="p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all flex flex-col gap-space-sm group">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl">analytics</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface flex items-center gap-2">
+                    Consultas Avanzadas y Agrupación
+                    <span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm font-semibold">Iniciando</span>
+</span>
+<span class="font-body-sm text-body-sm text-outline">3 de 20 lecciones • Próxima: Funciones de Ventana (OVER &amp; PARTITION BY)</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm self-end sm:self-center">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-semibold">15%</span>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-highest hover:bg-surface-bright text-on-surface font-label-sm text-label-sm font-semibold transition-all flex items-center gap-1">
+<span class="">Reanudar</span> <span class="material-symbols-outlined text-sm">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1.5 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-[15%]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Featured Practical Projects -->
+<section class="rounded-2xl bg-surface-container-low p-space-lg shadow-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">folder_special</span>
+<h2 class="font-headline-md text-headline-md font-semibold text-on-surface">Proyectos Prácticos Destacados</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Laboratorio Sandbox</span>
+</div>
+<div class="p-space-lg rounded-xl bg-surface-container flex flex-col lg:flex-row gap-space-lg justify-between items-start lg:items-center relative overflow-hidden group">
+<div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-primary-container/10 blur-2xl pointer-events-none"></div>
+<div class="flex flex-col gap-2 max-w-xl">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/20 text-tertiary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">verified</span> Validado por Mentor
+              </span>
+<span class="font-code-sm text-code-sm text-outline">PostgreSQL 16 Schema</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface">
+              Data Warehouse de E-Commerce para 100k Usuarios
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Diseño integral de modelo estrella (*Star Schema*), particionamiento de tablas de transacciones históricas, índices B-Tree optimizados y vistas materializadas para analítica en tiempo real.
+            </p>
+<div class="flex flex-wrap items-center gap-space-md pt-1 text-on-surface-variant font-code-sm text-code-sm">
+<span class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-sm">schema</span> 14 Tablas Relacionales
+              </span>
+<span class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm">speed</span> EXPLAIN ANALYZE: &lt;14ms
+              </span>
+<span class="flex items-center gap-1 text-outline">
+<span class="material-symbols-outlined text-sm">history</span> Actualizado hace 4d
+              </span>
+</div>
+</div>
+<!-- Score Card & Link -->
+<div class="flex flex-col sm:flex-row lg:flex-col items-center justify-between gap-space-md w-full lg:w-auto p-space-md rounded-xl bg-surface-container-lowest">
+<div class="flex flex-col items-center text-center">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Calificación Final</span>
+<div class="flex items-baseline gap-1 my-0.5">
+<span class="font-headline-xl text-headline-xl font-bold text-tertiary">98</span>
+<span class="font-body-sm text-body-sm text-outline">/100</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Top 3% de la cohorte</span>
+</div>
+<button class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-sm text-body-sm font-semibold transition-all">
+<span class="material-symbols-outlined text-base">code</span> Ver Código SQL
+            </button>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT COLUMN (35% width => 4 cols on 12-grid) -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg min-w-0">
+<!-- 1. Badge Showcase (Vitrina de Insignias Metálicas) -->
+<section class="rounded-2xl bg-surface-container-low p-space-lg shadow-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">military_tech</span>
+<h2 class="font-headline-md text-headline-md font-semibold text-on-surface">Insignias</h2>
+</div>
+<span class="font-code-sm text-code-sm text-secondary font-semibold">6 / 24</span>
+</div>
+<!-- 6 Badges Grid Showcase -->
+<div class="grid grid-cols-3 gap-space-sm">
+<!-- Badge 1 -->
+<div class="flex flex-col items-center text-center p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all group cursor-pointer relative overflow-hidden" title="Primer Query: Ejecutó exitosamente su primera consulta SQL">
+<div class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary-container to-secondary-container flex items-center justify-center text-on-primary mb-2 shadow-[0_0_12px_rgba(128,131,255,0.4)] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">terminal</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface line-clamp-1">Primer Query</span>
+<span class="font-code-sm text-code-sm text-outline text-[10px]">Común</span>
+</div>
+<!-- Badge 2 -->
+<div class="flex flex-col items-center text-center p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all group cursor-pointer relative overflow-hidden" title="JOIN Explorer: Dominó INNER, LEFT, RIGHT y FULL OUTER JOINs">
+<div class="w-12 h-12 rounded-full bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-surface-container-lowest mb-2 shadow-[0_0_12px_rgba(123,208,255,0.4)] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">join_inner</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface line-clamp-1">JOIN Explorer</span>
+<span class="font-code-sm text-code-sm text-secondary text-[10px]">Raro</span>
+</div>
+<!-- Badge 3 -->
+<div class="flex flex-col items-center text-center p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all group cursor-pointer relative overflow-hidden" title="Racha 7 Días: 7 días consecutivos resolviendo retos">
+<div class="w-12 h-12 rounded-full bg-gradient-to-tr from-tertiary to-secondary flex items-center justify-center text-surface-container-lowest mb-2 shadow-[0_0_12px_rgba(74,225,118,0.4)] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">local_fire_department</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface line-clamp-1">Racha 7 Días</span>
+<span class="font-code-sm text-code-sm text-tertiary text-[10px]">Épico</span>
+</div>
+<!-- Badge 4 -->
+<div class="flex flex-col items-center text-center p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all group cursor-pointer relative overflow-hidden" title="Index Optimizer: Redujo el costo de consulta en más de 80%">
+<div class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-primary-container flex items-center justify-center text-on-primary mb-2 shadow-[0_0_12px_rgba(192,193,255,0.4)] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">speed</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface line-clamp-1">Index Optimizer</span>
+<span class="font-code-sm text-code-sm text-primary text-[10px]">Raro</span>
+</div>
+<!-- Badge 5 -->
+<div class="flex flex-col items-center text-center p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all group cursor-pointer relative overflow-hidden" title="Transacciones ACID: Rollback y commit impecables sin deadlocks">
+<div class="w-12 h-12 rounded-full bg-gradient-to-tr from-tertiary-container to-secondary flex items-center justify-center text-on-surface mb-2 shadow-[0_0_12px_rgba(0,167,75,0.4)] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">lock</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface line-clamp-1">ACID Safe</span>
+<span class="font-code-sm text-code-sm text-tertiary text-[10px]">Épico</span>
+</div>
+<!-- Badge 6 -->
+<div class="flex flex-col items-center text-center p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high transition-all group cursor-pointer relative overflow-hidden" title="Subconsultas Pro: Resuelve subconsultas correlacionadas complejas">
+<div class="w-12 h-12 rounded-full bg-gradient-to-tr from-secondary-container to-primary flex items-center justify-center text-on-surface mb-2 shadow-[0_0_12px_rgba(0,166,224,0.4)] group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">data_object</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface line-clamp-1">Subqueries Pro</span>
+<span class="font-code-sm text-code-sm text-secondary text-[10px]">Raro</span>
+</div>
+</div>
+<button class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider font-semibold transition-colors text-center">
+          Ver Vitrina Completa (18 por desbloquear)
+        </button>
+</section>
+<!-- 2. Code Precision & Quality Metrics -->
+<section class="rounded-2xl bg-surface-container-low p-space-lg shadow-md flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">query_stats</span>
+<h2 class="font-headline-md text-headline-md font-semibold text-on-surface">Precisión de Código</h2>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold uppercase">Grado A+</span>
+</div>
+<div class="flex flex-col gap-space-md">
+<!-- Metric 1 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<span class="text-on-surface font-medium flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                Sintaxis SQL Correcta
+              </span>
+<span class="font-code-sm text-code-sm text-tertiary font-semibold">94%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-tertiary rounded-full w-[94%] shadow-[0_0_8px_rgba(74,225,118,0.4)]"></div>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<span class="text-on-surface font-medium flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                Rendimiento Óptimo (&lt;50ms)
+              </span>
+<span class="font-code-sm text-code-sm text-secondary font-semibold">89%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-secondary rounded-full w-[89%] shadow-[0_0_8px_rgba(123,208,255,0.4)]"></div>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<span class="text-on-surface font-medium flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+                Uso de Estándares ANSI
+              </span>
+<span class="font-code-sm text-code-sm text-primary font-semibold">92%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[92%] shadow-[0_0_8px_rgba(192,193,255,0.4)]"></div>
+</div>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container flex items-center gap-2 text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-base text-secondary">info</span>
+<span class="">Basado en el análisis estático de 1,420 consultas ejecutadas.</span>
+</div>
+</section>
+<!-- 3. Official Certifications (Certificados Obtenidos) -->
+<section class="rounded-2xl bg-surface-container-low p-space-lg shadow-md flex flex-col gap-space-md" id="cert-section">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container">verified</span>
+<h2 class="font-headline-md text-headline-md font-semibold text-on-surface">Certificaciones</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline">1 Acreditada</span>
+</div>
+<!-- Certificate Card Visual -->
+<div class="relative rounded-xl bg-gradient-to-b from-surface-container to-surface-container-lowest p-space-md overflow-hidden shadow-lg group">
+<!-- Subtle glow badge -->
+<div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-primary/10 blur-xl pointer-events-none"></div>
+<!-- Certificate Header -->
+<div class="flex items-start justify-between gap-space-sm mb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl">school</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-bold text-on-surface">Qurio Certified SQL Associate</span>
+<span class="font-label-sm text-label-sm text-outline">Emitido en Febrero 2024</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded font-code-sm text-code-sm bg-tertiary-container/20 text-tertiary font-bold">100/100</span>
+</div>
+<!-- Mini graphical credential display -->
+<div class="rounded-lg bg-surface-container-lowest p-3 flex flex-col gap-2 my-2">
+<div class="flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-outline">ID Criptográfico:</span>
+<span class="text-secondary font-mono">#QURIO-SQL-101-7E9A</span>
+</div>
+<div class="flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-outline">Algoritmo de Validación:</span>
+<span class="text-on-surface-variant font-mono">SHA-256 Validated</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-2">
+<button class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-body-sm text-body-sm font-semibold transition-all shadow-[0_0_12px_rgba(192,193,255,0.3)]">
+<span class="material-symbols-outlined text-base">visibility</span>
+              Ver Certificado Digital
+            </button>
+<button class="inline-flex items-center justify-center p-2 rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-bright transition-colors" title="Descargar PDF">
+<span class="material-symbols-outlined text-base">download</span>
+</button>
+</div>
+</div>
+<!-- Next in queue teaser -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-lowest text-outline font-body-sm text-body-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">lock</span>
+<span class="text-on-surface-variant">Próximo: Advanced Queries &amp; Tuning</span>
+</div>
+<span class="font-code-sm text-code-sm text-secondary">68% req</span>
+</div>
+</section>
+</div>
+</div>
+</div></main></div>
+
+</body></html>

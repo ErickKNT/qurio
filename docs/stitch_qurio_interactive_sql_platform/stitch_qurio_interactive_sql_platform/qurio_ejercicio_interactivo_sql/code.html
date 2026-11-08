@@ -1,0 +1,610 @@
+<!DOCTYPE html><html class="dark" lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-highest": "#2f3446", "surface": "#0e1323", "on-error": "#690005", "on-surface-variant": "#c7c4d7", "on-primary-container": "#0d0096", "on-tertiary": "#003915", "surface-dim": "#0e1323", "inverse-surface": "#dee1f9", "surface-bright": "#34394a", "tertiary-fixed-dim": "#4ae176", "on-secondary-fixed-variant": "#004c69", "primary-container": "#8083ff", "surface-tint": "#c0c1ff", "on-background": "#dee1f9", "secondary-container": "#00a6e0", "surface-container-lowest": "#080d1d", "surface-container-low": "#161b2b", "on-secondary-container": "#00374d", "secondary-fixed-dim": "#7bd0ff", "primary-fixed": "#e1e0ff", "on-secondary-fixed": "#001e2c", "error": "#ffb4ab", "on-surface": "#dee1f9", "outline": "#908fa0", "surface-variant": "#2f3446", "on-tertiary-fixed-variant": "#005321", "primary": "#c0c1ff", "on-primary-fixed-variant": "#2f2ebe", "on-tertiary-container": "#003111", "tertiary-fixed": "#6bff8f", "tertiary-container": "#00a74b", "on-tertiary-fixed": "#002109", "background": "#0e1323", "secondary": "#7bd0ff", "on-primary": "#1000a9", "inverse-on-surface": "#2b3041", "on-secondary": "#00354a", "secondary-fixed": "#c4e7ff", "outline-variant": "#464554", "on-primary-fixed": "#07006c", "error-container": "#93000a", "on-error-container": "#ffdad6", "primary-fixed-dim": "#c0c1ff", "surface-container-high": "#25293a", "inverse-primary": "#494bd6", "surface-container": "#1a1f30", "tertiary": "#4ae176" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xs": "0.25rem", "gutter-desktop": "1.5rem", "space-md": "0.75rem", "space-lg": "1.25rem", "margin-desktop": "2rem", "margin": "1rem", "space-xl": "2rem", "space-sm": "0.5rem", "gutter": "1rem" }, "fontFamily": { "code-md": ["JetBrains Mono"], "body-lg": ["Inter"], "label-sm": ["JetBrains Mono"], "code-lg": ["JetBrains Mono"], "headline-xl": ["Inter"], "headline-xl-mobile": ["Inter"], "headline-lg": ["Inter"], "code-sm": ["JetBrains Mono"], "label-md": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "code-md": ["0.8125rem", { "lineHeight": "1.45rem", "fontWeight": "400" }], "body-lg": ["1rem", { "lineHeight": "1.625rem", "fontWeight": "400" }], "label-sm": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "500" }], "code-lg": ["0.9375rem", { "lineHeight": "1.6rem", "fontWeight": "500" }], "headline-xl": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.025em", "fontWeight": "700" }], "headline-xl-mobile": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }], "code-sm": ["0.6875rem", { "lineHeight": "1.125rem", "fontWeight": "400" }], "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-sm": ["0.75rem", { "lineHeight": "1.25rem", "fontWeight": "400" }], "body-md": ["0.875rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "headline-md": ["1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest z-50 flex flex-col justify-between overflow-y-auto"><div class="flex flex-col"><div class="p-space-lg flex flex-col gap-space-sm bg-surface-container-lowest"><div class="flex items-center gap-space-md"><div class="w-8 h-8 flex items-center justify-center"><svg class="w-8 h-8 rounded-lg shadow-sm" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#161b2b" stroke="#8083ff" stroke-width="1.5" stroke-opacity="0.4"></rect><ellipse cx="16" cy="9.5" rx="7.5" ry="3" fill="#7bd0ff" fill-opacity="0.2" stroke="#7bd0ff" stroke-width="1.5"></ellipse><path d="M8.5 9.5V16C8.5 17.65 11.85 19 16 19C20.15 19 23.5 17.65 23.5 16V9.5" stroke="#8083ff" stroke-width="1.5" stroke-linecap="round"></path><path d="M8.5 16V22.5C8.5 24.15 11.85 25.5 16 25.5C20.15 25.5 23.5 22.5V16" stroke="#7bd0ff" stroke-width="1.5" stroke-linecap="round"></path><circle cx="16" cy="16" r="1.5" fill="#4ae176"></circle></svg></div><div class="flex flex-col"><span class="font-headline-md text-headline-md tracking-tight text-on-surface">Qurio</span></div></div><p class="font-body-sm text-body-sm text-on-surface-variant">Aprende SQL. Piensa en queries.</p><div class="mt-space-xs inline-flex items-center gap-space-sm px-space-sm py-space-xs rounded-full bg-surface-container-low w-fit"><span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(74,225,118,0.8)]"></span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">PostgreSQL 16 • Online</span></div></div><div class="px-space-md py-space-sm"><div class="px-space-sm pb-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider">Navegación</div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-semibold shadow-[0_0_0_1px_rgba(192,193,255,0.3)]"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined text-secondary">space_dashboard</span><span class="font-body-md text-body-md flex-1">Dashboard</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="rutas-de-aprendizaje" href="#"><span class="material-symbols-outlined text-secondary">alt_route</span><span class="font-body-md text-body-md flex-1">Rutas de Aprendizaje</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="desafios-diarios" href="#"><span class="material-symbols-outlined text-secondary">bolt</span><span class="font-body-md text-body-md flex-1">Desafíos Diarios</span><span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-secondary-container text-on-secondary-container font-semibold">3 nuevos</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="sql-playground" href="#"><span class="material-symbols-outlined text-secondary">terminal</span><span class="font-body-md text-body-md flex-1">SQL Playground</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="laboratorios-db" href="#"><span class="material-symbols-outlined text-secondary">database</span><span class="font-body-md text-body-md flex-1">Laboratorios DB</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="proyectos-practicos" href="#"><span class="material-symbols-outlined text-secondary">folder_special</span><span class="font-body-md text-body-md flex-1">Proyectos Prácticos</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="logros-rangos" href="#"><span class="material-symbols-outlined text-secondary">military_tech</span><span class="font-body-md text-body-md flex-1">Logros &amp; Rangos</span></a></nav></div></div><div class="p-space-md flex flex-col gap-space-md bg-surface-container-lowest"><div class="flex items-center justify-between px-space-sm py-space-xs rounded-lg bg-surface-container-low text-on-surface-variant"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-outline">dark_mode</span><span class="font-label-sm text-label-sm uppercase">Tema Oscuro</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface font-semibold">⌘K</span></div><div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-sm"><div class="flex items-center gap-space-md"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCV5DRYMHUW0u7_n4DiB-lKunv4E0vf5--7hyZcbolzdTd1GQcEDGhJVwEah4iFdrKSn_n-r6cTLLmmm45jwlH4WUUC9s4jwD82FdEJwmsjQPTqQkqAUW0KwT_eV-seT_m8gFrlY3VWbHEDj2CeasjzQa4rF2LI8gd0t0CKERny6anaKpDNXtuSXfx0kNqfeahD2EplHKeoLJG4q6XJ5GsXdaPg8DsUrrALjhGkmA"><div class="flex flex-col min-w-0 flex-1"><span class="font-body-md text-body-md font-semibold text-on-surface truncate">Alex Dev</span><span class="font-label-sm text-label-sm text-secondary truncate">Nivel 4 • SQL Explorer</span></div><div class="flex items-center gap-0.5 px-space-xs py-0.5 rounded bg-surface-container-highest text-tertiary font-label-sm text-label-sm"><span class="material-symbols-outlined text-sm">local_fire_department</span><span class="">7d</span></div></div><div class="flex flex-col gap-1"><div class="flex justify-between font-label-sm text-label-sm text-outline"><span class="font-code-sm text-code-sm">1,250 / 2,000 XP</span><span class="">62%</span></div><div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden"><div class="h-full bg-primary-container rounded-full w-[62%]"></div></div></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 px-gutter-desktop flex items-center justify-between"><div class="flex items-center gap-space-md w-96"><div class="flex items-center gap-space-sm w-full px-space-md py-space-sm rounded-lg bg-surface-container-low text-outline"><span class="material-symbols-outlined text-outline">search</span><span class="font-body-sm text-body-sm text-outline truncate flex-1">Buscar consultas, lecciones...</span><kbd class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant">⌘K</kbd></div></div><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-low"><span class="material-symbols-outlined text-tertiary">local_fire_department</span><span class="font-code-md text-code-md text-on-surface font-semibold">7 días</span></div><div class="flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-low"><span class="material-symbols-outlined text-secondary">bolt</span><span class="font-code-md text-code-md text-on-surface font-semibold">1,250 XP</span></div><button class="relative p-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface"></span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCV5DRYMHUW0u7_n4DiB-lKunv4E0vf5--7hyZcbolzdTd1GQcEDGhJVwEah4iFdrKSn_n-r6cTLLmmm45jwlH4WUUC9s4jwD82FdEJwmsjQPTqQkqAUW0KwT_eV-seT_m8gFrlY3VWbHEDj2CeasjzQa4rF2LI8gd0t0CKERny6anaKpDNXtuSXfx0kNqfeahD2EplHKeoLJG4q6XJ5GsXdaPg8DsUrrALjhGkmA"></div></header><main class="relative pt-16 bg-surface w-full px-gutter-desktop min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Exercise Navigation Bar -->
+<div class="w-full bg-surface-container-low px-space-md py-space-sm mb-space-md rounded-xl flex flex-wrap items-center justify-between gap-space-sm shadow-md">
+<div class="flex flex-col gap-0.5">
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
+<a class="hover:text-on-surface transition-colors" href="#">SQL Foundations</a>
+<span class="text-outline-variant">/</span>
+<a class="hover:text-on-surface transition-colors" href="#">Módulo 7</a>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface-variant font-semibold">Ejercicio 4 de 6</span>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight">
+          Clientes sin Compras Registradas (LEFT JOIN &amp; IS NULL)
+        </h1>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-secondary-container/20 text-secondary font-semibold">
+          Intermedio
+        </span>
+<div class="inline-flex items-center gap-1 px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-primary-container/20 text-primary font-semibold">
+<span class="">+45 XP</span>
+<span class="material-symbols-outlined text-xs">bolt</span>
+</div>
+</div>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-1.5 px-space-sm py-1 rounded bg-surface-container-highest text-on-surface-variant font-code-sm text-code-sm">
+<span class="material-symbols-outlined text-sm text-secondary">schedule</span>
+<span id="exerciseTimer" class="">14:05</span>
+</div>
+<button class="flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors font-label-sm text-label-sm" id="hintToggleBtn">
+<span class="material-symbols-outlined text-sm text-secondary">lightbulb</span>
+<span class="">Pistas (1/3)</span>
+</button>
+<button class="flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors font-label-sm text-label-sm" id="resetCodeTop" title="Restablecer código inicial">
+<span class="material-symbols-outlined text-sm">restart_alt</span>
+<span class="hidden sm:inline">Restablecer</span>
+</button>
+<button class="flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface-variant transition-colors font-label-sm text-label-sm" title="Reportar error">
+<span class="material-symbols-outlined text-sm">flag</span>
+</button>
+</div>
+</div>
+<!-- Workspace Grid Layout: Left Panel 30%, Right Panel 70% -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md w-full items-start">
+<!-- LEFT PANEL: Instructions & Schema Explorer (30% -> 4 cols out of 12) -->
+<section class="lg:col-span-4 flex flex-col gap-space-sm w-full">
+<div class="bg-surface-container-low rounded-xl flex flex-col overflow-hidden shadow-sm">
+<!-- Panel Tabs -->
+<div class="flex items-center bg-surface-container-lowest px-space-sm pt-space-xs gap-space-xs">
+<button class="px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm font-semibold text-on-surface bg-surface-container-low flex items-center gap-1.5 transition-all" id="tabBtnInstructions" onclick="switchLeftTab('instructions')">
+<span class="material-symbols-outlined text-sm text-secondary">description</span>
+<span class="">Instrucciones</span>
+</button>
+<button class="px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container flex items-center gap-1.5 transition-all" id="tabBtnSchema" onclick="switchLeftTab('schema')">
+<span class="material-symbols-outlined text-sm text-outline">account_tree</span>
+<span class="">Explorador (Schema)</span>
+</button>
+</div>
+<!-- Tab 1: Instructions Content -->
+<div class="p-space-md flex flex-col gap-space-md text-on-surface-variant" id="contentInstructions">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Consigna del Desafío</span>
+<p class="font-body-md text-body-md text-on-surface">
+              El equipo de marketing necesita reactivar a usuarios registrados que nunca han realizado un pedido en la plataforma. Escribe una consulta que devuelva el ID del cliente, su nombre y su apellido para todos los clientes que no tienen registros en la tabla de compras.
+            </p>
+</div>
+<!-- Expected Schema Output Card -->
+<div class="p-space-sm bg-surface-container rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Estructura esperada</span>
+<span class="font-code-sm text-code-sm text-secondary font-semibold">3 Columnas</span>
+</div>
+<div class="grid grid-cols-3 gap-1 bg-surface-container-lowest p-space-xs rounded font-code-sm text-code-sm">
+<div class="flex flex-col p-1 rounded bg-surface-container-low">
+<span class="text-on-surface font-semibold truncate">customer_id</span>
+<span class="text-secondary text-[10px]">INT (PK)</span>
+</div>
+<div class="flex flex-col p-1 rounded bg-surface-container-low">
+<span class="text-on-surface font-semibold truncate">first_name</span>
+<span class="text-secondary text-[10px]">VARCHAR(50)</span>
+</div>
+<div class="flex flex-col p-1 rounded bg-surface-container-low">
+<span class="text-on-surface font-semibold truncate">last_name</span>
+<span class="text-secondary text-[10px]">VARCHAR(50)</span>
+</div>
+</div>
+</div>
+<!-- Collapsible Hint Card -->
+<div class="bg-surface-container rounded-lg overflow-hidden transition-all">
+<button class="w-full p-space-sm flex items-center justify-between text-left hover:bg-surface-container-high transition-colors" onclick="toggleHintBody()">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-sm">lightbulb</span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Pista 1 de 3: Estrategia de Cruce</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm transition-transform duration-200" id="hintCaret">expand_more</span>
+</button>
+<div class="px-space-sm pb-space-sm flex flex-col gap-space-xs" id="hintBody">
+<p class="font-body-sm text-body-sm text-on-surface-variant bg-surface-container-lowest p-space-sm rounded">
+                💡 <span class="font-semibold text-on-surface">Sugerencia:</span> Utiliza un <code class="px-1 py-0.5 rounded bg-surface-container text-primary font-code-sm text-code-sm">LEFT JOIN</code> entre <code class="px-1 py-0.5 rounded bg-surface-container text-secondary font-code-sm text-code-sm">customers</code> y <code class="px-1 py-0.5 rounded bg-surface-container text-secondary font-code-sm text-code-sm">orders</code> comprobando dónde <code class="px-1 py-0.5 rounded bg-surface-container text-tertiary font-code-sm text-code-sm">orders.order_id IS NULL</code>. Ordena por <code class="px-1 py-0.5 rounded bg-surface-container text-on-surface font-code-sm text-code-sm">c.customer_id ASC</code>.
+              </p>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-outline">-0 XP al usar esta pista</span>
+<button class="font-label-sm text-label-sm text-secondary hover:underline">Ver siguiente pista (-10 XP)</button>
+</div>
+</div>
+</div>
+<!-- Performance & Objective note -->
+<div class="p-space-sm bg-surface-container-high/40 rounded-lg flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-base mt-0.5">verified</span>
+<div class="flex flex-col gap-0.5">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Criterio de Evaluación</span>
+<p class="font-body-sm text-body-sm text-outline">
+                El optimizador comprobará el plan de ejecución evitando escaneos secuenciales innecesarios en tablas indexadas.
+              </p>
+</div>
+</div>
+</div>
+<!-- Tab 2: Schema Explorer Content -->
+<div class="p-space-md hidden flex-col gap-space-sm text-on-surface-variant" id="contentSchema">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Base de Datos: E-COMMERCE_PROD</span>
+<span class="font-code-sm text-code-sm text-tertiary font-semibold">4 tablas</span>
+</div>
+<!-- Table 1: customers -->
+<div class="bg-surface-container rounded-lg overflow-hidden">
+<div class="p-space-xs px-space-sm flex items-center justify-between cursor-pointer hover:bg-surface-container-high select-none" onclick="toggleSchemaTable('schema-customers')">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-sm">table_chart</span>
+<span class="font-code-md text-code-md font-semibold text-on-surface">customers</span>
+<span class="font-label-sm text-label-sm text-outline">(1,420 filas)</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm transition-transform duration-200" id="caret-schema-customers">expand_less</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest flex flex-col gap-1 font-code-sm text-code-sm" id="schema-customers">
+<div class="flex items-center justify-between px-space-xs py-0.5 rounded bg-surface-container-low">
+<span class="flex items-center gap-1 text-primary font-semibold">
+<span class="material-symbols-outlined text-xs text-primary">key</span>customer_id
+                </span>
+<span class="text-outline">INT [PK]</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">first_name</span>
+<span class="text-outline">VARCHAR(50)</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">last_name</span>
+<span class="text-outline">VARCHAR(50)</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">email</span>
+<span class="text-outline">VARCHAR(120)</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">created_at</span>
+<span class="text-outline">TIMESTAMP</span>
+</div>
+</div>
+</div>
+<!-- Table 2: orders -->
+<div class="bg-surface-container rounded-lg overflow-hidden">
+<div class="p-space-xs px-space-sm flex items-center justify-between cursor-pointer hover:bg-surface-container-high select-none" onclick="toggleSchemaTable('schema-orders')">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-sm">table_chart</span>
+<span class="font-code-md text-code-md font-semibold text-on-surface">orders</span>
+<span class="font-label-sm text-label-sm text-outline">(3,890 filas)</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm transition-transform duration-200" id="caret-schema-orders">expand_less</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest flex flex-col gap-1 font-code-sm text-code-sm" id="schema-orders">
+<div class="flex items-center justify-between px-space-xs py-0.5 rounded bg-surface-container-low">
+<span class="flex items-center gap-1 text-primary font-semibold">
+<span class="material-symbols-outlined text-xs text-primary">key</span>order_id
+                </span>
+<span class="text-outline">INT [PK]</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-xs text-secondary">link</span>customer_id
+                </span>
+<span class="text-outline">INT [FK]</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">order_date</span>
+<span class="text-outline">DATE</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">total_amount</span>
+<span class="text-outline">DECIMAL(10,2)</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">status</span>
+<span class="text-outline">VARCHAR(20)</span>
+</div>
+</div>
+</div>
+<!-- Table 3: order_items -->
+<div class="bg-surface-container rounded-lg overflow-hidden">
+<div class="p-space-xs px-space-sm flex items-center justify-between cursor-pointer hover:bg-surface-container-high select-none" onclick="toggleSchemaTable('schema-items')">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-sm">table_chart</span>
+<span class="font-code-md text-code-md font-semibold text-on-surface">order_items</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm transition-transform duration-200" id="caret-schema-items">expand_more</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest hidden flex-col gap-1 font-code-sm text-code-sm" id="schema-items">
+<div class="flex items-center justify-between px-space-xs py-0.5 rounded bg-surface-container-low">
+<span class="text-primary font-semibold">item_id</span>
+<span class="text-outline">INT [PK]</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-secondary">order_id</span>
+<span class="text-outline">INT [FK]</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-secondary">product_id</span>
+<span class="text-outline">INT [FK]</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">quantity</span>
+<span class="text-outline">INT</span>
+</div>
+</div>
+</div>
+<!-- Table 4: products -->
+<div class="bg-surface-container rounded-lg overflow-hidden">
+<div class="p-space-xs px-space-sm flex items-center justify-between cursor-pointer hover:bg-surface-container-high select-none" onclick="toggleSchemaTable('schema-products')">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-sm">table_chart</span>
+<span class="font-code-md text-code-md font-semibold text-on-surface">products</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm transition-transform duration-200" id="caret-schema-products">expand_more</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest hidden flex-col gap-1 font-code-sm text-code-sm" id="schema-products">
+<div class="flex items-center justify-between px-space-xs py-0.5 rounded bg-surface-container-low">
+<span class="text-primary font-semibold">product_id</span>
+<span class="text-outline">INT [PK]</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">name</span>
+<span class="text-outline">VARCHAR(100)</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">price</span>
+<span class="text-outline">DECIMAL(10,2)</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-0.5">
+<span class="text-on-surface">stock</span>
+<span class="text-outline">INT</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT WORKSPACE: Editor & Output Grid (70% -> 8 cols out of 12) -->
+<div class="lg:col-span-8 flex flex-col gap-space-md w-full">
+<!-- SUB-PANEL 1: Monaco SQL Editor -->
+<section class="bg-surface-container-lowest rounded-xl flex flex-col overflow-hidden shadow-lg">
+<!-- Editor Header Bar -->
+<div class="flex items-center justify-between bg-surface-container-low px-space-sm py-1.5">
+<div class="flex items-center gap-space-xs">
+<div class="flex items-center gap-1.5 px-space-sm py-1 rounded bg-surface-container-lowest text-on-surface font-code-sm text-code-sm font-semibold">
+<span class="material-symbols-outlined text-xs text-primary">code</span>
+<span class="">query.sql</span>
+</div>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-surface-container text-secondary">
+              PostgreSQL 16
+            </span>
+</div>
+<div class="flex items-center gap-1">
+<button class="flex items-center gap-1 px-space-xs py-1 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors font-label-sm text-label-sm" id="formatSqlBtn" title="Formatear consulta (Prettier SQL)">
+<span class="material-symbols-outlined text-sm">auto_fix_high</span>
+<span class="hidden sm:inline">Formatear</span>
+</button>
+<button class="flex items-center gap-1 px-space-xs py-1 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors font-label-sm text-label-sm" id="clearEditorBtn" title="Limpiar buffer">
+<span class="material-symbols-outlined text-sm">backspace</span>
+</button>
+</div>
+</div>
+<!-- Editor Code Canvas with Line Numbers & Syntax Colors -->
+<div class="p-space-sm bg-surface-container-lowest flex font-code-md text-code-md leading-relaxed overflow-x-auto select-text">
+<!-- Line Numbers -->
+<div class="flex flex-col text-right pr-space-md text-outline-variant select-none font-code-md text-code-md opacity-60">
+<span class="">01</span>
+<span class="">02</span>
+<span class="">03</span>
+<span class="">04</span>
+<span class="">05</span>
+<span class="">06</span>
+<span class="">07</span>
+<span class="">08</span>
+<span class="">09</span>
+<span class="">10</span>
+</div>
+<!-- Code content -->
+<div class="flex flex-col flex-1 pl-space-xs">
+<div><span class="text-outline italic">-- Escribe tu consulta SQL a continuación</span></div>
+<div>
+<span class="text-primary font-semibold">SELECT</span>
+</div>
+<div class="pl-space-md">
+<span class="text-secondary">c</span><span class="text-on-surface">.</span><span class="text-on-surface">customer_id</span><span class="text-on-surface">,</span>
+</div>
+<div class="pl-space-md">
+<span class="text-secondary">c</span><span class="text-on-surface">.</span><span class="text-on-surface">first_name</span><span class="text-on-surface">,</span>
+</div>
+<div class="pl-space-md">
+<span class="text-secondary">c</span><span class="text-on-surface">.</span><span class="text-on-surface">last_name</span>
+</div>
+<div>
+<span class="text-primary font-semibold">FROM</span> <span class="text-on-surface">customers</span> <span class="text-secondary">c</span>
+</div>
+<div>
+<span class="text-primary font-semibold">LEFT JOIN</span> <span class="text-on-surface">orders</span> <span class="text-secondary">o</span> <span class="text-primary font-semibold">ON</span> <span class="text-secondary">c</span><span class="text-on-surface">.</span><span class="text-on-surface">customer_id</span> <span class="text-primary">=</span> <span class="text-secondary">o</span><span class="text-on-surface">.</span><span class="text-on-surface">customer_id</span>
+</div>
+<div>
+<span class="text-primary font-semibold">WHERE</span> <span class="text-secondary">o</span><span class="text-on-surface">.</span><span class="text-on-surface">order_id</span> <span class="text-primary font-semibold">IS NULL</span>
+</div>
+<div>
+<span class="text-primary font-semibold">ORDER BY</span> <span class="text-secondary">c</span><span class="text-on-surface">.</span><span class="text-on-surface">customer_id</span> <span class="text-primary font-semibold">ASC</span><span class="text-on-surface">;</span>
+</div>
+<div class="inline-flex items-center">
+<span class="w-2 h-4 bg-primary inline-block animate-pulse"></span>
+</div>
+</div>
+</div>
+<!-- Editor Footer Actions Bar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm px-space-md py-space-sm bg-surface-container-low">
+<div class="flex items-center gap-space-xs text-tertiary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span class="">Sintaxis válida • PostgreSQL dialect</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-highest hover:bg-surface-bright text-on-surface transition-all font-body-sm text-body-sm font-semibold shadow-sm" id="runQueryBtn">
+<span class="material-symbols-outlined text-sm text-secondary">play_arrow</span>
+<span class="">Ejecutar Consulta</span>
+<kbd class="font-code-sm text-code-sm px-1 py-0.5 rounded bg-surface-container-lowest text-outline">Ctrl+↵</kbd>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-tertiary-container hover:bg-tertiary text-on-tertiary transition-all font-body-sm text-body-sm font-semibold shadow-[0_0_16px_rgba(74,225,118,0.3)] hover:shadow-[0_0_24px_rgba(74,225,118,0.5)]" id="submitAnswerBtn">
+<span class="material-symbols-outlined text-sm">rocket_launch</span>
+<span class="">Enviar Respuesta</span>
+</button>
+</div>
+</div>
+</section>
+<!-- SUB-PANEL 2: Results, Tests, & Data Grid -->
+<section class="bg-surface-container-low rounded-xl flex flex-col overflow-hidden shadow-md">
+<!-- Results Header Tabs -->
+<div class="flex items-center justify-between bg-surface-container-lowest px-space-sm pt-space-xs">
+<div class="flex items-center gap-space-xs">
+<button class="px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm font-semibold text-on-surface bg-surface-container-low flex items-center gap-1.5 transition-all" id="tabBtnOutput" onclick="switchOutputTab('output')">
+<span class="material-symbols-outlined text-sm text-secondary">table_view</span>
+<span class="">Resultados de Consulta</span>
+</button>
+<button class="px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container flex items-center gap-1.5 transition-all" id="tabBtnTests" onclick="switchOutputTab('tests')">
+<span class="material-symbols-outlined text-sm text-tertiary">check_circle</span>
+<span class="">Casos de Prueba (2/2)</span>
+</button>
+<button class="px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container flex items-center gap-1.5 transition-all" id="tabBtnExplain" onclick="switchOutputTab('explain')">
+<span class="material-symbols-outlined text-sm text-outline">insights</span>
+<span class="">Plan (EXPLAIN)</span>
+</button>
+</div>
+<div class="flex items-center gap-space-xs pr-space-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">14ms • 4 filas devueltas</span>
+</div>
+</div>
+<!-- Output Grid Content -->
+<div class="flex flex-col" id="contentOutput">
+<!-- Execution Status Bar -->
+<div class="px-space-md py-space-xs bg-surface-container flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm">
+<div class="flex items-center gap-space-sm">
+<span class="text-tertiary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">done_all</span> Consulta ejecutada con éxito
+              </span>
+<span class="text-outline">•</span>
+<span class="">Memoria utilizada: 128KB</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-1 hover:bg-surface-container-high rounded text-on-surface-variant" title="Copiar como JSON">
+<span class="material-symbols-outlined text-xs">data_object</span>
+</button>
+<button class="p-1 hover:bg-surface-container-high rounded text-on-surface-variant" title="Exportar CSV">
+<span class="material-symbols-outlined text-xs">file_download</span>
+</button>
+</div>
+</div>
+<!-- Crisp Data Grid Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-code-sm text-code-sm">
+<thead>
+<tr class="bg-surface-container-high text-on-surface">
+<th class="py-space-sm px-space-md font-semibold">
+<div class="flex items-center gap-1">
+<span class="">customer_id</span>
+<span class="font-label-sm text-label-sm text-secondary font-normal">INT</span>
+</div>
+</th>
+<th class="py-space-sm px-space-md font-semibold">
+<div class="flex items-center gap-1">
+<span class="">first_name</span>
+<span class="font-label-sm text-label-sm text-secondary font-normal">VARCHAR</span>
+</div>
+</th>
+<th class="py-space-sm px-space-md font-semibold">
+<div class="flex items-center gap-1">
+<span class="">last_name</span>
+<span class="font-label-sm text-label-sm text-secondary font-normal">VARCHAR</span>
+</div>
+</th>
+<th class="py-space-sm px-space-md font-semibold text-outline text-right">
+<span class="">Estado Test</span>
+</th>
+</tr>
+</thead>
+<tbody class="text-on-surface divide-y-0">
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors">
+<td class="py-space-sm px-space-md text-primary font-semibold">104</td>
+<td class="py-space-sm px-space-md">Valeria</td>
+<td class="py-space-sm px-space-md">Mendoza</td>
+<td class="py-space-sm px-space-md text-right text-tertiary">
+<span class="material-symbols-outlined text-xs">check</span>
+</td>
+</tr>
+<tr class="bg-surface-container-lowest hover:bg-surface-container transition-colors">
+<td class="py-space-sm px-space-md text-primary font-semibold">112</td>
+<td class="py-space-sm px-space-md">Mateo</td>
+<td class="py-space-sm px-space-md">Castillo</td>
+<td class="py-space-sm px-space-md text-right text-tertiary">
+<span class="material-symbols-outlined text-xs">check</span>
+</td>
+</tr>
+<tr class="bg-surface-container-low hover:bg-surface-container transition-colors">
+<td class="py-space-sm px-space-md text-primary font-semibold">129</td>
+<td class="py-space-sm px-space-md">Elena</td>
+<td class="py-space-sm px-space-md">Navarro</td>
+<td class="py-space-sm px-space-md text-right text-tertiary">
+<span class="material-symbols-outlined text-xs">check</span>
+</td>
+</tr>
+<tr class="bg-surface-container-lowest hover:bg-surface-container transition-colors">
+<td class="py-space-sm px-space-md text-primary font-semibold">145</td>
+<td class="py-space-sm px-space-md">Gabriel</td>
+<td class="py-space-sm px-space-md">Rojas</td>
+<td class="py-space-sm px-space-md text-right text-tertiary">
+<span class="material-symbols-outlined text-xs">check</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Test Cases Content Tab -->
+<div class="p-space-md hidden flex-col gap-space-sm" id="contentTests">
+<div class="flex items-center justify-between p-space-sm bg-surface-container rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Test 1: Filtrado de registros nulos</span>
+<span class="font-code-sm text-code-sm text-outline">Verifica que no aparezcan clientes con order_id existente</span>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/30 text-tertiary font-semibold">PASADO</span>
+</div>
+<div class="flex items-center justify-between p-space-sm bg-surface-container rounded-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Test 2: Orden y formato de proyección</span>
+<span class="font-code-sm text-code-sm text-outline">Verifica orden ascendente por customer_id y columnas requeridas</span>
+</div>
+</div>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/30 text-tertiary font-semibold">PASADO</span>
+</div>
+</div>
+<!-- Execution Plan Tab -->
+<div class="p-space-md hidden flex-col gap-space-sm font-code-sm text-code-sm text-on-surface-variant" id="contentExplain">
+<div class="bg-surface-container-lowest p-space-sm rounded-lg flex flex-col gap-1 leading-relaxed">
+<span class="text-tertiary font-semibold">-&gt; Merge Anti Join (cost=12.45..38.10 rows=4 width=108)</span>
+<span class="pl-4 text-secondary">Merge Cond: (c.customer_id = o.customer_id)</span>
+<span class="pl-4 text-on-surface">-&gt; Index Scan using customers_pkey on customers c (cost=0.28..24.30 rows=1420 width=108)</span>
+<span class="pl-4 text-on-surface">-&gt; Index Only Scan using orders_customer_id_idx on orders o (cost=0.28..45.12 rows=3890 width=4)</span>
+</div>
+</div>
+<!-- Success Celebration Banner -->
+<div class="m-space-sm p-space-md rounded-xl bg-gradient-to-r from-surface-container to-surface-container-high flex flex-wrap items-center justify-between gap-space-md shadow-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-tertiary/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-2xl">trophy</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-md text-headline-md font-bold text-on-surface">¡Excelente trabajo! Consulta óptima.</span>
+<span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-tertiary-container/40 text-tertiary font-bold">+45 XP</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Has completado exitosamente 4 de los 6 ejercicios de este módulo de Joins relacionales.
+              </p>
+</div>
+</div>
+<button class="flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-primary hover:bg-primary-fixed text-on-primary transition-all font-body-sm text-body-sm font-bold shadow-md hover:shadow-lg">
+<span class="">Siguiente Ejercicio</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</section>
+</div>
+</div>
+</div>
+<script>
+  // Left Panel Tab Switching
+  function switchLeftTab(tab) {
+    const btnInst = document.getElementById('tabBtnInstructions');
+    const btnSchema = document.getElementById('tabBtnSchema');
+    const contentInst = document.getElementById('contentInstructions');
+    const contentSchema = document.getElementById('contentSchema');
+
+    if (tab === 'instructions') {
+      contentInst.classList.remove('hidden');
+      contentInst.classList.add('flex');
+      contentSchema.classList.add('hidden');
+      contentSchema.classList.remove('flex');
+
+      btnInst.className = 'px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm font-semibold text-on-surface bg-surface-container-low flex items-center gap-1.5 transition-all';
+      btnSchema.className = 'px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container flex items-center gap-1.5 transition-all';
+    } else {
+      contentSchema.classList.remove('hidden');
+      contentSchema.classList.add('flex');
+      contentInst.classList.add('hidden');
+      contentInst.classList.remove('flex');
+
+      btnSchema.className = 'px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm font-semibold text-on-surface bg-surface-container-low flex items-center gap-1.5 transition-all';
+      btnInst.className = 'px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container flex items-center gap-1.5 transition-all';
+    }
+  }
+
+  // Right Output Tab Switching
+  function switchOutputTab(tab) {
+    const tabs = ['output', 'tests', 'explain'];
+    tabs.forEach(t => {
+      const content = document.getElementById('content' + t.charAt(0).toUpperCase() + t.slice(1));
+      const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (t === tab) {
+        content.classList.remove('hidden');
+        content.classList.add('flex');
+        btn.className = 'px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm font-semibold text-on-surface bg-surface-container-low flex items-center gap-1.5 transition-all';
+      } else {
+        content.classList.add('hidden');
+        content.classList.remove('flex');
+        btn.className = 'px-space-md py-space-sm rounded-t-lg font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container flex items-center gap-1.5 transition-all';
+      }
+    });
+  }
+
+  // Schema Table Accordion
+  function toggleSchemaTable(id) {
+    const tableEl = document.getElementById(id);
+    const caretEl = document.getElementById('caret-' + id);
+    if (!tableEl) return;
+    const isHidden = tableEl.classList.contains('hidden');
+    if (isHidden) {
+      tableEl.classList.remove('hidden');
+      tableEl.classList.add('flex');
+      if (caretEl) caretEl.textContent = 'expand_less';
+    } else {
+      tableEl.classList.add('hidden');
+      tableEl.classList.remove('flex');
+      if (caretEl) caretEl.textContent = 'expand_more';
+    }
+  }
+
+  // Collapsible Hint body
+  function toggleHintBody() {
+    const hintBody = document.getElementById('hintBody');
+    const caret = document.getElementById('hintCaret');
+    if (hintBody.classList.contains('hidden')) {
+      hintBody.classList.remove('hidden');
+      hintBody.classList.add('flex');
+      caret.textContent = 'expand_more';
+    } else {
+      hintBody.classList.add('hidden');
+      hintBody.classList.remove('flex');
+      caret.textContent = 'expand_less';
+    }
+  }
+
+  // Exercise Timer Micro-ticker
+  let seconds = 252;
+  const timerEl = document.getElementById('exerciseTimer');
+  setInterval(() => {
+    seconds++;
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    if (timerEl) timerEl.textContent = `${m}:${s}`;
+  }, 1000);
+
+  // Micro-interactions for buttons
+  document.getElementById('runQueryBtn')?.addEventListener('click', () => {
+    switchOutputTab('output');
+  });
+
+  document.getElementById('submitAnswerBtn')?.addEventListener('click', () => {
+    switchOutputTab('tests');
+  });
+</script></main></div>
+
+</body></html>

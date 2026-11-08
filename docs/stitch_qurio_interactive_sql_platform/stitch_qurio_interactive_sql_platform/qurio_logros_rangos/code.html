@@ -1,0 +1,569 @@
+<!DOCTYPE html><html class="dark" lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-highest": "#2f3446", "surface": "#0e1323", "on-error": "#690005", "on-surface-variant": "#c7c4d7", "on-primary-container": "#0d0096", "on-tertiary": "#003915", "surface-dim": "#0e1323", "inverse-surface": "#dee1f9", "surface-bright": "#34394a", "tertiary-fixed-dim": "#4ae176", "on-secondary-fixed-variant": "#004c69", "primary-container": "#8083ff", "surface-tint": "#c0c1ff", "on-background": "#dee1f9", "secondary-container": "#00a6e0", "surface-container-lowest": "#080d1d", "surface-container-low": "#161b2b", "on-secondary-container": "#00374d", "secondary-fixed-dim": "#7bd0ff", "primary-fixed": "#e1e0ff", "on-secondary-fixed": "#001e2c", "error": "#ffb4ab", "on-surface": "#dee1f9", "outline": "#908fa0", "surface-variant": "#2f3446", "on-tertiary-fixed-variant": "#005321", "primary": "#c0c1ff", "on-primary-fixed-variant": "#2f2ebe", "on-tertiary-container": "#003111", "tertiary-fixed": "#6bff8f", "tertiary-container": "#00a74b", "on-tertiary-fixed": "#002109", "background": "#0e1323", "secondary": "#7bd0ff", "on-primary": "#1000a9", "inverse-on-surface": "#2b3041", "on-secondary": "#00354a", "secondary-fixed": "#c4e7ff", "outline-variant": "#464554", "on-primary-fixed": "#07006c", "error-container": "#93000a", "on-error-container": "#ffdad6", "primary-fixed-dim": "#c0c1ff", "surface-container-high": "#25293a", "inverse-primary": "#494bd6", "surface-container": "#1a1f30", "tertiary": "#4ae176" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xs": "0.25rem", "gutter-desktop": "1.5rem", "space-md": "0.75rem", "space-lg": "1.25rem", "margin-desktop": "2rem", "margin": "1rem", "space-xl": "2rem", "space-sm": "0.5rem", "gutter": "1rem" }, "fontFamily": { "code-md": ["JetBrains Mono"], "body-lg": ["Inter"], "label-sm": ["JetBrains Mono"], "code-lg": ["JetBrains Mono"], "headline-xl": ["Inter"], "headline-xl-mobile": ["Inter"], "headline-lg": ["Inter"], "code-sm": ["JetBrains Mono"], "label-md": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "code-md": ["0.8125rem", { "lineHeight": "1.45rem", "fontWeight": "400" }], "body-lg": ["1rem", { "lineHeight": "1.625rem", "fontWeight": "400" }], "label-sm": ["0.6875rem", { "lineHeight": "0.875rem", "letterSpacing": "0.06em", "fontWeight": "500" }], "code-lg": ["0.9375rem", { "lineHeight": "1.6rem", "fontWeight": "500" }], "headline-xl": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.025em", "fontWeight": "700" }], "headline-xl-mobile": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.02em", "fontWeight": "600" }], "code-sm": ["0.6875rem", { "lineHeight": "1.125rem", "fontWeight": "400" }], "label-md": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-sm": ["0.75rem", { "lineHeight": "1.25rem", "fontWeight": "400" }], "body-md": ["0.875rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "headline-md": ["1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.015em", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container"><aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest z-50 flex flex-col justify-between overflow-y-auto"><div class="flex flex-col"><div class="p-space-lg flex flex-col gap-space-sm bg-surface-container-lowest"><div class="flex items-center gap-space-md"><div class="w-8 h-8 shrink-0 flex items-center justify-center"><svg class="w-8 h-8 rounded-lg shadow-sm" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#161b2b" stroke="#8083ff" stroke-width="1.5" stroke-opacity="0.4"></rect><ellipse cx="16" cy="9.5" rx="7.5" ry="3" fill="#7bd0ff" fill-opacity="0.2" stroke="#7bd0ff" stroke-width="1.5"></ellipse><path d="M8.5 9.5V16C8.5 17.65 11.85 19 16 19C20.15 19 23.5 17.65 23.5 16V9.5" stroke="#8083ff" stroke-width="1.5" stroke-linecap="round"></path><path d="M8.5 16V22.5C8.5 24.15 11.85 25.5 16 25.5C20.15 25.5 23.5 22.5V16" stroke="#7bd0ff" stroke-width="1.5" stroke-linecap="round"></path><circle cx="16" cy="16" r="1.5" fill="#4ae176"></circle></svg></div><div class="flex flex-col"><span class="font-headline-md text-headline-md tracking-tight text-on-surface">Qurio</span></div></div><p class="font-body-sm text-body-sm text-on-surface-variant">Aprende SQL. Piensa en queries.</p><div class="mt-space-xs inline-flex items-center gap-space-sm px-space-sm py-space-xs rounded-full bg-surface-container-low w-fit"><span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(74,225,118,0.8)]"></span><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">PostgreSQL 16 • Online</span></div></div><div class="px-space-md py-space-sm"><div class="px-space-sm pb-space-xs font-label-sm text-label-sm text-outline uppercase tracking-wider">Navegación</div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-surface-container-high text-on-surface font-semibold shadow-[0_0_0_1px_rgba(192,193,255,0.3)]"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined text-secondary">space_dashboard</span><span class="font-body-md text-body-md flex-1">Dashboard</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="rutas-de-aprendizaje" href="#"><span class="material-symbols-outlined text-secondary">alt_route</span><span class="font-body-md text-body-md flex-1">Rutas de Aprendizaje</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="desafios-diarios" href="#"><span class="material-symbols-outlined text-secondary">bolt</span><span class="font-body-md text-body-md flex-1">Desafíos Diarios</span><span class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-secondary-container text-on-secondary-container font-semibold">3 nuevos</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="sql-playground" href="#"><span class="material-symbols-outlined text-secondary">terminal</span><span class="font-body-md text-body-md flex-1">SQL Playground</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="laboratorios-db" href="#"><span class="material-symbols-outlined text-secondary">database</span><span class="font-body-md text-body-md flex-1">Laboratorios DB</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="proyectos-practicos" href="#"><span class="material-symbols-outlined text-secondary">folder_special</span><span class="font-body-md text-body-md flex-1">Proyectos Prácticos</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="logros-rangos" href="#"><span class="material-symbols-outlined text-secondary">military_tech</span><span class="font-body-md text-body-md flex-1">Logros &amp; Rangos</span></a></nav></div></div><div class="p-space-md flex flex-col gap-space-md bg-surface-container-lowest"><div class="flex items-center justify-between px-space-sm py-space-xs rounded-lg bg-surface-container-low text-on-surface-variant"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-outline">dark_mode</span><span class="font-label-sm text-label-sm uppercase">Tema Oscuro</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface font-semibold">⌘K</span></div><div class="p-space-md rounded-xl bg-surface-container-low flex flex-col gap-space-sm"><div class="flex items-center gap-space-md"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCV5DRYMHUW0u7_n4DiB-lKunv4E0vf5--7hyZcbolzdTd1GQcEDGhJVwEah4iFdrKSn_n-r6cTLLmmm45jwlH4WUUC9s4jwD82FdEJwmsjQPTqQkqAUW0KwT_eV-seT_m8gFrlY3VWbHEDj2CeasjzQa4rF2LI8gd0t0CKERny6anaKpDNXtuSXfx0kNqfeahD2EplHKeoLJG4q6XJ5GsXdaPg8DsUrrALjhGkmA"><div class="flex flex-col min-w-0 flex-1"><span class="font-body-md text-body-md font-semibold text-on-surface truncate">Alex Dev</span><span class="font-label-sm text-label-sm text-secondary truncate">Nivel 4 • SQL Explorer</span></div><div class="flex items-center gap-0.5 px-space-xs py-0.5 rounded bg-surface-container-highest text-tertiary font-label-sm text-label-sm"><span class="material-symbols-outlined text-sm">local_fire_department</span><span class="">7d</span></div></div><div class="flex flex-col gap-1"><div class="flex justify-between font-label-sm text-label-sm text-outline"><span class="font-code-sm text-code-sm">1,250 / 2,000 XP</span><span class="">62%</span></div><div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden"><div class="h-full bg-primary-container rounded-full w-[62%]"></div></div></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 px-gutter-desktop flex items-center justify-between"><div class="flex items-center gap-space-md w-96"><div class="flex items-center gap-space-sm w-full px-space-md py-space-sm rounded-lg bg-surface-container-low text-outline"><span class="material-symbols-outlined text-outline">search</span><span class="font-body-sm text-body-sm text-outline truncate flex-1">Buscar consultas, lecciones...</span><kbd class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant">⌘K</kbd></div></div><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-low"><span class="material-symbols-outlined text-tertiary">local_fire_department</span><span class="font-code-md text-code-md text-on-surface font-semibold">7 días</span></div><div class="flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container-low"><span class="material-symbols-outlined text-secondary">bolt</span><span class="font-code-md text-code-md text-on-surface font-semibold">1,250 XP</span></div><button class="relative p-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface"></span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCV5DRYMHUW0u7_n4DiB-lKunv4E0vf5--7hyZcbolzdTd1GQcEDGhJVwEah4iFdrKSn_n-r6cTLLmmm45jwlH4WUUC9s4jwD82FdEJwmsjQPTqQkqAUW0KwT_eV-seT_m8gFrlY3VWbHEDj2CeasjzQa4rF2LI8gd0t0CKERny6anaKpDNXtuSXfx0kNqfeahD2EplHKeoLJG4q6XJ5GsXdaPg8DsUrrALjhGkmA"></div></header><main class="relative pt-16 bg-surface w-full px-gutter-desktop min-h-screen"><div class="flex flex-col w-full pb-space-xl">
+<!-- Subtle ambient decorative glow -->
+<div class="relative w-full overflow-hidden">
+<div class="absolute -top-24 -left-20 w-96 h-96 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
+<div class="absolute top-12 right-20 w-80 h-80 rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
+<!-- Page Header & Strategic Lead -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-lg pt-space-md pb-space-lg">
+<div class="flex flex-col gap-space-xs max-w-2xl">
+<div class="flex items-center gap-space-sm">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            Telemetry &amp; Progress Engine
+          </span>
+<span class="text-outline font-label-sm text-label-sm">v2.4.0 • PostgreSQL 16 Dialect</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Centro de Logros y Progresión</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Reconocimientos técnicos por dominar bases de datos, resolver problemas algorítmicos de SQL y mantener la constancia en producción.</p>
+</div>
+<!-- Quick Action / Summary Pill -->
+<div class="flex items-center gap-space-md self-start md:self-auto bg-surface-container-low px-space-md py-space-sm rounded-xl shadow-sm">
+<div class="flex flex-col text-right">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Tu Posición Global</span>
+<span class="font-code-lg text-code-lg font-semibold text-primary">Top 4% de la cohorte</span>
+</div>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">military_tech</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Top Stats Overview Ribbon (3 Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter-desktop mt-space-sm mb-space-xl">
+<!-- Card 1: Rango Actual -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors pointer-events-none"></div>
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Rango &amp; Maestría</span>
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 rounded bg-surface-container-highest text-secondary font-medium">TIER II</span>
+</div>
+<div class="flex items-center gap-space-md mt-space-xs">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-secondary shadow-inner">
+<span class="material-symbols-outlined text-3xl">database</span>
+</div>
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface">Nivel 4 • SQL Explorer</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Siguiente escalón: Nivel 5 • Query Architect</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs mt-space-lg">
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold">1,250 / 2,000 XP</span>
+<span class="font-code-sm text-code-sm text-primary">62% completado</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-[62%] transition-all duration-700 ease-out"></div>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs text-secondary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-base">lock_open</span>
+<span class="">Desbloquea: <strong>Acceso a Laboratorios Avanzados</strong></span>
+</div>
+</div>
+</div>
+<!-- Card 2: Racha Activa -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="absolute top-0 right-0 w-32 h-32 bg-tertiary/5 rounded-full blur-2xl group-hover:bg-tertiary/10 transition-colors pointer-events-none"></div>
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Compromiso Diario</span>
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 rounded bg-tertiary/10 text-tertiary font-medium">Multiplicador 1.25x XP</span>
+</div>
+<div class="flex items-center gap-space-md mt-space-xs">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-tertiary shadow-inner">
+<span class="material-symbols-outlined text-3xl">local_fire_department</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-baseline gap-space-xs">
+<h2 class="font-headline-md text-headline-md text-on-surface">7 Días Invicto</h2>
+<span class="text-tertiary font-code-md text-code-md">🔥</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Récord histórico: 14 días consecutivos</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-space-lg pt-space-sm bg-surface-container-lowest px-space-md py-space-sm rounded-lg">
+<!-- Streak visual dots for the week -->
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary animate-pulse"></span>
+</div>
+<span class="font-code-sm text-code-sm text-tertiary font-semibold">+25% XP por query</span>
+</div>
+</div>
+<!-- Card 3: Total Insignias Desbloqueadas -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-colors pointer-events-none"></div>
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Arsenal de Logros</span>
+<span class="font-code-sm text-code-sm px-space-sm py-0.5 rounded bg-surface-container-highest text-on-surface-variant">43% del catálogo</span>
+</div>
+<div class="flex items-center gap-space-md mt-space-xs">
+<div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary shadow-inner">
+<span class="material-symbols-outlined text-3xl">verified</span>
+</div>
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface">14 de 32 Insignias</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">18 pendientes por conquistar</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md mt-space-lg pt-space-sm">
+<!-- Mini progress ring SVG inline -->
+<svg class="w-10 h-10 -rotate-90 text-surface-container-highest" viewBox="0 0 36 36">
+<circle cx="18" cy="18" fill="none" r="14" stroke="currentColor" stroke-width="3.5"></circle>
+<circle cx="18" cy="18" fill="none" r="14" stroke="#7bd0ff" stroke-dasharray="87.96" stroke-dashoffset="49.5" stroke-linecap="round" stroke-width="3.5"></circle>
+</svg>
+<div class="flex flex-col">
+<span class="font-code-sm text-code-sm text-on-surface font-semibold">14 Obtenidas • 3 En curso</span>
+<span class="font-body-sm text-body-sm text-outline">Próxima meta: CTE Specialist (+100 XP)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Two Column Main Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- LEFT COLUMN: Grid of Technical Badges (65% width approx -> 8 cols) -->
+<section class="lg:col-span-8 flex flex-col gap-space-lg">
+<!-- Category Tabs & Controls -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-low p-space-md rounded-xl">
+<!-- Scrollable tab container -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 md:pb-0" id="badge-tabs">
+<button class="px-space-md py-space-xs rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md shadow-sm whitespace-nowrap">
+            Todas las Insignias (32)
+          </button>
+<button class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-md text-label-md transition-colors whitespace-nowrap">
+            Sintaxis &amp; Queries
+          </button>
+<button class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-md text-label-md transition-colors whitespace-nowrap">
+            Optimización
+          </button>
+<button class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-md text-label-md transition-colors whitespace-nowrap">
+            Rachas &amp; Desafíos
+          </button>
+<button class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-md text-label-md transition-colors whitespace-nowrap">
+            Secretas
+          </button>
+</div>
+<div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm self-end md:self-auto">
+<span class="">FILTRO:</span>
+<span class="text-secondary font-code-sm text-code-sm">ESTADO: ACTIVO</span>
+</div>
+</div>
+<!-- Badge Mosaic Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- 1. First Query (Desbloqueada) -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary relative shrink-0">
+<span class="material-symbols-outlined text-3xl">terminal</span>
+<span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-secondary text-surface flex items-center justify-center font-bold text-xs">✓</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-secondary font-medium">DESBLOQUEADO</span>
+<span class="font-label-sm text-label-sm text-outline mt-1">12 Mar 2025</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">First Query</h3>
+<span class="font-body-sm text-body-sm text-outline">(Primer Query)</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Ejecutaste tu primera consulta SELECT sin errores de sintaxis.</p>
+</div>
+<div class="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
+<span class="font-code-sm text-code-sm text-secondary">+50 XP otorgados</span>
+<span class="text-outline uppercase">Básico • Core</span>
+</div>
+</div>
+<!-- 2. JOIN Explorer (Desbloqueada) -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-14 h-14 rounded-2xl bg-tertiary/10 flex items-center justify-center text-tertiary relative shrink-0">
+<span class="material-symbols-outlined text-3xl">join_inner</span>
+<span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-tertiary text-surface flex items-center justify-center font-bold text-xs">✓</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-tertiary font-medium">DESBLOQUEADO</span>
+<span class="font-label-sm text-label-sm text-outline mt-1">15 Mar 2025</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">JOIN Explorer</h3>
+<span class="font-body-sm text-body-sm text-outline">(Explorador Relacional)</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Resolviste 15 ejercicios utilizando INNER, LEFT y RIGHT JOINs.</p>
+</div>
+<div class="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
+<span class="font-code-sm text-code-sm text-tertiary">+120 XP otorgados</span>
+<span class="text-outline uppercase">Relacional • Intermedio</span>
+</div>
+</div>
+<!-- 3. Seven-Day Streak (Desbloqueada) -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-14 h-14 rounded-2xl bg-secondary-container/20 flex items-center justify-center text-secondary relative shrink-0">
+<span class="material-symbols-outlined text-3xl">local_fire_department</span>
+<span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-secondary text-surface flex items-center justify-center font-bold text-xs">✓</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-secondary font-medium">DESBLOQUEADO</span>
+<span class="font-label-sm text-label-sm text-outline mt-1">Hoy</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Seven-Day Streak</h3>
+<span class="font-body-sm text-body-sm text-outline">(Racha de 7 Días)</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Completaste al menos un ejercicio al día durante una semana completa.</p>
+</div>
+<div class="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
+<span class="font-code-sm text-code-sm text-secondary">+150 XP • Multiplicador Activo</span>
+<span class="text-outline uppercase">Constancia</span>
+</div>
+</div>
+<!-- 4. Query Master (En Progreso - 80%) -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-14 h-14 rounded-2xl bg-primary-container/20 flex items-center justify-center text-primary relative shrink-0">
+<span class="material-symbols-outlined text-3xl">account_tree</span>
+<span class="absolute -bottom-1 -right-1 px-1 rounded bg-primary-container text-on-primary font-code-sm text-code-sm">80%</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-primary font-medium">EN PROGRESO</span>
+<span class="font-code-sm text-code-sm text-outline mt-1">8 / 10 completadas</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Query Master</h3>
+<span class="font-body-sm text-body-sm text-outline">(Maestro CTE)</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Escribe 10 consultas utilizando Common Table Expressions (CTEs).</p>
+</div>
+<div class="flex flex-col gap-1.5 pt-space-xs">
+<div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[80%]"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="font-code-sm text-code-sm text-primary">+100 XP pendiente</span>
+<span class="text-outline uppercase">2 queries restantes</span>
+</div>
+</div>
+</div>
+<!-- 5. Index Architect (En Progreso - 40%) -->
+<div class="p-space-lg rounded-xl bg-surface-container-low flex flex-col justify-between gap-space-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-14 h-14 rounded-2xl bg-secondary/15 flex items-center justify-center text-secondary relative shrink-0">
+<span class="material-symbols-outlined text-3xl">speed</span>
+<span class="absolute -bottom-1 -right-1 px-1 rounded bg-secondary-container text-on-secondary-container font-code-sm text-code-sm">40%</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-secondary font-medium">EN PROGRESO</span>
+<span class="font-code-sm text-code-sm text-outline mt-1">2 / 5 índices</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Index Architect</h3>
+<span class="font-body-sm text-body-sm text-outline">(Arquitecto de Índices)</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Crea y analiza 5 índices que reduzcan el coste de EXPLAIN en más del 80%.</p>
+</div>
+<div class="flex flex-col gap-1.5 pt-space-xs">
+<div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full bg-secondary rounded-full w-[40%]"></div>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="font-code-sm text-code-sm text-secondary">+200 XP pendiente</span>
+<span class="text-outline uppercase">3 análisis restantes</span>
+</div>
+</div>
+</div>
+<!-- 6. Database Engineer (Bloqueada) -->
+<div class="p-space-lg rounded-xl bg-surface-container-low/60 flex flex-col justify-between gap-space-md relative overflow-hidden opacity-75 hover:opacity-100 transition-opacity">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-high flex items-center justify-center text-outline relative shrink-0">
+<span class="material-symbols-outlined text-3xl">lock</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-outline font-medium">BLOQUEADO</span>
+<span class="font-label-sm text-label-sm text-outline mt-1">Nivel 5 Requerido</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface-variant font-semibold">Database Engineer</h3>
+<span class="font-body-sm text-body-sm text-outline">(Ingeniero DB)</span>
+</div>
+<p class="font-body-md text-body-md text-outline">Completa todos los laboratorios de modelado relacional y restricciones ACID.</p>
+</div>
+<div class="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
+<span class="font-code-sm text-code-sm text-outline">+300 XP al completar</span>
+<span class="text-outline uppercase">Avanzado</span>
+</div>
+</div>
+<!-- 7. Window Function Wizard (Bloqueada) -->
+<div class="p-space-lg rounded-xl bg-surface-container-low/60 flex flex-col justify-between gap-space-md relative overflow-hidden opacity-75 hover:opacity-100 transition-opacity">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-high flex items-center justify-center text-outline relative shrink-0">
+<span class="material-symbols-outlined text-3xl">auto_awesome</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-outline font-medium">BLOQUEADO</span>
+<span class="font-label-sm text-label-sm text-outline mt-1">Prerrequisito: CTE</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface-variant font-semibold">Window Function Wizard</h3>
+<span class="font-body-sm text-body-sm text-outline">(Mago Analítico)</span>
+</div>
+<p class="font-body-md text-body-md text-outline">Domina PARTITION BY, DENSE_RANK() y LAG/LEAD en consultas complejas.</p>
+</div>
+<div class="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
+<span class="font-code-sm text-code-sm text-outline">+250 XP al completar</span>
+<span class="text-outline uppercase">Analítica SQL</span>
+</div>
+</div>
+<!-- 8. Query Optimizer 10x (Bloqueada) -->
+<div class="p-space-lg rounded-xl bg-surface-container-low/60 flex flex-col justify-between gap-space-md relative overflow-hidden opacity-75 hover:opacity-100 transition-opacity">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-high flex items-center justify-center text-outline relative shrink-0">
+<span class="material-symbols-outlined text-3xl">bolt</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-outline font-medium">BLOQUEADO</span>
+<span class="font-label-sm text-label-sm text-outline mt-1">Desafío Élite</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface-variant font-semibold">Query Optimizer 10x</h3>
+<span class="font-body-sm text-body-sm text-outline">(Optimización Extrema)</span>
+</div>
+<p class="font-body-md text-body-md text-outline">Reduce el tiempo de ejecución de una consulta pesada a menos de 5ms.</p>
+</div>
+<div class="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
+<span class="font-code-sm text-code-sm text-outline">+500 XP al completar</span>
+<span class="text-outline uppercase">Benchmarking</span>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT COLUMN: Liga Semanal & Leaderboard (35% width approx -> 4 cols) -->
+<aside class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Diamond League Header Card -->
+<div class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col gap-space-md relative overflow-hidden">
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-secondary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-2xl">diamond</span>
+</div>
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface">Liga Diamante</h2>
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold">Semana 16</span>
+</div>
+</div>
+<span class="px-space-sm py-0.5 rounded bg-surface-container-highest text-tertiary font-code-sm text-code-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-ping"></span>
+            En Vivo
+          </span>
+</div>
+<!-- Countdown Timer -->
+<div class="p-space-md rounded-lg bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-outline">
+<span class="material-symbols-outlined text-lg">timer</span>
+<span class="font-body-sm text-body-sm">Cierre de liga:</span>
+</div>
+<span class="font-code-md text-code-md text-on-surface font-semibold">2d 14h 22m</span>
+</div>
+<!-- Rule Explainer -->
+<div class="text-body-sm text-body-sm text-on-surface-variant flex flex-col gap-1">
+<div class="flex items-center gap-1.5 text-tertiary font-semibold">
+<span class="material-symbols-outlined text-base">north</span>
+<span class="">Top 5 ascienden a Liga Master DB</span>
+</div>
+<div class="flex items-center gap-1.5 text-error font-semibold">
+<span class="material-symbols-outlined text-base">south</span>
+<span class="">Últimos 5 descienden a Liga Platino</span>
+</div>
+</div>
+<!-- Leaderboard List -->
+<div class="flex flex-col gap-space-xs mt-space-xs">
+<!-- 1. @lucas_postgres -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 font-code-sm text-code-sm font-bold text-secondary text-center">1</span>
+<img class="w-8 h-8 rounded-full object-cover shrink-0" data-alt="High tech developer avatar portrait of Lucas, young programmer wearing glasses in a dark moody neon cyber studio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDioCLFggFbVuxe-0-OiN-LdcW4ZhH-I22r_l9Bzthk91lfwlV6Zq7JJ61okRcypbUpGCQrLZunTauLMCdxFthv1NKu-h76g3saMTXVo2hxm7rxFnA1-DmRDnu0Tn79362Q-QuEDyvUxtxgS_Iw-Tm91QXyVOc-wTM-eH2oAusfO6YopVVzmY-lAtCDvfSOW6pOd8CHiTJmmHFsGXiymSAZ5CO0sN9T_oLQTDQe8L0">
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">@lucas_postgres</span>
+<span class="font-label-sm text-label-sm text-outline">DB Architect</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-code-md text-code-md font-semibold text-on-surface">1,620 XP</span>
+<span class="material-symbols-outlined text-tertiary text-sm">keyboard_double_arrow_up</span>
+</div>
+</div>
+<!-- 2. @carlos_dba -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 font-code-sm text-code-sm font-bold text-on-surface-variant text-center">2</span>
+<img class="w-8 h-8 rounded-full object-cover shrink-0" data-alt="Cyberpunk style male software engineer with neon blue backlighting working on SQL terminal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6KiE8RV43qDrU-k0Iyya4YtAIzPkzZLt9cXc9ZObtH0EaELU9UyE8nIX78izhBnGJ1ARbbhQOwR16-1GUKiHnHBUoI6psVm6IAMxKJ-J4I1gvWuUwITY-7cfzCYGYzllEvqSn9DQzbjguDtvob1mvW-yx9GvenUT1jW5k913-qRMHWH_joVc1L__nG8XAT99xVJtCw0M3S-G-HQm_unPh1kBMUhilXnmb5TBCNQU">
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">@carlos_dba</span>
+<span class="font-label-sm text-label-sm text-outline">PostgreSQL Senior</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-code-md text-code-md font-semibold text-on-surface">1,410 XP</span>
+<span class="material-symbols-outlined text-tertiary text-sm">keyboard_double_arrow_up</span>
+</div>
+</div>
+<!-- 3. @sofia_sql -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 font-code-sm text-code-sm font-bold text-on-surface-variant text-center">3</span>
+<img class="w-8 h-8 rounded-full object-cover shrink-0" data-alt="Portrait of Sofia, female data engineer in a modern tech company office with dual monitor reflections." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrABikmmbC6qe1jpeubN3JpJq-aUrPTd49JEC6sKvumJxy5Icohuc3X7r5l4DS8t3UqnxmlEM6T5QEpX_culWiMTgzNmAbtrwpmGe5DhNMSC9beuIOLUV_HJK2D3ktG3Nkm5WZK69UW6vMDPoIHi8p_8zKYBeIyoEcULvpeFwsmX2m09iSli5RRYWvzTMmQyZrLhPVp1YQKPNq7lZK48lk2Mg8Kz9GUk5Ki6ht4bk">
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">@sofia_sql</span>
+<span class="font-label-sm text-label-sm text-outline">Index Optimizer</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-code-md text-code-md font-semibold text-on-surface">1,380 XP</span>
+<span class="material-symbols-outlined text-tertiary text-sm">keyboard_double_arrow_up</span>
+</div>
+</div>
+<!-- 4. YOU (Alex Dev) - HIGHLIGHT CARD -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-primary-container/20 shadow-md">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 font-code-sm text-code-sm font-bold text-primary text-center">4</span>
+<img alt="Profile" class="w-8 h-8 rounded-full object-cover shrink-0 ring-2 ring-primary" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCV5DRYMHUW0u7_n4DiB-lKunv4E0vf5--7hyZcbolzdTd1GQcEDGhJVwEah4iFdrKSn_n-r6cTLLmmm45jwlH4WUUC9s4jwD82FdEJwmsjQPTqQkqAUW0KwT_eV-seT_m8gFrlY3VWbHEDj2CeasjzQa4rF2LI8gd0t0CKERny6anaKpDNXtuSXfx0kNqfeahD2EplHKeoLJG4q6XJ5GsXdaPg8DsUrrALjhGkmA">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1">
+<span class="font-body-md text-body-md font-bold text-on-surface truncate">Alex Dev</span>
+<span class="px-1 rounded bg-primary text-surface font-label-sm text-label-sm font-bold">TÚ</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary">Zona de Ascenso Directo</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-code-md text-code-md font-bold text-primary">1,250 XP</span>
+<span class="material-symbols-outlined text-tertiary text-sm">north</span>
+</div>
+</div>
+<!-- 5. @elena_data -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 font-code-sm text-code-sm font-bold text-tertiary text-center">5</span>
+<img class="w-8 h-8 rounded-full object-cover shrink-0" data-alt="Portrait of Elena, young data analyst smiling in a studio with dark indigo background and geometric lights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSOaqti0VODwdOHkxsCebLtUk1oS247hhD_tjJnOV18DrVZV-05J_isX2vGZ9I3uL6bYZ5KFXsPJQagwwEwFjTeHibYdODHbbEtqNRbMk-XO7Mu9Eu3lwBDV2znHtl0huJdIlrvXymVtzr3IyNsXNG7vhyk3KYajKD72w8oQEFju9eIq23pC8cB3vuvTbNg4qsN6m7tJ0ywXe3xXENfqoqiFnFIDBM48UNrzNfBCs">
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">@elena_data</span>
+<span class="font-label-sm text-label-sm text-outline">Subquery Pro</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-code-md text-code-md font-semibold text-on-surface">1,190 XP</span>
+<span class="material-symbols-outlined text-tertiary text-sm">north</span>
+</div>
+</div>
+<!-- Cutoff Divider Line for Promotion Zone -->
+<div class="flex items-center gap-space-sm py-1">
+<div class="h-px bg-surface-container-highest flex-1"></div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-widest text-[10px]">Línea de Ascenso</span>
+<div class="h-px bg-surface-container-highest flex-1"></div>
+</div>
+<!-- 6. @marcos_dev -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container/60 hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 font-code-sm text-code-sm font-medium text-outline text-center">6</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-outline text-xs font-semibold shrink-0">
+                MD
+              </div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md text-on-surface-variant truncate">@marcos_dev</span>
+<span class="font-label-sm text-label-sm text-outline">Backend Node</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-code-md text-code-md text-on-surface-variant">980 XP</span>
+<span class="material-symbols-outlined text-outline text-sm">remove</span>
+</div>
+</div>
+<!-- 7. @ana_analytics -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container/60 hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-6 font-code-sm text-code-sm font-medium text-outline text-center">7</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-outline text-xs font-semibold shrink-0">
+                AA
+              </div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md text-on-surface-variant truncate">@ana_analytics</span>
+<span class="font-label-sm text-label-sm text-outline">BI Engineer</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-code-md text-code-md text-on-surface-variant">920 XP</span>
+<span class="material-symbols-outlined text-outline text-sm">remove</span>
+</div>
+</div>
+</div>
+<!-- Reward Banner upon Promotion -->
+<div class="mt-space-sm p-space-md rounded-xl bg-surface-container-high flex items-start gap-space-sm shadow-inner">
+<div class="w-8 h-8 rounded-lg bg-secondary-container/20 text-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-lg">card_giftcard</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-semibold tracking-wider">Recompensa por Ascenso</span>
+<p class="font-body-sm text-body-sm text-on-surface mt-0.5">
+              Al mantenerte en el Top 5 obtendrás <strong>+250 XP</strong> y la skin exclusiva para consola <strong class="text-secondary">Cyber-Amber</strong>.
+            </p>
+</div>
+</div>
+</div>
+<!-- Quick Benchmark Insights Card -->
+<div class="p-space-lg rounded-xl bg-surface-container-low shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Diagnóstico de Rendimiento</span>
+<span class="material-symbols-outlined text-outline text-base">insights</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Estás a <strong>130 XP</strong> del puesto #3 (Sofia). Completar el desafío diario de hoy te otorgaría 150 XP base más tu multiplicador x1.25.
+        </p>
+<button class="mt-space-xs w-full py-space-sm px-space-md rounded-lg bg-surface-container-high hover:bg-primary hover:text-on-primary text-on-surface font-body-md text-body-md font-semibold transition-all flex items-center justify-center gap-space-xs">
+<span class="">Ir a Desafíos de Hoy</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</div>
+</aside>
+</div>
+</div>
+<script>
+  // Simple tab click feedback
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('#badge-tabs button');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => {
+          t.className = 'px-space-md py-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-md text-label-md transition-colors whitespace-nowrap';
+        });
+        tab.className = 'px-space-md py-space-xs rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md shadow-sm whitespace-nowrap';
+      });
+    });
+  });
+</script></main></div>
+
+</body></html>
