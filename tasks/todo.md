@@ -1,6 +1,6 @@
 # Lista de Tareas Activas (Todo)
 
-## Fase 1: Cimientos de Datos & Docker (`feat/database-and-docker-infra`)
+## Fase 1: Cimientos de Datos & Docker (`feat/database-and-docker-infra`) — Completada
 
 - [x] **T1.1:** Crear script de seguridad del sandbox `database/sandbox/init.sql` (creación de rol `readonly_student`, `statement_timeout = 2000`, permisos `SELECT`).
 - [x] **T1.2:** Crear dataset relacional `Ecommerce_Production_DB` en `database/sandbox/ecommerce_seed.sql` (10 tablas con datos semilla de negocio realistas).
@@ -9,3 +9,30 @@
 - [x] **T1.5:** Configurar `docker-compose.yml` para levantar el contenedor PostgreSQL Sandbox en el puerto local 5433 con límites de recursos.
 - [x] **T1.6:** Probar y verificar la inicialización del contenedor Docker y la conectividad con el usuario de solo lectura.
 - [x] **T1.7:** Commit de la rama `feat/database-and-docker-infra` y sincronización con GitHub (`git push`).
+
+## Fase 2: Motor de Ejecución y Evaluación en FastAPI (`feat/fastapi-runner-evaluator`) — Completada
+
+- [x] **T2.1:** Configuración inicial de `apps/api` (virtualenv, dependencias `fastapi`, `asyncpg`, `pydantic-settings`, `uvicorn`, `httpx`, `pytest`).
+- [x] **T2.2:** Módulo `core/config.py` con Pydantic Settings para PostgreSQL Sandbox y Supabase.
+- [x] **T2.3:** Sanitizador de seguridad SQL `modules/runner/security.py` (bloqueo de DDL/DML, multi-statement, funciones peligrosas y control de row limits).
+- [x] **T2.4:** Servicio `modules/runner/service.py` con pool `asyncpg`, timeouts estrictos y serialización segura de tipos PostgreSQL.
+- [x] **T2.5:** Evaluador semántico `modules/runner/evaluator.py` con tolerancia de orden, normalización de flotantes/nulos, detección de diffs y cálculo de XP con pistas.
+- [x] **T2.6:** Módulo de currículum y repositorio resiliente `modules/curriculum/repository.py` con catálogo semilla y soporte Supabase REST.
+- [x] **T2.7:** Router y endpoints FastAPI en `modules/runner/router.py`:
+  - `GET /api/v1/health`
+  - `POST /api/v1/playground/execute`
+  - `GET /api/v1/exercises`
+  - `GET /api/v1/exercises/{exercise_id}`
+  - `POST /api/v1/exercises/{exercise_id}/submit`
+- [x] **T2.8:** Suite completa de pruebas con Pytest (26 pruebas unitarias e integración en vivo contra el Sandbox Docker pasando al 100%).
+- [x] **T2.9:** `Dockerfile` para la API y orquestación unificada en `docker-compose.yml`.
+- [x] **T2.10:** Commit en `feat/fastapi-runner-evaluator`, merge a `main` y sincronización con GitHub (`git push`).
+
+## Fase 3: Frontend Base & Atomic Design Pragmático (`feat/web-atomic-design`) — Siguiente
+- [ ] **T3.1:** Inicializar `apps/web` con Vite + React 18 + TypeScript estricto.
+- [ ] **T3.2:** Configurar Tailwind CSS 3.4 con tokens de diseño *Terminal Glow Minimal* y fuentes tipográficas (`Plus Jakarta Sans` y `JetBrains Mono`).
+- [ ] **T3.3:** Crear estructura de carpetas bajo Atomic Design Pragmático (`src/components/{atoms,molecules,organisms,templates}`).
+- [ ] **T3.4:** Implementar Átomos: `Button`, `Badge`, `TextInput`, `KbdShortcut`, `RadioTab`.
+- [ ] **T3.5:** Implementar Moléculas: `SearchInput`, `StreakPill`, `FormField`, `MetricTile`.
+- [ ] **T3.6:** Implementar Organismos: `SidebarNav`, `TopHeader`.
+- [ ] **T3.7:** Integrar cliente `@supabase/supabase-js` para autenticación y hook `useAuth`.

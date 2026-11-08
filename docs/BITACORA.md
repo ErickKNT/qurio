@@ -6,10 +6,13 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Pausa de Configuración — Conexión con Supabase Cloud**  
-* **Próxima Fase:** **Fase 2: Motor de Ejecución y Evaluación en FastAPI (`feat/fastapi-runner-evaluator`)**  
-* **Rama Git Activa:** `main` (sincronizada con `origin/main`)  
-* **Infraestructura Activa:** Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (verificado mediante DataGrip).
+* **Fase Actual:** **Fase 2: Motor de Ejecución y Evaluación en FastAPI (`feat/fastapi-runner-evaluator`) — Concluida**  
+* **Próxima Fase:** **Fase 3: Frontend Base & Atomic Design Pragmático (`feat/web-atomic-design`)**  
+* **Rama Git Activa:** `feat/fastapi-runner-evaluator` (en proceso de merge a `main` y push a GitHub)  
+* **Infraestructura Activa:**
+  * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
+  * API FastAPI con pool asíncrono `asyncpg` y evaluador semántico (26/26 pruebas superadas).
+  * Proyecto Supabase en la nube con esquemas DDL `01_schema.sql` y catálogo semilla `02_seed_curriculum.sql` desplegados.
 
 ---
 
@@ -19,8 +22,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | :---: | :--- | :---: | :---: | :--- |
 | **0** | **Definición y Especificación** | ✅ Concluida | `main` | Declaración de intención, PRD, SAD, Sistema de Diseño y Reglas. |
 | **1** | **Cimientos de Datos & Docker** | ✅ Concluida | `feat/database-and-docker-infra` | Sandbox PostgreSQL aislado, dataset de 10 tablas, esquemas Supabase y docker-compose. |
-| **2** | **Motor de Ejecución y Evaluación** | ⏳ Próxima | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y tests unitarios. |
-| **3** | **Frontend Base & Atomic Design** | ⏹️ Pendiente | `feat/web-atomic-design` | React + Vite + Tailwind, árbol de componentes (átomos/moléculas) y auth con Supabase. |
+| **2** | **Motor de Ejecución y Evaluación** | ✅ Concluida | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y 26 tests automatizados. |
+| **3** | **Frontend Base & Atomic Design** | ⏳ Próxima | `feat/web-atomic-design` | React + Vite + Tailwind, árbol de componentes (átomos/moléculas) y auth con Supabase. |
 | **4** | **Flujo Principal End-to-End** | ⏹️ Pendiente | `feat/exercise-ide-flow` | Monaco Editor, Data Grid de resultados, resolución y verificación completa de un reto. |
 | **5** | **Catálogo, Playground & Gamificación** | ⏹️ Pendiente | `feat/curriculum-and-gamification` | Dashboard, rutas/syllabus, consola libre de Playground, niveles, XP y rachas. |
 | **6** | **Autenticidad, Calidad & Despliegue** | ⏹️ Pendiente | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG, adaptabilidad responsive móvil y checklist de lanzamiento. |
@@ -104,13 +107,27 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
-## 4. Instrucciones para la Integración con Supabase (En Curso)
+### [2026-11-07] — Entrada 08: Fase 2 — Motor de Ejecución y Evaluación en FastAPI
+* **Rama:** `feat/fastapi-runner-evaluator`
+* **Entregables de Backend:**
+  * [`apps/api/app/core/config.py`](file:///c:/Desarrollo/Qurio/apps/api/app/core/config.py): Gestión de variables de entorno y configuración para el Sandbox y Supabase vía `pydantic-settings`.
+  * [`apps/api/app/modules/runner/security.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/security.py): Filtro AST/Regex de seguridad estricta para bloquear inyecciones, sentencias múltiples, DDL (`DROP`, `ALTER`, `TRUNCATE`), DML destructivo (`INSERT`, `UPDATE`, `DELETE`) y funciones peligrosas (`pg_sleep`). Limitador automático de filas a 1,000 registros.
+  * [`apps/api/app/modules/runner/service.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/service.py): Manejador de pool asíncrono con `asyncpg`, timeouts estrictos por sentencia (`statement_timeout = 2000ms`), transacciones `readonly=True` y serialización de tipos PostgreSQL (Decimal, DateTime, UUID).
+  * [`apps/api/app/modules/runner/evaluator.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/evaluator.py): Evaluador semántico completo que compara cardinalidad, nombres/cantidad de columnas, tolerancia a flotantes y nulos, multiconjuntos (frecuencias con `Counter` cuando el orden no importa) y secuencial estricto (cuando `check_order=True`). Cálculo dinámico de XP con penalizaciones progresivas por pistas.
+  * [`apps/api/app/modules/curriculum/repository.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/repository.py): Repositorio resiliente que consulta Supabase REST y cuenta con respaldo offline de datos semilla.
+  * [`apps/api/app/modules/runner/router.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/router.py): Endpoints REST para salud (`/health`), ejecución libre en playground (`/playground/execute`), listado/detalle de ejercicios (`/exercises`) y envío/evaluación semántica (`/exercises/{id}/submit`).
+  * [`apps/api/app/main.py`](file:///c:/Desarrollo/Qurio/apps/api/app/main.py): Aplicación principal FastAPI con ciclo de vida asíncrono (`lifespan`), middleware CORS y documentación interactiva Swagger/Redoc.
+  * [`apps/api/Dockerfile`](file:///c:/Desarrollo/Qurio/apps/api/Dockerfile) & [`docker-compose.yml`](file:///c:/Desarrollo/Qurio/docker-compose.yml): Contenerización y orquestación unificada en Docker del sandbox y de la API.
+* **Pruebas y Verificación:**
+  * 26 pruebas automáticas implementadas con `pytest` y `pytest-asyncio`:
+    * 10 pruebas de seguridad y límite de filas (`test_security.py`).
+    * 8 pruebas unitarias del algoritmo de evaluación semántica (`test_evaluator.py`).
+    * 8 pruebas de integración de endpoints en vivo contra el Sandbox PostgreSQL local (`test_integration.py`).
+  * Resultado: **26/26 pruebas aprobadas en 0.17 segundos**.
 
-Cuando tengas creado tu proyecto en el panel web de Supabase:
-1. Dirígete a la pestaña **SQL Editor**.
-2. Pega y ejecuta el contenido de [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) para crear las tablas y políticas RLS.
-3. Pega y ejecuta el contenido de [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql) para poblar el catálogo de cursos y ejercicios.
-4. En **Project Settings > API**, obtén:
-   * `Project URL`
-   * `anon / public key`
-   * `service_role key` (secreta, solo para el backend).
+---
+
+## 4. Estado de la Integración con Supabase Cloud
+
+* El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).
+* El backend queda preparado para conectarse a Supabase proveyendo `SUPABASE_URL` y `SUPABASE_ANON_KEY` en `apps/api/.env`. Si no se proporcionan, el fallback local garantiza operatividad y tests al 100%.
