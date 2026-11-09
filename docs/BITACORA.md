@@ -453,6 +453,17 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * Commit en la rama `feat/auth-experience-and-custom-redirects`.
   * Fusión (`merge --no-ff`) hacia `main` y sincronización con GitHub (`git push origin main`).
 
+### Entrada 22 — Desmontaje Definitivo del Modal Overlay de Victoria y Fusión a Main
+* **Fecha:** 2026-11-09
+* **Objetivo:** Eliminar por completo el componente `SuccessModal` del flujo de ejecución del ejercicio para asegurar que la tabla de resultados de la consulta permanezca 100% visible sin ningún backdrop opaco. Consolidar todas las mejoras de autenticación en `main`.
+* **Cambios Clave:**
+  * Removido el estado `successModalOpen` y el nodo `<SuccessModal>` en [`apps/web/src/App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx).
+  * Todo el feedback de victoria se delega exclusivamente al banner inline de [`DataGridResults.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx) con badge verde esmeralda, ganancia de XP y botón interactivo "Siguiente Reto", preservando la tabla de datos intacta e interactiva.
+  * Verificación de build de producción con Vite (`built in 5.62s`) y 26/26 pruebas de backend pasando en 0.13s.
+* **Control de Versiones:**
+  * Commits consolidados y fusionados con `git merge --no-ff feat/auth-experience-and-custom-redirects` hacia `main`.
+  * Sincronizado en GitHub (`git push origin main`).
+
 ---
 
 ## 4. Estado de la Integración con Supabase Cloud
