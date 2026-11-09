@@ -30,6 +30,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **5** | **Catálogo, Playground & Gamificación** | ✅ Concluida | `feat/curriculum-and-gamification` | Rutas con syllabus interactivo, SQL Playground libre con explorador de esquemas, Logros con filtros y Mi Perfil con mapa de calor. |
 | **6** | **Autenticidad, Calidad & Despliegue** | ✅ Concluida | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG propio, metadatos OG, adaptabilidad móvil y transparencia de contacto. |
 | **+** | **Temas (Claro/Oscuro) & README** | ✅ Concluida | `feat/theme-support-and-readme` | Tokens Tailwind CSS dinámicos, toggle sol/luna, temas Monaco reactivos y README.md exhaustivo. |
+| **7** | **Expansión Curricular (3 Rutas)** | ✅ Concluida | `feat/curriculum-expansion-3-tracks` | 18 ejercicios completos, didáctica SQLBolt, checklist de sub-objetivos interactiva. |
+| **9** | **Hardening de Seguridad & AST** | 🔄 En Implementación / Revisión | `security/phase-9-hardening` | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress. |
 
 ---
 
@@ -520,6 +522,45 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Frontend React / TypeScript:** Compilación estricta y empaquetado de producción con Vite (`built in 5.72s`, 0 errores).
 * **Control de Versiones:**
   * Rama `feat/curriculum-expansion-3-tracks` mergeada a `main` y sincronizada en GitHub.
+
+---
+
+### Entrada 26 — Fase 9: Hardening de Seguridad, Análisis AST con SQLGlot y Autoridad Central de Progreso
+* **Fecha:** 2026-11-09
+* **Rama:** `security/phase-9-hardening` (aislada de `main`, lista para revisión).
+* **Objetivo:** Implementar el plan de remediación integral de seguridad derivado de la auditoría técnica (`SECURITY_AUDIT.md`), cubriendo validación sintáctica mediante AST, soporte controlado de consultas avanzadas (`WITH RECURSIVE`), autenticación asimétrica ES256 (JWKS), Rate Limiting desacoplado y arquitectura de progreso certificado en el backend.
+* **Componentes Implementados y Modificados:**
+  * **SQL Runner & AST con SQLGlot ([`apps/api/app/modules/runner/security.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/security.py)):**
+    * Sustitución de regex por análisis sintáctico formal del AST (`sqlglot.parse` con dialecto `postgres`).
+    * Allowlist estricta de raíces de lectura (`exp.Query`, `exp.Subquery`).
+    * Denylist profunda en todo el árbol (`walk()`) para neutralizar mutaciones DDL/DML camufladas dentro de CTEs o subconsultas.
+    * Bloqueo de funciones peligrosas del sistema (`pg_sleep`, `pg_terminate_backend`, `dblink`, `pg_read_file`, etc.) y tablas internas de credenciales (`pg_shadow`, `pg_authid`).
+    * Soporte seguro para `WITH RECURSIVE` delegando la contención de recursiones infinitas al motor PostgreSQL (`statement_timeout = 2000ms`, `lock_timeout = 1000ms`).
+    * Cláusula `LIMIT` forzada y manipulada de forma nativa en el AST (`enforce_row_limit`).
+  * **Autenticación Asimétrica ES256 ([`apps/api/app/core/auth.py`](file:///c:/Desarrollo/Qurio/apps/api/app/core/auth.py)):**
+    * Verificación contra el endpoint JWKS público de Supabase (`/.well-known/jwks.json`) con rotación automática de claves y caché en memoria.
+    * Validación estricta de claims (`aud = authenticated`, `iss`, `sub`, expiración).
+    * Modo invitado con fallback desacoplado que no bloquea la práctica local pero impide la persistencia no autorizada.
+  * **Rate Limiting y Guardia de Concurrencia ([`apps/api/app/core/rate_limit.py`](file:///c:/Desarrollo/Qurio/apps/api/app/core/rate_limit.py)):**
+    * Límite diferenciado: 20 req/min por IP para invitados, 120 req/min por UID para autenticados.
+    * Semáforo de concurrencia (`asyncio.Semaphore(10)`) para blindar el pool `asyncpg` ante avalanchas.
+  * **Cabeceras de Seguridad ([`apps/api/app/main.py`](file:///c:/Desarrollo/Qurio/apps/api/app/main.py)):**
+    * Middleware con `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy`.
+  * **Infraestructura Sandbox ([`docker-compose.yml`](file:///c:/Desarrollo/Qurio/docker-compose.yml) y [`database/sandbox/init.sql`](file:///c:/Desarrollo/Qurio/database/sandbox/init.sql)):**
+    * Vinculación de PostgreSQL a `127.0.0.1:5433:5432` impidiendo exposición innecesaria a interfaces de red externas.
+    * `lock_timeout = '1000ms'` y `temp_file_limit = '32MB'` sobre el rol `readonly_student`.
+  * **Script de Hardening de Supabase ([`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql)):**
+    * RPC `record_verified_attempt()` con `SECURITY DEFINER`, `search_path = public, pg_temp` e idempotencia que impide otorgar XP duplicado.
+    * Restricción de permisos: solo ejecutable por `service_role`.
+    * CLS en `user_profiles`: revocado el `UPDATE` directo sobre `xp` y `level` a clientes `authenticated`.
+  * **Frontend ([`apps/web/src/lib/api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts)):**
+    * Envío automático de `Authorization: Bearer <token>` cuando existe sesión activa en Supabase Auth.
+* **Resultados de Validación:**
+  * **Backend Pytest:** 49/49 pruebas pasando en 2.34s (`test_security.py`, `test_auth.py`, `test_rate_limit.py`, `test_integration.py`, `test_evaluator.py`).
+  * **Frontend Vite Build:** `built in 5.47s`, 0 errores tipados.
+* **Control de Versiones:**
+  * Rama `security/phase-9-hardening` lista sin mergear a `main`.
+
 
 ---
 

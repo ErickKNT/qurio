@@ -20,9 +20,24 @@ class Settings(BaseSettings):
     SANDBOX_MAX_ROWS: int = 1000
 
     # Supabase (App DB & Auth)
-    SUPABASE_URL: str = Field(default="", description="Supabase Project URL")
+    SUPABASE_URL: str = Field(default="https://bfvgqxfzftumwrleacof.supabase.co", description="Supabase Project URL")
     SUPABASE_ANON_KEY: str = Field(default="", description="Supabase Anon/Public Key")
     SUPABASE_SERVICE_ROLE_KEY: str = Field(default="", description="Supabase Service Role Key (Admin)")
+    SUPABASE_JWT_AUDIENCE: str = "authenticated"
+    SUPABASE_JWT_SECRET: str = Field(default="", description="Optional symmetric secret for HMAC / local tests")
+
+    @property
+    def SUPABASE_JWKS_URL(self) -> str:
+        return f"{self.SUPABASE_URL.rstrip('/')}/auth/v1/.well-known/jwks.json"
+
+    @property
+    def SUPABASE_JWT_ISSUER(self) -> str:
+        return f"{self.SUPABASE_URL.rstrip('/')}/auth/v1"
+
+    # Rate Limiting & Concurrency Guard
+    RATE_LIMIT_GUEST_PER_MINUTE: int = 20
+    RATE_LIMIT_AUTH_PER_MINUTE: int = 120
+    MAX_CONCURRENT_QUERIES: int = 10
 
     # CORS
     CORS_ORIGINS: List[str] = [

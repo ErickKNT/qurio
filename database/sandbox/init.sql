@@ -18,7 +18,9 @@ $do$;
 -- 2. Restricciones estrictas de ejecución y memoria sobre el rol
 ALTER ROLE readonly_student SET statement_timeout = '2000ms';
 ALTER ROLE readonly_student SET idle_in_transaction_session_timeout = '3000ms';
+ALTER ROLE readonly_student SET lock_timeout = '1000ms';
 ALTER ROLE readonly_student SET work_mem = '16MB';
+ALTER ROLE readonly_student SET temp_file_limit = '32MB';
 ALTER ROLE readonly_student SET default_transaction_read_only = on;
 
 -- 3. Permisos de conexión y esquema

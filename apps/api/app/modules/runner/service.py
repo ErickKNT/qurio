@@ -1,3 +1,4 @@
+import asyncio
 import time
 import asyncpg
 from decimal import Decimal
@@ -107,7 +108,7 @@ class SandboxRunner:
                         rows=rows,
                     )
 
-        except asyncpg.QueryCanceledError:
+        except (asyncpg.QueryCanceledError, asyncio.TimeoutError, TimeoutError):
             execution_time = (time.perf_counter() - start_time) * 1000.0
             return ExecutionResult(
                 status="ERROR",

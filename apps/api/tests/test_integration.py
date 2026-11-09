@@ -116,3 +116,44 @@ async def test_submit_exercise_star_challenge_left_join(client: AsyncClient):
     assert data["status"] == "PASSED"
     # Base 50 XP con 1 pista (-15%) -> 42 XP
     assert data["xp_awarded"] == 42
+
+
+@pytest.mark.asyncio
+async def test_playground_string_with_semicolon(client: AsyncClient):
+    payload = {
+        "query": "SELECT 'item; 1' AS item, 'status; ok' AS status;",
+        "database": "ecommerce_sandbox"
+    }
+    response = await client.post("/api/v1/playground/execute", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "SUCCESS"
+    assert len(data["rows"]) == 1
+    assert data["rows"][0][0] == "item; 1"
+
+
+@pytest.mark.asyncio
+async def test_playground_blocked_cte_delete(client: AsyncClient):
+    payload = {
+        "query": "WITH hack AS (DELETE FROM clientes RETURNING *) SELECT * FROM hack;",
+        "database": "ecommerce_sandbox"
+    }
+    response = await client.post("/api/v1/playground/execute", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ERROR"
+    assert "DELETE" in data["error"]
+
+
+@pytest.mark.asyncio
+async def test_playground_recursive_cte_timeout(client: AsyncClient):
+    payload = {
+        "query": "WITH RECURSIVE inf AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM inf) SELECT MAX(n) FROM inf;",
+        "database": "ecommerce_sandbox"
+    }
+    response = await client.post("/api/v1/playground/execute", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ERROR"
+    assert "Tiempo de ejecución excedido" in data["error"]
+
