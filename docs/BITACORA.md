@@ -464,6 +464,22 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * Commits consolidados y fusionados con `git merge --no-ff feat/auth-experience-and-custom-redirects` hacia `main`.
   * Sincronizado en GitHub (`git push origin main`).
 
+### Entrada 23 — Arquitectura Canónica de Autenticación React (AuthProvider), Inicio y Cierre de Sesión Real
+* **Fecha:** 2026-11-09
+* **Objetivo:** Implementar un flujo 100% funcional y reactivo de inicio (`signIn`) y cierre de sesión (`signOut`) con Supabase Cloud, eliminando perfiles simulados estáticos y permitiendo a los usuarios autenticarse y desautenticarse con reflejo instantáneo en toda la interfaz.
+* **Cambios Clave:**
+  * **Migración a React Context (`AuthProvider`):** En [`apps/web/src/hooks/useAuth.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/hooks/useAuth.tsx) se creó el contexto canónico de autenticación envolviendo la aplicación en [`main.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/main.tsx). Todos los componentes comparten una única fuente de verdad reactiva sin escuchas duplicadas.
+  * **Flujo de Inicio de Sesión (`signIn`):** Validación real con `supabase.auth.signInWithPassword`, traducción de errores frecuentes (credenciales erróneas, cuenta sin verificar) y sincronización del perfil real desde `public.user_profiles`.
+  * **Flujo de Cierre de Sesión (`signOut`):** Llamada real a `supabase.auth.signOut()`, purga de tokens JWT de sesión y limpieza de almacenamiento local (`clearLocalProfile()`), regresando instantáneamente al estado de Invitado.
+  * **Estado de Invitado vs Autenticado en UI:**
+    * [`TopHeader.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/TopHeader/TopHeader.tsx): Muestra botón explícito "Iniciar Sesión" para invitados. Si está autenticado, muestra avatar con halo activo esmeralda y menú desplegable interactivo con nombre, correo, XP y botón rojo "Cerrar Sesión".
+    * [`SidebarNav.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/SidebarNav/SidebarNav.tsx): Presenta tarjeta de "Modo Invitado" con botón de login, o tarjeta de progreso del usuario autenticado con botón de cerrar sesión.
+    * [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx): Cabecera del IDE adaptada con botón de login y botón de cierre de sesión dinámicos.
+    * [`UserProfileView.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx): Eliminado el valor cableado `Erick KNT` y `480 XP`, conectando los datos reales del perfil autenticado o del estado de invitado.
+  * Verificación de build de producción con Vite (`built in 5.50s`) y suite de pruebas pasando al 100%.
+* **Control de Versiones:**
+  * Commit `5d3b1ff` en la rama `main` y sincronizado en GitHub.
+
 ---
 
 ## 4. Estado de la Integración con Supabase Cloud
