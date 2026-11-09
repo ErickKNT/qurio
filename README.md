@@ -17,7 +17,8 @@
   <img src="https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38BDF8?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 3.4" />
   <img src="https://img.shields.io/badge/Docker-Sandbox-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Sandbox" />
-  <img src="https://img.shields.io/badge/Tests-26%2F26%20Passing-22C55E?style=for-the-badge" alt="Tests 26/26 Passing" />
+  <img src="https://img.shields.io/badge/Tests-64%2F64%20Passing-22C55E?style=for-the-badge" alt="Tests 64/64 Passing" />
+  <img src="https://img.shields.io/badge/Security-Hardened%20(RLS%20%2B%20CLS%20%2B%20RPC)-059669?style=for-the-badge" alt="Security Hardened" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=for-the-badge" alt="MIT License" />
 </p>
 
@@ -121,21 +122,34 @@ flowchart TD
         DataGrid["DataGrid Tabular\n(Tipos, Diffs, Métricas)"]
     end
 
-    Frontend -->|"Auth / Perfil / Progreso"| Supabase["☁️ Supabase Cloud\n(PostgreSQL RLS + GoTrue Auth)"]
-    Frontend -->|"POST /submit o /execute\n(Timeout 2000ms)"| Backend["⚡ Backend API: FastAPI\n(Python 3.12, asyncpg, Pydantic)"]
+    Frontend -->|"Auth / Sesión JWT (GoTrue)"| SupabaseAuth["☁️ Supabase Auth / JWKS\n(Claves públicas ES256)"]
+    Frontend -->|"POST /submit o /execute\n(Bearer JWT + Rate Limit)"| Backend["⚡ Backend API: FastAPI\n(Python 3.12, asyncpg, Pydantic)"]
+
+    subgraph BackendSecurity["Blindaje de Aplicación (FastAPI)"]
+        Backend -->|"1. Rate Limiting (Token Bucket)"| RateLimiter["Limitador de Tasa\n(IP / Usuario autenticado)"]
+        RateLimiter -->|"2. Validación JWT Asimétrica"| JWTValidator["Auth Validator\n(JWKS ES256 / claims)"]
+        JWTValidator -->|"3. Sanitización AST & Regex"| SecurityFilter["Filtro de Seguridad\n(Bloqueo DDL/DML destructivo)"]
+    end
 
     subgraph SecurityBoundary["Límite de Seguridad del Runner"]
-        Backend -->|"1. Sanitización AST & Regex\n(Bloqueo de DDL/DML destructivo)"| SecurityFilter["Filtro de Seguridad"]
-        SecurityFilter -->|"2. Conexión asyncpg\n(statement_timeout = 2000ms)"| Pool["Pool Asíncrono"]
-        Pool -->|"3. Ejecuta bajo rol 'readonly_student'"| DockerSandbox["🐳 Sandbox Docker: PostgreSQL 16\n(Puerto 5433, Base: Ecommerce_Production_DB)"]
+        SecurityFilter -->|"Conexión asyncpg (timeout = 2000ms)"| Pool["Pool Asíncrono"]
+        Pool -->|"Ejecuta bajo rol 'readonly_student'"| DockerSandbox["🐳 Sandbox Docker: PostgreSQL 16\n(Puerto 5433, Base: Ecommerce_Production_DB)"]
     end
 
     DockerSandbox -->|"Resultado del Estudiante"| Evaluator["🧪 Motor de Evaluación Semántica\n(FastAPI Evaluator)"]
     DockerSandbox -->|"Resultado de la Solución Oficial"| Evaluator
+    
+    subgraph SupabaseCloud["Persistencia y Reglas de Negocio (Supabase Cloud)"]
+        Evaluator -->|"Registro seguro (service_role)"| SecureRPC["RPC record_verified_attempt\n(SECURITY DEFINER, search_path='')"]
+        SecureRPC -->|"SELECT ... FOR UPDATE"| RowLock["Bloqueo Transaccional Perfil"]
+        RowLock -->|"Anti-duplicidad de XP"| PartialIndex["Índice Único Parcial\n(idx_single_awarded_passed_attempt)"]
+        PartialIndex -->|"Cálculo Autoritativo"| Storage["Tablas Protegidas (RLS + CLS)\n(user_profiles, exercise_attempts)"]
+    end
+
     Evaluator -->|"Veredicto, Diffs, XP & Latencia"| Frontend
 ```
 
-### Flujo de Evaluación Semántica
+### Flujo de Evaluación Semántica y Registro Protegido
 
 ```mermaid
 sequenceDiagram
@@ -145,9 +159,11 @@ sequenceDiagram
     participant API as FastAPI Runner
     participant DB as Docker PostgreSQL Sandbox
     participant EV as Evaluador Semántico
+    participant SB as Supabase Cloud (RPC)
 
     U->>FE: Escribe query y presiona ⌘ + Enter
-    FE->>API: POST /api/v1/exercises/{id}/submit { query }
+    FE->>API: POST /api/v1/exercises/{id}/submit (Bearer JWT, query, hints)
+    API->>API: Valida Rate Limit y firma JWT (ES256 vía JWKS)
     API->>API: Sanitización de seguridad (Bloqueo DDL/DML, multi-statement)
     alt Contiene sentencias destructivas o inyección
         API-->>FE: 400 Bad Request (Explicación técnica en terminal)
@@ -160,8 +176,13 @@ sequenceDiagram
             DB-->>API: Resultado Esperado
         end
         API->>EV: Comparar conjuntos (Columnas, Cardinalidad, Tipos, Multiconjunto)
-        EV-->>API: Veredicto (is_correct, diffs, xp_awarded, latency_ms)
-        API-->>FE: 200 OK con veredicto estructurado
+        EV-->>API: Veredicto semántico (is_correct, diffs, metrics)
+        opt Usuario autenticado y consulta aprobada
+            API->>SB: RPC record_verified_attempt(sub_jwt, id_ejercicio, ...) [service_role]
+            Note over SB: Bloqueo transaccional FOR UPDATE<br/>Cálculo proporcional de XP autoritativo<br/>Validación estricta de unicidad en PASSED
+            SB-->>API: 200 OK { attempt_id, xp_awarded, is_first_passed, ... }
+        end
+        API-->>FE: 200 OK con veredicto estructurado y XP consolidado
         FE->>U: Renderiza DataGrid + SuccessModal / Consola de Diffs
     end
 ```
@@ -176,12 +197,22 @@ Qurio/
 ├── apps/
 │   ├── api/                    # ⚡ Backend FastAPI (Python 3.12)
 │   │   ├── app/
-│   │   │   ├── core/           # Configuración Pydantic Settings y ciclo de vida
+│   │   │   ├── core/           # Configuración Pydantic, Auth ES256/JWKS, Rate Limit y Supabase Service
+│   │   │   │   ├── auth.py     # Autenticación autoritativa JWT (ES256/JWKS Supabase)
+│   │   │   │   ├── config.py   # Configuración de entornos y secretos
+│   │   │   │   ├── rate_limit.py # Limitador de tasa por token-bucket
+│   │   │   │   └── supabase.py # Cliente seguro para invocación de RPCs
 │   │   │   ├── modules/
 │   │   │   │   ├── curriculum/ # Repositorio de ejercicios y catálogo (REST / Fallback)
 │   │   │   │   └── runner/     # Pool asyncpg, Evaluador semántico, Seguridad y Router
 │   │   │   └── main.py         # Punto de entrada de la aplicación FastAPI
-│   │   ├── tests/              # Suite de 26 pruebas automáticas (Pytest + Asyncio)
+│   │   ├── tests/              # Suite de 64 pruebas automáticas (Pytest + Asyncio)
+│   │   │   ├── test_auth.py    # Pruebas de tokens ES256, expiración y audiencias
+│   │   │   ├── test_evaluator.py # Pruebas del motor de evaluación de conjuntos
+│   │   │   ├── test_integration.py # Pruebas de integración HTTP y Sandbox
+│   │   │   ├── test_rate_limit.py  # Pruebas de límites de tasa
+│   │   │   ├── test_security.py    # Pruebas de sanitización AST y regex
+│   │   │   └── test_supabase_migration.py # 9 suites de privilegios, CLS, concurrencia y RPC
 │   │   ├── Dockerfile          # Contenerización de la API
 │   │   └── requirements.txt    # Dependencias de Python
 │   │
@@ -206,11 +237,17 @@ Qurio/
 │   ├── sandbox/                # 🐳 Definición del contenedor PostgreSQL Sandbox
 │   │   ├── init.sql            # Rol de solo lectura readonly_student y timeouts
 │   │   └── ecommerce_seed.sql  # Dataset de 10 tablas de Ecommerce_Production_DB
-│   └── supabase/               # ☁️ Esquemas DDL y catálogo de Supabase Cloud
+│   └── supabase/               # ☁️ Esquemas DDL, catálogo y endurecimiento Supabase Cloud
 │       ├── 01_schema.sql       # Tablas de perfiles, rutas, módulos, intentos y logros
-│       └── 02_seed_curriculum.sql # Catálogo semilla de ejercicios y pistas
+│       ├── 02_seed_curriculum.sql # Catálogo semilla de ejercicios y pistas
+│       ├── 03_security_hardening.sql # Hardening v5.0: RPC autoritativa, RLS/CLS, anti-NULL, search_path=''
+│       ├── rollback_security_hardening.sql # Reversión segura preservando índices de integridad
+│       └── diagnose_privileges.sql # Auditoría de privilegios tabla/columna y consistencia de XP
 │
 ├── docs/                       # 📚 Documentación técnica, PRD, SAD y bitácora
+│   ├── security/               # 🛡️ Auditorías y resultados de seguridad de Fase 9
+│   │   ├── SECURITY_AUDIT.md   # Auditoría inicial de superficie de ataque
+│   │   └── SECURITY_REMEDIATION_RESULTS.md # Reporte técnico final v5.0 y certificación
 │   ├── BITACORA.md             # Registro cronológico detallado de hitos y decisiones
 │   ├── PRD.md                  # Especificación de requerimientos de producto
 │   └── SAD.md                  # Documento de arquitectura de software
@@ -241,24 +278,44 @@ El sandbox PostgreSQL contiene una base de datos relacional realista de comercio
 
 ---
 
-## 🔒 Seguridad del Sandbox
+## 🔒 Seguridad Multicapa y Endurecimiento de Producción
 
-La regla de oro de Qurio es la **seguridad incondicional**. La ejecución de código SQL arbitrario introducido por usuarios requiere múltiples anillos concéntricos de defensa:
+La regla de oro de Qurio es la **seguridad incondicional**. La ejecución de código SQL arbitrario introducido por usuarios y la asignación de recompensas de ingeniería requieren múltiples anillos concéntricos de defensa, formalizados y certificados en la **Fase 9 de Hardening**:
 
-1. **Aislamiento a Nivel de Contenedor:** El sandbox se ejecuta en un contenedor Docker dedicado, físicamente separado de las bases de datos de producción o autenticación.
-2. **Rol de Base de Datos Restringido (`readonly_student`):**
-   - Permisos exclusivos: `GRANT SELECT ON ALL TABLES IN SCHEMA public`.
-   - Revocación total de permisos de creación y modificación: `REVOKE CREATE ON SCHEMA public FROM PUBLIC`.
-   - Transacción forzada de solo lectura: `SET TRANSACTION READ ONLY`.
-3. **Límites de Recursos y Tiempos de Espera:**
-   - `statement_timeout = 2000ms` (bloquea cualquier consulta que tarde más de 2 segundos).
-   - `work_mem = 16MB` (limita el uso de memoria RAM por consulta para evitar ataques DoS).
-4. **Filtro AST y Expresiones Regulares en FastAPI:**
-   - Bloqueo de sentencias múltiples separadas por punto y coma (prevención de inyección).
-   - Bloqueo de DDL: `DROP`, `ALTER`, `CREATE`, `TRUNCATE`.
-   - Bloqueo de DML destructivo: `INSERT`, `UPDATE`, `DELETE`, `MERGE`.
-   - Bloqueo de funciones de sistema peligrosas: `pg_sleep`, `pg_terminate_backend`, `dblink`, etc.
-   - Limitador automático de filas a un máximo de 1,000 registros para proteger el ancho de banda.
+### 1. Aislamiento del Sandbox de Ejecución (PostgreSQL en Docker)
+* **Contenedor Dedicado:** El sandbox de práctica se ejecuta en un contenedor Docker aislado (`postgres:16-alpine`), físicamente desacoplado de las bases de datos de producción o autenticación.
+* **Rol de Base de Datos Restringido (`readonly_student`):**
+  * Permisos exclusivos: `GRANT SELECT ON ALL TABLES IN SCHEMA public`.
+  * Revocación total de permisos DDL: `REVOKE CREATE ON SCHEMA public FROM PUBLIC`.
+  * Transacciones forzadas de solo lectura: `SET TRANSACTION READ ONLY`.
+* **Límites de Recursos y Tiempos de Espera:**
+  * `statement_timeout = 2000ms` (bloquea de forma determinista cualquier consulta que exceda 2 segundos).
+  * `work_mem = 16MB` (limita la memoria RAM por consulta para mitigar ataques de denegación de servicio por consumo exhaustivo).
+* **Filtro AST y Expresiones Regulares en FastAPI (`security.py`):**
+  * Bloqueo de sentencias múltiples separadas por punto y coma (prevención de SQL Injection y stacked queries).
+  * Bloqueo de DDL: `DROP`, `ALTER`, `CREATE`, `TRUNCATE`.
+  * Bloqueo de DML destructivo: `INSERT`, `UPDATE`, `DELETE`, `MERGE`.
+  * Bloqueo de funciones de sistema o escalamiento: `pg_sleep`, `pg_terminate_backend`, `dblink`, etc.
+  * Limitador automático a un máximo de 1,000 registros devueltos para salvaguardar el ancho de banda.
+
+### 2. Blindaje de Backend y Supabase Cloud (Hardening v5.0)
+* **Autenticación Autoritativa JWT (`auth.py`):**
+  * Validación estricta asimétrica con algoritmo **ES256 (ECDSA P-256)** mediante el endpoint oficial JWKS de Supabase con caché de claves públicas en memoria y verificación de `aud`, `iss` y vigencia temporal (`exp`).
+  * La identidad del usuario (`user_id`) proviene exclusivamente del claim verificado `sub` del JWT en el backend; el cliente web no tiene capacidad de declarar su identidad ni modificar recompensas.
+* **Función RPC Atómica y Autoritativa (`public.record_verified_attempt`):**
+  * Definida como `SECURITY DEFINER` con blindaje total `SET search_path = ''` para prevenir ataques de secuestro de esquemas (*search_path hijacking*).
+  * Acceso estrictamente restringido: `REVOKE EXECUTE ... FROM PUBLIC, anon, authenticated` y otorgado con exclusividad a `service_role` (invocado únicamente desde FastAPI).
+  * Bloqueo transaccional de concurrencia: ejecuta `SELECT ... FOR UPDATE` sobre la fila del perfil de usuario, garantizando idempotencia y evitando condiciones de carrera en ráfagas de consultas.
+  * Cálculo autoritativo de XP: la función calcula de forma proporcional el XP ganado basado en la recompensa del ejercicio (`xp_reward`) y la tasa de penalización por pistas (-15% por pista utilizada), sin mínimos artificiales y validando rangos $[0, \text{xp\_reward}]$.
+  * Actualización atómica del progreso de módulos: calcula en tiempo real los ejercicios únicos aprobados y marca el módulo completado si y solo si todos los ejercicios fueron superados.
+* **Seguridad a Nivel de Columna (Column-Level Security - CLS) & RLS:**
+  * Prohibición absoluta de mutación: se revocaron todos los permisos de `INSERT`, `UPDATE` y `DELETE` sobre `public.exercise_attempts` para roles de cliente (`anon`, `authenticated`), canalizando todo intento exclusivamente por la RPC verificada.
+  * Se revocaron los privilegios `SELECT` por columna en `exercise_attempts` a `PUBLIC` y `anon`.
+  * Las columnas sensibles `xp` y `level` de `public.user_profiles` no admiten mutación por parte de `authenticated` ni `anon`.
+* **Restricción de Integridad Fuerte:**
+  * Índice único parcial `idx_single_awarded_passed_attempt` sobre `(user_id, exercise_id) WHERE status = 'PASSED' AND xp_awarded > 0`. Protege la base de datos a nivel de motor ante cualquier intento de doble otorgamiento de XP en un ejercicio ya aprobado.
+* **Rate Limiting (`rate_limit.py`):**
+  * Limitador de tasa en memoria por Token Bucket: protege los endpoints `/submit` y `/execute` limitando a 30 consultas por minuto para usuarios autenticados y 10 por minuto para invitados/IPs anónimas.
 
 ---
 
@@ -388,28 +445,35 @@ npm run dev
 
 ### 5. Ejecutar la Suite de Pruebas Automatizadas
 
-La suite de pruebas de Qurio evalúa la seguridad, el evaluador semántico y los endpoints de integración en vivo contra el Sandbox de Docker:
+La suite de pruebas automatizadas de Qurio evalúa la seguridad, autenticación, rate limiting, evaluación semántica y las migraciones de base de datos con concurrencia contra el Sandbox de Docker:
 
 ```bash
 cd apps/api
 pytest tests/ -v
+# En Windows con el entorno virtual activo:
+.\.venv\Scripts\pytest.exe tests -v
 ```
 
-**Resultado esperado:**
+**Resultado verificado:**
 ```text
-tests/test_security.py::test_select_query_allowed PASSED
-tests/test_security.py::test_drop_table_blocked PASSED
-...
+tests/test_auth.py::test_guest_user_when_no_authorization_header PASSED
+tests/test_auth.py::test_valid_es256_token_decodes_successfully PASSED
 tests/test_evaluator.py::test_exact_match_success PASSED
 tests/test_evaluator.py::test_order_agnostic_multiset_match PASSED
-...
+tests/test_security.py::test_select_query_allowed PASSED
+tests/test_security.py::test_drop_table_blocked PASSED
+tests/test_rate_limit.py::test_rate_limit_allows_normal_burst_and_blocks PASSED
 tests/test_integration.py::test_live_sandbox_execution PASSED
-tests/test_integration.py::test_live_exercise_submission PASSED
+tests/test_supabase_migration.py::test_privileges_are_strictly_revoked_for_public_and_clients PASSED
+tests/test_supabase_migration.py::test_record_verified_attempt_rejects_null_parameters PASSED
+tests/test_supabase_migration.py::test_authoritative_xp_calculation_across_rewards_and_hints PASSED
+tests/test_supabase_migration.py::test_concurrent_attempts_prevent_duplicate_xp PASSED
+tests/test_supabase_migration.py::test_unauthorized_user_cannot_record_progress_for_another PASSED
 
-======================== 26 passed in 0.17s ========================
+======================== 64 passed in 3.80s ========================
 ```
 
-Para verificar la compilación de TypeScript y empaquetado del frontend:
+Para verificar la compilación estricta de TypeScript y empaquetado optimizado del frontend:
 
 ```bash
 cd apps/web
@@ -432,8 +496,13 @@ npm run build
 | `SANDBOX_DB` | String | `Ecommerce_Production_DB` | Nombre de la base de datos de ejercicios. |
 | `SANDBOX_USER` | String | `readonly_student` | Rol con permisos estrictos de solo lectura. |
 | `SANDBOX_PASSWORD` | String | `student_secure_pwd_2026` | Contraseña del rol sandbox. |
-| `SUPABASE_URL` | String | *(Opcional)* | URL del proyecto Supabase Cloud. |
+| `SUPABASE_URL` | String | *(Opcional)* | URL del proyecto Supabase Cloud (`https://<id>.supabase.co`). |
 | `SUPABASE_ANON_KEY` | String | *(Opcional)* | Clave anónima pública de Supabase. |
+| `SUPABASE_SERVICE_ROLE_KEY` | String | *(Privada)* | Clave maestra privilegiada de backend para ejecutar la RPC autoritativa `record_verified_attempt`. **Nunca exponer al cliente**. |
+| `SUPABASE_JWT_SECRET` | String | *(Opcional)* | Secreto simétrico HMAC para validación de tokens de prueba. |
+| `SUPABASE_JWKS_URL` | String | *(Auto)* | URL de claves públicas JWKS (`<SUPABASE_URL>/auth/v1/.well-known/jwks.json`). |
+| `SUPABASE_JWT_AUDIENCE` | String | `authenticated` | Audiencia esperada del JWT. |
+| `SUPABASE_JWT_ISSUER` | String | *(Auto)* | Emisor esperado del JWT (`<SUPABASE_URL>/auth/v1`). |
 
 *(Nota: Si no se configuran las credenciales de Supabase, el backend utiliza automáticamente un repositorio de datos semilla en memoria con resiliencia total).*
 
@@ -443,7 +512,7 @@ npm run build
 | :--- | :---: | :--- | :--- |
 | `VITE_API_URL` | String | `http://localhost:8000` | URL base del backend FastAPI. |
 | `VITE_SUPABASE_URL` | String | *(Opcional)* | URL de tu instancia de Supabase. |
-| `VITE_SUPABASE_ANON_KEY` | String | *(Opcional)* | Clave anónima de Supabase. |
+| `VITE_SUPABASE_ANON_KEY` | String | *(Pública)* | Clave pública anónima de Supabase. **Prohibido incluir claves service_role en el cliente web.** |
 
 ---
 
