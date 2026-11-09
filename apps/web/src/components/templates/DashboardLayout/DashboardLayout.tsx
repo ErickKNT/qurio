@@ -41,7 +41,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           onOpenPlayground={() => onNavigate('playground')}
         />
 
-        <main className="flex-1 pt-20 px-8 pb-12 max-w-7xl w-full mx-auto animate-fadeIn">
+        <main
+          className={cn(
+            'flex-1 transition-all duration-300 animate-fadeIn',
+            currentPath === 'playground'
+              ? 'pt-16 px-6 pb-3 w-full h-screen flex flex-col overflow-hidden max-w-none'
+              : 'pt-20 px-8 pb-12 max-w-7xl w-full mx-auto'
+          )}
+        >
           {children}
         </main>
       </div>

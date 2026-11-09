@@ -35,7 +35,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         <h2 className="text-xs font-semibold tracking-tight text-content-primary uppercase font-mono">
           {title}
         </h2>
-        {onOpenPlayground && (
+        {onOpenPlayground && title !== 'SQL Playground' && (
           <button
             onClick={onOpenPlayground}
             className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-mono rounded bg-surface-card hover:bg-surface-hover text-content-secondary hover:text-content-primary border border-border-subtle/60 transition-colors"
