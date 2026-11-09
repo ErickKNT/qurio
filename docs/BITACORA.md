@@ -380,6 +380,34 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
+### [2026-11-09] — Entrada 19: Pedagogía Interactiva y Enriquecimiento Didáctico al Estilo SQLBolt (Fase 8)
+* **Rama:** `feat/interactive-pedagogy-and-sqlbolt-learning`
+* **Objetivo:** Incorporar las mejores lecciones de diseño instruccional y pedagógico de la plataforma de referencia **SQLBolt**, elevando la experiencia de resolución de retos en Qurio con micro-teoría contextualizada, previsualización de datos de muestra y checklists de sub-objetivos progresivos.
+* **Entregables Técnicos:**
+  * **Ampliación de Esquemas y Modelos:**
+    * Backend FastAPI: Creados `ExerciseConcept` y `SampleTableData` en [`apps/api/app/modules/curriculum/seed_data.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/seed_data.py), enriqueciendo todos los ejercicios con explicaciones conceptuales, bloques de sintaxis formateados, notas de orden de ejecución en PostgreSQL y tablas de datos de muestra.
+    * Frontend React: Agregados los tipos correspondientes en [`apps/web/src/types/index.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/types/index.ts) y catálogo enriquecido en [`apps/web/src/lib/api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts).
+  * **Re-arquitectura de `ExerciseSpecPanel` ([`apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx)):**
+    * **Pestaña `Guía & Reto`:**
+      * Tarjeta de **Concepto Clave & Sintaxis**: Micro-aprendizaje directo al grano con caja de código en `JetBrains Mono`, puntos clave y píldora explicativa de orden de ejecución (`FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY`).
+      * Consigna de negocio clara con enlace directo a la previsualización de datos.
+      * Checklist interactivo de **Sub-Objetivos**: Permite al estudiante verificar el cumplimiento paso a paso de cada requisito de la consulta.
+    * **Pestaña `Muestra de Datos` (Sample Data Preview):**
+      * Muestra una cuadrícula de datos reales con las primeras 4–5 filas del Sandbox de PostgreSQL para las tablas involucradas en el reto (`productos`, `clientes`, `pedidos`, `categorias`).
+      * Selector dinámico multi-tabla para retos con JOINs.
+      * Función de copiado rápido de identificadores de columna en un clic para acelerar la escritura en Monaco Editor.
+    * **Pestaña `Esquema`:** Inspección completa de nombres de columna, tipos y claves del schema public.
+    * **Pestaña `Pistas`:** Revelación progresiva de pistas con penalización controlada de XP.
+* **Verificación de Calidad y Estándares:**
+  * Suite completa de pruebas de backend con Pytest pasando al 100% (26 tests en 0.13s).
+  * Compilación estricta TypeScript y empaquetado de producción con Vite (`built in 5.60s`, 0 errores).
+  * Servidores FastAPI (8000), Vite (5173) y Docker PostgreSQL (5433) activos y respondiendo correctamente.
+* **Control de Versiones:**
+  * Commit en la rama `feat/interactive-pedagogy-and-sqlbolt-learning`.
+  * Fusión (`merge --no-ff`) hacia `main` y sincronización con GitHub (`git push origin main`).
+
+---
+
 ## 4. Estado de la Integración con Supabase Cloud
 
 * El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).

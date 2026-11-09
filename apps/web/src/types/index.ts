@@ -45,6 +45,19 @@ export interface ExerciseHint {
   xp_penalty_percent: number;
 }
 
+export interface ExerciseConcept {
+  summary: string;
+  syntax?: string;
+  key_points?: string[];
+  execution_order_note?: string;
+}
+
+export interface SampleTableData {
+  tableName: string;
+  columns: string[];
+  rows: (string | number | boolean | null)[][];
+}
+
 export interface Exercise {
   id: string;
   module_id: string;
@@ -58,6 +71,9 @@ export interface Exercise {
   sort_order: number;
   hints?: string[];
   is_completed?: boolean;
+  concept?: ExerciseConcept;
+  objectives?: string[];
+  sample_tables?: SampleTableData[];
 }
 
 export interface Module {
