@@ -3,17 +3,17 @@ import {
   Terminal,
   Zap,
   Award,
-  Database,
   Play,
   CheckCircle2,
   Code2,
   Sparkles,
   ArrowLeft,
   ChevronRight,
+  Flame,
 } from 'lucide-react';
 import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
-import { MetricTile, FormField, StreakPill, SuccessModal } from '@/components/molecules';
+import { MetricTile, FormField, SuccessModal } from '@/components/molecules';
 import { MonacoEditorPanel, DataGridResults, ExerciseSpecPanel } from '@/components/organisms';
 import { useAuth } from '@/hooks/useAuth';
 import { api, FALLBACK_EXERCISES } from '@/lib/api';
@@ -276,33 +276,32 @@ export const App: React.FC = () => {
     >
       <div className="flex flex-col gap-8">
         {/* Banner de Bienvenida y Rendimiento del Sandbox */}
-        <section className="relative overflow-hidden rounded-2xl bg-surface p-6 sm:p-8 border border-border-subtle shadow-xl">
-          <div className="absolute -right-20 -top-24 w-80 h-80 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-          <div className="absolute right-64 -bottom-20 w-64 h-64 rounded-full bg-cyan-accent/10 blur-3xl pointer-events-none" />
+        <section className="relative overflow-hidden rounded-2xl bg-surface/70 p-6 sm:p-7 border border-border-subtle/60 shadow-lg">
+          <div className="absolute -right-20 -top-24 w-80 h-80 rounded-full bg-primary/[0.04] blur-2xl pointer-events-none" />
+          <div className="absolute right-64 -bottom-20 w-64 h-64 rounded-full bg-cyan-accent/[0.03] blur-2xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex flex-col gap-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-card border border-border-subtle w-fit text-xs font-mono text-cyan-accent">
-                <span className="w-2 h-2 rounded-full bg-emerald shadow-glow-emerald" />
+            <div className="flex flex-col gap-1.5 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-card/60 border border-border-subtle/50 w-fit text-[11px] font-mono text-content-secondary">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
                 <span>Ruta Activa • SQL Foundations</span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-content-primary">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
                 ¡Hola, {profile?.username || 'Erick'}!{' '}
-                <span className="text-primary-light font-normal">¿Listo para compilar hoy?</span>
+                <span className="text-content-secondary font-normal">¿Listo para compilar hoy?</span>
               </h1>
 
-              <p className="text-sm text-content-secondary leading-relaxed">
-                Sandbox PostgreSQL aislado en Docker activo. Resuelve ejercicios relacionales con feedback semántico
-                instantáneo y progresión de nivel sin rodeos.
+              <p className="text-xs text-content-secondary leading-relaxed">
+                Sandbox PostgreSQL aislado en Docker activo. Resuelve ejercicios relacionales con evaluación semántica instantánea.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex flex-col items-start sm:items-end pr-2 font-mono">
-                <span className="text-[11px] text-content-muted uppercase tracking-wider">Latencia Sandbox</span>
-                <span className="text-xs text-emerald font-semibold flex items-center gap-1.5">
-                  <Database className="w-3.5 h-3.5" /> 3.6ms (pg_stat_ready)
+                <span className="text-[10px] text-content-muted uppercase tracking-wider">Latencia Sandbox</span>
+                <span className="text-xs text-content-secondary font-semibold flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald" /> 3.6ms (pg_stat_ready)
                 </span>
               </div>
 
@@ -322,42 +321,37 @@ export const App: React.FC = () => {
           </div>
         </section>
 
-        {/* Bento Grid de Métricas (5 Tiles) */}
-        <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {/* Bento Grid de Métricas (5 Tiles - Estilo Técnico Unificado) */}
+        <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
           <MetricTile
             label="Rango Actual"
             value="Nivel 4"
             subValue="Explorer"
             icon={<Award className="w-4 h-4" />}
-            accentColor="cyan"
           />
           <MetricTile
             label="XP Acumulado"
             value={`${profile?.total_xp || 0}`}
             subValue="/ 2,000"
             icon={<Zap className="w-4 h-4" />}
-            accentColor="primary"
           />
           <MetricTile
             label="Racha Activa"
             value={`${profile?.current_streak_days || 0}d`}
             subValue="Max: 14d"
-            icon={<StreakPill days={profile?.current_streak_days || 0} />}
-            accentColor="amber"
+            icon={<Flame className="w-4 h-4 text-amber-streak" />}
           />
           <MetricTile
             label="Queries Evaluados"
             value="142"
             subValue="+18 hoy"
             icon={<Terminal className="w-4 h-4" />}
-            accentColor="emerald"
           />
           <MetricTile
             label="Tasa de Éxito"
             value="94.2%"
             subValue="Semántico"
             icon={<CheckCircle2 className="w-4 h-4" />}
-            accentColor="cyan"
             className="col-span-2 sm:col-span-1"
           />
         </section>
@@ -386,7 +380,7 @@ export const App: React.FC = () => {
             <div className="lg:col-span-2 flex flex-col justify-between p-6 rounded-2xl bg-surface border border-border-subtle shadow-lg">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <Badge variant="cyan" dot>Reto Estrella Recomendado</Badge>
+                  <Badge variant="default" size="sm">Reto Recomendado</Badge>
                   <span className="text-xs font-mono text-content-muted">Módulo 6 • Intermedio</span>
                 </div>
 
@@ -398,15 +392,15 @@ export const App: React.FC = () => {
                   {exercises[3]?.prompt || 'El equipo de marketing necesita reactivar a usuarios registrados que nunca han realizado un pedido en la plataforma.'}
                 </p>
 
-                <div className="mt-2 p-3 rounded-lg bg-canvas border border-border-subtle font-mono text-xs text-cyan-accent flex items-center justify-between">
+                <div className="mt-2 p-3 rounded-lg bg-canvas/90 border border-border-subtle/60 font-mono text-xs text-content-secondary flex items-center justify-between">
                   <code>SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c...</code>
                   <KbdShortcut keys={['⌘', '↵']} />
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-border-subtle flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-mono text-amber-streak">
-                  <Zap className="w-4 h-4 fill-amber-streak" />
+              <div className="mt-6 pt-4 border-t border-border-subtle/50 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-mono text-content-secondary">
+                  <Zap className="w-4 h-4 text-amber-streak" />
                   <span>Recompensa: +{exercises[3]?.xp_reward || 50} XP</span>
                 </div>
 
@@ -424,22 +418,24 @@ export const App: React.FC = () => {
             </div>
 
             {/* Panel Lateral de Esquema Activo */}
-            <div className="flex flex-col gap-4 p-6 rounded-2xl bg-surface border border-border-subtle">
+            <div className="flex flex-col gap-3 p-5 rounded-2xl bg-surface/70 border border-border-subtle/60">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-content-secondary">
+                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-content-muted">
                   Esquema Activo
                 </span>
-                <Badge variant="emerald" size="sm">Ecommerce DB</Badge>
+                <span className="text-[10px] font-mono text-content-muted px-2 py-0.5 rounded bg-surface-dim border border-border-subtle/40">
+                  Ecommerce DB
+                </span>
               </div>
 
-              <div className="flex flex-col gap-2 font-mono text-xs">
+              <div className="flex flex-col gap-1.5 font-mono text-xs">
                 {['clientes (15 filas)', 'pedidos (30 filas)', 'detalles_pedido (60 filas)', 'productos (20 filas)', 'categorias (5 filas)'].map((tbl, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-2 rounded-lg bg-surface-card border border-border-subtle/60 text-content-secondary hover:text-content-primary hover:border-primary/40 transition-colors"
+                    className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-surface/30 hover:bg-surface/70 border border-border-subtle/40 text-content-secondary hover:text-content-primary transition-colors"
                   >
                     <span className="flex items-center gap-2">
-                      <Code2 className="w-3.5 h-3.5 text-primary-light" />
+                      <Code2 className="w-3.5 h-3.5 text-content-muted" />
                       {tbl}
                     </span>
                     <span className="text-[10px] text-content-muted">public</span>

@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 4: Flujo End-to-End del Ejercicio (`feat/exercise-ide-flow`) — Concluida**  
+* **Fase Actual:** **Refinamiento Visual & Desaturación de Interfaz (`feat/ui-refinement-and-desaturation`) — Concluida**  
 * **Próxima Fase:** **Fase 5: Catálogo, Playground & Gamificación (`feat/curriculum-and-gamification`)**  
-* **Rama Git Activa:** `feat/exercise-ide-flow` (en proceso de merge a `main` y push a GitHub)  
+* **Rama Git Activa:** `feat/ui-refinement-and-desaturation` (lista para merge a `main` y push a GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
   * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico.
@@ -191,6 +191,23 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Pruebas y Verificación del Ciclo Completo:**
   * Build de producción Vite completado exitosamente en **6.91s** con cero errores de TypeScript.
   * Verificación en vivo: API FastAPI respondiendo `healthy` en el puerto 8000 con el PostgreSQL Sandbox Docker en puerto 5433, y frontend Vite activo en el puerto 5173.
+
+---
+
+### [2026-11-09] — Entrada 11: Refinamiento Visual y Desaturación de Interfaz (Anti-Clutter)
+* **Rama:** `feat/ui-refinement-and-desaturation`
+* **Motivación y Diagnóstico:**
+  * Retroalimentación del usuario sobre fatiga visual y sensación de interfaz sobrecargada/saturada.
+  * Diagnóstico técnico identificó: 5 colores neón compitiendo a la vez (Cyan, Esmeralda, Ámbar, Índigo, Salmón), más de 10 cápsulas/píldoras redondeadas simultáneas, "síndrome de caja dentro de caja" en el inspector de esquemas, y métricas triplicadas (racha y XP en Sidebar, Header y Bento Grid a la vez).
+* **Soluciones Implementadas:**
+  * **Regla 85-10-5 de Color:** 85% fondo pizarra neutral oscuro profundo (`surface/30` - `surface/70`), 10% identidad de marca (índigo tenue/cyan técnico), 5% colores semánticos (verde/rojo reservados exclusivamente para aprobados/errores de ejecución SQL).
+  * **`TopHeader`:** Altura reducida de `h-16` a `h-14` (3.5rem); eliminación de las cápsulas redundantes de racha y XP (dejando solo contexto de ruta, buscador sutil `⌘K`, campana y avatar limpio).
+  * **`SidebarNav`:** Reemplazo del botón gigante de 3 capas de base de datos por un indicador discreto con punto esmeralda tenue (`pg:16 sandbox`); remoción del badge estridente `Live` en SQL Playground; simplificación de la tarjeta de usuario en el pie.
+  * **`MetricTile`:** Eliminación del arcoíris fluorescente; adopción de tarjetas oscuras uniformes en tono pizarra neutral con números de ancho fijo legibles y etiquetas atenuadas.
+  * **`ExerciseSpecPanel`:** Eliminación de los badges individuales con bordes pesados por columna; sustitución por una lista tabular limpia tipo DataGrip/TablePlus con tipos de datos atenuados en monoespaciado.
+  * **`DataGridResults` y `App.tsx`:** Suavizado del resplandor de fondo (`blur-2xl bg-primary/[0.04]`), eliminación de redundancias y persistencia de visualización tabular del resultado del usuario ante cualquier consulta ejecutada.
+* **Verificación de Calidad:**
+  * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.73s`, 0 errores).
 
 ---
 

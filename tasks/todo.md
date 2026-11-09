@@ -52,6 +52,16 @@
 - [x] **T4.7:** Servidores activos: FastAPI en puerto 8000, Vite en puerto 5173, Docker PostgreSQL en puerto 5433.
 - [x] **T4.8:** Commit en `feat/exercise-ide-flow`, merge a `main` y push a GitHub.
 
+## Refinamiento Visual & Desaturación de Interfaz (`feat/ui-refinement-and-desaturation`) — Completada
+
+- [x] **TR.1:** Reducir saturación de `TopHeader`: eliminar píldoras redundantes de racha y XP, reducir altura a `h-14` y suavizar bordes.
+- [x] **TR.2:** Racionalizar `SidebarNav`: simplificar indicador de base de datos a punto esmeralda sutil (`pg:16 sandbox`), remover etiqueta ruidosa `Live` de Playground y limpiar tarjeta inferior de usuario.
+- [x] **TR.3:** Homogeneizar `MetricTile`: suprimir arcoíris competitivo de bordes neón y unificar en tarjetas pizarra neutrales con números monoespaciados legibles.
+- [x] **TR.4:** Limpiar vista de esquema en `ExerciseSpecPanel`: eliminar contenedores dobles por cada columna y adoptar formato limpio de terminal tipo DataGrip/TablePlus.
+- [x] **TR.5:** Suavizar resplandores en Dashboard de `App.tsx` y preservar siempre la visualización de la cuadrícula de resultados del usuario.
+- [x] **TR.6:** Verificación de compilación de producción Vite (`built in 5.73s`, 0 errores).
+- [x] **TR.7:** Commit en `feat/ui-refinement-and-desaturation`, merge a `main` y sincronización con GitHub.
+
 ## Fase 5: Catálogo, Playground & Gamificación (`feat/curriculum-and-gamification`) — Siguiente
 
 - [ ] **T5.1:** Vista de Rutas de Aprendizaje y Detalle de Ruta (Syllabus con módulos colapsables y porcentajes de avance).
