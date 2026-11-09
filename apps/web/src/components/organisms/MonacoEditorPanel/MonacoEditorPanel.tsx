@@ -3,6 +3,7 @@ import Editor, { OnMount } from '@monaco-editor/react';
 import { Play, RotateCcw, Wand2, Terminal } from 'lucide-react';
 import { Button } from '@/components/atoms/Button/Button';
 import { useTheme } from '@/hooks/useTheme';
+import { registerSqlCompletionProvider } from './sqlCompleter';
 import { cn } from '@/lib/utils';
 
 export interface MonacoEditorPanelProps {
@@ -90,7 +91,10 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
 
     monaco.editor.setTheme(isDark ? 'qurio-dark' : 'qurio-light');
 
-    // 3. Vincular atajo de teclado: Cmd/Ctrl + Enter -> onExecute
+    // 3. Registrar motor de autocompletado inteligente SQL (Keywords, Tablas, Columnas y Alias)
+    registerSqlCompletionProvider(monaco);
+
+    // 4. Vincular atajo de teclado: Cmd/Ctrl + Enter -> onExecute
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       onExecute();
     });
@@ -199,6 +203,22 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
             renderLineHighlight: 'all',
             overviewRulerBorder: false,
             hideCursorInOverviewRuler: true,
+            quickSuggestions: {
+              other: true,
+              comments: false,
+              strings: false,
+            },
+            suggestOnTriggerCharacters: true,
+            acceptSuggestionOnEnter: 'smart',
+            tabCompletion: 'on',
+            suggest: {
+              showKeywords: true,
+              showFields: true,
+              showStructs: true,
+              showSnippets: true,
+              insertMode: 'insert',
+              filterGraceful: true,
+            },
           }}
         />
       </div>

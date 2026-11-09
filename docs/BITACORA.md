@@ -409,6 +409,26 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
+### [2026-11-09] — Entrada 20: Autocompletado Inteligente en Monaco Editor y Resolución de Alias SQL
+* **Rama:** `feat/monaco-sql-intellisense-and-aliases`
+* **Objetivo:** Dotar a Monaco Editor de capacidades de autocompletado profesional tipo IDE (DataGrip / VS Code), sugiriendo palabras clave SQL en mayúsculas mientras el usuario teclea, nombres de tablas relacionales del dataset `Ecommerce_Production_DB`, nombres de columnas tipadas y resolución dinámica de alias de tabla (`c.`, `p.`, `dp.`).
+* **Entregables Técnicos:**
+  * **Motor de Autocompletado (`apps/web/src/components/organisms/MonacoEditorPanel/sqlCompleter.ts`):**
+    * `registerSqlCompletionProvider`: Registra un proveedor en `monaco.languages` con soporte para caracteres disparadores (`.`, espacio, paréntesis).
+    * `extractTableAliases`: Analizador léxico ligero que examina las cláusulas `FROM` y `JOIN` del búfer SQL para construir un mapa dinámico de alias (`Map<alias, tableName>`), filtrando palabras reservadas.
+    * **Autocompletado con Punto (`alias.` / `tabla.`):** Al escribir `c.` o `clientes.`, detecta el alias, busca la tabla en `ECOMMERCE_TABLES_SCHEMA` y sugiere exclusivamente sus columnas (`cliente_id`, `nombre`, `apellido`, `email`, etc.) con sus tipos PostgreSQL e indicadores `[PK]` y `[FK]`.
+    * **Autocompletado General:** Sugiere palabras clave SQL (`SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `GROUP BY`, `COUNT`, `ROW_NUMBER`, etc.), nombres de tablas con número de filas y columnas del esquema con priorización según las tablas mencionadas en la consulta.
+  * **Configuración del Editor ([`MonacoEditorPanel.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx)):**
+    * Activación de `quickSuggestions` (other: true), `suggestOnTriggerCharacters`, `acceptSuggestionOnEnter: 'smart'` y `tabCompletion: 'on'` para que las sugerencias aparezcan de forma fluida a medida que el usuario escribe sin necesidad de presionar `Ctrl + Espacio`.
+* **Verificación de Calidad:**
+  * Compilación TypeScript estricta y build de producción con Vite (`built in 5.53s`, 0 errores).
+  * Pruebas de funcionamiento del autocompletado verificado en caliente con Vite dev server.
+* **Control de Versiones:**
+  * Commit en la rama `feat/monaco-sql-intellisense-and-aliases`.
+  * Fusión (`merge --no-ff`) hacia `main` y sincronización con GitHub (`git push origin main`).
+
+---
+
 ## 4. Estado de la Integración con Supabase Cloud
 
 * El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).
