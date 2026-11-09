@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
-import { MetricTile, FormField, SuccessModal } from '@/components/molecules';
+import { MetricTile, FormField } from '@/components/molecules';
 import { AuthModal } from '@/components/molecules/AuthModal/AuthModal';
 import {
   MonacoEditorPanel,
@@ -93,8 +93,6 @@ export const App: React.FC = () => {
   const [resultDiff, setResultDiff] = useState<DiffResult | undefined>();
   const [resultMessage, setResultMessage] = useState<string | undefined>();
 
-  // Modal de Victoria
-  const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [awardedXp, setAwardedXp] = useState(0);
 
   const activeExercise = exercises[currentExerciseIndex] || FALLBACK_EXERCISES[0];
@@ -232,7 +230,6 @@ export const App: React.FC = () => {
         setResultColumns(evalResponse.columns.map((name) => ({ name, type: 'column' })));
         setResultRows(evalResponse.rows);
         setAwardedXp(evalResponse.xp_awarded);
-        setSuccessModalOpen(false); // Mantener en false: los resultados y el botón de éxito se muestran inline en DataGridResults sin tapar la tabla
 
         // Persistir intento exitoso (Supabase Cloud + LocalStorage)
         await persistence.recordAttempt({
@@ -321,7 +318,6 @@ export const App: React.FC = () => {
 
   // Avanzar al siguiente reto
   const handleNextExercise = () => {
-    setSuccessModalOpen(false);
     const nextIndex = (currentExerciseIndex + 1) % exercises.length;
     handleSelectExercise(nextIndex);
   };
@@ -454,17 +450,6 @@ export const App: React.FC = () => {
               </div>
             </div>
           }
-        />
-
-        {/* Modal de Reto Superado con XP y Avance Directo */}
-        <SuccessModal
-          isOpen={successModalOpen}
-          onClose={() => setSuccessModalOpen(false)}
-          onNextExercise={handleNextExercise}
-          xpAwarded={awardedXp}
-          exerciseTitle={activeExercise.title}
-          executionTimeMs={executionTime}
-          hintsUsed={hintsUnlocked}
         />
 
         {/* Modal de Autenticación Supabase */}
