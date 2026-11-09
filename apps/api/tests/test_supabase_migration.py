@@ -75,7 +75,7 @@ async def setup_mock_supabase_environment():
         seed_sql = (ROOT_DIR / "database" / "supabase" / "02_seed_curriculum.sql").read_text(encoding="utf-8")
         await conn.execute(seed_sql)
 
-        # E. Ejecutar 03_security_hardening.sql (v3.0)
+        # E. Ejecutar 03_security_hardening.sql (v4.0)
         hardening_sql = (ROOT_DIR / "database" / "supabase" / "03_security_hardening.sql").read_text(encoding="utf-8")
         await conn.execute(hardening_sql)
 
@@ -124,65 +124,148 @@ async def create_test_user(db_conn):
 
 
 # ==============================================================================
-# 1. PRUEBAS DE PRIVILEGIOS EFECTIVOS (has_table_privilege, has_column_privilege)
+# 1. PRUEBAS DE PRIVILEGIOS EFECTIVOS (has_table_privilege, has_column_privilege, aclexplode)
 # ==============================================================================
 
 @pytest.mark.asyncio
-async def test_effective_privileges_matrix(db_conn):
+async def test_effective_privileges_matrix(db_conn, create_test_user):
     """
-    Audita los privilegios reales en el catálogo de PostgreSQL demostrando que:
-    - authenticated NO tiene UPDATE sobre la tabla user_profiles.
-    - authenticated NO tiene UPDATE sobre las columnas xp ni level.
-    - authenticated TIENE UPDATE sobre display_name y avatar_url.
-    - authenticated NO tiene INSERT sobre exercise_attempts.
+    Audita exhaustivamente los privilegios reales en el catálogo de PostgreSQL demostrando:
+    - authenticated NO tiene UPDATE/INSERT/DELETE sobre la tabla user_profiles.
+    - authenticated NO tiene UPDATE sobre xp ni level en user_profiles.
+    - authenticated TIENE UPDATE sobre display_name, avatar_url, bio, updated_at.
+    - authenticated NO tiene INSERT/UPDATE/DELETE en exercise_attempts (ni tabla ni columnas).
+    - anon NO tiene permisos de escritura en ninguna tabla o columna.
+    - Intentos directos de INSERT/UPDATE/DELETE por anon y authenticated son bloqueados con error.
+    - aclexplode demuestra que PUBLIC (grantee=0) NO tiene EXECUTE sobre record_verified_attempt.
     - anon y authenticated NO tienen EXECUTE sobre record_verified_attempt.
     - service_role TIENE EXECUTE sobre record_verified_attempt.
     """
-    # 1. Privilegios de tabla user_profiles
-    can_update_table = await db_conn.fetchval(
+    user_id = await create_test_user("priv_matrix_user")
+    exercise_id = "e0000000-0000-0000-0000-000000000001"
+
+    # --------------------------------------------------------------------------
+    # A. Privilegios de Tabla sobre public.user_profiles
+    # --------------------------------------------------------------------------
+    assert await db_conn.fetchval(
         "SELECT has_table_privilege('authenticated', 'public.user_profiles', 'UPDATE');"
-    )
-    assert can_update_table is False, "authenticated no debe tener UPDATE general sobre user_profiles"
+    ) is False
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.user_profiles', 'INSERT');"
+    ) is False
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.user_profiles', 'DELETE');"
+    ) is False
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('anon', 'public.user_profiles', 'UPDATE');"
+    ) is False
 
-    # 2. Privilegios de columna (CLS) en user_profiles
-    can_update_xp = await db_conn.fetchval(
-        "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'xp', 'UPDATE');"
-    )
-    assert can_update_xp is False, "authenticated no debe tener UPDATE sobre columna xp"
+    # --------------------------------------------------------------------------
+    # B. Privilegios de Columna (CLS) sobre public.user_profiles
+    # --------------------------------------------------------------------------
+    protected_cols = ["id", "username", "level", "xp", "current_streak_days", "max_streak_days", "created_at"]
+    for col in protected_cols:
+        can_up = await db_conn.fetchval(
+            f"SELECT has_column_privilege('authenticated', 'public.user_profiles', '{col}', 'UPDATE');"
+        )
+        assert can_up is False, f"Columna {col} en user_profiles no debe permitir UPDATE a authenticated"
 
-    can_update_level = await db_conn.fetchval(
-        "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'level', 'UPDATE');"
-    )
-    assert can_update_level is False, "authenticated no debe tener UPDATE sobre columna level"
+    allowed_cols = ["display_name", "avatar_url", "bio", "updated_at"]
+    for col in allowed_cols:
+        can_up = await db_conn.fetchval(
+            f"SELECT has_column_privilege('authenticated', 'public.user_profiles', '{col}', 'UPDATE');"
+        )
+        assert can_up is True, f"Columna {col} en user_profiles debe permitir UPDATE a authenticated"
 
-    can_update_name = await db_conn.fetchval(
-        "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'display_name', 'UPDATE');"
-    )
-    assert can_update_name is True, "authenticated debe poder actualizar display_name"
-
-    # 3. Privilegios de inserción en exercise_attempts
-    can_insert_attempts = await db_conn.fetchval(
+    # --------------------------------------------------------------------------
+    # C. Privilegios de Tabla y Columna sobre public.exercise_attempts
+    # --------------------------------------------------------------------------
+    # Tabla:
+    assert await db_conn.fetchval(
         "SELECT has_table_privilege('authenticated', 'public.exercise_attempts', 'INSERT');"
-    )
-    assert can_insert_attempts is False, "authenticated no debe tener INSERT directo en exercise_attempts"
+    ) is False
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.exercise_attempts', 'UPDATE');"
+    ) is False
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.exercise_attempts', 'DELETE');"
+    ) is False
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('anon', 'public.exercise_attempts', 'SELECT');"
+    ) is False
 
-    # 4. Privilegios de ejecución en record_verified_attempt
+    # Columnas individuales de exercise_attempts:
+    attempt_cols = [
+        "id", "user_id", "exercise_id", "submitted_sql", "status",
+        "execution_time_ms", "error_message", "hints_used", "xp_awarded", "created_at"
+    ]
+    for col in attempt_cols:
+        # Ni anon ni authenticated pueden hacer INSERT ni UPDATE en ninguna columna
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('authenticated', 'public.exercise_attempts', '{col}', 'INSERT');"
+        ) is False
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('authenticated', 'public.exercise_attempts', '{col}', 'UPDATE');"
+        ) is False
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('anon', 'public.exercise_attempts', '{col}', 'INSERT');"
+        ) is False
+
+    # --------------------------------------------------------------------------
+    # D. Intentos Reales de Ejecución Bloqueados (Inspección Defensiva en Transacción)
+    # --------------------------------------------------------------------------
+    # 1. Intento de INSERT directo por authenticated
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        await db_conn.execute(f"SET LOCAL request.jwt.claim.sub = '{user_id}';")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute(
+                """
+                INSERT INTO public.exercise_attempts (user_id, exercise_id, submitted_sql, status, execution_time_ms)
+                VALUES ($1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10);
+                """,
+                user_id, exercise_id
+            )
+
+    # 2. Intento de UPDATE directo en user_profiles.xp por authenticated
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        await db_conn.execute(f"SET LOCAL request.jwt.claim.sub = '{user_id}';")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute(
+                "UPDATE public.user_profiles SET xp = 99999 WHERE id = $1::UUID;",
+                user_id
+            )
+
+    # 3. Intento de DELETE en exercise_attempts por authenticated
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("DELETE FROM public.exercise_attempts;")
+
+    # --------------------------------------------------------------------------
+    # E. Inspección Estricta de ACL en la RPC mediante aclexplode
+    # --------------------------------------------------------------------------
+    rpc_acl_rows = await db_conn.fetch("""
+        SELECT
+            CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE a.grantee::regrole::text END AS grantee,
+            a.privilege_type
+        FROM pg_proc p
+        CROSS JOIN LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+        WHERE p.proname = 'record_verified_attempt'
+          AND p.pronamespace = 'public'::regnamespace;
+    """)
+    grantees = {row["grantee"]: row["privilege_type"] for row in rpc_acl_rows}
+    assert "PUBLIC" not in grantees, "PUBLIC (grantee 0) NO debe figurar en la ACL de record_verified_attempt"
+    assert "anon" not in grantees, "anon NO debe figurar en la ACL de record_verified_attempt"
+    assert "authenticated" not in grantees, "authenticated NO debe figurar en la ACL de record_verified_attempt"
+    assert grantees.get("service_role") == "EXECUTE", "service_role debe ser el único rol no-propietario autorizado"
+
+    # Comprobación de función
     rpc_sig = "public.record_verified_attempt(UUID, UUID, TEXT, VARCHAR, INT, TEXT, INT, INT)"
-
-    can_exec_anon = await db_conn.fetchval(
-        f"SELECT has_function_privilege('anon', '{rpc_sig}', 'EXECUTE');"
-    )
-    assert can_exec_anon is False, "anon no debe poder ejecutar record_verified_attempt"
-
-    can_exec_auth = await db_conn.fetchval(
-        f"SELECT has_function_privilege('authenticated', '{rpc_sig}', 'EXECUTE');"
-    )
-    assert can_exec_auth is False, "authenticated no debe poder ejecutar record_verified_attempt"
-
-    can_exec_service = await db_conn.fetchval(
-        f"SELECT has_function_privilege('service_role', '{rpc_sig}', 'EXECUTE');"
-    )
-    assert can_exec_service is True, "service_role debe ser el único rol con EXECUTE"
+    assert await db_conn.fetchval(f"SELECT has_function_privilege('anon', '{rpc_sig}', 'EXECUTE');") is False
+    assert await db_conn.fetchval(f"SELECT has_function_privilege('authenticated', '{rpc_sig}', 'EXECUTE');") is False
+    assert await db_conn.fetchval(f"SELECT has_function_privilege('service_role', '{rpc_sig}', 'EXECUTE');") is True
 
 
 # ==============================================================================
@@ -276,11 +359,116 @@ async def test_rpc_validation_rejects_xp_exceeding_exercise_reward(db_conn, crea
                 user_id,
                 exercise_id,
             )
-        assert "exceeds maximum allowable XP" in str(exc_info.value)
+        assert "exceeds authoritative calculated XP" in str(exc_info.value)
 
 
 # ==============================================================================
-# 3. PRUEBAS DE CONCURRENCIA REAL CON CONEXIONES INDEPENDIENTES
+# 3. CÁLCULO AUTORITATIVO DE XP SIN MÍNIMO ARTIFICIAL (0, 5, 10, 20, 100 XP)
+# ==============================================================================
+
+@pytest.mark.asyncio
+async def test_authoritative_xp_calculation_across_rewards_and_hints(db_conn, create_test_user):
+    """
+    Demuestra que el cálculo autoritativo en la RPC:
+    - NO impone mínimos artificiales (ej. 10 XP) que sobre-recompensen ejercicios pequeños.
+    - Otorga 0 XP si base_xp = 0.
+    - Aplica la penalización oficial por pistas (-15% por pista, max 45%).
+    - Otorga exactamente los valores proporcionales para bases 0, 5, 10, 20 y 100 XP.
+    - Rechaza cualquier p_xp_to_award que supere el cálculo autoritativo.
+    """
+    module_id = "a0000000-0000-0000-0000-000000000001"
+    test_specs = [
+        # (xp_reward, hints_used, expected_xp)
+        (0, 0, 0),
+        (0, 1, 0),
+        (0, 3, 0),
+        (5, 0, 5),   # Base 5 sin pistas -> 5 XP (anteriormente colapsaba a 10)
+        (5, 1, 4),   # 5 * 0.85 = 4.25 -> 4 XP
+        (5, 2, 3),   # 5 * 0.70 = 3.50 -> 3 XP
+        (5, 3, 2),   # 5 * 0.55 = 2.75 -> 2 XP
+        (10, 0, 10),
+        (10, 1, 8),  # 10 * 0.85 = 8.5 -> 8 XP
+        (10, 2, 7),  # 10 * 0.70 = 7.0 -> 7 XP
+        (10, 3, 5),  # 10 * 0.55 = 5.5 -> 5 XP
+        (20, 0, 20),
+        (20, 1, 17), # 20 * 0.85 = 17 XP
+        (20, 2, 14), # 20 * 0.70 = 14 XP
+        (20, 3, 11), # 20 * 0.55 = 11 XP
+        (100, 0, 100),
+        (100, 1, 85),
+        (100, 2, 70),
+        (100, 3, 55),
+    ]
+
+    # Crear módulo de prueba dedicado para no alterar el conteo del Módulo 1 oficial
+    test_module_id = str(uuid.uuid4())
+    path_id = "sql-foundations"
+    await db_conn.execute(
+        """
+        INSERT INTO public.modules (id, path_id, module_number, title, description)
+        VALUES ($1::UUID, $2, 999, 'XP Dedicated Test Module', 'Module for XP tests')
+        ON CONFLICT DO NOTHING;
+        """,
+        test_module_id, path_id
+    )
+
+    for xp_base, hints, expected_xp in test_specs:
+        user_id = await create_test_user(f"xp_{xp_base}_{hints}_user")
+        ex_id = str(uuid.uuid4())
+
+        # Crear ejercicio dinámico con xp_base en el módulo de prueba dedicado
+        await db_conn.execute(
+            """
+            INSERT INTO public.exercises (id, module_id, title, prompt, solution_query, xp_reward, difficulty)
+            VALUES ($1::UUID, $2::UUID, $3, 'Prompt', 'SELECT 1;', $4, 'Principiante');
+            """,
+            ex_id, test_module_id, f"Test Ex {xp_base} XP", xp_base
+        )
+
+        async with db_conn.transaction():
+            await db_conn.execute("SET LOCAL ROLE service_role;")
+
+            # 1. Intento que solicita exactamente el XP calculado autoritativamente
+            row = await db_conn.fetchrow(
+                """
+                SELECT public.record_verified_attempt(
+                    $1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10, NULL, $3, $4
+                ) AS res;
+                """,
+                user_id, ex_id, hints, expected_xp
+            )
+            res = json.loads(row["res"])
+            assert res["success"] is True
+            assert res["xp_awarded"] == expected_xp
+            assert res["total_xp"] == expected_xp
+
+        # 2. Intento fraudulento que solicita 1 XP más de lo calculado -> debe fallar
+        fraud_user = await create_test_user(f"fraud_{xp_base}_{hints}_user")
+        fraud_ex_id = str(uuid.uuid4())
+        await db_conn.execute(
+            """
+            INSERT INTO public.exercises (id, module_id, title, prompt, solution_query, xp_reward, difficulty)
+            VALUES ($1::UUID, $2::UUID, $3, 'Prompt', 'SELECT 1;', $4, 'Principiante');
+            """,
+            fraud_ex_id, test_module_id, f"Fraud Ex {xp_base} XP", xp_base
+        )
+
+        async with db_conn.transaction():
+            await db_conn.execute("SET LOCAL ROLE service_role;")
+            with pytest.raises(PostgresError) as exc_info:
+                await db_conn.execute(
+                    """
+                    SELECT public.record_verified_attempt(
+                        $1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10, NULL, $3, $4
+                    );
+                    """,
+                    fraud_user, fraud_ex_id, hints, expected_xp + 1
+                )
+            assert "exceeds authoritative calculated XP" in str(exc_info.value)
+
+
+# ==============================================================================
+# 4. PRUEBAS DE CONCURRENCIA REAL CON CONEXIONES INDEPENDIENTES
 # ==============================================================================
 
 @pytest.mark.asyncio
@@ -302,31 +490,41 @@ async def test_concurrent_same_exercise_independent_connections(create_test_user
                 row = await conn.fetchrow(
                     """
                     SELECT public.record_verified_attempt(
-                        $1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30
-                    ) AS result;
+                        $1::UUID, $2::UUID, 'SELECT nombre_producto, precio FROM productos;',
+                        'PASSED', 15, NULL, 0, 30
+                    ) AS res;
                     """,
                     user_id,
                     exercise_id,
                 )
-                return json.loads(row["result"])
+                return json.loads(row["res"])
         finally:
             await conn.close()
 
     results = await asyncio.gather(execute_in_conn(), execute_in_conn())
 
-    awarded = sorted([r["xp_awarded"] for r in results])
-    passed = sorted([r["already_passed"] for r in results])
+    awarded = [r["xp_awarded"] for r in results]
+    already_passed_flags = [r["already_passed"] for r in results]
 
-    assert awarded == [0, 30]
-    assert passed == [False, True]
+    assert sorted(awarded) == [0, 30]
+    assert sorted(already_passed_flags) == [False, True]
 
-    # Verificar saldo de XP en la base de datos
     check_conn = await asyncpg.connect(**DB_CONFIG, database=TEST_DB_NAME)
     try:
-        total_xp = await check_conn.fetchval(
-            "SELECT xp FROM public.user_profiles WHERE id = $1::UUID;", user_id
+        profile_row = await check_conn.fetchrow(
+            "SELECT xp, level FROM public.user_profiles WHERE id = $1::UUID;",
+            user_id,
         )
-        assert total_xp == 30
+        assert profile_row["xp"] == 30
+        assert profile_row["level"] == 1
+
+        attempts = await check_conn.fetch(
+            "SELECT xp_awarded, status FROM public.exercise_attempts WHERE user_id = $1::UUID;",
+            user_id,
+        )
+        assert len(attempts) == 2
+        awarded_counts = [a["xp_awarded"] for a in attempts]
+        assert sorted(awarded_counts) == [0, 30]
     finally:
         await check_conn.close()
 
@@ -334,17 +532,17 @@ async def test_concurrent_same_exercise_independent_connections(create_test_user
 @pytest.mark.asyncio
 async def test_concurrent_different_exercises_no_lost_updates(create_test_user):
     """
-    Dos conexiones físicas independientes aprobando DIFERENTES ejercicios al mismo tiempo:
-    - Ejercicio 1 (30 XP) y Ejercicio 8 (35 XP).
-    - Gracias al bloqueo FOR UPDATE sobre user_profiles, no hay 'lost updates'.
-    - El saldo final de XP es exactamente 65 (30 + 35).
-    - Ambos ejercicios quedan registrados y el módulo queda completado (2/2).
+    Dos conexiones físicas independientes enviando retos DIFERENTES al mismo tiempo:
+    - Reto 1 otorga 30 XP.
+    - Reto 8 otorga 35 XP.
+    - Cero actualizaciones perdidas (Lost Updates): El XP final es 65.
+    - Módulo 1 registra exercises_completed_count = 2 e is_completed = TRUE.
     """
     user_id = await create_test_user("concur_diff_user")
     ex1 = "e0000000-0000-0000-0000-000000000001"  # 30 XP
     ex8 = "e0000000-0000-0000-0000-000000000008"  # 35 XP
 
-    async def solve_exercise(ex_id, xp):
+    async def complete_ex(ex_id, xp):
         conn = await asyncpg.connect(**DB_CONFIG, database=TEST_DB_NAME)
         try:
             async with conn.transaction():
@@ -352,64 +550,60 @@ async def test_concurrent_different_exercises_no_lost_updates(create_test_user):
                 row = await conn.fetchrow(
                     """
                     SELECT public.record_verified_attempt(
-                        $1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10, NULL, 0, $3
-                    ) AS result;
+                        $1::UUID, $2::UUID, 'SELECT query;', 'PASSED', 20, NULL, 0, $3
+                    ) AS res;
                     """,
                     user_id,
                     ex_id,
                     xp,
                 )
-                return json.loads(row["result"])
+                return json.loads(row["res"])
         finally:
             await conn.close()
 
-    results = await asyncio.gather(
-        solve_exercise(ex1, 30),
-        solve_exercise(ex8, 35),
+    res1, res8 = await asyncio.gather(
+        complete_ex(ex1, 30),
+        complete_ex(ex8, 35),
     )
 
-    # Ambos deben ser exitosos y otorgar su respectivo XP
-    xp_awarded = {r["xp_awarded"] for r in results}
-    assert xp_awarded == {30, 35}
+    assert res1["success"] is True
+    assert res8["success"] is True
 
-    # Verificar que el XP final en el perfil es exactamente la suma (65)
     check_conn = await asyncpg.connect(**DB_CONFIG, database=TEST_DB_NAME)
     try:
-        final_xp = await check_conn.fetchval(
-            "SELECT xp FROM public.user_profiles WHERE id = $1::UUID;", user_id
+        profile = await check_conn.fetchrow(
+            "SELECT xp, level FROM public.user_profiles WHERE id = $1::UUID;",
+            user_id,
         )
-        assert final_xp == 65, f"Esperado 65 XP sin lost updates, obtenido: {final_xp}"
+        assert profile["xp"] == 65
+        assert profile["level"] == 1
 
-        # Verificar progreso del Módulo 1 (2 de 2 completados)
-        progress = await check_conn.fetchrow(
-            """
-            SELECT p.exercises_completed_count, p.is_completed
-            FROM public.user_progress p
-            JOIN public.exercises e ON p.module_id = e.module_id
-            WHERE p.user_id = $1::UUID AND e.id = $2::UUID;
-            """,
-            user_id, ex1
+        mod1 = "a0000000-0000-0000-0000-000000000001"
+        prog = await check_conn.fetchrow(
+            "SELECT exercises_completed_count, is_completed FROM public.user_progress WHERE user_id = $1 AND module_id = $2;",
+            user_id, mod1,
         )
-        assert progress["exercises_completed_count"] == 2
-        assert progress["is_completed"] is True
+        assert prog["exercises_completed_count"] == 2
+        assert prog["is_completed"] is True
     finally:
         await check_conn.close()
 
 
 # ==============================================================================
-# 4. PRUEBAS DE CONSISTENCIA DE user_progress EN INTENTOS FAILED Y ERROR
+# 5. CONSISTENCIA DE USER_PROGRESS EN INTENTOS FAILED Y ERROR
 # ==============================================================================
 
 @pytest.mark.asyncio
 async def test_user_progress_consistency_on_failed_and_error(db_conn, create_test_user):
     """
-    Demuestra que ante un intento FAILED o ERROR:
-    - No se corrompe ni se resetea a 0/false el progreso previamente alcanzado.
-    - Se devuelve en el JSON el estado real actual del módulo.
+    Verifica que intentos fallidos o con error sintáctico:
+    1. No corrompan ni sobreescriban user_progress a 0.
+    2. No alteren user_profiles.xp.
+    3. Devuelvan en el JSON el estado real actual del módulo.
     """
     user_id = await create_test_user("progress_consistency_user")
-    ex1 = "e0000000-0000-0000-0000-000000000001"  # Módulo 1
-    ex8 = "e0000000-0000-0000-0000-000000000008"  # Módulo 1
+    ex1 = "e0000000-0000-0000-0000-000000000001"  # Módulo 1 (30 XP)
+    ex8 = "e0000000-0000-0000-0000-000000000008"  # Módulo 1 (35 XP)
 
     async with db_conn.transaction():
         await db_conn.execute("SET LOCAL ROLE service_role;")
@@ -447,7 +641,7 @@ async def test_user_progress_consistency_on_failed_and_error(db_conn, create_tes
 
 
 # ==============================================================================
-# 5. REGLAS FUNCIONALES DE XP: APROBACIÓN CON 0 XP
+# 6. REGLAS FUNCIONALES DE XP: APROBACIÓN CON 0 XP
 # ==============================================================================
 
 @pytest.mark.asyncio
@@ -484,3 +678,67 @@ async def test_first_pass_with_zero_xp_counts_as_passed(db_conn, create_test_use
         assert res2["already_passed"] is True  # Reconoce que ya fue aprobado previamente
         assert res2["xp_awarded"] == 0         # No permite canje tardío de XP
         assert res2["total_xp"] == 0
+
+
+# ==============================================================================
+# 7. PRUEBA DE REVERSIÓN SEGURA (ROLLBACK AUDIT)
+# ==============================================================================
+
+@pytest.mark.asyncio
+async def test_rollback_script_preserves_strict_security(db_conn, create_test_user):
+    """
+    Demuestra que la ejecución del script rollback_security_hardening.sql:
+    1. Elimina la función RPC record_verified_attempt.
+    2. Elimina el índice único parcial idx_single_awarded_passed_attempt.
+    3. Conserva blindado user_profiles (authenticated NO tiene UPDATE en xp/level).
+    4. Conserva blindado exercise_attempts (authenticated NO TIENE INSERT de ningún tipo).
+    5. No restaura la política RLS vulnerable 'User Insert Own Attempts'.
+    """
+    user_id = await create_test_user("rollback_test_user")
+    exercise_id = "e0000000-0000-0000-0000-000000000001"
+
+    rollback_sql = (ROOT_DIR / "database" / "supabase" / "rollback_security_hardening.sql").read_text(encoding="utf-8")
+
+    # Ejecutar rollback dentro de una transacción aislada para no destruir el setup del suite
+    async with db_conn.transaction():
+        await db_conn.execute(rollback_sql)
+
+        # 1. Verificar eliminación de la RPC
+        rpc_sig = "public.record_verified_attempt(UUID, UUID, TEXT, VARCHAR, INT, TEXT, INT, INT)"
+        can_exec = await db_conn.fetchval(
+            f"SELECT EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'record_verified_attempt');"
+        )
+        assert can_exec is False, "La RPC debe haber sido eliminada por el rollback"
+
+        # 2. Verificar eliminación del índice
+        idx_exists = await db_conn.fetchval(
+            "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_single_awarded_passed_attempt');"
+        )
+        assert idx_exists is False, "El índice condicional debe haber sido eliminado"
+
+        # 3. Blindaje persistente de user_profiles: authenticated NO puede modificar xp ni level
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'xp', 'UPDATE');"
+        ) is False
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'level', 'UPDATE');"
+        ) is False
+
+        # 4. Blindaje persistente de exercise_attempts: authenticated NO puede insertar registros
+        assert await db_conn.fetchval(
+            "SELECT has_table_privilege('authenticated', 'public.exercise_attempts', 'INSERT');"
+        ) is False
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.exercise_attempts', 'status', 'INSERT');"
+        ) is False
+
+        # 5. Intento real de inserción como authenticated debe fallar
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute(
+                """
+                INSERT INTO public.exercise_attempts (user_id, exercise_id, submitted_sql, status)
+                VALUES ($1::UUID, $2::UUID, 'SELECT 1;', 'PASSED');
+                """,
+                user_id, exercise_id
+            )

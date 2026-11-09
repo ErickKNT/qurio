@@ -100,6 +100,45 @@ def test_evaluator_hint_penalties():
     assert res3.xp_awarded == 27
 
 
+def test_evaluator_xp_scales_without_artificial_minimum():
+    """
+    Verifica que el cálculo de XP respete proporcionalmente las recompensas base
+    de 0, 5, 10, 20 y 100 XP eliminando cualquier mínimo artificial de 10 XP.
+    """
+    cols = ["val"]
+    rows = [[1]]
+    student = make_result(cols, rows)
+    expected = make_result(cols, rows)
+
+    # Base 0 XP
+    for h in (0, 1, 2, 3):
+        assert evaluate_solution(student, expected, base_xp=0, hints_used=h).xp_awarded == 0
+
+    # Base 5 XP (Previamente colapsaba a 10 con GREATEST(10, ...))
+    assert evaluate_solution(student, expected, base_xp=5, hints_used=0).xp_awarded == 5
+    assert evaluate_solution(student, expected, base_xp=5, hints_used=1).xp_awarded == 4
+    assert evaluate_solution(student, expected, base_xp=5, hints_used=2).xp_awarded == 3
+    assert evaluate_solution(student, expected, base_xp=5, hints_used=3).xp_awarded == 2
+
+    # Base 10 XP (Previamente con pistas seguía dando 10 por el mínimo artificial)
+    assert evaluate_solution(student, expected, base_xp=10, hints_used=0).xp_awarded == 10
+    assert evaluate_solution(student, expected, base_xp=10, hints_used=1).xp_awarded == 8
+    assert evaluate_solution(student, expected, base_xp=10, hints_used=2).xp_awarded == 7
+    assert evaluate_solution(student, expected, base_xp=10, hints_used=3).xp_awarded == 5
+
+    # Base 20 XP
+    assert evaluate_solution(student, expected, base_xp=20, hints_used=0).xp_awarded == 20
+    assert evaluate_solution(student, expected, base_xp=20, hints_used=1).xp_awarded == 17
+    assert evaluate_solution(student, expected, base_xp=20, hints_used=2).xp_awarded == 14
+    assert evaluate_solution(student, expected, base_xp=20, hints_used=3).xp_awarded == 11
+
+    # Base 100 XP
+    assert evaluate_solution(student, expected, base_xp=100, hints_used=0).xp_awarded == 100
+    assert evaluate_solution(student, expected, base_xp=100, hints_used=1).xp_awarded == 85
+    assert evaluate_solution(student, expected, base_xp=100, hints_used=2).xp_awarded == 70
+    assert evaluate_solution(student, expected, base_xp=100, hints_used=3).xp_awarded == 55
+
+
 def test_evaluator_database_error():
     student = make_result([], [], status="ERROR", error="syntax error at or near 'FORM'")
     expected = make_result(["id"], [[1]])

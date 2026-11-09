@@ -248,7 +248,7 @@ def evaluate_solution(
 
     # 7. Cálculo de XP con penalización por pistas
     penalty_rate = min(0.45, hints_used * 0.15)
-    calculated_xp = max(10, int(base_xp * (1.0 - penalty_rate)))
+    calculated_xp = min(base_xp, max(0, int(base_xp * (1.0 - penalty_rate))))
 
     return EvaluationResponse(
         status=EvaluationStatus.PASSED,

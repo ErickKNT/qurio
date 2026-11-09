@@ -1,17 +1,23 @@
 -- ==============================================================================
 -- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 9)
--- Versión: 3.0 (Hardening Estricto: search_path='', Validación Anti-NULL,
---          Regla Confiable de XP, Bloqueo FOR UPDATE y Consistencia de user_progress)
+-- Versión: 4.0 (Cálculo Autoritativo de XP sin Mínimo Artificial, Blindaje CLS
+--          Integral en exercise_attempts, search_path='' y Diagnóstico Multi-Fuente de XP)
 -- NOTA: Este archivo es para revisión y autorización previa del usuario.
 -- NO se ejecuta automáticamente en producción sin aprobación explícita.
 -- ==============================================================================
 
 -- ==============================================================================
--- 1. DIAGNÓSTICO PREVIO: Verificación de Duplicados Históricos
+-- 1. DIAGNÓSTICO PREVIO: Auditoría de Fuentes de XP y Duplicados Históricos
 -- ==============================================================================
--- Ejecutar esta consulta antes de aplicar la migración en Supabase Cloud.
--- Si devuelve filas con duplicados > 1, no crear el índice hasta resolverlos
--- según el procedimiento de consolidación documentado en el informe técnico.
+-- DIRECTRIZ OBLIGATORIA: NO MODIFICAR DATOS HISTÓRICOS AUTOMÁTICAMENTE.
+-- En Qurio, el XP total acumulado en user_profiles.xp proviene de múltiples fuentes:
+--   1) Ejercicios resueltos (public.exercise_attempts.xp_awarded).
+--   2) Logros e insignias desbloqueadas (public.user_achievements -> achievements.xp_reward).
+--   3) Actividad diaria y bonos de racha (public.user_daily_activity.xp_earned).
+-- NUNCA se debe recalcular user_profiles.xp sumando exclusivamente exercise_attempts,
+-- ya que eliminaría el XP legítimo ganado por logros y rachas.
+--
+-- Consulta 1.A: Verificación de Duplicados en Intentos Aprobados
 /*
 SELECT user_id, exercise_id, COUNT(*) AS duplicados,
        ARRAY_AGG(id ORDER BY created_at ASC) AS attempt_ids,
@@ -21,18 +27,52 @@ WHERE status = 'PASSED' AND xp_awarded > 0
 GROUP BY user_id, exercise_id
 HAVING COUNT(*) > 1;
 */
+--
+-- Consulta 1.B: Conciliación Multi-Fuente de XP por Usuario (Auditoría previa a cualquier ajuste)
+/*
+SELECT
+    up.id AS user_id,
+    up.username,
+    up.xp AS current_profile_xp,
+    COALESCE(ea.xp_from_attempts, 0) AS xp_from_attempts,
+    COALESCE(ach.xp_from_achievements, 0) AS xp_from_achievements,
+    COALESCE(act.xp_from_daily_activity, 0) AS xp_from_daily_activity,
+    (COALESCE(ea.xp_from_attempts, 0) + COALESCE(ach.xp_from_achievements, 0) + COALESCE(act.xp_from_daily_activity, 0)) AS total_audited_xp,
+    up.xp - (COALESCE(ea.xp_from_attempts, 0) + COALESCE(ach.xp_from_achievements, 0) + COALESCE(act.xp_from_daily_activity, 0)) AS discrepancy
+FROM public.user_profiles up
+LEFT JOIN (
+    SELECT user_id, SUM(xp_awarded) AS xp_from_attempts
+    FROM public.exercise_attempts
+    WHERE status = 'PASSED'
+    GROUP BY user_id
+) ea ON ea.user_id = up.id
+LEFT JOIN (
+    SELECT ua.user_id, SUM(a.xp_reward) AS xp_from_achievements
+    FROM public.user_achievements ua
+    JOIN public.achievements a ON a.id = ua.achievement_id
+    GROUP BY ua.user_id
+) ach ON ach.user_id = up.id
+LEFT JOIN (
+    SELECT user_id, SUM(xp_earned) AS xp_from_daily_activity
+    FROM public.user_daily_activity
+    GROUP BY user_id
+) act ON act.user_id = up.id
+ORDER BY discrepancy DESC;
+*/
 
 -- ==============================================================================
 -- 2. RESTRICCIÓN DE PRIVILEGIOS DE TABLA Y COLUMNA (CLS)
 -- ==============================================================================
 
 -- A. Blindaje sobre public.user_profiles
--- Revocar todos los privilegios a nivel de tabla para evitar permisos heredados o residuales
+-- Revocar todos los privilegios a nivel de tabla
 REVOKE ALL ON TABLE public.user_profiles FROM PUBLIC, anon;
 REVOKE UPDATE, INSERT, DELETE, TRUNCATE ON TABLE public.user_profiles FROM authenticated;
 
--- Revocar explícitamente cualquier permiso a nivel de columna previamente concedido
+-- Revocar explícitamente cualquier permiso a nivel de columna (UPDATE e INSERT)
 REVOKE UPDATE (id, username, level, xp, current_streak_days, max_streak_days, created_at)
+    ON public.user_profiles FROM authenticated, anon, PUBLIC;
+REVOKE INSERT (id, username, display_name, avatar_url, bio, level, xp, current_streak_days, max_streak_days, created_at, updated_at)
     ON public.user_profiles FROM authenticated, anon, PUBLIC;
 
 -- Otorgar estrictamente solo lectura general y actualización de campos visuales de perfil
@@ -40,13 +80,26 @@ GRANT SELECT ON TABLE public.user_profiles TO authenticated, anon;
 GRANT UPDATE (display_name, avatar_url, bio, updated_at)
     ON public.user_profiles TO authenticated;
 
--- B. Blindaje sobre public.exercise_attempts
--- Eliminar la capacidad de inserción directa desde clientes frontend (SEC-04)
+-- B. Blindaje exhaustivo sobre public.exercise_attempts (SEC-04)
+-- 1. Revocación a nivel de tabla
 REVOKE ALL ON TABLE public.exercise_attempts FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON TABLE public.exercise_attempts TO authenticated; -- Lectura personal auditada por RLS
+REVOKE DELETE, TRUNCATE ON TABLE public.exercise_attempts FROM PUBLIC, anon, authenticated;
+
+-- 2. Revocación explícita a nivel de columna (INSERT y UPDATE en TODAS las columnas)
+-- Garantiza que ningún privilegio de columna previo permita eludir el control de tabla
+REVOKE INSERT (id, user_id, exercise_id, submitted_sql, status, execution_time_ms, error_message, hints_used, xp_awarded, created_at)
+    ON public.exercise_attempts FROM PUBLIC, anon, authenticated;
+
+REVOKE UPDATE (id, user_id, exercise_id, submitted_sql, status, execution_time_ms, error_message, hints_used, xp_awarded, created_at)
+    ON public.exercise_attempts FROM PUBLIC, anon, authenticated;
+
+-- 3. Concesión restringida: Solo lectura personal auditada por RLS para el estudiante
+GRANT SELECT ON TABLE public.exercise_attempts TO authenticated;
+
+-- 4. Acceso total reservado exclusivamente para backend (service_role)
 GRANT ALL ON TABLE public.exercise_attempts TO service_role;
 
--- Eliminar explícitamente la política RLS residual de inserción directa (Defensa en Profundidad)
+-- 5. Eliminar explícitamente la política RLS residual de inserción directa (Defensa en Profundidad)
 DROP POLICY IF EXISTS "User Insert Own Attempts" ON public.exercise_attempts;
 
 -- ==============================================================================
@@ -83,7 +136,7 @@ DECLARE
     v_module_id UUID;
     v_base_xp INT := 0;
     v_penalty_rate NUMERIC;
-    v_max_allowable_xp INT := 0;
+    v_authoritative_xp INT := 0;
     v_already_passed BOOLEAN := FALSE;
     v_effective_xp INT := 0;
     v_new_xp INT := 0;
@@ -139,9 +192,12 @@ BEGIN
     END IF;
 
     -- -------------------------------------------------------------------------
-    -- C. Regla Confiable de XP: Consulta de Ejercicio y Módulo desde la Base de Datos
-    -- No se confía ciegamente en p_xp_to_award; se valida contra la recompensa base
-    -- oficial y la penalización por pistas del ejercicio.
+    -- C. Cálculo Autoritativo de XP sin Mínimo Artificial
+    -- El valor de XP se deriva directamente del registro oficial en exercises.
+    -- Se valida que e.xp_reward sea no nulo y no negativo.
+    -- La penalización oficial es de 15% por pista (0 a 3 pistas = 0% a 45% de deducción).
+    -- El XP calculado nunca supera la recompensa base ni desciende de 0.
+    -- Se elimina cualquier cota mínima artificial (como un umbral rígido de 10 XP).
     -- -------------------------------------------------------------------------
     SELECT e.module_id, e.xp_reward INTO v_module_id, v_base_xp
     FROM public.exercises e
@@ -151,19 +207,27 @@ BEGIN
         RAISE EXCEPTION 'Exercise % not found in public.exercises', p_exercise_id;
     END IF;
 
-    -- Calcular el XP máximo admisible según las reglas del ejercicio (15% penalización por pista, mín 10 XP)
-    v_penalty_rate := LEAST(0.45, p_hints_used * 0.15);
-    v_max_allowable_xp := GREATEST(10, pg_catalog.floor(v_base_xp * (1.0 - v_penalty_rate))::INT);
+    IF v_base_xp IS NULL OR v_base_xp < 0 THEN
+        RAISE EXCEPTION 'Invalid xp_reward (%) for exercise % in public.exercises', v_base_xp, p_exercise_id;
+    END IF;
 
-    IF p_xp_to_award > v_max_allowable_xp THEN
-        RAISE EXCEPTION 'xp_to_award (%) exceeds maximum allowable XP (%) for exercise %',
-            p_xp_to_award, v_max_allowable_xp, p_exercise_id;
+    -- Cálculo de XP con penalización porcentual sobre base real
+    v_penalty_rate := LEAST(0.45, GREATEST(0.0, p_hints_used * 0.15));
+    v_authoritative_xp := LEAST(v_base_xp, GREATEST(0, pg_catalog.floor(v_base_xp * (1.0 - v_penalty_rate))::INT));
+
+    -- Validación defensiva del parámetro p_xp_to_award:
+    -- Preservado en la RPC para validar la consistencia del backend contra la BD.
+    -- Si el llamador intenta otorgar más XP que el valor autoritativo, se aborta la transacción.
+    IF p_xp_to_award > v_authoritative_xp THEN
+        RAISE EXCEPTION 'p_xp_to_award (%) exceeds authoritative calculated XP (%) for exercise % with % hints',
+            p_xp_to_award, v_authoritative_xp, p_exercise_id, p_hints_used;
     END IF;
 
     -- -------------------------------------------------------------------------
     -- D. Verificación de Idempotencia Formativa
     -- Regla Qurio: Solo la primera aprobación del ejercicio acredita XP.
     -- Sesiones posteriores de práctica son registradas pero con 0 XP.
+    -- Si p_xp_to_award es 0 (modo práctica o test sin recompensa), se respeta 0.
     -- -------------------------------------------------------------------------
     IF p_status = 'PASSED' THEN
         SELECT EXISTS (
@@ -174,7 +238,11 @@ BEGIN
         ) INTO v_already_passed;
 
         IF NOT v_already_passed THEN
-            v_effective_xp := p_xp_to_award;
+            IF p_xp_to_award = 0 AND v_authoritative_xp > 0 THEN
+                v_effective_xp := 0; -- Acreditación voluntaria o prueba con 0 XP
+            ELSE
+                v_effective_xp := v_authoritative_xp;
+            END IF;
         ELSE
             v_effective_xp := 0; -- Reto ya superado previamente: 0 XP adicional
         END IF;
