@@ -298,6 +298,24 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
+### [2026-11-09] — Entrada 16: Corrección Integral de Tema (ThemeProvider y Mutación Síncrona DOM)
+* **Rama:** `main`
+* **Diagnóstico del Fallo de Cambio de Tema:**
+  * La implementación previa de `useTheme` utilizaba instancias aisladas de `useState` en cada componente (`TopHeader`, `App`, `MonacoEditorPanel`) coordinadas por eventos custom en `window`.
+  * En React 18 con `StrictMode` en desarrollo, el ciclo de montaje/desmontaje generaba desincronización de estados y desenganche de escuchadores.
+  * No existía un `ThemeProvider` unificado como único origen de la verdad en el árbol de componentes.
+* **Soluciones Implementadas:**
+  * **`ThemeProvider` y `ThemeContext` Reactivo:** Creado [`apps/web/src/hooks/useTheme.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/hooks/useTheme.tsx) y envuelto en [`apps/web/src/main.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/main.tsx), garantizando un único estado global para toda la aplicación.
+  * **Mutación Síncrona del DOM:** `toggleTheme` y `setTheme` ejecutan inmediatamente la mutación de `document.documentElement` (`classList.toggle('dark')`, `classList.toggle('light')`, `style.colorScheme`), actualizando tanto el CSS nativo como Tailwind y persistiendo en `localStorage` sin condiciones de carrera.
+  * **Tokens CSS con Alta Especificidad:** Añadidas reglas explícitas `html.light, :root` y `html.dark, .dark` en [`apps/web/src/index.css`](file:///c:/Desarrollo/Qurio/apps/web/src/index.css) con transición suave (`transition: background-color 0.2s ease, color 0.2s ease`).
+  * **Atributos de Botón y Clases de Color:** Añadido `type="button"` a los botones de alternancia en `TopHeader` y `WorkspaceLayout`, corrigiendo la clase inexistente `text-amber-accent` a `text-amber-streak`.
+* **Verificación de Calidad:**
+  * Compilación TypeScript y empaquetado de producción Vite verificado exitosamente (`built in 5.99s`, 0 errores).
+  * Servidor Vite dev reiniciado y activo en `http://127.0.0.1:5173`.
+  * Commit y sincronización con GitHub completados.
+
+---
+
 ## 4. Estado de la Integración con Supabase Cloud
 
 * El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).
