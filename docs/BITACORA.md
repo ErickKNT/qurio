@@ -233,6 +233,23 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
+### [2026-11-09] — Entrada 13: Refinamiento de UX y Ergonomía del SQL Playground
+* **Rama:** `fix/sql-playground-ux-polish`
+* **Diagnóstico de los Problemas Visuales:**
+  * **Botón Duplicado:** Existía un botón morado `[Ejecutar Consulta ⌘↵]` en la cabecera superior y otro idéntico `[Ejecutar Query ⌘↵]` en la barra de herramientas del editor Monaco a escasos píxeles de distancia.
+  * **Mensaje Inapropiado de Reto Superado:** En una consulta ad-hoc de exploración, [`DataGridResults`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx) mostraba `SOLUCIÓN VÁLIDA` y un banner verde festivo de `¡Reto Superado con Éxito!`, lo cual no tiene sentido en un Playground libre donde no hay un reto que evaluar.
+  * **Tablas Cortadas & Scroll Anidado:** La lista de tablas en la barra lateral izquierda tenía un `max-h-64` y el bloque `Plantillas Rápidas` le cortaba el paso visual a la mitad de `pedidos` y `detalle_pedidos`.
+  * **Doble Scroll de Ventana:** La vista estaba restringida por `max-w-7xl` con `pt-20` y `pb-12`, generando barras de scroll tanto a nivel del navegador como dentro de los paneles.
+* **Soluciones Implementadas:**
+  * **Eliminación del Botón Duplicado:** Se retiró el botón superior redundante, dejando el botón contextual del editor en `MonacoEditorPanel`.
+  * **Modo Playground en DataGrid (`isPlayground={true}`):** Se suprimió el banner de reto superado para consultas libres, dejando una presentación limpia tipo *DataGrip* / *Supabase Studio* con indicador sobrio `EJECUTADO` y métrica de latencia real.
+  * **Pestañas en el Panel Lateral (`[Tablas (10)]` y `[Plantillas (4)]`):** Se separaron las tablas del esquema y las plantillas de consulta en pestañas con botón segmentado, permitiendo que la lista de tablas aproveche el 100% de la altura sin cortes.
+  * **Ajuste de Workbench de Pantalla Completa:** `DashboardLayout` ahora detecta `currentPath === 'playground'` para suprimir el límite artificial `max-w-7xl` y ajustar la altura exacta a `100vh` sin barras de scroll en la ventana.
+* **Verificación de Calidad:**
+  * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.48s`, 0 errores).
+
+---
+
 ## 4. Estado de la Integración con Supabase Cloud
 
 * El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).
