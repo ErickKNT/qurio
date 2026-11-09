@@ -106,4 +106,19 @@
 - [x] **T8.8:** Servidores activos y verificados: FastAPI (8000), Vite (5173), PostgreSQL Sandbox en Docker (5433).
 - [x] **T8.9:** Commit en `feat/supabase-auth-and-persistence`, merge a `main` y sincronización con GitHub.
 
+## Fase 8: Pedagogía Interactiva y Enriquecimiento Didáctico al Estilo SQLBolt (`feat/interactive-pedagogy-and-sqlbolt-learning`) — Completada
+
+- [x] **T9.1:** Extensión de modelos de datos en FastAPI (`apps/api/app/modules/curriculum/seed_data.py`) con `ExerciseConcept`, `SampleTableData`, sub-objetivos progresivos y notas de orden de ejecución en PostgreSQL.
+- [x] **T9.2:** Extensión de tipos de TypeScript en el Frontend (`apps/web/src/types/index.ts`) con `ExerciseConcept`, `SampleTableData` y actualización de la interfaz `Exercise`.
+- [x] **T9.3:** Enriquecimiento del catálogo de ejercicios en el frontend (`apps/web/src/lib/api.ts`) con tablas de muestra reales (`productos`, `clientes`, `pedidos`, `categorias`), sintaxis de referencia, puntos clave y sub-metas.
+- [x] **T9.4:** Re-diseño del panel de especificaciones [`ExerciseSpecPanel`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx) con sistema de navegación por pestañas:
+  - **Pestaña Guía & Reto:** Concepto clave destacado con bloque de sintaxis en `JetBrains Mono`, puntos clave y nota de orden de ejecución; consigna del negocio; y checklist interactivo de sub-objetivos (paso a paso estilo SQLBolt).
+  - **Pestaña Muestra de Datos (Sample Data Preview):** Visualización tabular interactiva con filas de muestra reales de las tablas del sandbox, selector multi-tabla y función de copiado rápido de identificadores de columna en 1 clic.
+  - **Pestaña Esquema:** Consulta rápida de tipos PostgreSQL y claves primarias/foráneas.
+  - **Pestaña Pistas:** Sistema de pistas progresivas con penalización visual de XP.
+- [x] **T9.5:** Verificación de suite completa de pruebas en FastAPI con Pytest (26 pruebas pasando en 0.13s).
+- [x] **T9.6:** Verificación de compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.60s`, 0 errores).
+- [x] **T9.7:** Commit en `feat/interactive-pedagogy-and-sqlbolt-learning`, merge a `main` y sincronización con GitHub.
+
+
 
