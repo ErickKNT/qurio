@@ -37,15 +37,34 @@ ORDER BY c.ordinal_position;
 -- ==============================================================================
 -- 3. Diagnóstico de Privilegios a Nivel de Columna (CLS) en public.exercise_attempts
 -- ==============================================================================
+-- Distingue explícitamente entre:
+--   a) Privilegios efectivos (heredados de tabla o directos): has_column_privilege
+--   b) Privilegios directos a nivel de columna en la ACL de atributos (pg_attribute.attacl): aclexplode
 SELECT
     'exercise_attempts' AS table_name,
     c.column_name,
-    has_column_privilege('anon', 'public.exercise_attempts', c.column_name, 'SELECT') AS anon_can_select,
-    has_column_privilege('anon', 'public.exercise_attempts', c.column_name, 'INSERT') AS anon_can_insert,
-    has_column_privilege('anon', 'public.exercise_attempts', c.column_name, 'UPDATE') AS anon_can_update,
-    has_column_privilege('authenticated', 'public.exercise_attempts', c.column_name, 'SELECT') AS auth_can_select,
-    has_column_privilege('authenticated', 'public.exercise_attempts', c.column_name, 'INSERT') AS auth_can_insert,
-    has_column_privilege('authenticated', 'public.exercise_attempts', c.column_name, 'UPDATE') AS auth_can_update
+    has_column_privilege('anon', 'public.exercise_attempts', c.column_name, 'SELECT') AS anon_effective_select,
+    has_column_privilege('anon', 'public.exercise_attempts', c.column_name, 'INSERT') AS anon_effective_insert,
+    has_column_privilege('anon', 'public.exercise_attempts', c.column_name, 'UPDATE') AS anon_effective_update,
+    has_column_privilege('authenticated', 'public.exercise_attempts', c.column_name, 'SELECT') AS auth_effective_select,
+    has_column_privilege('authenticated', 'public.exercise_attempts', c.column_name, 'INSERT') AS auth_effective_insert,
+    has_column_privilege('authenticated', 'public.exercise_attempts', c.column_name, 'UPDATE') AS auth_effective_update,
+    COALESCE(
+        (SELECT BOOL_OR(expl.grantee = 0 AND expl.privilege_type = 'SELECT')
+         FROM pg_attribute a
+         CROSS JOIN LATERAL aclexplode(a.attacl) expl
+         WHERE a.attrelid = 'public.exercise_attempts'::regclass
+           AND a.attname = c.column_name),
+        FALSE
+    ) AS public_explicit_column_select,
+    COALESCE(
+        (SELECT BOOL_OR(expl.grantee = 'anon'::regrole::oid AND expl.privilege_type = 'SELECT')
+         FROM pg_attribute a
+         CROSS JOIN LATERAL aclexplode(a.attacl) expl
+         WHERE a.attrelid = 'public.exercise_attempts'::regclass
+           AND a.attname = c.column_name),
+        FALSE
+    ) AS anon_explicit_column_select
 FROM information_schema.columns c
 WHERE c.table_schema = 'public' AND c.table_name = 'exercise_attempts'
 ORDER BY c.ordinal_position;

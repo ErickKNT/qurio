@@ -552,31 +552,47 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
-### Entrada 27 — Revisión Final de Seguridad y Hardening Estricto (v3.0)
+### Entrada 27 — Cierre Definitivo de Fase 9: Hardening de Seguridad y Ajustes Finales (v5.0)
 * **Fecha:** 2026-11-09
 * **Rama:** `security/phase-9-hardening` (aislada de `main`, protegida sin despliegue automático).
-* **Objetivo:** Ejecutar la auditoría final multidisciplinaria sobre la migración Supabase DDL y los mecanismos de certificación, implementando validaciones anti-NULL, `SET search_path = ''`, matriz de privilegios de PostgreSQL, pruebas de concurrencia con conexiones independientes, evaluador semántico con precisión `Decimal` e inspector pedagógico de AST.
+* **Objetivo:** Ejecutar los dos ajustes finales requeridos para cerrar formalmente la Fase 9:
+  1. Revocación explícita de `SELECT` por columna en `public.exercise_attempts` para `PUBLIC` y `anon`.
+  2. Conservación del índice condicional único parcial `idx_single_awarded_passed_attempt` durante el rollback como salvaguarda estructural independiente.
 * **Refactorizaciones Entregadas:**
-  * **Script DDL Supabase v3.0 ([`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql)):**
+  * **Script DDL Supabase v5.0 ([`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql)):**
     * Validación anti-NULL explícita en cada parámetro de `record_verified_attempt()`.
-    * Sustitución de `search_path = public, pg_temp` por `SET search_path = ''` para neutralizar ataques de secuestro de esquemas.
-    * Calificación explícita de esquemas en todos los objetos de aplicación (`public.*`, `pg_catalog.*`) y uso defensivo de expresiones sintácticas nativas (`COALESCE`, `LEAST`, `GREATEST`, `COUNT`).
+    * Eliminación definitiva del mínimo artificial de 10 XP; cálculo autoritativo proporcional (0, 5, 10, 20, 100 XP) y validación de `e.xp_reward`.
+    * Sustitución de `search_path = public, pg_temp` por `SET search_path = ''` para neutralizar secuestro de esquemas.
+    * Calificación explícita de esquemas en todos los objetos de aplicación (`public.*`, `pg_catalog.*`).
+    * Revocación explícita de `SELECT` en las 10 columnas de `public.exercise_attempts` para `PUBLIC` y `anon`.
+    * Revocación explícita de `INSERT` y `UPDATE` en las 10 columnas de `exercise_attempts` y sobre `xp/level` en `user_profiles`.
     * Propietario asignado a `postgres`, revocación explícita de `EXECUTE` a `PUBLIC`, `anon`, `authenticated`, y concesión exclusiva a `service_role`.
     * Bloqueo físico `SELECT ... FOR UPDATE` sobre `public.user_profiles` e índice condicional único `idx_single_awarded_passed_attempt`.
-    * Validación de XP otorgado contra la recompensa oficial del ejercicio (`e.xp_reward`) y penalizaciones por pistas.
     * Preservación de la consistencia auditada de `public.user_progress` en intentos fallidos (`FAILED`, `ERROR`).
-    * Eliminación explícita de la política RLS residual `"User Insert Own Attempts"`.
-  * **Script de Diagnóstico de Privilegios ([`database/supabase/diagnose_privileges.sql`](file:///c:/Desarrollo/Qurio/database/supabase/diagnose_privileges.sql)):**
-    * Consultas auditables mediante `has_table_privilege`, `has_column_privilege` y `has_function_privilege` sobre roles `anon`, `authenticated`, `service_role` y pseudo-rol `public`.
-  * **Procedimiento de Reversión Seguro ([`database/supabase/rollback_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/rollback_security_hardening.sql)):**
-    * Rollback seguro que prohíbe restaurar `GRANT UPDATE ON user_profiles TO authenticated`.
-    * Protege de forma inmutable las columnas `xp` y `level` incluso en caso de contingencia operacional.
+    * Consulta diagnóstica de conciliación multi-fuente de XP sin alteración automática de datos.
+  * **Script de Reversión Seguro v3.0 ([`database/supabase/rollback_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/rollback_security_hardening.sql)):**
+    * Conservación del índice único parcial `idx_single_awarded_passed_attempt` (eliminado el `DROP INDEX`).
+    * Mantiene blindados `xp`, `level` e inserciones en `exercise_attempts` para clientes incluso tras revertir la RPC.
+    * Procedimiento de contingencia operacional documentado.
+  * **Script de Diagnóstico de Privilegios v3.0 ([`database/supabase/diagnose_privileges.sql`](file:///c:/Desarrollo/Qurio/database/supabase/diagnose_privileges.sql)):**
+    * Inspección de ACL mediante `aclexplode` demostrando que `PUBLIC` (grantee 0) no tiene acceso a la RPC.
+    * Comprobación de `SELECT` por columna distinguiendo entre permisos de tabla y de columna para `PUBLIC`, `anon` y `authenticated`.
+    * Consulta no destructiva de conciliación multi-fuente de XP.
   * **Suite Automatizada de Migración Supabase ([`apps/api/tests/test_supabase_migration.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_supabase_migration.py)):**
-    * 7 pruebas integrales simulando el entorno completo de Supabase en Docker con roles, RLS y esquemas reales.
-    * Verificación de concurrencia con múltiples conexiones asyncpg independientes (`asyncio.gather`), demostrando cero condiciones de carrera y cero actualizaciones perdidas.
+    * 9 pruebas integrales en Docker con roles, RLS y esquemas reales:
+      1. Matriz de privilegios efectivos CLS a nivel de tabla y columna (`PUBLIC` y `anon` sin `SELECT`).
+      2. Rechazo explícito de parámetros nulos.
+      3. Rechazo de XP desbordado.
+      4. Cálculo autoritativo de XP proporcional en 0, 5, 10, 20 y 100 XP con 0 a 3 pistas.
+      5. Concurrencia en conexiones físicas independientes sin race conditions.
+      6. Concurrencia en diferentes ejercicios sin lost updates.
+      7. Consistencia de `user_progress` en intentos `FAILED` y `ERROR`.
+      8. Regla canónica de primer aprobado con 0 XP.
+      9. Auditoría de rollback comprobando supervivencia del índice parcial, rechazo de duplicados con XP positivo, aceptación de reintentos con 0 XP y persistencia del blindaje en clientes.
 * **Resultados de Validación:**
-  * **Suite Completa Pytest:** **61/61 pruebas pasando en 3.10s** (100% éxito en evaluador, seguridad AST, auth JWKS, rate limiting, integración y migración Supabase).
-  * **Frontend Vite Build:** Empaquetado de producción TypeScript verificado en 5.70s con 0 errores.
+  * **Suite Completa Pytest:** **64/64 pruebas pasando en 3.79s** (100% éxito).
+  * **Currículo Verificado:** Las 18 consultas del currículo oficial evaluadas y aprobadas (`18/18 PASSED`).
+  * **Frontend Vite Build:** Empaquetado de producción TypeScript verificado en 5.84s con 0 errores.
 * **Control de Versiones y Compromisos:**
   * Todos los cambios preservados estrictamente en `security/phase-9-hardening`.
   * Cero modificaciones en Supabase Cloud hasta autorización formal del usuario.

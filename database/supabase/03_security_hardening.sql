@@ -1,7 +1,8 @@
 -- ==============================================================================
 -- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 9)
--- Versión: 4.0 (Cálculo Autoritativo de XP sin Mínimo Artificial, Blindaje CLS
---          Integral en exercise_attempts, search_path='' y Diagnóstico Multi-Fuente de XP)
+-- Versión: 5.0 (Cálculo Autoritativo de XP sin Mínimo Artificial, Blindaje CLS
+--          Integral en exercise_attempts con REVOKE SELECT explícito, search_path=''
+--          y Diagnóstico Multi-Fuente de XP)
 -- NOTA: Este archivo es para revisión y autorización previa del usuario.
 -- NO se ejecuta automáticamente en producción sin aprobación explícita.
 -- ==============================================================================
@@ -93,13 +94,30 @@ REVOKE INSERT (id, user_id, exercise_id, submitted_sql, status, execution_time_m
 REVOKE UPDATE (id, user_id, exercise_id, submitted_sql, status, execution_time_ms, error_message, hints_used, xp_awarded, created_at)
     ON public.exercise_attempts FROM PUBLIC, anon, authenticated;
 
--- 3. Concesión restringida: Solo lectura personal auditada por RLS para el estudiante
+-- 3. Revocación explícita de SELECT por columna para PUBLIC y anon
+-- Garantiza que ningún privilegio previo o residual de lectura por columna exponga intentos a roles no autenticados
+REVOKE SELECT (
+    id,
+    user_id,
+    exercise_id,
+    submitted_sql,
+    status,
+    execution_time_ms,
+    error_message,
+    hints_used,
+    xp_awarded,
+    created_at
+)
+ON public.exercise_attempts
+FROM PUBLIC, anon;
+
+-- 4. Concesión restringida: Solo lectura personal auditada por RLS para el estudiante
 GRANT SELECT ON TABLE public.exercise_attempts TO authenticated;
 
--- 4. Acceso total reservado exclusivamente para backend (service_role)
+-- 5. Acceso total reservado exclusivamente para backend (service_role)
 GRANT ALL ON TABLE public.exercise_attempts TO service_role;
 
--- 5. Eliminar explícitamente la política RLS residual de inserción directa (Defensa en Profundidad)
+-- 6. Eliminar explícitamente la política RLS residual de inserción directa (Defensa en Profundidad)
 DROP POLICY IF EXISTS "User Insert Own Attempts" ON public.exercise_attempts;
 
 -- ==============================================================================

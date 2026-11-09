@@ -210,6 +210,27 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
         assert await db_conn.fetchval(
             f"SELECT has_column_privilege('anon', 'public.exercise_attempts', '{col}', 'INSERT');"
         ) is False
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('anon', 'public.exercise_attempts', '{col}', 'SELECT');"
+        ) is False, f"anon no debe tener SELECT sobre columna {col}"
+        # authenticated conserva SELECT para lectura personal auditada por RLS
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('authenticated', 'public.exercise_attempts', '{col}', 'SELECT');"
+        ) is True, f"authenticated debe conservar SELECT sobre columna {col}"
+
+    # Comprobar que PUBLIC no dispone de SELECT explícito en la ACL de ninguna columna
+    public_explicit_select_exists = await db_conn.fetchval("""
+        SELECT EXISTS (
+            SELECT 1
+            FROM pg_attribute a
+            CROSS JOIN LATERAL aclexplode(a.attacl) expl
+            WHERE a.attrelid = 'public.exercise_attempts'::regclass
+              AND a.attnum > 0
+              AND expl.grantee = 0
+              AND expl.privilege_type = 'SELECT'
+        );
+    """)
+    assert public_explicit_select_exists is False, "PUBLIC no debe disponer de SELECT por columna en exercise_attempts"
 
     # --------------------------------------------------------------------------
     # D. Intentos Reales de Ejecución Bloqueados (Inspección Defensiva en Transacción)
@@ -710,13 +731,51 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
         )
         assert can_exec is False, "La RPC debe haber sido eliminada por el rollback"
 
-        # 2. Verificar eliminación del índice
+        # 2. Verificar que el índice único parcial NO se elimina (se preserva por integridad)
         idx_exists = await db_conn.fetchval(
             "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_single_awarded_passed_attempt');"
         )
-        assert idx_exists is False, "El índice condicional debe haber sido eliminado"
+        assert idx_exists is True, "El índice condicional idx_single_awarded_passed_attempt DEBE ser conservado tras el rollback"
 
-        # 3. Blindaje persistente de user_profiles: authenticated NO puede modificar xp ni level
+        # 3. Verificar que el índice preservado continúa impidiendo duplicados de XP positivo
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        await db_conn.execute(
+            """
+            INSERT INTO public.exercise_attempts (user_id, exercise_id, submitted_sql, status, execution_time_ms, xp_awarded)
+            VALUES ($1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10, 30);
+            """,
+            user_id, exercise_id
+        )
+
+        # Segundo intento aprobado con XP positivo debe ser rechazado por el índice único
+        with pytest.raises(PostgresError) as exc_info:
+            async with db_conn.transaction():  # Savepoint para no abortar la transacción principal
+                await db_conn.execute(
+                    """
+                    INSERT INTO public.exercise_attempts (user_id, exercise_id, submitted_sql, status, execution_time_ms, xp_awarded)
+                    VALUES ($1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10, 30);
+                    """,
+                    user_id, exercise_id
+                )
+        assert "idx_single_awarded_passed_attempt" in str(exc_info.value) or "duplicate key" in str(exc_info.value)
+
+        # Múltiples intentos posteriores aprobados con xp_awarded = 0 DEBEN ser permitidos
+        await db_conn.execute(
+            """
+            INSERT INTO public.exercise_attempts (user_id, exercise_id, submitted_sql, status, execution_time_ms, xp_awarded)
+            VALUES ($1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10, 0);
+            """,
+            user_id, exercise_id
+        )
+        await db_conn.execute(
+            """
+            INSERT INTO public.exercise_attempts (user_id, exercise_id, submitted_sql, status, execution_time_ms, xp_awarded)
+            VALUES ($1::UUID, $2::UUID, 'SELECT 1;', 'PASSED', 10, 0);
+            """,
+            user_id, exercise_id
+        )
+
+        # 4. Blindaje persistente de user_profiles: authenticated NO puede modificar xp ni level
         assert await db_conn.fetchval(
             "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'xp', 'UPDATE');"
         ) is False
@@ -724,7 +783,7 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
             "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'level', 'UPDATE');"
         ) is False
 
-        # 4. Blindaje persistente de exercise_attempts: authenticated NO puede insertar registros
+        # 5. Blindaje persistente de exercise_attempts: authenticated NO puede insertar registros
         assert await db_conn.fetchval(
             "SELECT has_table_privilege('authenticated', 'public.exercise_attempts', 'INSERT');"
         ) is False
@@ -732,13 +791,21 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
             "SELECT has_column_privilege('authenticated', 'public.exercise_attempts', 'status', 'INSERT');"
         ) is False
 
-        # 5. Intento real de inserción como authenticated debe fallar
+        # 6. Intentos reales de inserción y modificación como authenticated deben fallar
         await db_conn.execute("SET LOCAL ROLE authenticated;")
+        await db_conn.execute(f"SET LOCAL request.jwt.claim.sub = '{user_id}';")
         with pytest.raises(InsufficientPrivilegeError):
-            await db_conn.execute(
-                """
-                INSERT INTO public.exercise_attempts (user_id, exercise_id, submitted_sql, status)
-                VALUES ($1::UUID, $2::UUID, 'SELECT 1;', 'PASSED');
-                """,
-                user_id, exercise_id
-            )
+            async with db_conn.transaction():
+                await db_conn.execute(
+                    """
+                    INSERT INTO public.exercise_attempts (user_id, exercise_id, submitted_sql, status)
+                    VALUES ($1::UUID, $2::UUID, 'SELECT 1;', 'PASSED');
+                    """,
+                    user_id, exercise_id
+                )
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET xp = 99999 WHERE id = $1::UUID;", user_id)
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET level = 99 WHERE id = $1::UUID;", user_id)
