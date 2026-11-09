@@ -6,13 +6,13 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 3: Frontend Base & Atomic Design Pragmático (`feat/web-atomic-design`) — Concluida**  
-* **Próxima Fase:** **Fase 4: Flujo End-to-End del Ejercicio (`feat/exercise-ide-flow`)**  
-* **Rama Git Activa:** `feat/web-atomic-design` (en proceso de merge a `main` y push a GitHub)  
+* **Fase Actual:** **Fase 4: Flujo End-to-End del Ejercicio (`feat/exercise-ide-flow`) — Concluida**  
+* **Próxima Fase:** **Fase 5: Catálogo, Playground & Gamificación (`feat/curriculum-and-gamification`)**  
+* **Rama Git Activa:** `feat/exercise-ide-flow` (en proceso de merge a `main` y push a GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
-  * API FastAPI con pool asíncrono `asyncpg` y evaluador semántico (26/26 pruebas superadas).
-  * Frontend React 18 + Vite + TypeScript + Tailwind CSS con Atomic Design Pragmático (Build de producción validado al 100%).
+  * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico.
+  * Frontend React 18 + Vite corriendo en `http://localhost:5173` con Monaco Editor, DataGrid, SpecPanel y SuccessModal (Build de producción 100% verificado).
   * Proyecto Supabase en la nube con esquemas DDL `01_schema.sql` y catálogo semilla `02_seed_curriculum.sql` desplegados.
 
 ---
@@ -25,8 +25,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **1** | **Cimientos de Datos & Docker** | ✅ Concluida | `feat/database-and-docker-infra` | Sandbox PostgreSQL aislado, dataset de 10 tablas, esquemas Supabase y docker-compose. |
 | **2** | **Motor de Ejecución y Evaluación** | ✅ Concluida | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y 26 tests automatizados. |
 | **3** | **Frontend Base & Atomic Design** | ✅ Concluida | `feat/web-atomic-design` | React + Vite + Tailwind, árbol de componentes (átomos/moléculas/organismos/plantillas), auth y build validado. |
-| **4** | **Flujo Principal End-to-End** | ⏳ Próxima | `feat/exercise-ide-flow` | Monaco Editor, Data Grid de resultados, resolución y verificación completa de un reto. |
-| **5** | **Catálogo, Playground & Gamificación** | ⏹️ Pendiente | `feat/curriculum-and-gamification` | Dashboard, rutas/syllabus, consola libre de Playground, niveles, XP y rachas. |
+| **4** | **Flujo Principal End-to-End** | ✅ Concluida | `feat/exercise-ide-flow` | Monaco Editor, DataGrid tabular con tipos de datos, especificación del ejercicio con pistas, cliente API FastAPI y modal de recompensa XP. |
+| **5** | **Catálogo, Playground & Gamificación** | ⏳ Próxima | `feat/curriculum-and-gamification` | Dashboard, rutas/syllabus, consola libre de Playground, niveles, XP y rachas. |
 | **6** | **Autenticidad, Calidad & Despliegue** | ⏹️ Pendiente | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG, adaptabilidad responsive móvil y checklist de lanzamiento. |
 
 ---
@@ -160,6 +160,37 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Verificación y Calidad:**
   * Compilación TypeScript (`tsc`) sin errores con tipado estricto.
   * Build de producción Vite completado exitosamente en 5.67s.
+
+---
+
+### [2026-11-08] — Entrada 10: Fase 4 — Flujo End-to-End del Ejercicio (IDE, Monaco & Evaluación)
+* **Rama:** `feat/exercise-ide-flow`
+* **Entregables de Flujo de Interacción:**
+  * **Integración de Monaco Editor:**
+    * Componente organismo [`MonacoEditorPanel`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx) con tema oscuro oficial `qurio-dark` (fondo `#0B1020`, cursor cyan `#38BDF8`, keywords cyan, strings esmeralda, números ámbar).
+    * Tipografía `JetBrains Mono` con numeración limpia y padding técnico.
+    * Atajo de teclado nativo `⌘ + Enter` / `Ctrl + Enter` mapeado directamente a la función de ejecución/envío.
+    * Barra de herramientas con formateador automático de palabras reservadas SQL y restablecimiento de código.
+  * **Visualizador Tabular de Resultados de Alta Fidelidad:**
+    * Componente organismo [`DataGridResults`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx).
+    * Cabeceras con nombre de columna y tipo de dato inferido (`VARCHAR`, `INT`, `DECIMAL`) en `JetBrains Mono`.
+    * Celdas de datos con gutters numerados, formateo condicional de valores numéricos, booleanos y chips tenues cursivos para `NULL`.
+    * Visualizador descriptivo de discrepancias semánticas (`DiffResult`) cuando la consulta del estudiante difiere de la solución esperada.
+    * Mensajes de error del motor de base de datos o bloqueos de seguridad del sandbox presentados en caja de terminal inline (cero alertas del navegador).
+  * **Panel de Especificación y Pistas Progresivas:**
+    * Componente organismo [`ExerciseSpecPanel`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx).
+    * Enunciado narrativo y objetivos técnicos del reto.
+    * Acordeón interactivo con el esquema relacional (`clientes`, `pedidos`, `productos`, `categorias`).
+    * Sistema de pistas progresivas con cálculo y visualización transparente de penalización de XP (-15% por pista).
+  * **Modal de Recompensa y Avance:**
+    * Componente molécula [`SuccessModal`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/SuccessModal/SuccessModal.tsx).
+    * Notificación instantánea de reto superado, medalla esmeralda, XP ganado, tiempo de ejecución en sandbox y botón de avance inmediato al siguiente reto del currículum.
+  * **Cliente de Integración API:**
+    * Módulo [`apps/web/src/lib/api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts) conectando el frontend con los endpoints de FastAPI (`POST /api/v1/exercises/{id}/submit`, `POST /api/v1/playground/execute`, `GET /api/v1/exercises`, `GET /api/v1/health`).
+    * Fallback resiliente offline con los ejercicios semilla.
+* **Pruebas y Verificación del Ciclo Completo:**
+  * Build de producción Vite completado exitosamente en **6.91s** con cero errores de TypeScript.
+  * Verificación en vivo: API FastAPI respondiendo `healthy` en el puerto 8000 con el PostgreSQL Sandbox Docker en puerto 5433, y frontend Vite activo en el puerto 5173.
 
 ---
 
