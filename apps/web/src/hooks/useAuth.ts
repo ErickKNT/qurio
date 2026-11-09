@@ -164,7 +164,7 @@ export function useAuth() {
     email: string,
     password: string,
     username: string
-  ): Promise<{ success: boolean; error?: string; message?: string }> => {
+  ): Promise<{ success: boolean; error?: string; message?: string; isDemo?: boolean; emailConfirmed?: boolean }> => {
     setError(null);
     if (!isSupabaseConfigured) {
       const demoUser = {
@@ -173,7 +173,12 @@ export function useAuth() {
       };
       setProfile(demoUser);
       persistence.updateProfile(demoUser.id, demoUser);
-      return { success: true };
+      return {
+        success: true,
+        isDemo: true,
+        emailConfirmed: true,
+        message: 'Cuenta creada en Modo Local.',
+      };
     }
 
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -197,18 +202,25 @@ export function useAuth() {
       await fetchProfile(data.user.id, { username, display_name: username });
     }
 
+    const requiresEmailConfirmation = !data.session;
+
     return {
       success: true,
-      message: data.session ? undefined : 'Revisa tu correo para confirmar tu cuenta.',
+      isDemo: false,
+      emailConfirmed: !requiresEmailConfirmation,
+      message: requiresEmailConfirmation
+        ? 'Hemos enviado un enlace de confirmación a tu correo.'
+        : 'Cuenta creada y activada con éxito.',
     };
   };
 
-  const resetPassword = async (email: string): Promise<{ success: boolean; error?: string; message?: string }> => {
+  const resetPassword = async (email: string): Promise<{ success: boolean; error?: string; message?: string; isDemo?: boolean }> => {
     setError(null);
     if (!isSupabaseConfigured) {
       return {
         success: true,
-        message: 'Enlace simulado enviado (modo demo local). Revisa tu bandeja de entrada.',
+        isDemo: true,
+        message: 'Modo demo activo: no se pudo enviar el correo real de Supabase.',
       };
     }
 
