@@ -26,6 +26,7 @@ export interface DataGridResultsProps {
   message?: string;
   xpAwarded?: number;
   onNextExercise?: () => void;
+  isPlayground?: boolean;
   className?: string;
 }
 
@@ -40,6 +41,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
   message,
   xpAwarded,
   onNextExercise,
+  isPlayground = false,
   className,
 }) => {
   const [activeTab, setActiveTab] = useState<'table' | 'diff'>('table');
@@ -101,7 +103,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
           {status === 'SUCCESS' && (
             <div className="flex items-center gap-2">
               <Badge variant="emerald" size="sm" dot>
-                SOLUCIÓN VÁLIDA
+                {isPlayground ? 'EJECUTADO' : 'SOLUCIÓN VÁLIDA'}
               </Badge>
               <span className="flex items-center gap-1 text-emerald">
                 <Clock className="w-3 h-3" />
@@ -130,8 +132,8 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
         </div>
       </div>
 
-      {/* 2. BANNER DE RETO SUPERADO (INTEGRADO, NO BLOQUEANTE) */}
-      {status === 'SUCCESS' && (
+      {/* 2. BANNER DE RETO SUPERADO (SOLO EN MODO RETO/EJERCICIO, NUNCA EN PLAYGROUND) */}
+      {status === 'SUCCESS' && !isPlayground && (
         <div className="px-4 py-2.5 bg-emerald/10 border-b border-emerald/30 flex items-center justify-between shrink-0 animate-fadeIn">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-full bg-emerald/20 flex items-center justify-center shrink-0">
