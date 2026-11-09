@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Expansión del Currículum Completo de Retos (`feat/curriculum-expansion-3-tracks`) — Concluida**  
+* **Fase Actual:** **Hardening de Seguridad & AST (Fase 9) — Concluida**  
 * **Próxima Fase:** **Operación, Métricas en Vivo y Nuevas Prácticas**  
-* **Rama Git Activa:** `feat/curriculum-expansion-3-tracks` (mergeada a `main` y sincronizada en GitHub)  
+* **Rama Git Activa:** `main` (mergeada y sincronizada en GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
   * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico (26/26 tests pasando).
@@ -31,7 +31,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **6** | **Autenticidad, Calidad & Despliegue** | ✅ Concluida | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG propio, metadatos OG, adaptabilidad móvil y transparencia de contacto. |
 | **+** | **Temas (Claro/Oscuro) & README** | ✅ Concluida | `feat/theme-support-and-readme` | Tokens Tailwind CSS dinámicos, toggle sol/luna, temas Monaco reactivos y README.md exhaustivo. |
 | **7** | **Expansión Curricular (3 Rutas)** | ✅ Concluida | `feat/curriculum-expansion-3-tracks` | 18 ejercicios completos, didáctica SQLBolt, checklist de sub-objetivos interactiva. |
-| **9** | **Hardening de Seguridad & AST** | 🔄 En Implementación / Revisión | `security/phase-9-hardening` | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress. |
+| **9** | **Hardening de Seguridad & AST** | ✅ Concluida | `main` (vía `security/phase-9-hardening`) | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress en Supabase Cloud. |
 
 ---
 
@@ -593,15 +593,19 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Suite Completa Pytest:** **64/64 pruebas pasando en 3.79s** (100% éxito).
   * **Currículo Verificado:** Las 18 consultas del currículo oficial evaluadas y aprobadas (`18/18 PASSED`).
   * **Frontend Vite Build:** Empaquetado de producción TypeScript verificado en 5.84s con 0 errores.
-* **Control de Versiones y Compromisos:**
-  * Todos los cambios preservados estrictamente en `security/phase-9-hardening`.
-  * Cero modificaciones en Supabase Cloud hasta autorización formal del usuario.
-  * Cero merges a `main`.
+* **Control de Versiones y Despliegue en Producción:**
+  * Migración `03_security_hardening.sql` autorizada y aplicada exitosamente en Supabase Cloud por el usuario.
+  * Verificación en vivo comprobada: llamadas de clientes anónimos bloqueadas con `42501` y backend certificado con `service_role`.
+  * Rama `security/phase-9-hardening` fusionada a `main` y sincronizada en GitHub.
 
 
 ---
 
 ## 4. Estado de la Integración con Supabase Cloud
 
-* El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).
-* El backend queda preparado para conectarse a Supabase proveyendo `SUPABASE_URL` y `SUPABASE_ANON_KEY` en `apps/api/.env`. Si no se proporcionan, el fallback local garantiza operatividad y tests al 100%.
+* El usuario confirmó la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql), [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql) y [`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql) en el panel de Supabase Cloud.
+* **Verificación en Vivo Confirmada:**
+  * La RPC protegida `record_verified_attempt` está activa en la nube con `SET search_path = ''` y validaciones anti-NULL.
+  * Invocaciones autorizadas mediante `service_role` (backend) responden correctamente.
+  * Invocaciones no autorizadas mediante `anon` (cliente público) son rechazadas por PostgreSQL con código de error `42501: permission denied for function record_verified_attempt`.
+* Las credenciales se encuentran configuradas de forma segura: `SUPABASE_SERVICE_ROLE_KEY` reside exclusivamente en `apps/api/.env`, mientras que `apps/web/.env` opera únicamente con `VITE_SUPABASE_ANON_KEY`.
