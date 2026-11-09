@@ -270,12 +270,13 @@ export const App: React.FC = () => {
                 </div>
 
                 <button
+                  type="button"
                   onClick={toggleTheme}
                   className="p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card transition-colors"
                   title={isDark ? 'Cambiar a Tema Claro' : 'Cambiar a Tema Oscuro'}
                   aria-label="Alternar tema visual"
                 >
-                  {isDark ? <Sun className="w-3.5 h-3.5 text-amber-accent" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
+                  {isDark ? <Sun className="w-3.5 h-3.5 text-amber-streak" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
                 </button>
               </div>
             </div>

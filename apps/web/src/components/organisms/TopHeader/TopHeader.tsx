@@ -61,13 +61,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       <div className="flex items-center gap-2">
         {/* Theme Toggle Button */}
         <button
+          type="button"
           onClick={toggleTheme}
           className="p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card/60 transition-colors"
           title={isDark ? 'Cambiar a Tema Claro' : 'Cambiar a Tema Oscuro'}
           aria-label="Alternar tema claro y oscuro"
         >
           {isDark ? (
-            <Sun className="w-4 h-4 text-amber-accent" />
+            <Sun className="w-4 h-4 text-amber-streak" />
           ) : (
             <Moon className="w-4 h-4 text-primary" />
           )}

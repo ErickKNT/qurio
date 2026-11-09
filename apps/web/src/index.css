@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  html.light {
     --color-canvas: 248 250 252;
     --color-surface: 255 255 255;
     --color-surface-dim: 241 245 249;
@@ -18,6 +19,7 @@
     color-scheme: light;
   }
 
+  html.dark,
   .dark {
     --color-canvas: 11 16 32;
     --color-surface: 17 24 39;
@@ -37,6 +39,7 @@
     background-color: rgb(var(--color-canvas));
     color: rgb(var(--color-content-primary));
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   /* Custom scrollbars */

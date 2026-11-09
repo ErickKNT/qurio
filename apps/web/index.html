@@ -31,12 +31,15 @@
         try {
           var saved = localStorage.getItem('qurio_theme');
           var isDark = saved === 'dark' || (!saved && !window.matchMedia('(prefers-color-scheme: light)').matches);
+          var root = document.documentElement;
           if (isDark) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
+            root.classList.add('dark');
+            root.classList.remove('light');
+            root.style.colorScheme = 'dark';
           } else {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.classList.add('light');
+            root.classList.remove('dark');
+            root.classList.add('light');
+            root.style.colorScheme = 'light';
           }
         } catch (e) {}
       })();
