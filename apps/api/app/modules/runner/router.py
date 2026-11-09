@@ -138,13 +138,15 @@ async def submit_exercise_solution(
             detail=f"Error al ejecutar la solución de referencia del ejercicio: {expected_result.error}",
         )
 
-    # 3. Evaluación semántica profunda
+    # 3. Evaluación semántica profunda (Capa 1: Datos Decimal + Capa 2: AST Pedagógico)
     evaluation = evaluate_solution(
         student_result=student_result,
         expected_result=expected_result,
         check_order=exercise.check_order,
         base_xp=exercise.xp_reward,
         hints_used=request.hints_revealed,
+        student_sql=request.query,
+        expected_sql=exercise.solution_query,
     )
 
     # 4. Autoridad central del backend para otorgar XP y registrar progreso
