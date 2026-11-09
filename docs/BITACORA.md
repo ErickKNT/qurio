@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Soporte de Tema Claro/Oscuro y Documentación GitHub (`feat/theme-support-and-readme`) — Concluida (MVP 1.0 Pulido)**  
-* **Próxima Fase:** **Operación, Despliegue en la Nube y Expansión de Catálogo**  
-* **Rama Git Activa:** `feat/theme-support-and-readme` (en proceso de merge a `main` y push a GitHub)  
+* **Fase Actual:** **Expansión del Currículum Completo de Retos (`feat/curriculum-expansion-3-tracks`) — Concluida**  
+* **Próxima Fase:** **Operación, Métricas en Vivo y Nuevas Prácticas**  
+* **Rama Git Activa:** `feat/curriculum-expansion-3-tracks` (mergeada a `main` y sincronizada en GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
   * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico (26/26 tests pasando).
@@ -495,6 +495,31 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * [`graphify-out/GRAPH_REPORT.md`](file:///c:/Desarrollo/Qurio/graphify-out/GRAPH_REPORT.md): Informe ejecutivo de comunidades, métricas de cohesión y conexiones del sistema.
 * **Control de Versiones:**
   * Commit `576edbb` en la rama `main` y sincronizado en GitHub.
+
+### Entrada 25 — Expansión Integral del Currículum: 3 Rutas y 11 Módulos (18 Ejercicios Semánticos)
+* **Fecha:** 2026-11-09
+* **Objetivo:** Ampliar el catálogo curricular a 18 ejercicios completos que abarcan los 11 módulos de las 3 rutas formativas, cada uno con didáctica enriquecida estilo SQLBolt (conceptos, sintaxis de referencia, notas de orden de ejecución, checklists de sub-objetivos y tablas de muestra interactivas).
+* **Distribución de Retos Implementados:**
+  * **Ruta 1: SQL Foundations (8 ejercicios, Módulos 1-4):**
+    * M1: Catálogo Básico de Productos (`SELECT nombre_producto, precio`) y Cálculo de Precios con IVA (`ROUND(precio * 1.21, 2) AS precio_con_iva`).
+    * M2: Productos Premium (`WHERE precio > 500`) y Rango Medio (`WHERE precio BETWEEN 100 AND 800`).
+    * M3: Clientes Españoles Ordenados (`ORDER BY apellido ASC`) y Top 5 Críticos por Stock (`ORDER BY stock ASC LIMIT 5`).
+    * M4: Conteo por Categoría (`GROUP BY ... HAVING COUNT(*) > 2`) y Métricas Globales (`COUNT(*)`, `SUM(total)`, `ROUND(AVG(total), 2)`).
+  * **Ruta 2: Relational SQL (5 ejercicios, Módulos 5-7):**
+    * M5: Pedidos con Identidad del Cliente (`INNER JOIN`) y Gasto Acumulado por Cliente (`INNER JOIN + GROUP BY`).
+    * M6: Clientes sin Compras (`LEFT JOIN ... WHERE p.pedido_id IS NULL`) y Productos sin Ventas (`Anti-Join con detalle_pedidos`).
+    * M7: Desglose Completo de Líneas de Pedido (Multi-Tabla 5-way JOIN entre pedidos, clientes, detalle_pedidos, productos y categorias).
+  * **Ruta 3: Advanced Queries (5 ejercicios, Módulos 8-11):**
+    * M8: Productos sobre el Promedio de Precio (Subconsulta escalar `WHERE precio > (SELECT AVG(precio)...)`).
+    * M9: Segmentación de Pedidos por Monto (`CASE WHEN total >= 1000 ... WHEN total >= 300 ... ELSE ... END`).
+    * M10: Facturación por Categoría mediante CTE (`WITH ventas_por_categoria AS (...) SELECT ...`).
+    * M11: Ranking Global de Precios (`ROW_NUMBER() OVER (ORDER BY precio DESC)`) y Ranking Relativo por Categoría (`DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC)`).
+* **Validaciones Técnicas:**
+  * **Sandbox PostgreSQL (Docker):** Las 18 consultas solución probadas directamente contra `ecommerce_sandbox` (`18 PASSED / 0 FAILED`).
+  * **API FastAPI:** Suite Pytest (26/26 pruebas pasando en 0.14s). Endpoint `GET /api/v1/exercises` sirviendo los 18 retos en orden.
+  * **Frontend React / TypeScript:** Compilación estricta y empaquetado de producción con Vite (`built in 5.72s`, 0 errores).
+* **Control de Versiones:**
+  * Rama `feat/curriculum-expansion-3-tracks` mergeada a `main` y sincronizada en GitHub.
 
 ---
 

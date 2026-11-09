@@ -141,6 +141,18 @@
 - [x] **T11.7:** Verificación de compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.50s`, 0 errores).
 - [x] **T11.8:** Commit en `feat/auth-experience-and-custom-redirects`, merge a `main` y sincronización con GitHub.
 
+## Fase 9: Expansión del Currículum Completo de Retos (`feat/curriculum-expansion-3-tracks`) — Completada
+
+- [x] **T12.1:** Diseño pedagógico de los 18 ejercicios cubriendo las 3 rutas formativas (`sql-foundations`, `relational-sql`, `advanced-queries`) y los 11 módulos del syllabus.
+- [x] **T12.2:** Validación y ejecución semántica de las 18 consultas solución contra el PostgreSQL Sandbox en Docker (`18 PASSED / 0 FAILED`).
+- [x] **T12.3:** Actualización del catálogo enriquecido en FastAPI (`apps/api/app/modules/curriculum/seed_data.py`) con conceptos teóricos, bloques de sintaxis, notas de orden de ejecución, checklists de sub-objetivos y tablas de muestra interactivas.
+- [x] **T12.4:** Sincronización del catálogo espejo en el frontend (`apps/web/src/lib/api.ts`) con `FALLBACK_EXERCISES`, `FALLBACK_TRACKS` y `SAMPLE_TABLE_DETALLE_PEDIDOS`.
+- [x] **T12.5:** Actualización del script semilla para Supabase Cloud en `database/supabase/02_seed_curriculum.sql`.
+- [x] **T12.6:** Verificación de suite de pruebas Pytest (26/26 pruebas pasando al 100%).
+- [x] **T12.7:** Verificación de compilación estricta de TypeScript y empaquetado de producción con Vite (`built in 5.72s`, 0 errores).
+- [x] **T12.8:** Commit en `feat/curriculum-expansion-3-tracks`, merge a `main` y sincronización con GitHub.
+
+
 
 
 
