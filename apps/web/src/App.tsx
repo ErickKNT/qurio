@@ -118,7 +118,8 @@ export const App: React.FC = () => {
         setResultColumns(evalResponse.columns.map((name) => ({ name, type: 'column' })));
         setResultRows(evalResponse.rows);
         setAwardedXp(evalResponse.xp_awarded);
-        setSuccessModalOpen(true);
+        // Dejar visible el resultado en pantalla (no bloquear con modal inmediato)
+        setSuccessModalOpen(false);
       } else if (evalResponse.status === 'FAILED') {
         setExecutionStatus('FAILED');
         setRowCount(evalResponse.rows ? evalResponse.rows.length : 0);
@@ -231,6 +232,8 @@ export const App: React.FC = () => {
               error={resultError}
               diff={resultDiff}
               message={resultMessage}
+              xpAwarded={awardedXp}
+              onNextExercise={handleNextExercise}
             />
           }
           statusBar={
