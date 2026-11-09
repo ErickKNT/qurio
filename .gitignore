@@ -63,4 +63,5 @@ postgres-data/
 # Graphify
 graphify-out/cache/
 graphify-out/.graphify_*
+graphify-out/202*/
 

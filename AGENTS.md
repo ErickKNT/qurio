@@ -64,3 +64,6 @@ Toda la interfaz visual de Qurio en React debe estructurarse obligatoriamente ba
   * Todos los cambios y ramas deben sincronizarse y enviarse a GitHub (`git push`).
 * **Bitácora de Proyecto (Obligatorio):**
   * Se debe mantener actualizado el archivo [`docs/BITACORA.md`](file:///c:/Desarrollo/Qurio/docs/BITACORA.md) registrando el estado de cada fase, decisiones y avances técnicos entregados en cada iteración.
+* **Actualización del Grafo de Conocimiento (Graphify — Obligatorio):**
+  * Ante cada cambio grande, cierre de fase, modificación arquitectónica relevante o adición sustancial de archivos/ejercicios, se debe actualizar obligatoriamente el grafo de conocimiento del proyecto ejecutando `python -m graphify update .`.
+  * Esto preserva la sincronización del mapa de dependencias, las comunidades de código y los artefactos de análisis en `graphify-out/` (`graph.json`, `graph.html`, `GRAPH_REPORT.md`).
