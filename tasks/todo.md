@@ -81,3 +81,16 @@
 - [x] **T6.5:** Transparencia y contacto real en el pie de página del Dashboard y modal [`PrivacyModal`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/PrivacyModal/PrivacyModal.tsx) (cero direcciones falsas, enlace auténtico a `github.com/ErickKNT/qurio` y política de privacidad clara sin cookies de terceros).
 - [x] **T6.6:** Verificación de compilación TypeScript y empaquetado de producción con Vite (`built in 6.23s`, 0 errores).
 - [x] **T6.7:** Commit en `feat/authenticity-and-polish`, merge a `main` y sincronización con GitHub.
+
+## Soporte de Temas (Claro / Oscuro) y Documentación README (`feat/theme-support-and-readme`) — Completada
+
+- [x] **T7.1:** Sistema de variables CSS para Tailwind en `apps/web/src/index.css` (`:root` para tema claro y `.dark` para tema oscuro).
+- [x] **T7.2:** Adaptación de `apps/web/tailwind.config.js` para usar canales alfa dinámicos `rgb(var(--color-...) / <alpha-value>)`.
+- [x] **T7.3:** Hook `useTheme` en `apps/web/src/hooks/useTheme.ts` con persistencia en `localStorage`, detección de `prefers-color-scheme` y eventos de sincronización.
+- [x] **T7.4:** Botón interactivo de alternancia sol/luna en `TopHeader` y en la cabecera de `WorkspaceLayout`.
+- [x] **T7.5:** Integración reactiva del tema en `MonacoEditorPanel` (`qurio-dark` y `qurio-light` con cambio dinámico vía `monaco.editor.setTheme`).
+- [x] **T7.6:** Script anti-parpadeo (anti-FOUC) en `apps/web/index.html`.
+- [x] **T7.7:** `README.md` exhaustivo y profesional en la raíz del repositorio con badges, diagramas Mermaid, quickstart, dataset y estándares de arquitectura.
+- [x] **T7.8:** Verificación de compilación TypeScript y build de producción Vite (`built in 5.96s`, 0 errores).
+- [x] **T7.9:** Commit en `feat/theme-support-and-readme`, merge a `main` y sincronización con GitHub.
+

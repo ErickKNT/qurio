@@ -4,32 +4,58 @@
 
 @layer base {
   :root {
+    --color-canvas: 248 250 252;
+    --color-surface: 255 255 255;
+    --color-surface-dim: 241 245 249;
+    --color-surface-card: 255 255 255;
+    --color-surface-hover: 241 245 249;
+    --color-surface-elevated: 248 250 252;
+    --color-border: 226 232 240;
+    --color-border-subtle: 226 232 240;
+    --color-content-primary: 15 23 42;
+    --color-content-secondary: 71 85 105;
+    --color-content-muted: 148 163 184;
+    color-scheme: light;
+  }
+
+  .dark {
+    --color-canvas: 11 16 32;
+    --color-surface: 17 24 39;
+    --color-surface-dim: 14 19 35;
+    --color-surface-card: 23 32 51;
+    --color-surface-hover: 30 40 64;
+    --color-surface-elevated: 37 46 71;
+    --color-border: 30 41 59;
+    --color-border-subtle: 30 41 59;
+    --color-content-primary: 248 250 252;
+    --color-content-secondary: 148 163 184;
+    --color-content-muted: 100 116 139;
     color-scheme: dark;
   }
 
   body {
-    background-color: #0B1020;
-    color: #F8FAFC;
+    background-color: rgb(var(--color-canvas));
+    color: rgb(var(--color-content-primary));
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Custom scrollbar matching dark IDE aesthetics */
+  /* Custom scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #0B1020;
+    background: rgb(var(--color-canvas));
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1E293B;
+    background: rgb(var(--color-border));
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: rgb(var(--color-content-muted));
   }
 }
 

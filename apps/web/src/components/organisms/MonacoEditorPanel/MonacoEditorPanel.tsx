@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import Editor, { OnMount } from '@monaco-editor/react';
 import { Play, RotateCcw, Wand2, Terminal } from 'lucide-react';
 import { Button } from '@/components/atoms/Button/Button';
+import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 
 export interface MonacoEditorPanelProps {
@@ -24,9 +25,12 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
   className,
 }) => {
   const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
+  const { isDark } = useTheme();
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
+    monacoRef.current = monaco;
 
     // 1. Definir tema visual oficial 'qurio-dark'
     monaco.editor.defineTheme('qurio-dark', {
@@ -56,15 +60,49 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
       },
     });
 
-    monaco.editor.setTheme('qurio-dark');
+    // 2. Definir tema visual oficial 'qurio-light'
+    monaco.editor.defineTheme('qurio-light', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: '', background: 'F8FAFC', foreground: '0F172A' },
+        { token: 'keyword', foreground: '4F46E5', fontStyle: 'bold' },
+        { token: 'string', foreground: '15803D' },
+        { token: 'number', foreground: 'D97706' },
+        { token: 'comment', foreground: '94A3B8', fontStyle: 'italic' },
+        { token: 'operator', foreground: '4F46E5' },
+        { token: 'delimiter', foreground: '64748B' },
+        { token: 'type', foreground: '6366F1' },
+      ],
+      colors: {
+        'editor.background': '#F8FAFC',
+        'editor.foreground': '#0F172A',
+        'editorCursor.foreground': '#4F46E5',
+        'editor.lineHighlightBackground': '#F1F5F980',
+        'editorLineNumber.foreground': '#94A3B880',
+        'editorLineNumber.activeForeground': '#4F46E5',
+        'editor.selectionBackground': '#C7D2FE80',
+        'editor.inactiveSelectionBackground': '#E0E7FF80',
+        'editorIndentGuide.background': '#E2E8F0',
+        'editorIndentGuide.activeBackground': '#CBD5E1',
+      },
+    });
 
-    // 2. Vincular atajo de teclado: Cmd/Ctrl + Enter -> onExecute
+    monaco.editor.setTheme(isDark ? 'qurio-dark' : 'qurio-light');
+
+    // 3. Vincular atajo de teclado: Cmd/Ctrl + Enter -> onExecute
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       onExecute();
     });
 
     editor.focus();
   };
+
+  useEffect(() => {
+    if (monacoRef.current) {
+      monacoRef.current.editor.setTheme(isDark ? 'qurio-dark' : 'qurio-light');
+    }
+  }, [isDark]);
 
   // Formateador rápido de palabras clave SQL
   const handleFormatSql = () => {

@@ -6,14 +6,15 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 6: Autenticidad, Calidad & Despliegue (`feat/authenticity-and-polish`) — Concluida (MVP 1.0 Listo)**  
+* **Fase Actual:** **Soporte de Tema Claro/Oscuro y Documentación GitHub (`feat/theme-support-and-readme`) — Concluida (MVP 1.0 Pulido)**  
 * **Próxima Fase:** **Operación, Despliegue en la Nube y Expansión de Catálogo**  
-* **Rama Git Activa:** `feat/authenticity-and-polish` (en proceso de merge a `main` y push a GitHub)  
+* **Rama Git Activa:** `feat/theme-support-and-readme` (en proceso de merge a `main` y push a GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
-  * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico.
-  * Frontend React 18 + Vite corriendo en `http://localhost:5173` con Monaco Editor, DataGrid, SpecPanel y SuccessModal (Build de producción 100% verificado).
+  * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico (26/26 tests pasando).
+  * Frontend React 18 + Vite corriendo en `http://localhost:5173` con soporte dinámico de tema claro/oscuro, Monaco Editor con temas `qurio-dark`/`qurio-light` y DataGrid (Build de producción 100% verificado).
   * Proyecto Supabase en la nube con esquemas DDL `01_schema.sql` y catálogo semilla `02_seed_curriculum.sql` desplegados.
+  * Documentación completa `README.md` en la raíz del repositorio.
 
 ---
 
@@ -28,6 +29,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **4** | **Flujo Principal End-to-End** | ✅ Concluida | `feat/exercise-ide-flow` | Monaco Editor, DataGrid tabular con tipos de datos, especificación del ejercicio con pistas, cliente API FastAPI y modal de recompensa XP. |
 | **5** | **Catálogo, Playground & Gamificación** | ✅ Concluida | `feat/curriculum-and-gamification` | Rutas con syllabus interactivo, SQL Playground libre con explorador de esquemas, Logros con filtros y Mi Perfil con mapa de calor. |
 | **6** | **Autenticidad, Calidad & Despliegue** | ✅ Concluida | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG propio, metadatos OG, adaptabilidad móvil y transparencia de contacto. |
+| **+** | **Temas (Claro/Oscuro) & README** | ✅ Concluida | `feat/theme-support-and-readme` | Tokens Tailwind CSS dinámicos, toggle sol/luna, temas Monaco reactivos y README.md exhaustivo. |
 
 ---
 
@@ -270,6 +272,29 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
     * Textos alternativos (`alt`) descriptivos en el 100% de avatares e imágenes y atajos de teclado documentados (`⌘ + Enter`).
 * **Verificación de Calidad:**
   * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 6.23s`, 0 errores).
+
+---
+
+### [2026-11-09] — Entrada 15: Soporte para Tema Claro/Oscuro y README Oficial de GitHub
+* **Rama:** `feat/theme-support-and-readme`
+* **Entregables de Temas y Documentación:**
+  * **Tokens Dinámicos y Variables CSS para Tailwind:**
+    * Re-arquitectura de [`apps/web/src/index.css`](file:///c:/Desarrollo/Qurio/apps/web/src/index.css) con variables en canales RGB (`--color-canvas`, `--color-surface`, `--color-surface-subtle`, `--color-border-subtle`, `--color-border-focus`, `--color-text-main`, `--color-text-muted`, etc.) para `:root` (tema claro) y `.dark` (tema oscuro).
+    * Actualización de [`apps/web/tailwind.config.js`](file:///c:/Desarrollo/Qurio/apps/web/tailwind.config.js) para utilizar `rgb(var(--color-...) / <alpha-value>)`, permitiendo compatibilidad total con modificadores de opacidad de Tailwind (ej. `bg-surface/70`, `border-border-subtle/50`).
+  * **Hook Reactivo y Persistencia (`useTheme`):**
+    * Módulo [`apps/web/src/hooks/useTheme.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/hooks/useTheme.ts) con almacenamiento en `localStorage` (`qurio_theme`), detección de `prefers-color-scheme`, eventos custom `qurio-theme-change` y listeners a cambios del sistema operativo.
+  * **Controles Visuales de Alternancia (Toggle Sol / Luna):**
+    * Botón integrado en la barra de herramientas superior [`TopHeader`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/TopHeader/TopHeader.tsx).
+    * Botón integrado en la cabecera del espacio de trabajo [`WorkspaceLayout`](file:///c:/Desarrollo/Qurio/apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx) en [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx).
+  * **Temas Reactivos en Monaco Editor:**
+    * Actualización de [`MonacoEditorPanel`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx) definiendo el tema claro oficial `qurio-light` (fondo `#F8FAFC`, cursor cyan `#0284C7`, palabras reservadas azul/índigo, strings verde oscuro, comentarios grises).
+    * Cambio reactivo del editor mediante `monaco.editor.setTheme()` cuando cambia `isDark`.
+  * **Script Anti-Parpadeo (Anti-FOUC):**
+    * Script embebido en `<head>` de [`apps/web/index.html`](file:///c:/Desarrollo/Qurio/apps/web/index.html) para inyectar la clase `dark` antes del primer render del DOM.
+  * **README.md Oficial y Exhaustivo:**
+    * Documentación técnica completa en [`README.md`](file:///c:/Desarrollo/Qurio/README.md) con badges oficiales, diagramas Mermaid de arquitectura global y flujo de evaluación semántica, resumen del dataset de 10 tablas, guía de instalación paso a paso, suite de pruebas y estándares de ingeniería.
+* **Verificación de Calidad:**
+  * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.96s`, 0 errores).
 
 ---
 

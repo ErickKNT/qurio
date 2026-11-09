@@ -10,6 +10,8 @@ import {
   ArrowLeft,
   ChevronRight,
   Flame,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
@@ -25,6 +27,7 @@ import {
   NotFoundView,
 } from '@/components/organisms';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import {
   api,
   FALLBACK_EXERCISES,
@@ -51,6 +54,7 @@ export const App: React.FC = () => {
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
   const { profile } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   // Estados del Currículum, Tablas y Gamificación
   const [tracks, setTracks] = useState<Track[]>(FALLBACK_TRACKS);
@@ -264,6 +268,15 @@ export const App: React.FC = () => {
                   <span className="w-2 h-2 rounded-full bg-emerald" />
                   <span>Sandbox Online</span>
                 </div>
+
+                <button
+                  onClick={toggleTheme}
+                  className="p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card transition-colors"
+                  title={isDark ? 'Cambiar a Tema Claro' : 'Cambiar a Tema Oscuro'}
+                  aria-label="Alternar tema visual"
+                >
+                  {isDark ? <Sun className="w-3.5 h-3.5 text-amber-accent" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
+                </button>
               </div>
             </div>
           }
