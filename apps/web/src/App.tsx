@@ -22,6 +22,7 @@ import {
   SqlPlaygroundView,
   AchievementsView,
   UserProfileView,
+  NotFoundView,
 } from '@/components/organisms';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -42,7 +43,7 @@ import {
   QueryHistoryItem,
 } from '@/types';
 
-export type AppPath = 'dashboard' | 'playground' | 'tracks' | 'achievements' | 'profile' | 'exercise';
+export type AppPath = 'dashboard' | 'playground' | 'tracks' | 'achievements' | 'profile' | 'exercise' | 'not-found';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<AppPath>('dashboard');
@@ -106,6 +107,7 @@ export const App: React.FC = () => {
         playground: 'SQL Playground | Qurio',
         achievements: 'Logros & Rangos | Qurio',
         profile: 'Mi Perfil | Qurio',
+        'not-found': 'ERROR 404: Relation Not Found | Qurio',
       };
       document.title = titles[currentPath] || 'Qurio | Aprende SQL. Piensa en queries.';
     }
@@ -338,6 +340,8 @@ export const App: React.FC = () => {
         return 'Logros & Rangos';
       case 'profile':
         return 'Mi Perfil';
+      case 'not-found':
+        return '404 Relation Not Found';
       default:
         return 'Dashboard';
     }
@@ -380,6 +384,14 @@ export const App: React.FC = () => {
           profile={profile}
           history={queryHistory}
           onOpenPlayground={() => setCurrentPath('playground')}
+        />
+      )}
+
+      {/* VISTA E: ERROR 404 (RELATION NOT FOUND) */}
+      {currentPath === 'not-found' && (
+        <NotFoundView
+          missingPath="v_reporte_anual"
+          onNavigate={(path) => setCurrentPath(path as AppPath)}
         />
       )}
 
@@ -632,6 +644,25 @@ export const App: React.FC = () => {
                   helperText="Escribe un correo inválido para probar la validación inline estricta."
                   required
                 />
+              </div>
+
+              {/* Organismo: Error 404 Tematizado SQL (Anti-AI Slop Regla 1.1) */}
+              <div className="flex flex-col gap-3 max-w-md pt-2 border-t border-border-subtle/40">
+                <span className="text-xs font-mono font-semibold text-cyan-accent uppercase tracking-wider">
+                  4. Organismo — 404 Temática SQL (Anti-AI Slop Regla 1.1)
+                </span>
+                <p className="text-xs text-content-secondary">
+                  Metáfora técnica relacional: captura rutas inexistentes con mensaje de error SQLSTATE 42P01.
+                </p>
+                <div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPath('not-found')}
+                  >
+                    Simular Error 404 (Relation Not Found)
+                  </Button>
+                </div>
               </div>
             </section>
           )}

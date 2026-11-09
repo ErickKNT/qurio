@@ -7,3 +7,4 @@ export * from './TracksView/TracksView';
 export * from './SqlPlaygroundView/SqlPlaygroundView';
 export * from './AchievementsView/AchievementsView';
 export * from './UserProfileView/UserProfileView';
+export * from './NotFoundView/NotFoundView';
