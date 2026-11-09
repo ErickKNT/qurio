@@ -3,3 +3,7 @@ export * from './StreakPill/StreakPill';
 export * from './FormField/FormField';
 export * from './MetricTile/MetricTile';
 export * from './SuccessModal/SuccessModal';
+export * from './TrackCard/TrackCard';
+export * from './ModuleAccordion/ModuleAccordion';
+export * from './SchemaTableItem/SchemaTableItem';
+export * from './AchievementCard/AchievementCard';

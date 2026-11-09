@@ -3,3 +3,7 @@ export * from './TopHeader/TopHeader';
 export * from './MonacoEditorPanel/MonacoEditorPanel';
 export * from './DataGridResults/DataGridResults';
 export * from './ExerciseSpecPanel/ExerciseSpecPanel';
+export * from './TracksView/TracksView';
+export * from './SqlPlaygroundView/SqlPlaygroundView';
+export * from './AchievementsView/AchievementsView';
+export * from './UserProfileView/UserProfileView';
