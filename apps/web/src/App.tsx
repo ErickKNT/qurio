@@ -12,6 +12,8 @@ import {
   Flame,
   Sun,
   Moon,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
@@ -66,7 +68,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile, updateProfile, isCloudAuth } = useAuth();
+  const { profile, updateProfile, isCloudAuth, isAuthenticated, signOut } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
@@ -389,20 +391,45 @@ export const App: React.FC = () => {
                   {isDark ? <Sun className="w-3.5 h-3.5 text-amber-streak" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
                 </button>
 
-                {/* Avatar y Gatillo de Autenticación */}
-                <button
-                  type="button"
-                  onClick={() => setAuthModalOpen(true)}
-                  className="flex items-center gap-1.5 pl-2 border-l border-border-subtle/50 text-xs font-mono text-content-muted hover:text-content-primary transition-colors"
-                  title="Gestionar sesión / Cuenta Supabase"
-                >
-                  <img
-                    src={profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop'}
-                    alt={`Avatar de ${profile?.username || 'Usuario'}`}
-                    className="w-5 h-5 rounded-full object-cover border border-border-subtle"
-                  />
-                  <span className="hidden md:inline">{profile?.username || 'Estudiante'}</span>
-                </button>
+                {/* Gestión de Sesión: Invitado vs Autenticado */}
+                {!isAuthenticated ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setAuthModalOpen(true)}
+                    leftIcon={<LogIn className="w-3.5 h-3.5" />}
+                    className="text-xs py-1 px-3 ml-1 shadow-glow-primary"
+                  >
+                    Iniciar Sesión
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2 pl-2 border-l border-border-subtle/50">
+                    <button
+                      type="button"
+                      onClick={() => setAuthModalOpen(true)}
+                      className="flex items-center gap-1.5 text-xs font-mono text-content-primary hover:text-cyan-accent transition-colors"
+                      title="Mi Cuenta Supabase"
+                    >
+                      <div className="relative">
+                        <img
+                          src={profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'user'}`}
+                          alt={`Avatar de ${profile?.username || 'Usuario'}`}
+                          className="w-5 h-5 rounded-full object-cover border border-emerald/50"
+                        />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald" />
+                      </div>
+                      <span className="hidden md:inline font-bold">{profile?.username || 'Usuario'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={signOut}
+                      className="p-1 rounded text-content-muted hover:text-error hover:bg-surface-card transition-colors"
+                      title="Cerrar sesión"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           }

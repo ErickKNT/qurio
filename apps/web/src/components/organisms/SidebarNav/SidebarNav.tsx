@@ -9,7 +9,9 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  LogIn,
 } from 'lucide-react';
+import { Button } from '@/components/atoms/Button/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +20,7 @@ export interface SidebarNavProps {
   onNavigate: (path: string) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  onOpenAuth?: () => void;
   className?: string;
 }
 
@@ -26,9 +29,10 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   onNavigate,
   isCollapsed = false,
   onToggleCollapse,
+  onOpenAuth,
   className,
 }) => {
-  const { profile, signOut } = useAuth();
+  const { profile, isAuthenticated, signOut } = useAuth();
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -129,20 +133,52 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
       {/* Footer User Profile & Level/XP Card */}
       <div className="p-3 border-t border-border-subtle/40">
-        {!isCollapsed ? (
-          <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-surface/60 border border-border-subtle/60 shadow-sm">
+        {!isAuthenticated ? (
+          !isCollapsed ? (
+            <div className="flex flex-col gap-2 p-3 rounded-xl bg-surface/50 border border-border-subtle/60 text-center items-center">
+              <span className="text-[11px] font-mono text-content-muted uppercase tracking-wider font-semibold">Modo Invitado</span>
+              <p className="text-[11px] text-content-secondary leading-tight">
+                Inicia sesión para guardar tu avance y sincronizar tus retos en la nube.
+              </p>
+              {onOpenAuth && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={onOpenAuth}
+                  leftIcon={<LogIn className="w-3.5 h-3.5" />}
+                  className="w-full text-xs py-1.5 mt-1 shadow-glow-primary"
+                >
+                  Iniciar Sesión
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              {onOpenAuth && (
+                <button
+                  onClick={onOpenAuth}
+                  className="p-2 rounded-xl text-primary hover:bg-surface-card transition-colors"
+                  title="Iniciar sesión"
+                >
+                  <LogIn className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )
+        ) : !isCollapsed ? (
+          <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-surface/60 border border-border-subtle/60 shadow-sm animate-fadeIn">
             <div className="flex items-center gap-2">
               <img
-                src={profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop'}
-                alt={`Avatar de ${profile?.username || 'Estudiante'}`}
-                className="w-7 h-7 rounded-full object-cover border border-border-subtle shrink-0"
+                src={profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'user'}`}
+                alt={`Avatar de ${profile?.username || 'Usuario'}`}
+                className="w-7 h-7 rounded-full object-cover border border-emerald/50 shrink-0"
               />
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-xs font-medium text-content-primary truncate">
+                <span className="text-xs font-bold text-content-primary truncate font-mono">
                   {profile?.username || 'Estudiante'}
                 </span>
                 <span className="text-[10px] font-mono text-content-muted truncate">
-                  Nivel {profile?.current_level || 1} • Explorer
+                  Nivel {profile?.current_level || 1} • {profile?.total_xp || 0} XP
                 </span>
               </div>
               <div className="flex items-center gap-1 text-[11px] font-mono font-medium text-amber-streak bg-amber-streak/10 px-1.5 py-0.5 rounded border border-amber-streak/20" title="Racha activa">
@@ -155,19 +191,19 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             <div className="flex flex-col gap-1 pt-1 border-t border-border-subtle/30">
               <div className="flex justify-between text-[10px] font-mono text-content-muted">
                 <span className="text-primary font-medium">{profile?.total_xp || 0} XP</span>
-                <span>72%</span>
+                <span>Nivel {profile?.current_level || 1}</span>
               </div>
               <div className="w-full h-1.5 rounded-full bg-surface-dim overflow-hidden border border-border-subtle/40">
                 <div
                   className="h-full bg-gradient-to-r from-primary via-indigo-500 to-cyan-accent rounded-full"
-                  style={{ width: '72%' }}
+                  style={{ width: `${Math.min(100, Math.max(10, ((profile?.total_xp || 0) % 500) / 5))}%` }}
                 />
               </div>
             </div>
 
             <button
               onClick={signOut}
-              className="mt-0.5 flex items-center justify-center gap-1.5 text-[10px] text-content-muted hover:text-error transition-colors pt-1 border-t border-border-subtle/30"
+              className="mt-0.5 flex items-center justify-center gap-1.5 text-[10px] font-mono text-content-muted hover:text-error transition-colors pt-1 border-t border-border-subtle/30"
               title="Cerrar sesión"
             >
               <LogOut className="w-3 h-3" />
@@ -175,15 +211,15 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             </button>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-2 animate-fadeIn">
             <img
-              src={profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop'}
+              src={profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'user'}`}
               alt={`Avatar de ${profile?.username || 'Estudiante'}`}
-              className="w-7 h-7 rounded-full object-cover border border-border-subtle"
+              className="w-7 h-7 rounded-full object-cover border border-emerald/50"
             />
             <button
               onClick={signOut}
-              className="p-1 rounded text-content-muted hover:text-error hover:bg-surface-card transition-colors"
+              className="p-1.5 rounded-lg text-content-muted hover:text-error hover:bg-surface-card transition-colors"
               title="Cerrar sesión"
             >
               <LogOut className="w-3.5 h-3.5" />

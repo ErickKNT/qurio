@@ -37,6 +37,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           onNavigate={onNavigate}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+          onOpenAuth={onOpenAuth}
         />
 
         {/* Main Content Area */}

@@ -31,8 +31,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onOpenAuth,
   isCloudAuth = false,
 }) => {
-  const currentXp = profile?.total_xp || 480;
-  const currentLevel = profile?.current_level || 2;
+  const currentXp = profile?.total_xp ?? 0;
+  const currentLevel = profile?.current_level ?? 1;
   const nextLevelXp = 1000;
   const levelProgress = Math.min(Math.round((currentXp / nextLevelXp) * 100), 100);
 
@@ -55,7 +55,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           <img
             src={
               profile?.avatar_url ||
-              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop'
+              `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'guest'}`
             }
             alt={`Avatar de ${profile?.username || 'Usuario'}`}
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-border-subtle shadow-md"
@@ -63,8 +63,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl font-bold text-content-primary">
-                {profile?.username || 'Erick KNT'}
+              <h1 className="text-xl sm:text-2xl font-bold text-content-primary font-mono">
+                {profile?.username || 'Invitado'}
               </h1>
               <Badge variant="cyan" dot size="sm">
                 Nivel {currentLevel}

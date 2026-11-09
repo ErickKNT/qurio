@@ -227,4 +227,15 @@ export const persistence = {
       return {};
     }
   },
+
+  /**
+   * Elimina el perfil local al cerrar sesión.
+   */
+  clearLocalProfile(): void {
+    try {
+      localStorage.removeItem(LOCAL_PROFILE_STORAGE_KEY);
+    } catch (e) {
+      console.warn('Error al limpiar perfil local:', e);
+    }
+  },
 };
