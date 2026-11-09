@@ -7,3 +7,4 @@ export * from './TrackCard/TrackCard';
 export * from './ModuleAccordion/ModuleAccordion';
 export * from './SchemaTableItem/SchemaTableItem';
 export * from './AchievementCard/AchievementCard';
+export * from './PrivacyModal/PrivacyModal';

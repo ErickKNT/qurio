@@ -72,10 +72,12 @@
 - [x] **T5.6:** Verificación de compilación TypeScript y empaquetado de producción con Vite (`built in 5.38s`, 0 errores).
 - [x] **T5.7:** Commit en `feat/curriculum-and-gamification`, merge a `main` y push a GitHub.
 
-## Fase 6: Autenticidad, Calidad & Despliegue (`feat/authenticity-and-polish`) — Siguiente
+## Fase 6: Autenticidad, Calidad & Despliegue (`feat/authenticity-and-polish`) — Completada
 
-- [ ] **T6.1:** Página 404 temática con estética Terminal Glow Minimal y metáfora técnica SQL (`ERROR 404: Relation 'route' does not exist in schema public`).
-- [ ] **T6.2:** Favicon SVG oficial de Qurio integrado en `index.html`.
-- [ ] **T6.3:** Metadatos Open Graph (`og:title`, `og:description`, `og:image`).
-- [ ] **T6.4:** Pruebas y verificación de adaptabilidad móvil (breakpoints y tabuladores en smartphones/tablets).
-- [ ] **T6.5:** Checklist final de pre-lanzamiento y documentación de entrega.
+- [x] **T6.1:** Página 404 temática con estética Terminal Glow Minimal y metáfora técnica SQL (`ERROR 404: Relation 'route' does not exist in schema public`) en [`NotFoundView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/NotFoundView/NotFoundView.tsx) con botones de recuperación al Dashboard, Rutas y Playground.
+- [x] **T6.2:** Favicon SVG oficial de Qurio (cilindro relacional en capas con núcleo verde esmeralda activo) en `apps/web/public/favicon.svg` vinculado en `index.html`.
+- [x] **T6.3:** Metadatos Open Graph y Twitter Cards (`og:title`, `og:description`, `og:image`, `theme-color: #0B1020`) con el vector oficial [`og-preview.svg`](file:///c:/Desarrollo/Qurio/apps/web/public/og-preview.svg) y lema *"Aprende SQL. Piensa en queries."*.
+- [x] **T6.4:** Adaptabilidad responsiva móvil y tablet verificada en [`WorkspaceLayout`](file:///c:/Desarrollo/Qurio/apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx) (pestañas apiladas: *Consigna*, *Editor SQL*, *Resultados*).
+- [x] **T6.5:** Transparencia y contacto real en el pie de página del Dashboard y modal [`PrivacyModal`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/PrivacyModal/PrivacyModal.tsx) (cero direcciones falsas, enlace auténtico a `github.com/ErickKNT/qurio` y política de privacidad clara sin cookies de terceros).
+- [x] **T6.6:** Verificación de compilación TypeScript y empaquetado de producción con Vite (`built in 6.23s`, 0 errores).
+- [x] **T6.7:** Commit en `feat/authenticity-and-polish`, merge a `main` y sincronización con GitHub.
