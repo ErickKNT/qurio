@@ -549,17 +549,38 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Infraestructura Sandbox ([`docker-compose.yml`](file:///c:/Desarrollo/Qurio/docker-compose.yml) y [`database/sandbox/init.sql`](file:///c:/Desarrollo/Qurio/database/sandbox/init.sql)):**
     * Vinculación de PostgreSQL a `127.0.0.1:5433:5432` impidiendo exposición innecesaria a interfaces de red externas.
     * `lock_timeout = '1000ms'` y `temp_file_limit = '32MB'` sobre el rol `readonly_student`.
-  * **Script de Hardening de Supabase ([`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql)):**
-    * RPC `record_verified_attempt()` con `SECURITY DEFINER`, `search_path = public, pg_temp` e idempotencia que impide otorgar XP duplicado.
-    * Restricción de permisos: solo ejecutable por `service_role`.
-    * CLS en `user_profiles`: revocado el `UPDATE` directo sobre `xp` y `level` a clientes `authenticated`.
-  * **Frontend ([`apps/web/src/lib/api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts)):**
-    * Envío automático de `Authorization: Bearer <token>` cuando existe sesión activa en Supabase Auth.
+
+---
+
+### Entrada 27 — Revisión Final de Seguridad y Hardening Estricto (v3.0)
+* **Fecha:** 2026-11-09
+* **Rama:** `security/phase-9-hardening` (aislada de `main`, protegida sin despliegue automático).
+* **Objetivo:** Ejecutar la auditoría final multidisciplinaria sobre la migración Supabase DDL y los mecanismos de certificación, implementando validaciones anti-NULL, `SET search_path = ''`, matriz de privilegios de PostgreSQL, pruebas de concurrencia con conexiones independientes, evaluador semántico con precisión `Decimal` e inspector pedagógico de AST.
+* **Refactorizaciones Entregadas:**
+  * **Script DDL Supabase v3.0 ([`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql)):**
+    * Validación anti-NULL explícita en cada parámetro de `record_verified_attempt()`.
+    * Sustitución de `search_path = public, pg_temp` por `SET search_path = ''` para neutralizar ataques de secuestro de esquemas.
+    * Calificación explícita de esquemas en todos los objetos de aplicación (`public.*`, `pg_catalog.*`) y uso defensivo de expresiones sintácticas nativas (`COALESCE`, `LEAST`, `GREATEST`, `COUNT`).
+    * Propietario asignado a `postgres`, revocación explícita de `EXECUTE` a `PUBLIC`, `anon`, `authenticated`, y concesión exclusiva a `service_role`.
+    * Bloqueo físico `SELECT ... FOR UPDATE` sobre `public.user_profiles` e índice condicional único `idx_single_awarded_passed_attempt`.
+    * Validación de XP otorgado contra la recompensa oficial del ejercicio (`e.xp_reward`) y penalizaciones por pistas.
+    * Preservación de la consistencia auditada de `public.user_progress` en intentos fallidos (`FAILED`, `ERROR`).
+    * Eliminación explícita de la política RLS residual `"User Insert Own Attempts"`.
+  * **Script de Diagnóstico de Privilegios ([`database/supabase/diagnose_privileges.sql`](file:///c:/Desarrollo/Qurio/database/supabase/diagnose_privileges.sql)):**
+    * Consultas auditables mediante `has_table_privilege`, `has_column_privilege` y `has_function_privilege` sobre roles `anon`, `authenticated`, `service_role` y pseudo-rol `public`.
+  * **Procedimiento de Reversión Seguro ([`database/supabase/rollback_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/rollback_security_hardening.sql)):**
+    * Rollback seguro que prohíbe restaurar `GRANT UPDATE ON user_profiles TO authenticated`.
+    * Protege de forma inmutable las columnas `xp` y `level` incluso en caso de contingencia operacional.
+  * **Suite Automatizada de Migración Supabase ([`apps/api/tests/test_supabase_migration.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_supabase_migration.py)):**
+    * 7 pruebas integrales simulando el entorno completo de Supabase en Docker con roles, RLS y esquemas reales.
+    * Verificación de concurrencia con múltiples conexiones asyncpg independientes (`asyncio.gather`), demostrando cero condiciones de carrera y cero actualizaciones perdidas.
 * **Resultados de Validación:**
-  * **Backend Pytest:** 49/49 pruebas pasando en 2.34s (`test_security.py`, `test_auth.py`, `test_rate_limit.py`, `test_integration.py`, `test_evaluator.py`).
-  * **Frontend Vite Build:** `built in 5.47s`, 0 errores tipados.
-* **Control de Versiones:**
-  * Rama `security/phase-9-hardening` lista sin mergear a `main`.
+  * **Suite Completa Pytest:** **61/61 pruebas pasando en 3.10s** (100% éxito en evaluador, seguridad AST, auth JWKS, rate limiting, integración y migración Supabase).
+  * **Frontend Vite Build:** Empaquetado de producción TypeScript verificado en 5.70s con 0 errores.
+* **Control de Versiones y Compromisos:**
+  * Todos los cambios preservados estrictamente en `security/phase-9-hardening`.
+  * Cero modificaciones en Supabase Cloud hasta autorización formal del usuario.
+  * Cero merges a `main`.
 
 
 ---
