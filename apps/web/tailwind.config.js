@@ -5,18 +5,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0B1020',
-        canvas: '#0B1020',
+        background: 'rgb(var(--color-canvas) / <alpha-value>)',
+        canvas: 'rgb(var(--color-canvas) / <alpha-value>)',
         surface: {
-          DEFAULT: '#111827',
-          dim: '#0e1323',
-          card: '#172033',
-          hover: '#1e2840',
-          elevated: '#252e47',
+          DEFAULT: 'rgb(var(--color-surface) / <alpha-value>)',
+          dim: 'rgb(var(--color-surface-dim) / <alpha-value>)',
+          card: 'rgb(var(--color-surface-card) / <alpha-value>)',
+          hover: 'rgb(var(--color-surface-hover) / <alpha-value>)',
+          elevated: 'rgb(var(--color-surface-elevated) / <alpha-value>)',
         },
         border: {
-          DEFAULT: '#1E293B',
-          subtle: '#1E293B',
+          DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
+          subtle: 'rgb(var(--color-border-subtle) / <alpha-value>)',
           glow: 'rgba(99, 102, 241, 0.4)',
           emerald: 'rgba(34, 197, 94, 0.5)',
         },
@@ -28,7 +28,7 @@ export default {
           glow: 'rgba(99, 102, 241, 0.25)',
         },
         cyan: {
-          accent: '#38BDF8',
+          accent: '#0284c7',
           glow: 'rgba(56, 189, 248, 0.25)',
         },
         emerald: {
@@ -40,14 +40,14 @@ export default {
           glow: 'rgba(245, 158, 11, 0.25)',
         },
         error: {
-          DEFAULT: '#ffb4ab',
+          DEFAULT: '#ef4444',
           solid: '#EF4444',
           container: '#93000a',
         },
         content: {
-          primary: '#F8FAFC',
-          secondary: '#94A3B8',
-          muted: '#64748B',
+          primary: 'rgb(var(--color-content-primary) / <alpha-value>)',
+          secondary: 'rgb(var(--color-content-secondary) / <alpha-value>)',
+          muted: 'rgb(var(--color-content-muted) / <alpha-value>)',
         },
       },
       fontFamily: {

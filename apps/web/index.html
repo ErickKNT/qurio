@@ -24,6 +24,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Theme Initialization Script (Anti-FOUC) -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('qurio_theme');
+          var isDark = saved === 'dark' || (!saved && !window.matchMedia('(prefers-color-scheme: light)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="bg-canvas text-content-primary font-sans antialiased selection:bg-primary/30 selection:text-white min-h-screen">
     <div id="root"></div>

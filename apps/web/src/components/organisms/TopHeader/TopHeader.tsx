@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Bell, Terminal } from 'lucide-react';
+import { Bell, Terminal, Sun, Moon } from 'lucide-react';
 import { SearchInput } from '@/components/molecules/SearchInput/SearchInput';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 
 export interface TopHeaderProps {
@@ -19,6 +20,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 }) => {
   const [searchVal, setSearchVal] = useState('');
   const { profile } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <header
@@ -56,7 +58,21 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       </div>
 
       {/* Right: Notifications & User Avatar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className="p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card/60 transition-colors"
+          title={isDark ? 'Cambiar a Tema Claro' : 'Cambiar a Tema Oscuro'}
+          aria-label="Alternar tema claro y oscuro"
+        >
+          {isDark ? (
+            <Sun className="w-4 h-4 text-amber-accent" />
+          ) : (
+            <Moon className="w-4 h-4 text-primary" />
+          )}
+        </button>
+
         {/* Notification Bell */}
         <button
           className="relative p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card/60 transition-colors"
