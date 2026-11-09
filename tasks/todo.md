@@ -94,3 +94,16 @@
 - [x] **T7.8:** Verificación de compilación TypeScript y build de producción Vite (`built in 5.96s`, 0 errores).
 - [x] **T7.9:** Commit en `feat/theme-support-and-readme`, merge a `main` y sincronización con GitHub.
 
+## Fase 7: Persistencia Real de Progreso y Autenticación con Supabase Cloud (`feat/supabase-auth-and-persistence`) — Completada
+
+- [x] **T8.1:** Motor de persistencia híbrida `apps/web/src/lib/persistence.ts` con guardado de intentos (`recordAttempt`), lectura de completados (`getCompletedExerciseIds`), cálculo de XP/nivel y respaldo local transparente (`localStorage`) ante desconexión o modo demo.
+- [x] **T8.2:** Ampliación del hook `useAuth.ts` con soporte para login (`signIn`), registro (`signUp`), logout (`signOut`), creación reactiva de perfiles en `user_profiles` y sincronización de sesiones Supabase JWT.
+- [x] **T8.3:** Molécula `AuthModal` (`apps/web/src/components/molecules/AuthModal/AuthModal.tsx`) con pestañas para Iniciar Sesión / Registro, campos `FormField` con validación inline de errores, feedback visual y estado de conexión JWT.
+- [x] **T8.4:** Integración en `TopHeader` y `WorkspaceLayout` del disparador modal de sesión y visualización del usuario actual.
+- [x] **T8.5:** Integración en `UserProfileView` con selector de estado (Cloud / Local), visualización de badge Supabase Cloud y botón de gestión de cuenta.
+- [x] **T8.6:** Flujo end-to-end en `App.tsx`: persistencia automática de cada evaluación exitosa (`PASSED`), fallida (`FAILED`) o con error (`ERROR`), actualización en tiempo real de XP, nivel y estado de retos superados.
+- [x] **T8.7:** Verificación de compilación TypeScript y empaquetado de producción con Vite (`built in 5.42s`, 0 errores).
+- [x] **T8.8:** Servidores activos y verificados: FastAPI (8000), Vite (5173), PostgreSQL Sandbox en Docker (5433).
+- [x] **T8.9:** Commit en `feat/supabase-auth-and-persistence`, merge a `main` y sincronización con GitHub.
+
+

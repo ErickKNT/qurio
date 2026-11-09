@@ -9,6 +9,7 @@ import {
   Calendar,
   ChevronRight,
   Code2,
+  UserCheck,
 } from 'lucide-react';
 import { UserProfile, QueryHistoryItem } from '@/types';
 import { Badge, Button } from '@/components/atoms';
@@ -18,6 +19,8 @@ export interface UserProfileViewProps {
   profile: UserProfile | null;
   history: QueryHistoryItem[];
   onOpenPlayground?: () => void;
+  onOpenAuth?: () => void;
+  isCloudAuth?: boolean;
   className?: string;
 }
 
@@ -25,6 +28,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   profile,
   history,
   onOpenPlayground,
+  onOpenAuth,
+  isCloudAuth = false,
 }) => {
   const currentXp = profile?.total_xp || 480;
   const currentLevel = profile?.current_level || 2;
@@ -64,13 +69,22 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <Badge variant="cyan" dot size="sm">
                 Nivel {currentLevel}
               </Badge>
+              {isCloudAuth ? (
+                <Badge variant="emerald" dot size="sm">
+                  Supabase Cloud
+                </Badge>
+              ) : (
+                <Badge variant="amber" size="sm">
+                  Local / Offline
+                </Badge>
+              )}
             </div>
 
             <p className="text-xs text-content-secondary font-mono">
-              erick@ejemplo.dev • Estudiante Autodidacta
+              {profile?.full_name || profile?.username || 'Estudiante'} • {isCloudAuth ? 'Sesión JWT Autenticada' : 'Modo Demostración'}
             </p>
 
-            <div className="flex items-center gap-3 mt-1 text-[11px] font-mono text-content-muted">
+            <div className="flex flex-wrap items-center gap-3 mt-1 text-[11px] font-mono text-content-muted">
               <span className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-content-muted" />
                 Miembro desde Nov 2026
@@ -81,6 +95,20 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 Sandbox Aislado Conectado
               </span>
             </div>
+
+            {onOpenAuth && (
+              <div className="mt-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onOpenAuth}
+                  className="text-xs"
+                >
+                  <UserCheck className="w-3.5 h-3.5 mr-1.5 text-primary" />
+                  <span>{isCloudAuth ? 'Gestionar Cuenta / Sesión' : 'Iniciar Sesión en Supabase'}</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 

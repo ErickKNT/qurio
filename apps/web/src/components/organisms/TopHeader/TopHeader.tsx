@@ -9,6 +9,7 @@ export interface TopHeaderProps {
   title?: string;
   isSidebarCollapsed?: boolean;
   onOpenPlayground?: () => void;
+  onOpenAuth?: () => void;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   title = 'Dashboard',
   isSidebarCollapsed = false,
   onOpenPlayground,
+  onOpenAuth,
   className,
 }) => {
   const [searchVal, setSearchVal] = useState('');
@@ -85,8 +87,13 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-cyan-accent" />
         </button>
 
-        {/* User Avatar */}
-        <div className="flex items-center gap-2 pl-2 border-l border-border-subtle/40">
+        {/* User Avatar & Session Trigger */}
+        <button
+          type="button"
+          onClick={onOpenAuth}
+          className="flex items-center gap-2 pl-2 border-l border-border-subtle/40 hover:opacity-85 transition-opacity"
+          title="Gestionar sesión / Cuenta Supabase"
+        >
           <img
             src={profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop'}
             alt={`Avatar de ${profile?.username || 'Usuario'}`}
@@ -95,7 +102,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <span className="hidden sm:inline text-xs font-medium text-content-secondary">
             {profile?.username || 'Estudiante'}
           </span>
-        </div>
+        </button>
       </div>
     </header>
   );

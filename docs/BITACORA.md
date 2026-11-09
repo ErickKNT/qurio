@@ -343,6 +343,43 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
+### [2026-11-09] — Entrada 18: Persistencia Real de Progreso y Autenticación con Supabase Cloud (Fase 7)
+* **Rama:** `feat/supabase-auth-and-persistence`
+* **Objetivo:** Implementar la capa de autenticación de usuarios (Supabase Auth con tokens JWT) y la persistencia de intentos de resolución, XP acumulado, niveles, rachas y estado de ejercicios completados en Supabase Cloud, garantizando resiliencia y funcionamiento transparente offline / demo local sin bloquear el flujo pedagógico.
+* **Entregables Técnicos:**
+  * **Motor de Persistencia Híbrida (`apps/web/src/lib/persistence.ts`):**
+    * Servicio desacoplado que gestiona la escritura y lectura dual (Supabase Cloud + LocalStorage).
+    * `recordAttempt`: Inserta cada ejecución en la tabla `exercise_attempts` (`user_id`, `exercise_id`, `submitted_sql`, `status`, `execution_time_ms`, `hints_used`, `xp_awarded`, `error_message`). Si el reto es aprobado (`PASSED`), actualiza automáticamente `xp` y `level` en `user_profiles` e incrementa la actividad en `user_daily_activity`.
+    * `getCompletedExerciseIds`: Consulta los IDs de ejercicios resueltos con éxito por el usuario autenticado (o desde `localStorage` si opera en local/demo).
+    * `updateProfile`: Actualiza perfiles tanto en la nube como en almacenamiento local.
+  * **Hook de Autenticación Reactivo (`apps/web/src/hooks/useAuth.ts`):**
+    * Soporte para `signIn`, `signUp` y `signOut`.
+    * En `signUp` y primer inicio de sesión, inserta y mapea automáticamente el perfil del usuario en la tabla `user_profiles` de Supabase a partir de los metadatos de autenticación.
+    * Mapeo estricto entre el esquema relacional de Supabase (`xp`, `level`) y los tipos TypeScript del frontend (`total_xp`, `current_level`).
+    * Provee indicadores booleanos `isCloudAuth` (sesión activa contra Supabase) e `isDemoMode` (modo demostración local sin credenciales).
+  * **Molécula `AuthModal` (`apps/web/src/components/molecules/AuthModal/AuthModal.tsx`):**
+    * Pestañas estilizadas bajo *Terminal Glow Minimal* para alternar entre "Iniciar Sesión" y "Crear Cuenta".
+    * Formularios integrados con `FormField` con validación inline estricta (Anti-AI Slop: cero alertas nativas `alert()`).
+    * Badge de estado de conexión JWT y protección criptográfica en pie del modal.
+  * **Integración en Organismos y Plantillas:**
+    * `TopHeader`: Botón de avatar de usuario que despliega el modal de autenticación o muestra el estado de sesión.
+    * `WorkspaceLayout`: Incorporación del avatar y gatillo de sesión en la barra de herramientas del IDE para que el usuario pueda autenticarse sin salir de su ejercicio.
+    * `UserProfileView`: Indicador visual de estado de cuenta (`Supabase Cloud` / `Local / Offline`) y botón de acción para gestionar sesión o sincronizar progreso.
+  * **Flujo End-to-End de Evaluación y Persistencia en `App.tsx`:**
+    * En `handleExecuteSolution`, cada intento evaluado en el Sandbox Docker se persiste inmediatamente vía `persistence.recordAttempt`.
+    * Cuando el estado es `PASSED`, se calcula el nuevo nivel y XP, se actualiza el perfil en memoria y en la base de datos, se marca el ejercicio como completado en el currículum y se actualizan los contadores de progreso en las rutas de aprendizaje (`tracks`).
+    * En el montaje inicial, sincroniza los retos completados previamente por el usuario y los refleja en toda la aplicación.
+* **Verificación de Calidad y Estándares:**
+  * Compilación TypeScript estricta y empaquetado de producción con Vite verificado al 100% (`built in 5.42s`, 0 errores).
+  * FastAPI corriendo en puerto 8000 con respuesta HTTP 200 en `/docs`.
+  * Vite dev server activo en puerto 5173 con respuesta HTTP 200.
+  * Docker sandbox PostgreSQL activo en puerto 5433.
+* **Control de Versiones:**
+  * Commits atómicos en la rama `feat/supabase-auth-and-persistence`.
+  * Fusión (`merge --no-ff`) hacia la rama `main` y sincronización con GitHub (`git push origin main`).
+
+---
+
 ## 4. Estado de la Integración con Supabase Cloud
 
 * El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).

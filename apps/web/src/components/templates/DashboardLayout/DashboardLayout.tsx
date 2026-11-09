@@ -14,6 +14,7 @@ export interface DashboardLayoutProps {
   currentPath: string;
   onNavigate: (path: string) => void;
   title?: string;
+  onOpenAuth?: () => void;
   children: React.ReactNode;
 }
 
@@ -21,6 +22,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   currentPath,
   onNavigate,
   title = 'Dashboard',
+  onOpenAuth,
   children,
 }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -48,6 +50,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             title={title}
             isSidebarCollapsed={isSidebarCollapsed}
             onOpenPlayground={() => onNavigate('playground')}
+            onOpenAuth={onOpenAuth}
           />
 
           <main
