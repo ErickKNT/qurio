@@ -41,10 +41,20 @@
 - [x] **T3.9:** Verificación de compilación TypeScript y empaquetado de producción con Vite (`built in 5.67s`, 0 errores).
 - [x] **T3.10:** Commit en `feat/web-atomic-design`, merge a `main` y push a GitHub.
 
-## Fase 4: Flujo End-to-End del Ejercicio (`feat/exercise-ide-flow`) — Siguiente
+## Fase 4: Flujo End-to-End del Ejercicio (`feat/exercise-ide-flow`) — Completada
 
-- [ ] **T4.1:** Integración de Monaco Editor con configuración de tema oscuro, atajos (`⌘ + Enter` para ejecutar) y resaltado SQL.
-- [ ] **T4.2:** Organismo `DataGridResults` para visualización tabular de resultados, tipos de datos en JetBrains Mono y chips `NULL`.
-- [ ] **T4.3:** Organismo `ExerciseSpecPanel` (consigna, objetivos, pistas progresivas con penalización visual de XP).
-- [ ] **T4.4:** Conexión del frontend con la API FastAPI (`/api/v1/exercises/{id}/submit` y `/api/v1/playground/execute`).
-- [ ] **T4.5:** Modal/Banner de resolución exitosa con recompensa de XP y avance.
+- [x] **T4.1:** Integración de `@monaco-editor/react` con tema oscuro `qurio-dark`, tipografía `JetBrains Mono` y atajo `⌘ + Enter` para ejecutar.
+- [x] **T4.2:** Organismo `DataGridResults` con visualización tabular de resultados, tipos de datos en monospace, chips `NULL`, métricas de latencia y visualizador de discrepancias semánticas (`DiffResult`).
+- [x] **T4.3:** Organismo `ExerciseSpecPanel` con consigna detallada, esquema relacional desplegable (`clientes`, `pedidos`, `productos`, `categorias`) y sistema de pistas progresivas con penalización visual de XP.
+- [x] **T4.4:** Cliente de integración `apps/web/src/lib/api.ts` conectado con los endpoints de FastAPI (`/api/v1/exercises/{id}/submit` y `/api/v1/health`).
+- [x] **T4.5:** Molécula `SuccessModal` de recompensa de XP, tiempo en sandbox y navegación fluida al siguiente reto.
+- [x] **T4.6:** Verificación de compilación completa con TypeScript y Vite (`built in 6.91s`, 0 errores).
+- [x] **T4.7:** Servidores activos: FastAPI en puerto 8000, Vite en puerto 5173, Docker PostgreSQL en puerto 5433.
+- [x] **T4.8:** Commit en `feat/exercise-ide-flow`, merge a `main` y push a GitHub.
+
+## Fase 5: Catálogo, Playground & Gamificación (`feat/curriculum-and-gamification`) — Siguiente
+
+- [ ] **T5.1:** Vista de Rutas de Aprendizaje y Detalle de Ruta (Syllabus con módulos colapsables y porcentajes de avance).
+- [ ] **T5.2:** Vista de SQL Playground interactivo (consola libre para explorar tablas, relaciones y escribir queries ad-hoc).
+- [ ] **T5.3:** Vista de Logros & Rangos (medallas de ingeniería: Primer Query, Aprendiz de JOINs, Index Specialist).
+- [ ] **T5.4:** Vista de Mi Perfil (historial de queries resueltos, gráficos de cadencia y racha).

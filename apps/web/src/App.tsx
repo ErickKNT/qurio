@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Terminal,
   Zap,
@@ -8,30 +8,142 @@ import {
   CheckCircle2,
   Code2,
   Sparkles,
+  ArrowLeft,
+  ChevronRight,
 } from 'lucide-react';
-import { DashboardLayout } from '@/components/templates';
+import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
-import { MetricTile, FormField, StreakPill } from '@/components/molecules';
+import { MetricTile, FormField, StreakPill, SuccessModal } from '@/components/molecules';
+import { MonacoEditorPanel, DataGridResults, ExerciseSpecPanel } from '@/components/organisms';
 import { useAuth } from '@/hooks/useAuth';
+import { api, FALLBACK_EXERCISES } from '@/lib/api';
+import { Exercise, EvaluationResponse, DiffResult, ColumnInfo } from '@/types';
 
 export const App: React.FC = () => {
-  const [currentPath, setCurrentPath] = useState('dashboard');
+  const [currentPath, setCurrentPath] = useState<'dashboard' | 'playground' | 'tracks' | 'achievements' | 'profile'>('dashboard');
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
   const { profile } = useAuth();
 
+  // Estados del Ejercicio Activo y del IDE
+  const [exercises, setExercises] = useState<Exercise[]>(FALLBACK_EXERCISES);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [sqlCode, setSqlCode] = useState(FALLBACK_EXERCISES[0].initial_code);
+  const [hintsUnlocked, setHintsUnlocked] = useState(0);
+  const [isExecuting, setIsExecuting] = useState(false);
+
+  // Estados de Resultados
+  const [executionStatus, setExecutionStatus] = useState<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR' | 'FAILED'>('IDLE');
+  const [executionTime, setExecutionTime] = useState(0);
+  const [rowCount, setRowCount] = useState(0);
+  const [resultColumns, setResultColumns] = useState<ColumnInfo[]>([]);
+  const [resultRows, setResultRows] = useState<any[][]>([]);
+  const [resultError, setResultError] = useState<string | undefined>();
+  const [resultDiff, setResultDiff] = useState<DiffResult | undefined>();
+  const [resultMessage, setResultMessage] = useState<string | undefined>();
+
+  // Modal de Victoria
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [awardedXp, setAwardedXp] = useState(0);
+
+  const activeExercise = exercises[currentExerciseIndex] || FALLBACK_EXERCISES[0];
+
+  // Cargar ejercicios desde FastAPI al inicio
+  useEffect(() => {
+    api.getExercises().then((data) => {
+      if (data && data.length > 0) {
+        setExercises(data);
+      }
+    });
+  }, []);
+
   // Actualización dinámica del título de la pestaña (Anti-AI Slop Regla 1.1)
   useEffect(() => {
-    const titles: Record<string, string> = {
-      dashboard: 'Dashboard | Qurio',
-      tracks: 'Rutas de Aprendizaje | Qurio',
-      playground: 'SQL Playground | Qurio',
-      achievements: 'Logros & Rangos | Qurio',
-      profile: 'Mi Perfil | Qurio',
-    };
-    document.title = titles[currentPath] || 'Qurio | Aprende SQL. Piensa en queries.';
-  }, [currentPath]);
+    if (currentPath === 'playground') {
+      document.title = `${activeExercise.title} — SQL Foundations | Qurio`;
+    } else {
+      const titles: Record<string, string> = {
+        dashboard: 'Dashboard | Qurio',
+        tracks: 'Rutas de Aprendizaje | Qurio',
+        achievements: 'Logros & Rangos | Qurio',
+        profile: 'Mi Perfil | Qurio',
+      };
+      document.title = titles[currentPath] || 'Qurio | Aprende SQL. Piensa en queries.';
+    }
+  }, [currentPath, activeExercise]);
+
+  // Cambiar de ejercicio activo
+  const handleSelectExercise = (index: number) => {
+    const ex = exercises[index];
+    if (ex) {
+      setCurrentExerciseIndex(index);
+      setSqlCode(ex.initial_code);
+      setHintsUnlocked(0);
+      setExecutionStatus('IDLE');
+      setResultError(undefined);
+      setResultDiff(undefined);
+    }
+  };
+
+  // Desbloquear siguiente pista
+  const handleUnlockHint = () => {
+    const totalHints = activeExercise.hints ? activeExercise.hints.length : 0;
+    if (hintsUnlocked < totalHints) {
+      setHintsUnlocked((prev) => prev + 1);
+    }
+  };
+
+  // Ejecución / Evaluación Semántica End-to-End
+  const handleExecuteSolution = useCallback(async () => {
+    if (!sqlCode.trim()) return;
+
+    setIsExecuting(true);
+    setExecutionStatus('LOADING');
+    setResultError(undefined);
+    setResultDiff(undefined);
+
+    try {
+      const evalResponse: EvaluationResponse = await api.submitSolution(
+        activeExercise.id,
+        sqlCode,
+        hintsUnlocked
+      );
+
+      setExecutionTime(evalResponse.execution_time_ms);
+
+      if (evalResponse.status === 'PASSED') {
+        setExecutionStatus('SUCCESS');
+        setRowCount(evalResponse.rows.length);
+        setResultColumns(evalResponse.columns.map((name) => ({ name, type: 'column' })));
+        setResultRows(evalResponse.rows);
+        setAwardedXp(evalResponse.xp_awarded);
+        setSuccessModalOpen(true);
+      } else if (evalResponse.status === 'FAILED') {
+        setExecutionStatus('FAILED');
+        setRowCount(evalResponse.rows ? evalResponse.rows.length : 0);
+        setResultColumns(evalResponse.columns ? evalResponse.columns.map((name) => ({ name, type: 'column' })) : []);
+        setResultRows(evalResponse.rows || []);
+        setResultDiff(evalResponse.diff);
+        setResultMessage(evalResponse.message);
+      } else {
+        setExecutionStatus('ERROR');
+        setResultError(evalResponse.error || evalResponse.message);
+      }
+    } catch (err: any) {
+      setExecutionStatus('ERROR');
+      setResultError(err.message || 'Error de conexión con el evaluador semántico en FastAPI.');
+    } finally {
+      setIsExecuting(false);
+    }
+  }, [activeExercise, sqlCode, hintsUnlocked]);
+
+  // Avanzar al siguiente reto
+  const handleNextExercise = () => {
+    setSuccessModalOpen(false);
+    const nextIndex = (currentExerciseIndex + 1) % exercises.length;
+    handleSelectExercise(nextIndex);
+  };
 
   const handleValidateEmail = (val: string) => {
     setFormEmail(val);
@@ -44,10 +156,119 @@ export const App: React.FC = () => {
     }
   };
 
+  // ============================================================================
+  // VISTA 1: ESPACIO DE TRABAJO DEL EJERCICIO (IDE INTERACTIVO CON MONACO)
+  // ============================================================================
+  if (currentPath === 'playground') {
+    return (
+      <>
+        <WorkspaceLayout
+          headerBar={
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
+                  onClick={() => setCurrentPath('dashboard')}
+                >
+                  Dashboard
+                </Button>
+
+                <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-content-muted">
+                  <span>SQL Foundations</span>
+                  <ChevronRight className="w-3 h-3" />
+                  <span className="text-content-primary font-medium">{activeExercise.title}</span>
+                </div>
+              </div>
+
+              {/* Selector Rápido de Ejercicios */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono text-content-muted hidden md:inline">Reto:</span>
+                <select
+                  value={currentExerciseIndex}
+                  onChange={(e) => handleSelectExercise(Number(e.target.value))}
+                  className="bg-surface-card text-content-primary border border-border-subtle text-xs rounded-lg px-2.5 py-1 font-mono outline-none focus:border-primary"
+                >
+                  {exercises.map((ex, idx) => (
+                    <option key={ex.id} value={idx}>
+                      #{idx + 1} {ex.title}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-dim border border-border-subtle text-[11px] font-mono text-emerald">
+                  <span className="w-2 h-2 rounded-full bg-emerald shadow-glow-emerald" />
+                  <span>Sandbox Online</span>
+                </div>
+              </div>
+            </div>
+          }
+          sidebarContent={
+            <ExerciseSpecPanel
+              exercise={activeExercise}
+              unlockedHintsCount={hintsUnlocked}
+              onUnlockHint={handleUnlockHint}
+            />
+          }
+          editorContent={
+            <MonacoEditorPanel
+              value={sqlCode}
+              onChange={setSqlCode}
+              onExecute={handleExecuteSolution}
+              onReset={() => setSqlCode(activeExercise.initial_code)}
+              isLoading={isExecuting}
+              isSubmitMode={true}
+            />
+          }
+          resultsContent={
+            <DataGridResults
+              status={executionStatus}
+              executionTimeMs={executionTime}
+              rowCount={rowCount}
+              columns={resultColumns}
+              rows={resultRows}
+              error={resultError}
+              diff={resultDiff}
+              message={resultMessage}
+            />
+          }
+          statusBar={
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-4">
+                <span>PostgreSQL 16.3 (Sandbox Docker)</span>
+                <span>DB: ecommerce_sandbox</span>
+                <span>User: readonly_student</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <KbdShortcut keys={['⌘', '↵']} />
+                <span>para compilar y evaluar</span>
+              </div>
+            </div>
+          }
+        />
+
+        {/* Modal de Reto Superado con XP y Avance Directo */}
+        <SuccessModal
+          isOpen={successModalOpen}
+          onClose={() => setSuccessModalOpen(false)}
+          onNextExercise={handleNextExercise}
+          xpAwarded={awardedXp}
+          exerciseTitle={activeExercise.title}
+          executionTimeMs={executionTime}
+          hintsUsed={hintsUnlocked}
+        />
+      </>
+    );
+  }
+
+  // ============================================================================
+  // VISTA 2: DASHBOARD GENERAL
+  // ============================================================================
   return (
     <DashboardLayout
       currentPath={currentPath}
-      onNavigate={setCurrentPath}
+      onNavigate={(path) => setCurrentPath(path as any)}
       title={currentPath === 'dashboard' ? 'Centro de Mando de Ingeniería' : currentPath.toUpperCase()}
     >
       <div className="flex flex-col gap-8">
@@ -87,9 +308,12 @@ export const App: React.FC = () => {
                 size="md"
                 kbdShortcut="⌘↵"
                 leftIcon={<Play className="w-4 h-4 fill-white" />}
-                onClick={() => setCurrentPath('playground')}
+                onClick={() => {
+                  handleSelectExercise(0);
+                  setCurrentPath('playground');
+                }}
               >
-                Abrir Playground
+                Abrir IDE & Resolver
               </Button>
             </div>
           </div>
@@ -164,11 +388,11 @@ export const App: React.FC = () => {
                 </div>
 
                 <h3 className="text-lg font-bold text-content-primary">
-                  Clientes sin Compras Registradas (LEFT JOIN & IS NULL)
+                  {exercises[3]?.title || 'Clientes sin Compras Registradas (LEFT JOIN & IS NULL)'}
                 </h3>
 
                 <p className="text-xs text-content-secondary leading-relaxed">
-                  El equipo de marketing necesita reactivar a usuarios registrados que nunca han realizado un pedido en la plataforma. Escribe una consulta que devuelva el ID del cliente, su nombre y su apellido para todos los clientes inactivos.
+                  {exercises[3]?.prompt || 'El equipo de marketing necesita reactivar a usuarios registrados que nunca han realizado un pedido en la plataforma.'}
                 </p>
 
                 <div className="mt-2 p-3 rounded-lg bg-canvas border border-border-subtle font-mono text-xs text-cyan-accent flex items-center justify-between">
@@ -180,10 +404,17 @@ export const App: React.FC = () => {
               <div className="mt-6 pt-4 border-t border-border-subtle flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs font-mono text-amber-streak">
                   <Zap className="w-4 h-4 fill-amber-streak" />
-                  <span>Recompensa: +50 XP</span>
+                  <span>Recompensa: +{exercises[3]?.xp_reward || 50} XP</span>
                 </div>
 
-                <Button variant="primary" size="sm" onClick={() => setCurrentPath('playground')}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    handleSelectExercise(3 < exercises.length ? 3 : 0);
+                    setCurrentPath('playground');
+                  }}
+                >
                   Resolver Reto
                 </Button>
               </div>
