@@ -184,6 +184,7 @@ export function useAuth() {
           username: username.trim(),
           display_name: username.trim(),
         },
+        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/#auth-confirm`,
       },
     });
 
@@ -200,6 +201,58 @@ export function useAuth() {
       success: true,
       message: data.session ? undefined : 'Revisa tu correo para confirmar tu cuenta.',
     };
+  };
+
+  const resetPassword = async (email: string): Promise<{ success: boolean; error?: string; message?: string }> => {
+    setError(null);
+    if (!isSupabaseConfigured) {
+      return {
+        success: true,
+        message: 'Enlace simulado enviado (modo demo local). Revisa tu bandeja de entrada.',
+      };
+    }
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/#reset-password`,
+      });
+
+      if (resetError) {
+        setError(resetError.message);
+        return { success: false, error: resetError.message };
+      }
+
+      return {
+        success: true,
+        message: 'Hemos enviado un enlace seguro a tu correo para restablecer tu contraseña.',
+      };
+    } catch (err: any) {
+      setError(err.message || 'Error al solicitar restablecimiento de contraseña.');
+      return { success: false, error: err.message };
+    }
+  };
+
+  const updatePassword = async (newPassword: string): Promise<{ success: boolean; error?: string }> => {
+    setError(null);
+    if (!isSupabaseConfigured) {
+      return { success: true };
+    }
+
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        setError(updateError.message);
+        return { success: false, error: updateError.message };
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      setError(err.message || 'Error al actualizar la contraseña.');
+      return { success: false, error: err.message };
+    }
   };
 
   const signOut = async () => {
@@ -235,6 +288,8 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    resetPassword,
+    updatePassword,
     updateProfile,
     refreshProfile: () => {
       if (user) fetchProfile(user.id, user.user_metadata);

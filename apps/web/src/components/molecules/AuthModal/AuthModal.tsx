@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, User, AlertOctagon, CheckCircle2, ShieldCheck } from 'lucide-react';
+import {
+  X,
+  Lock,
+  Mail,
+  User,
+  AlertOctagon,
+  CheckCircle2,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  KeyRound,
+} from 'lucide-react';
 import { FormField } from '@/components/molecules/FormField/FormField';
 import { Button } from '@/components/atoms/Button/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
+export type AuthMode = 'signin' | 'signup' | 'forgot';
+
 export interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode?: 'signin' | 'signup';
+  initialMode?: AuthMode;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -16,15 +30,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   initialMode = 'signin',
 }) => {
-  const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { signIn, signUp, isCloudAuth, isDemoMode } = useAuth();
+  const { signIn, signUp, resetPassword, isCloudAuth, isDemoMode } = useAuth();
 
   if (!isOpen) return null;
 
@@ -33,6 +48,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setFormError(null);
     setSuccessMessage(null);
 
+    // MODO RECUPERACIÓN DE CONTRASEÑA
+    if (mode === 'forgot') {
+      if (!email.trim()) {
+        setFormError('Por favor introduce tu correo electrónico para enviarte el enlace.');
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const res = await resetPassword(email);
+        if (!res.success) {
+          setFormError(res.error || 'No se pudo enviar el enlace de recuperación.');
+        } else {
+          setSuccessMessage(res.message || 'Hemos enviado las instrucciones a tu correo.');
+        }
+      } catch (err: any) {
+        setFormError(err.message || 'Error al solicitar recuperación de contraseña.');
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // MODO LOGIN / REGISTRO
     if (!email || !password) {
       setFormError('Por favor completa todos los campos requeridos.');
       return;
@@ -103,48 +142,77 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
 
           <h2 className="text-lg font-bold text-content-primary tracking-tight">
-            {mode === 'signin' ? 'Accede a tu Estación de Trabajo SQL' : 'Crea tu Cuenta de Ingeniero'}
+            {mode === 'signin'
+              ? 'Accede a tu Estación de Trabajo SQL'
+              : mode === 'signup'
+              ? 'Crea tu Cuenta de Ingeniero'
+              : 'Recuperar Contraseña'}
           </h2>
           <p className="text-xs text-content-secondary max-w-xs leading-relaxed">
             {mode === 'signin'
               ? 'Conecta tu cuenta para sincronizar tus avances, XP y medallas en Supabase Cloud.'
-              : 'Empieza a resolver retos relacionales y construye tu historial de práctica auditado.'}
+              : mode === 'signup'
+              ? 'Empieza a resolver retos relacionales y construye tu historial de práctica auditado.'
+              : 'Introduce tu correo electrónico registrado y te enviaremos un enlace de recuperación seguro.'}
           </p>
         </div>
 
-        {/* Segmented Switcher (Tabs) */}
-        <div className="flex rounded-xl bg-surface-dim p-1 border border-border-subtle/50 mb-5 font-mono text-xs">
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signin');
-              setFormError(null);
-            }}
-            className={cn(
-              'flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all duration-150',
-              mode === 'signin'
-                ? 'bg-surface text-content-primary shadow-sm border border-border-subtle'
-                : 'text-content-muted hover:text-content-primary'
-            )}
-          >
-            Iniciar Sesión
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signup');
-              setFormError(null);
-            }}
-            className={cn(
-              'flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all duration-150',
-              mode === 'signup'
-                ? 'bg-surface text-content-primary shadow-sm border border-border-subtle'
-                : 'text-content-muted hover:text-content-primary'
-            )}
-          >
-            Registrarse
-          </button>
-        </div>
+        {/* Segmented Switcher (Tabs) o Botón Volver */}
+        {mode !== 'forgot' ? (
+          <div className="flex rounded-xl bg-surface-dim p-1 border border-border-subtle/50 mb-5 font-mono text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signin');
+                setFormError(null);
+                setSuccessMessage(null);
+              }}
+              className={cn(
+                'flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all duration-150',
+                mode === 'signin'
+                  ? 'bg-surface text-content-primary shadow-sm border border-border-subtle'
+                  : 'text-content-muted hover:text-content-primary'
+              )}
+            >
+              Iniciar Sesión
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signup');
+                setFormError(null);
+                setSuccessMessage(null);
+              }}
+              className={cn(
+                'flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all duration-150',
+                mode === 'signup'
+                  ? 'bg-surface text-content-primary shadow-sm border border-border-subtle'
+                  : 'text-content-muted hover:text-content-primary'
+              )}
+            >
+              Registrarse
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between mb-5 font-mono text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signin');
+                setFormError(null);
+                setSuccessMessage(null);
+              }}
+              className="flex items-center gap-1.5 text-content-muted hover:text-content-primary transition-colors text-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Volver a Iniciar Sesión</span>
+            </button>
+            <span className="text-[11px] text-cyan-accent flex items-center gap-1">
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>Supabase Reset</span>
+            </span>
+          </div>
+        )}
 
         {/* Mensaje de Error Inline Riguroso (Anti-AI Slop Regla 1.1) */}
         {formError && (
@@ -192,16 +260,52 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             leftIcon={<Mail className="w-4 h-4" />}
           />
 
-          <FormField
-            label="Contraseña"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            leftIcon={<Lock className="w-4 h-4" />}
-            helperText={mode === 'signup' ? 'Mínimo 6 caracteres' : undefined}
-          />
+          {mode !== 'forgot' && (
+            <div className="flex flex-col gap-1.5">
+              <FormField
+                label="Contraseña"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                leftIcon={<Lock className="w-4 h-4" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="p-1 rounded text-content-muted hover:text-content-primary transition-colors focus:outline-none"
+                    title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4 text-cyan-accent" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                }
+                helperText={mode === 'signup' ? 'Mínimo 6 caracteres' : undefined}
+              />
+
+              {/* Botón ¿Olvidaste tu contraseña? en modo Login */}
+              {mode === 'signin' && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('forgot');
+                      setFormError(null);
+                      setSuccessMessage(null);
+                    }}
+                    className="text-[11px] font-mono text-cyan-accent hover:underline transition-colors"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           <Button
             type="submit"
@@ -210,7 +314,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             isLoading={isSubmitting}
             className="w-full mt-2 shadow-glow-primary"
           >
-            {mode === 'signin' ? 'Entrar a Qurio' : 'Crear Cuenta y Comenzar'}
+            {mode === 'signin'
+              ? 'Entrar a Qurio'
+              : mode === 'signup'
+              ? 'Crear Cuenta y Comenzar'
+              : 'Enviar Enlace de Recuperación'}
           </Button>
         </form>
 
@@ -218,7 +326,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="mt-5 pt-4 border-t border-border-subtle/40 flex items-center justify-between text-[11px] font-mono text-content-muted">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald" />
-            <span>{isCloudAuth ? 'Supabase Auth JWT Conectado' : isDemoMode ? 'Modo Local / Demo' : 'Supabase Auth'}</span>
+            <span>
+              {isCloudAuth
+                ? 'Supabase Auth JWT Conectado'
+                : isDemoMode
+                ? 'Modo Local / Demo'
+                : 'Supabase Auth'}
+            </span>
           </div>
           <span>PostgreSQL Sandbox</span>
         </div>

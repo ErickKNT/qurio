@@ -130,6 +130,18 @@
 - [x] **T10.6:** Verificación de compilación TypeScript estricta y build de producción Vite (`built in 5.53s`, 0 errores).
 - [x] **T10.7:** Commit en `feat/monaco-sql-intellisense-and-aliases`, merge a `main` y sincronización con GitHub.
 
+## Experiencia de Autenticación, Toggle de Contraseña y Vistas del Sistema (`feat/auth-experience-and-custom-redirects`) — Completada
+
+- [x] **T11.1:** Soporte interactivo de ver y ocultar contraseña (`Eye` / `EyeOff`) en [`AuthModal.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/AuthModal/AuthModal.tsx) tanto en registro como en login.
+- [x] **T11.2:** Flujo de recuperación de contraseña en [`AuthModal.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/AuthModal/AuthModal.tsx) (`mode === 'forgot'`) con llamada a `resetPassword(email)` de Supabase Auth.
+- [x] **T11.3:** Extensión del hook [`useAuth.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/hooks/useAuth.ts) con métodos `resetPassword`, `updatePassword` y configuración de `emailRedirectTo`.
+- [x] **T11.4:** Organismo [`AuthConfirmView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/AuthConfirmView/AuthConfirmView.tsx): Pantalla temática *Terminal Glow Minimal* para confirmación exitosa de correo desde el enlace de Supabase, con metáfora técnica de auditoría y acceso directo al Dashboard.
+- [x] **T11.5:** Organismo [`ResetPasswordView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ResetPasswordView/ResetPasswordView.tsx): Pantalla temática del sistema para ingreso de nueva contraseña, validación de coincidencia, visibilidad con `Eye/EyeOff` y actualización de credenciales.
+- [x] **T11.6:** Detección automática en [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx) de redirecciones hash/query de Supabase (`type=signup`, `auth-confirm`, `type=recovery`, `reset-password`) con títulos de pestaña dinámicos.
+- [x] **T11.7:** Verificación de compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.50s`, 0 errores).
+- [x] **T11.8:** Commit en `feat/auth-experience-and-custom-redirects`, merge a `main` y sincronización con GitHub.
+
+
 
 
 

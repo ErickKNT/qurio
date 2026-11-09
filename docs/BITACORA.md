@@ -429,6 +429,32 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
+### [2026-11-09] — Entrada 21: Experiencia de Autenticación, Toggle de Contraseña y Vistas del Sistema
+* **Rama:** `feat/auth-experience-and-custom-redirects`
+* **Objetivo:** Perfeccionar la experiencia de usuario en autenticación incorporando alternancia interactiva para ver y ocultar contraseñas, flujo de recuperación de contraseña ("¿Olvidaste tu contraseña?"), y páginas temáticas del sistema para la confirmación de correo y restablecimiento de contraseña en Supabase Cloud.
+* **Entregables Técnicos:**
+  * **Toggle de Visibilidad de Contraseña:**
+    * Integrado botón de acción con iconos `Eye` / `EyeOff` en [`AuthModal.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/AuthModal/AuthModal.tsx) sobre el átomo `FormField`, permitiendo inspeccionar la contraseña tecleada tanto en registro como en login.
+  * **Flujo de Recuperación de Contraseña (`forgot` mode):**
+    * Enlace *"¿Olvidaste tu contraseña?"* en la pestaña de inicio de sesión de `AuthModal`.
+    * Vista dedicada para solicitar restablecimiento con botón *"Enviar Enlace de Recuperación"* conectado a `supabase.auth.resetPasswordForEmail`.
+  * **Página Temática del Sistema para Verificación de Correo ([`AuthConfirmView.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/AuthConfirmView/AuthConfirmView.tsx)):**
+    * Al hacer clic en el enlace del correo de Supabase, el usuario aterriza en una vista nativa de Qurio con diseño *Terminal Glow Minimal*.
+    * Isotipo animado con pulso esmeralda, ficha técnica de auditoría (`email_confirmed: TRUE`, sesión JWT firmada, rol `readonly_student`) y acceso directo al Dashboard.
+  * **Página Temática para Restablecer Contraseña ([`ResetPasswordView.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ResetPasswordView/ResetPasswordView.tsx)):**
+    * Formulario nativo con nueva contraseña y confirmación (ambas con toggle `Eye/EyeOff`), validación de coincidencia y actualización de credenciales vía `supabase.auth.updateUser`.
+  * **Enrutamiento y Detección de Redirecciones en [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx):**
+    * Listener reactivo a `hashchange` y parámetros de URL para capturar automáticamente `type=signup`, `auth-confirm`, `type=recovery` y `reset-password`.
+    * Títulos dinámicos de navegador actualizados (`Verificación de Cuenta | Qurio`, `Restablecer Contraseña | Qurio`).
+* **Verificación de Calidad:**
+  * Compilación TypeScript estricta y empaquetado de producción con Vite verificado al 100% (`built in 5.50s`, 0 errores).
+  * Servidores FastAPI y Vite activos en sus respectivos puertos.
+* **Control de Versiones:**
+  * Commit en la rama `feat/auth-experience-and-custom-redirects`.
+  * Fusión (`merge --no-ff`) hacia `main` y sincronización con GitHub (`git push origin main`).
+
+---
+
 ## 4. Estado de la Integración con Supabase Cloud
 
 * El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).

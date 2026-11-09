@@ -8,3 +8,5 @@ export * from './SqlPlaygroundView/SqlPlaygroundView';
 export * from './AchievementsView/AchievementsView';
 export * from './UserProfileView/UserProfileView';
 export * from './NotFoundView/NotFoundView';
+export * from './AuthConfirmView/AuthConfirmView';
+export * from './ResetPasswordView/ResetPasswordView';
