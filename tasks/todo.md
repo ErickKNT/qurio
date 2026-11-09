@@ -62,9 +62,20 @@
 - [x] **TR.6:** Verificación de compilación de producción Vite (`built in 5.73s`, 0 errores).
 - [x] **TR.7:** Commit en `feat/ui-refinement-and-desaturation`, merge a `main` y sincronización con GitHub.
 
-## Fase 5: Catálogo, Playground & Gamificación (`feat/curriculum-and-gamification`) — Siguiente
+## Fase 5: Catálogo, Playground & Gamificación (`feat/curriculum-and-gamification`) — Completada
 
-- [ ] **T5.1:** Vista de Rutas de Aprendizaje y Detalle de Ruta (Syllabus con módulos colapsables y porcentajes de avance).
-- [ ] **T5.2:** Vista de SQL Playground interactivo (consola libre para explorar tablas, relaciones y escribir queries ad-hoc).
-- [ ] **T5.3:** Vista de Logros & Rangos (medallas de ingeniería: Primer Query, Aprendiz de JOINs, Index Specialist).
-- [ ] **T5.4:** Vista de Mi Perfil (historial de queries resueltos, gráficos de cadencia y racha).
+- [x] **T5.1:** Vista de Rutas de Aprendizaje y Detalle de Ruta (`TracksView`, `TrackCard`, `ModuleAccordion` con syllabus colapsable, porcentajes de avance y lanzamiento directo al IDE).
+- [x] **T5.2:** Vista de SQL Playground interactivo (`SqlPlaygroundView`, `SchemaTableItem` con explorador de esquema en vivo para 10 tablas, plantillas rápidas, Monaco Editor y DataGrid).
+- [x] **T5.3:** Vista de Logros & Rangos (`AchievementsView`, `AchievementCard` con filtro por categorías, medallas desbloqueadas/bloqueadas, progreso y cálculo de XP).
+- [x] **T5.4:** Vista de Mi Perfil (`UserProfileView` con barra de progresión a Nivel 3, tiles de métricas, mapa de calor de cadencia de 30 días y log de consultas auditadas).
+- [x] **T5.5:** Sincronización en `App.tsx` con títulos dinámicos (`document.title`) para cada vista y navegación fluida entre secciones.
+- [x] **T5.6:** Verificación de compilación TypeScript y empaquetado de producción con Vite (`built in 5.38s`, 0 errores).
+- [x] **T5.7:** Commit en `feat/curriculum-and-gamification`, merge a `main` y push a GitHub.
+
+## Fase 6: Autenticidad, Calidad & Despliegue (`feat/authenticity-and-polish`) — Siguiente
+
+- [ ] **T6.1:** Página 404 temática con estética Terminal Glow Minimal y metáfora técnica SQL (`ERROR 404: Relation 'route' does not exist in schema public`).
+- [ ] **T6.2:** Favicon SVG oficial de Qurio integrado en `index.html`.
+- [ ] **T6.3:** Metadatos Open Graph (`og:title`, `og:description`, `og:image`).
+- [ ] **T6.4:** Pruebas y verificación de adaptabilidad móvil (breakpoints y tabuladores en smartphones/tablets).
+- [ ] **T6.5:** Checklist final de pre-lanzamiento y documentación de entrega.

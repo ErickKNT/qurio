@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Refinamiento Visual & Desaturación de Interfaz (`feat/ui-refinement-and-desaturation`) — Concluida**  
-* **Próxima Fase:** **Fase 5: Catálogo, Playground & Gamificación (`feat/curriculum-and-gamification`)**  
-* **Rama Git Activa:** `feat/ui-refinement-and-desaturation` (lista para merge a `main` y push a GitHub)  
+* **Fase Actual:** **Fase 5: Catálogo, Playground & Gamificación (`feat/curriculum-and-gamification`) — Concluida**  
+* **Próxima Fase:** **Fase 6: Autenticidad, Calidad & Despliegue (`feat/authenticity-and-polish`)**  
+* **Rama Git Activa:** `feat/curriculum-and-gamification` (en proceso de merge a `main` y push a GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
   * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico.
@@ -26,8 +26,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **2** | **Motor de Ejecución y Evaluación** | ✅ Concluida | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y 26 tests automatizados. |
 | **3** | **Frontend Base & Atomic Design** | ✅ Concluida | `feat/web-atomic-design` | React + Vite + Tailwind, árbol de componentes (átomos/moléculas/organismos/plantillas), auth y build validado. |
 | **4** | **Flujo Principal End-to-End** | ✅ Concluida | `feat/exercise-ide-flow` | Monaco Editor, DataGrid tabular con tipos de datos, especificación del ejercicio con pistas, cliente API FastAPI y modal de recompensa XP. |
-| **5** | **Catálogo, Playground & Gamificación** | ⏳ Próxima | `feat/curriculum-and-gamification` | Dashboard, rutas/syllabus, consola libre de Playground, niveles, XP y rachas. |
-| **6** | **Autenticidad, Calidad & Despliegue** | ⏹️ Pendiente | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG, adaptabilidad responsive móvil y checklist de lanzamiento. |
+| **5** | **Catálogo, Playground & Gamificación** | ✅ Concluida | `feat/curriculum-and-gamification` | Rutas con syllabus interactivo, SQL Playground libre con explorador de esquemas, Logros con filtros y Mi Perfil con mapa de calor. |
+| **6** | **Autenticidad, Calidad & Despliegue** | ⏳ Próxima | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG, adaptabilidad responsive móvil y checklist de lanzamiento. |
 
 ---
 
@@ -208,6 +208,28 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **`DataGridResults` y `App.tsx`:** Suavizado del resplandor de fondo (`blur-2xl bg-primary/[0.04]`), eliminación de redundancias y persistencia de visualización tabular del resultado del usuario ante cualquier consulta ejecutada.
 * **Verificación de Calidad:**
   * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.73s`, 0 errores).
+
+---
+
+### [2026-11-09] — Entrada 12: Fase 5 — Catálogo, Playground & Gamificación
+* **Rama:** `feat/curriculum-and-gamification`
+* **Entregables de la Fase 5:**
+  * **Rutas Formativas & Syllabus Interactivo (`/tracks`):**
+    * Componente molécula [`TrackCard`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/TrackCard/TrackCard.tsx): tarjetas de rutas (*SQL Foundations*, *Relational SQL*, *Advanced Queries*) con porcentaje de completitud, horas estimadas y badges.
+    * Componente molécula [`ModuleAccordion`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/ModuleAccordion/ModuleAccordion.tsx): módulos colapsables con listado de retos, estados de resolución, dificultad y botón de acción directa.
+    * Componente organismo [`TracksView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/TracksView/TracksView.tsx): catálogo completo que permite explorar y saltar directamente al IDE de cualquier reto del currículum.
+  * **SQL Playground Libre (`/playground`):**
+    * Componente molécula [`SchemaTableItem`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/SchemaTableItem/SchemaTableItem.tsx): explorador de esquemas con 10 tablas relacionales (`clientes`, `pedidos`, `productos`, etc.), recuento de filas, claves primarias/foráneas y botón de consulta rápida (`SELECT * LIMIT 10`).
+    * Componente organismo [`SqlPlaygroundView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx): estación de experimentación con plantillas SQL, Monaco Editor con atajo `⌘ + Enter`, ejecución contra el sandbox Docker y visualizador tabular [`DataGridResults`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx).
+  * **Logros & Rangos de Ingeniería (`/achievements`):**
+    * Componente molécula [`AchievementCard`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/AchievementCard/AchievementCard.tsx): medallas técnicas con iconos temáticos, cálculo de XP, barras de progreso y estado desbloqueado/bloqueado.
+    * Componente organismo [`AchievementsView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/AchievementsView/AchievementsView.tsx): filtrado por pestañas (*Todos*, *Progreso*, *Habilidad*, *Constancia*) y resumen de insignias.
+  * **Perfil del Estudiante & Auditoría (`/profile`):**
+    * Componente organismo [`UserProfileView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx): tarjeta técnica de usuario, barra de nivel (progreso hacia Nivel 3), mapa de calor de práctica de 30 días y log de auditoría con historial de consultas locales persistentes.
+  * **Integración y Títulos Dinámicos:**
+    * Cableado completo en [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx) manteniendo estricto cumplimiento de **Atomic Design Pragmático** y **Anti-AI Slop** (títulos dinámicos de pestaña, manejo de errores en terminal y cero dependencias huérfanas).
+* **Verificación de Calidad:**
+  * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.38s`, 0 errores).
 
 ---
 

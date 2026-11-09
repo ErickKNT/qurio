@@ -104,3 +104,42 @@ export interface NavItem {
   href: string;
   badge?: string | number;
 }
+
+export type AchievementCategory = 'todos' | 'progreso' | 'habilidad' | 'constancia';
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: 'progreso' | 'habilidad' | 'constancia';
+  xp_reward: number;
+  unlocked_at?: string | null;
+  progress: number;
+  required_threshold: number;
+  current_value: number;
+  unit: string;
+}
+
+export interface TableColumn {
+  name: string;
+  type: string;
+  isPrimary?: boolean;
+  isForeign?: boolean;
+}
+
+export interface TableSchemaInfo {
+  tableName: string;
+  schema: string;
+  rowCount: number;
+  columns: TableColumn[];
+}
+
+export interface QueryHistoryItem {
+  id: string;
+  query: string;
+  executed_at: string;
+  status: 'SUCCESS' | 'ERROR';
+  execution_time_ms: number;
+  row_count: number;
+}
