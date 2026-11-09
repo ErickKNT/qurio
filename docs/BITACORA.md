@@ -316,6 +316,33 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
+### [2026-11-09] — Entrada 17: Enriquecimiento Cromático Equilibrado (Tasteful Color Polish)
+* **Rama:** `main`
+* **Objetivo:** Responder a la retroalimentación del usuario respecto a dotar de vida cromática y calidez visual a la interfaz, evitando tanto la monotonía grisácea plana como la saturación excesiva de luces de neón previas.
+* **Soluciones Implementadas:**
+  * **Sistema de Acentos en `MetricTile`:**
+    * Añadido soporte tipado de acentos funcionales (`accent="purple" | "indigo" | "amber" | "cyan" | "emerald"`).
+    * Cada métrica cuenta con un contenedor cuadrado de icono tintado con borde sutil al 25% y resplandor al hover (`group-hover:shadow-[...]`), haciendo que las estadísticas de nivel, XP, racha, consultas y éxito sean reconocibles de un solo vistazo.
+  * **`SidebarNav`:**
+    * Isotipo con degradado armónico tricolor (`from-primary/15 via-cyan-accent/10 to-emerald/15`).
+    * Elemento activo con píldora izquierda vertical de acento (`bg-primary`), fondo tintado (`bg-primary/10`) y borde luminiscente sutil.
+    * Iconos de navegación con colores temáticos según contexto funcional (Playground: cyan, Logros: ámbar, Perfil: púrpura, Rutas/Dashboard: índigo).
+    * Barra de XP en pie con gradiente fluido `from-primary via-indigo-500 to-cyan-accent`.
+  * **Hero Banner del Dashboard:**
+    * Fondo con sutil degradado radial ambiental (`from-surface via-surface to-primary/[0.04]`) y resplandores de desenfoque difuminado (3xl) no invasivos.
+    * Cápsula de estado de ruta en esmeralda vivo (`bg-emerald/10 text-emerald-600 dark:text-emerald font-medium`).
+  * **`AchievementCard` & `TrackCard`:**
+    * Iconos de medallas con fondos temáticos según categoría (*habilidad*, *constancia*, *progreso*).
+    * Badges de rutas con variantes cromáticas según dificultad (Foundations: cyan, Relational: índigo, Advanced: ámbar).
+  * **`TopHeader` & Playground:**
+    * Indicador de sección con punto primario activo.
+    * Botón de acceso a Playground con píldora cyan suave (`bg-cyan-accent/10`).
+* **Verificación de Calidad:**
+  * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.43s`, 0 errores).
+  * Sincronización exitosa en GitHub.
+
+---
+
 ## 4. Estado de la Integración con Supabase Cloud
 
 * El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).

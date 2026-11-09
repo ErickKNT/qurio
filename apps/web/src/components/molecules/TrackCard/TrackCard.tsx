@@ -50,7 +50,10 @@ export const TrackCard: React.FC<TrackCardProps> = ({
             >
               #{track.sort_order}
             </div>
-            <Badge variant="mono" size="sm">
+            <Badge
+              variant={track.sort_order === 1 ? 'cyan' : track.sort_order === 3 ? 'amber' : 'default'}
+              size="sm"
+            >
               {track.badge_name}
             </Badge>
           </div>
@@ -60,11 +63,11 @@ export const TrackCard: React.FC<TrackCardProps> = ({
               Completado
             </Badge>
           ) : completed > 0 ? (
-            <span className="text-[11px] font-mono text-cyan-accent font-medium">
+            <span className="text-[11px] font-mono text-cyan-accent font-medium px-2 py-0.5 rounded-full bg-cyan-accent/10 border border-cyan-accent/20">
               En progreso
             </span>
           ) : (
-            <span className="text-[11px] font-mono text-content-muted">
+            <span className="text-[11px] font-mono text-content-muted px-2 py-0.5 rounded-full bg-surface-dim border border-border-subtle/40">
               Por iniciar
             </span>
           )}

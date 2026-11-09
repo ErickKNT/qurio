@@ -90,15 +90,15 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             <span className="text-content-muted uppercase tracking-wider">
               Nivel {currentLevel} • Junior Query Builder
             </span>
-            <span className="font-bold text-amber-accent flex items-center gap-1">
-              <Zap className="w-3 h-3 fill-amber-accent" />
+            <span className="font-bold text-amber-streak flex items-center gap-1">
+              <Zap className="w-3 h-3 fill-amber-streak" />
               {currentXp} / {nextLevelXp} XP
             </span>
           </div>
 
           <div className="w-full h-2 rounded-full bg-surface overflow-hidden border border-border-subtle/40">
             <div
-              className="h-full rounded-full bg-cyan-accent transition-all duration-500"
+              className="h-full rounded-full bg-gradient-to-r from-primary via-indigo-500 to-cyan-accent transition-all duration-500"
               style={{ width: `${levelProgress}%` }}
             />
           </div>
@@ -116,24 +116,28 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           value="12 / 50"
           subValue="24% del currículum"
           icon={<Award className="w-4 h-4" />}
+          accent="purple"
         />
         <MetricTile
           label="Racha Actual"
           value={`${profile?.current_streak_days || 2} días`}
           subValue="Objetivo: 7 días"
           icon={<Flame className="w-4 h-4" />}
+          accent="amber"
         />
         <MetricTile
           label="Racha Récord"
           value={`${profile?.max_streak_days || 5} días`}
           subValue="Máxima histórica"
           icon={<Zap className="w-4 h-4" />}
+          accent="indigo"
         />
         <MetricTile
           label="Latencia Sandbox"
           value="3.8 ms"
           subValue="pg_stat_statements"
           icon={<Clock className="w-4 h-4" />}
+          accent="cyan"
         />
       </div>
 

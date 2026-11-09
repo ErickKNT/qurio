@@ -413,14 +413,14 @@ export const App: React.FC = () => {
       {currentPath === 'dashboard' && (
         <div className="flex flex-col gap-8 pb-12">
           {/* Banner de Bienvenida y Rendimiento del Sandbox */}
-          <section className="relative overflow-hidden rounded-2xl bg-surface/70 p-6 sm:p-7 border border-border-subtle/60 shadow-lg">
-            <div className="absolute -right-20 -top-24 w-80 h-80 rounded-full bg-primary/[0.04] blur-2xl pointer-events-none" />
-            <div className="absolute right-64 -bottom-20 w-64 h-64 rounded-full bg-cyan-accent/[0.03] blur-2xl pointer-events-none" />
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-surface via-surface to-primary/[0.04] p-6 sm:p-7 border border-border-subtle/80 shadow-md">
+            <div className="absolute -right-16 -top-20 w-80 h-80 rounded-full bg-primary/[0.07] dark:bg-primary/[0.12] blur-3xl pointer-events-none" />
+            <div className="absolute right-72 -bottom-20 w-64 h-64 rounded-full bg-cyan-accent/[0.05] dark:bg-cyan-accent/[0.08] blur-3xl pointer-events-none" />
 
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex flex-col gap-1.5 max-w-2xl">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-card/60 border border-border-subtle/50 w-fit text-[11px] font-mono text-content-secondary">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
+              <div className="flex flex-col gap-2 max-w-2xl">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald-600 dark:text-emerald font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
                   <span>Ruta Activa • SQL Foundations</span>
                 </div>
 
@@ -451,6 +451,7 @@ export const App: React.FC = () => {
                     handleSelectExercise(0);
                     setCurrentPath('exercise');
                   }}
+                  className="shadow-glow-primary hover:shadow-primary"
                 >
                   Continuar Reto Activo
                 </Button>
@@ -465,30 +466,35 @@ export const App: React.FC = () => {
               value="Nivel 2"
               subValue="Junior Query Builder"
               icon={<Award className="w-4 h-4" />}
+              accent="purple"
             />
             <MetricTile
               label="XP Acumulado"
               value={`${profile?.total_xp || 480} XP`}
               subValue="Meta: 1,000 XP"
               icon={<Zap className="w-4 h-4" />}
+              accent="indigo"
             />
             <MetricTile
               label="Racha Activa"
               value={`${profile?.current_streak_days || 2} días`}
               subValue="Récord: 5 días"
-              icon={<Flame className="w-4 h-4 text-amber-accent" />}
+              icon={<Flame className="w-4 h-4" />}
+              accent="amber"
             />
             <MetricTile
               label="Queries Evaluados"
               value="142"
               subValue="+18 en sesión"
               icon={<Terminal className="w-4 h-4" />}
+              accent="cyan"
             />
             <MetricTile
               label="Tasa de Éxito"
               value="94.2%"
               subValue="Evaluación semántica"
               icon={<CheckCircle2 className="w-4 h-4" />}
+              accent="emerald"
               className="col-span-2 sm:col-span-1"
             />
           </section>
@@ -517,7 +523,7 @@ export const App: React.FC = () => {
               <div className="lg:col-span-2 flex flex-col justify-between p-6 rounded-2xl bg-surface/70 border border-border-subtle/60 shadow-lg">
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <Badge variant="default" size="sm">Reto Recomendado</Badge>
+                    <Badge variant="cyan" size="sm">Reto Recomendado</Badge>
                     <span className="text-xs font-mono text-content-muted">Módulo 6 • Intermedio</span>
                   </div>
 
@@ -529,15 +535,15 @@ export const App: React.FC = () => {
                     {exercises[3]?.prompt || 'El equipo de marketing necesita reactivar a usuarios registrados que nunca han realizado un pedido en la plataforma.'}
                   </p>
 
-                  <div className="mt-2 p-3 rounded-lg bg-surface-dim/80 border border-border-subtle/50 font-mono text-xs text-content-secondary flex items-center justify-between">
+                  <div className="mt-2 p-3 rounded-lg bg-surface-dim/80 border border-border-subtle/50 border-l-2 border-l-cyan-accent font-mono text-xs text-content-secondary flex items-center justify-between">
                     <code>SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c...</code>
                     <KbdShortcut keys={['⌘', '↵']} />
                   </div>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-border-subtle/40 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-mono text-content-secondary">
-                    <Zap className="w-4 h-4 text-amber-accent" />
+                  <div className="flex items-center gap-2 text-xs font-mono text-amber-streak font-medium bg-amber-streak/10 px-2.5 py-1 rounded-md border border-amber-streak/20">
+                    <Zap className="w-3.5 h-3.5 fill-amber-streak" />
                     <span>Recompensa: +{exercises[3]?.xp_reward || 50} XP</span>
                   </div>
 
@@ -557,6 +563,7 @@ export const App: React.FC = () => {
                         handleSelectExercise(3 < exercises.length ? 3 : 0);
                         setCurrentPath('exercise');
                       }}
+                      className="shadow-sm hover:shadow-primary"
                     >
                       Resolver Reto
                     </Button>
@@ -565,12 +572,13 @@ export const App: React.FC = () => {
               </div>
 
               {/* Panel Lateral de Esquema Activo */}
-              <div className="flex flex-col gap-3 p-5 rounded-2xl bg-surface/70 border border-border-subtle/60">
+              <div className="flex flex-col gap-3 p-5 rounded-2xl bg-surface/70 border border-border-subtle/60 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-semibold uppercase tracking-wider text-content-muted">
-                    Esquema Activo
+                  <span className="text-xs font-mono font-semibold uppercase tracking-wider text-content-primary flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-accent" />
+                    <span>Esquema Activo</span>
                   </span>
-                  <span className="text-[10px] font-mono text-content-muted px-2 py-0.5 rounded bg-surface-dim border border-border-subtle/40">
+                  <span className="text-[10px] font-mono text-primary font-medium px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
                     Ecommerce DB
                   </span>
                 </div>
@@ -579,10 +587,10 @@ export const App: React.FC = () => {
                   {tables.slice(0, 5).map((tbl) => (
                     <div
                       key={tbl.tableName}
-                      className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-surface/30 hover:bg-surface/70 border border-border-subtle/40 text-content-secondary hover:text-content-primary transition-colors"
+                      className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-surface/40 hover:bg-surface/80 border border-border-subtle/40 text-content-secondary hover:text-content-primary transition-colors"
                     >
                       <span className="flex items-center gap-2">
-                        <Code2 className="w-3.5 h-3.5 text-content-muted" />
+                        <Code2 className="w-3.5 h-3.5 text-cyan-accent" />
                         {tbl.tableName} ({tbl.rowCount} filas)
                       </span>
                       <span className="text-[10px] text-content-muted">public</span>
@@ -594,9 +602,9 @@ export const App: React.FC = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => setCurrentPath('playground')}
-                  className="mt-2 text-xs"
+                  className="mt-2 text-xs border-cyan-accent/30 text-cyan-accent hover:bg-cyan-accent/10"
                 >
-                  <Terminal className="w-3.5 h-3.5 mr-1" />
+                  <Terminal className="w-3.5 h-3.5 mr-1 text-cyan-accent" />
                   <span>Explorar en Playground</span>
                 </Button>
               </div>

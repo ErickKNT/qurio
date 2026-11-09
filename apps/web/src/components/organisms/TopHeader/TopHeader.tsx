@@ -34,13 +34,15 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     >
       {/* Left: Section Title or Context Breadcrumb */}
       <div className="flex items-center gap-3">
-        <h2 className="text-xs font-semibold tracking-tight text-content-primary uppercase font-mono">
-          {title}
+        <h2 className="text-xs font-semibold tracking-tight text-content-primary uppercase font-mono flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          <span>{title}</span>
         </h2>
         {onOpenPlayground && title !== 'SQL Playground' && (
           <button
+            type="button"
             onClick={onOpenPlayground}
-            className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-mono rounded bg-surface-card hover:bg-surface-hover text-content-secondary hover:text-content-primary border border-border-subtle/60 transition-colors"
+            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono rounded-full bg-cyan-accent/10 hover:bg-cyan-accent/20 text-cyan-600 dark:text-cyan-accent border border-cyan-accent/25 transition-all shadow-sm"
           >
             <Terminal className="w-3 h-3 text-cyan-accent" />
             <span>Playground</span>
@@ -68,9 +70,9 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           aria-label="Alternar tema claro y oscuro"
         >
           {isDark ? (
-            <Sun className="w-4 h-4 text-amber-streak" />
+            <Sun className="w-4 h-4 text-amber-streak drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
           ) : (
-            <Moon className="w-4 h-4 text-primary" />
+            <Moon className="w-4 h-4 text-primary drop-shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
           )}
         </button>
 

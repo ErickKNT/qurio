@@ -53,9 +53,13 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
         <div className="flex items-center justify-between">
           <div
             className={cn(
-              'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-colors',
+              'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-all duration-200',
               isUnlocked
-                ? 'bg-cyan-accent/15 text-cyan-accent border-cyan-accent/30 shadow-glow-cyan'
+                ? achievement.category === 'habilidad'
+                  ? 'bg-primary/15 text-primary dark:text-primary-light border-primary/35 shadow-[0_0_12px_rgba(99,102,241,0.25)]'
+                  : achievement.category === 'constancia'
+                  ? 'bg-amber-streak/15 text-amber-streak border-amber-streak/35 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+                  : 'bg-cyan-accent/15 text-cyan-600 dark:text-cyan-accent border-cyan-accent/35 shadow-glow-cyan'
                 : 'bg-surface-dim text-content-muted border-border-subtle/40'
             )}
           >
@@ -63,7 +67,7 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold text-amber-accent">
+            <span className="text-xs font-mono font-bold text-amber-streak bg-amber-streak/10 px-2 py-0.5 rounded border border-amber-streak/20">
               +{achievement.xp_reward} XP
             </span>
             {isUnlocked ? (
