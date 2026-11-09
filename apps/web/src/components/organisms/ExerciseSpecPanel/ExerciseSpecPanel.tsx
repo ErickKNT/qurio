@@ -119,15 +119,18 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                     </span>
                     <span className="text-[10px] text-content-muted font-normal">public</span>
                   </div>
-                  <div className="flex flex-wrap gap-1 text-[10px] text-content-muted">
-                    {tbl.columns.map((col, idx) => (
-                      <span
-                        key={idx}
-                        className="px-1.5 py-0.5 rounded bg-canvas border border-border-subtle/50 text-content-secondary"
-                      >
-                        {col}
-                      </span>
-                    ))}
+                  <div className="flex flex-col gap-0.5 pt-1.5 border-t border-border-subtle/30">
+                    {tbl.columns.map((col, idx) => {
+                      const parts = col.split(' ');
+                      const colName = parts[0];
+                      const colType = parts.slice(1).join(' ');
+                      return (
+                        <div key={idx} className="flex items-center justify-between text-[11px] py-0.5 px-1 rounded hover:bg-surface-hover/40">
+                          <span className="text-content-secondary font-mono">{colName}</span>
+                          <span className="text-[10px] text-content-muted font-mono">{colType}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
