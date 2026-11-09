@@ -196,7 +196,7 @@ export const App: React.FC = () => {
         setResultColumns(evalResponse.columns.map((name) => ({ name, type: 'column' })));
         setResultRows(evalResponse.rows);
         setAwardedXp(evalResponse.xp_awarded);
-        setSuccessModalOpen(true);
+        setSuccessModalOpen(false); // Mantener en false: los resultados y el botón de éxito se muestran inline en DataGridResults sin tapar la tabla
 
         // Persistir intento exitoso (Supabase Cloud + LocalStorage)
         await persistence.recordAttempt({

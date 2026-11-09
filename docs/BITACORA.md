@@ -405,6 +405,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Control de Versiones:**
   * Commit en la rama `feat/interactive-pedagogy-and-sqlbolt-learning`.
   * Fusión (`merge --no-ff`) hacia `main` y sincronización con GitHub (`git push origin main`).
+  * Fix de UX: Desactivación permanente del modal superpuesto `SuccessModal` al evaluar soluciones; los resultados, XP otorgado y botón de avance al siguiente reto se presentan de forma no invasiva inline en `DataGridResults`, garantizando visibilidad total de la tabla de resultados.
 
 ---
 
