@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BookOpen,
   Database,
@@ -22,6 +22,7 @@ export interface ExerciseSpecPanelProps {
   exercise: Exercise;
   unlockedHintsCount: number;
   onUnlockHint: () => void;
+  isCompleted?: boolean;
   className?: string;
 }
 
@@ -31,12 +32,26 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
   exercise,
   unlockedHintsCount,
   onUnlockHint,
+  isCompleted,
   className,
 }) => {
   const [activeTab, setActiveTab] = useState<SpecTab>('guide');
   const [selectedTableIndex, setSelectedTableIndex] = useState(0);
   const [checkedObjectives, setCheckedObjectives] = useState<Record<number, boolean>>({});
   const [copiedCol, setCopiedCol] = useState<string | null>(null);
+
+  // Sincronizar checklist automáticamente si el reto está completado o aprobado
+  useEffect(() => {
+    if ((isCompleted || exercise.is_completed) && exercise.objectives) {
+      const allChecked: Record<number, boolean> = {};
+      exercise.objectives.forEach((_, idx) => {
+        allChecked[idx] = true;
+      });
+      setCheckedObjectives(allChecked);
+    } else {
+      setCheckedObjectives({});
+    }
+  }, [isCompleted, exercise.id, exercise.is_completed]);
 
   // Esquema de tablas del dataset relacional para consulta rápida
   const schemaTables = [
@@ -255,10 +270,15 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-[11px] font-mono font-semibold uppercase tracking-wider text-content-secondary">
                   <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald" />
-                    Objetivos de la Query ({Object.values(checkedObjectives).filter(Boolean).length}/{exercise.objectives.length})
+                    <CheckCircle2 className={cn("w-3.5 h-3.5", Object.values(checkedObjectives).filter(Boolean).length === exercise.objectives.length ? "text-emerald" : "text-cyan-accent")} />
+                    <span>Objetivos ({Object.values(checkedObjectives).filter(Boolean).length}/{exercise.objectives.length})</span>
+                    {Object.values(checkedObjectives).filter(Boolean).length === exercise.objectives.length && (
+                      <span className="text-[10px] text-emerald bg-emerald/10 px-1.5 py-0.2 rounded border border-emerald/30 font-bold ml-1 animate-fadeIn">
+                        ✓ Cumplidos
+                      </span>
+                    )}
                   </span>
-                  <span className="text-[10px] text-content-muted font-normal">Guía paso a paso</span>
+                  <span className="text-[10px] text-content-muted font-normal">Checklist interactivo</span>
                 </div>
 
                 <div className="flex flex-col gap-1.5">

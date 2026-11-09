@@ -438,6 +438,7 @@ export const App: React.FC = () => {
               exercise={activeExercise}
               unlockedHintsCount={hintsUnlocked}
               onUnlockHint={handleUnlockHint}
+              isCompleted={activeExercise.is_completed || executionStatus === 'SUCCESS'}
             />
           }
           editorContent={
