@@ -26,6 +26,8 @@ import {
   AchievementsView,
   UserProfileView,
   NotFoundView,
+  AuthConfirmView,
+  ResetPasswordView,
 } from '@/components/organisms';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -48,7 +50,16 @@ import {
   QueryHistoryItem,
 } from '@/types';
 
-export type AppPath = 'dashboard' | 'playground' | 'tracks' | 'achievements' | 'profile' | 'exercise' | 'not-found';
+export type AppPath =
+  | 'dashboard'
+  | 'playground'
+  | 'tracks'
+  | 'achievements'
+  | 'profile'
+  | 'exercise'
+  | 'not-found'
+  | 'auth-confirm'
+  | 'reset-password';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<AppPath>('dashboard');
@@ -122,6 +133,29 @@ export const App: React.FC = () => {
     });
   }, [profile?.id]);
 
+  // Detección de redirecciones de autenticación Supabase (email confirmation o password recovery)
+  useEffect(() => {
+    const checkAuthRoute = () => {
+      const hash = window.location.hash;
+      const search = window.location.search;
+
+      if (hash.includes('type=recovery') || hash.includes('reset-password')) {
+        setCurrentPath('reset-password');
+      } else if (
+        hash.includes('type=signup') ||
+        hash.includes('auth-confirm') ||
+        hash.includes('type=email_change') ||
+        search.includes('type=signup')
+      ) {
+        setCurrentPath('auth-confirm');
+      }
+    };
+
+    checkAuthRoute();
+    window.addEventListener('hashchange', checkAuthRoute);
+    return () => window.removeEventListener('hashchange', checkAuthRoute);
+  }, []);
+
   // Actualización dinámica del título de la pestaña (Anti-AI Slop Regla 1.1)
   useEffect(() => {
     if (currentPath === 'exercise') {
@@ -134,6 +168,8 @@ export const App: React.FC = () => {
         achievements: 'Logros & Rangos | Qurio',
         profile: 'Mi Perfil | Qurio',
         'not-found': 'ERROR 404: Relation Not Found | Qurio',
+        'auth-confirm': 'Verificación de Cuenta | Qurio',
+        'reset-password': 'Restablecer Contraseña | Qurio',
       };
       document.title = titles[currentPath] || 'Qurio | Aprende SQL. Piensa en queries.';
     }
@@ -455,6 +491,10 @@ export const App: React.FC = () => {
         return 'Mi Perfil';
       case 'not-found':
         return '404 Relation Not Found';
+      case 'auth-confirm':
+        return 'Verificación de Cuenta';
+      case 'reset-password':
+        return 'Restablecer Contraseña';
       default:
         return 'Dashboard';
     }
@@ -508,6 +548,21 @@ export const App: React.FC = () => {
       {currentPath === 'not-found' && (
         <NotFoundView
           missingPath="v_reporte_anual"
+          onNavigate={(path) => setCurrentPath(path as AppPath)}
+        />
+      )}
+
+      {/* VISTA F: CONFIRMACIÓN DE CUENTA SUPABASE (EMAIL VERIFICATION) */}
+      {currentPath === 'auth-confirm' && (
+        <AuthConfirmView
+          onNavigate={(path) => setCurrentPath(path as AppPath)}
+          userEmail={profile?.username ? `${profile.username}@qurio.dev` : undefined}
+        />
+      )}
+
+      {/* VISTA G: RESTABLECER CONTRASEÑA */}
+      {currentPath === 'reset-password' && (
+        <ResetPasswordView
           onNavigate={(path) => setCurrentPath(path as AppPath)}
         />
       )}
