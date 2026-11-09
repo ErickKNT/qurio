@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Expansión del Currículum Completo de Retos (`feat/curriculum-expansion-3-tracks`) — Concluida**  
+* **Fase Actual:** **Hardening de Seguridad & AST (Fase 9) — Concluida**  
 * **Próxima Fase:** **Operación, Métricas en Vivo y Nuevas Prácticas**  
-* **Rama Git Activa:** `feat/curriculum-expansion-3-tracks` (mergeada a `main` y sincronizada en GitHub)  
+* **Rama Git Activa:** `main` (mergeada y sincronizada en GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
   * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico (26/26 tests pasando).
@@ -30,6 +30,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **5** | **Catálogo, Playground & Gamificación** | ✅ Concluida | `feat/curriculum-and-gamification` | Rutas con syllabus interactivo, SQL Playground libre con explorador de esquemas, Logros con filtros y Mi Perfil con mapa de calor. |
 | **6** | **Autenticidad, Calidad & Despliegue** | ✅ Concluida | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG propio, metadatos OG, adaptabilidad móvil y transparencia de contacto. |
 | **+** | **Temas (Claro/Oscuro) & README** | ✅ Concluida | `feat/theme-support-and-readme` | Tokens Tailwind CSS dinámicos, toggle sol/luna, temas Monaco reactivos y README.md exhaustivo. |
+| **7** | **Expansión Curricular (3 Rutas)** | ✅ Concluida | `feat/curriculum-expansion-3-tracks` | 18 ejercicios completos, didáctica SQLBolt, checklist de sub-objetivos interactiva. |
+| **9** | **Hardening de Seguridad & AST** | ✅ Concluida | `main` (vía `security/phase-9-hardening`) | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress en Supabase Cloud. |
 
 ---
 
@@ -523,7 +525,87 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
+### Entrada 26 — Fase 9: Hardening de Seguridad, Análisis AST con SQLGlot y Autoridad Central de Progreso
+* **Fecha:** 2026-11-09
+* **Rama:** `security/phase-9-hardening` (aislada de `main`, lista para revisión).
+* **Objetivo:** Implementar el plan de remediación integral de seguridad derivado de la auditoría técnica (`SECURITY_AUDIT.md`), cubriendo validación sintáctica mediante AST, soporte controlado de consultas avanzadas (`WITH RECURSIVE`), autenticación asimétrica ES256 (JWKS), Rate Limiting desacoplado y arquitectura de progreso certificado en el backend.
+* **Componentes Implementados y Modificados:**
+  * **SQL Runner & AST con SQLGlot ([`apps/api/app/modules/runner/security.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/security.py)):**
+    * Sustitución de regex por análisis sintáctico formal del AST (`sqlglot.parse` con dialecto `postgres`).
+    * Allowlist estricta de raíces de lectura (`exp.Query`, `exp.Subquery`).
+    * Denylist profunda en todo el árbol (`walk()`) para neutralizar mutaciones DDL/DML camufladas dentro de CTEs o subconsultas.
+    * Bloqueo de funciones peligrosas del sistema (`pg_sleep`, `pg_terminate_backend`, `dblink`, `pg_read_file`, etc.) y tablas internas de credenciales (`pg_shadow`, `pg_authid`).
+    * Soporte seguro para `WITH RECURSIVE` delegando la contención de recursiones infinitas al motor PostgreSQL (`statement_timeout = 2000ms`, `lock_timeout = 1000ms`).
+    * Cláusula `LIMIT` forzada y manipulada de forma nativa en el AST (`enforce_row_limit`).
+  * **Autenticación Asimétrica ES256 ([`apps/api/app/core/auth.py`](file:///c:/Desarrollo/Qurio/apps/api/app/core/auth.py)):**
+    * Verificación contra el endpoint JWKS público de Supabase (`/.well-known/jwks.json`) con rotación automática de claves y caché en memoria.
+    * Validación estricta de claims (`aud = authenticated`, `iss`, `sub`, expiración).
+    * Modo invitado con fallback desacoplado que no bloquea la práctica local pero impide la persistencia no autorizada.
+  * **Rate Limiting y Guardia de Concurrencia ([`apps/api/app/core/rate_limit.py`](file:///c:/Desarrollo/Qurio/apps/api/app/core/rate_limit.py)):**
+    * Límite diferenciado: 20 req/min por IP para invitados, 120 req/min por UID para autenticados.
+    * Semáforo de concurrencia (`asyncio.Semaphore(10)`) para blindar el pool `asyncpg` ante avalanchas.
+  * **Cabeceras de Seguridad ([`apps/api/app/main.py`](file:///c:/Desarrollo/Qurio/apps/api/app/main.py)):**
+    * Middleware con `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy`.
+  * **Infraestructura Sandbox ([`docker-compose.yml`](file:///c:/Desarrollo/Qurio/docker-compose.yml) y [`database/sandbox/init.sql`](file:///c:/Desarrollo/Qurio/database/sandbox/init.sql)):**
+    * Vinculación de PostgreSQL a `127.0.0.1:5433:5432` impidiendo exposición innecesaria a interfaces de red externas.
+    * `lock_timeout = '1000ms'` y `temp_file_limit = '32MB'` sobre el rol `readonly_student`.
+
+---
+
+### Entrada 27 — Cierre Definitivo de Fase 9: Hardening de Seguridad y Ajustes Finales (v5.0)
+* **Fecha:** 2026-11-09
+* **Rama:** `security/phase-9-hardening` (aislada de `main`, protegida sin despliegue automático).
+* **Objetivo:** Ejecutar los dos ajustes finales requeridos para cerrar formalmente la Fase 9:
+  1. Revocación explícita de `SELECT` por columna en `public.exercise_attempts` para `PUBLIC` y `anon`.
+  2. Conservación del índice condicional único parcial `idx_single_awarded_passed_attempt` durante el rollback como salvaguarda estructural independiente.
+* **Refactorizaciones Entregadas:**
+  * **Script DDL Supabase v5.0 ([`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql)):**
+    * Validación anti-NULL explícita en cada parámetro de `record_verified_attempt()`.
+    * Eliminación definitiva del mínimo artificial de 10 XP; cálculo autoritativo proporcional (0, 5, 10, 20, 100 XP) y validación de `e.xp_reward`.
+    * Sustitución de `search_path = public, pg_temp` por `SET search_path = ''` para neutralizar secuestro de esquemas.
+    * Calificación explícita de esquemas en todos los objetos de aplicación (`public.*`, `pg_catalog.*`).
+    * Revocación explícita de `SELECT` en las 10 columnas de `public.exercise_attempts` para `PUBLIC` y `anon`.
+    * Revocación explícita de `INSERT` y `UPDATE` en las 10 columnas de `exercise_attempts` y sobre `xp/level` en `user_profiles`.
+    * Propietario asignado a `postgres`, revocación explícita de `EXECUTE` a `PUBLIC`, `anon`, `authenticated`, y concesión exclusiva a `service_role`.
+    * Bloqueo físico `SELECT ... FOR UPDATE` sobre `public.user_profiles` e índice condicional único `idx_single_awarded_passed_attempt`.
+    * Preservación de la consistencia auditada de `public.user_progress` en intentos fallidos (`FAILED`, `ERROR`).
+    * Consulta diagnóstica de conciliación multi-fuente de XP sin alteración automática de datos.
+  * **Script de Reversión Seguro v3.0 ([`database/supabase/rollback_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/rollback_security_hardening.sql)):**
+    * Conservación del índice único parcial `idx_single_awarded_passed_attempt` (eliminado el `DROP INDEX`).
+    * Mantiene blindados `xp`, `level` e inserciones en `exercise_attempts` para clientes incluso tras revertir la RPC.
+    * Procedimiento de contingencia operacional documentado.
+  * **Script de Diagnóstico de Privilegios v3.0 ([`database/supabase/diagnose_privileges.sql`](file:///c:/Desarrollo/Qurio/database/supabase/diagnose_privileges.sql)):**
+    * Inspección de ACL mediante `aclexplode` demostrando que `PUBLIC` (grantee 0) no tiene acceso a la RPC.
+    * Comprobación de `SELECT` por columna distinguiendo entre permisos de tabla y de columna para `PUBLIC`, `anon` y `authenticated`.
+    * Consulta no destructiva de conciliación multi-fuente de XP.
+  * **Suite Automatizada de Migración Supabase ([`apps/api/tests/test_supabase_migration.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_supabase_migration.py)):**
+    * 9 pruebas integrales en Docker con roles, RLS y esquemas reales:
+      1. Matriz de privilegios efectivos CLS a nivel de tabla y columna (`PUBLIC` y `anon` sin `SELECT`).
+      2. Rechazo explícito de parámetros nulos.
+      3. Rechazo de XP desbordado.
+      4. Cálculo autoritativo de XP proporcional en 0, 5, 10, 20 y 100 XP con 0 a 3 pistas.
+      5. Concurrencia en conexiones físicas independientes sin race conditions.
+      6. Concurrencia en diferentes ejercicios sin lost updates.
+      7. Consistencia de `user_progress` en intentos `FAILED` y `ERROR`.
+      8. Regla canónica de primer aprobado con 0 XP.
+      9. Auditoría de rollback comprobando supervivencia del índice parcial, rechazo de duplicados con XP positivo, aceptación de reintentos con 0 XP y persistencia del blindaje en clientes.
+* **Resultados de Validación:**
+  * **Suite Completa Pytest:** **64/64 pruebas pasando en 3.79s** (100% éxito).
+  * **Currículo Verificado:** Las 18 consultas del currículo oficial evaluadas y aprobadas (`18/18 PASSED`).
+  * **Frontend Vite Build:** Empaquetado de producción TypeScript verificado en 5.84s con 0 errores.
+* **Control de Versiones y Despliegue en Producción:**
+  * Migración `03_security_hardening.sql` autorizada y aplicada exitosamente en Supabase Cloud por el usuario.
+  * Verificación en vivo comprobada: llamadas de clientes anónimos bloqueadas con `42501` y backend certificado con `service_role`.
+  * Rama `security/phase-9-hardening` fusionada a `main` y sincronizada en GitHub.
+
+
+---
+
 ## 4. Estado de la Integración con Supabase Cloud
 
-* El usuario confirmó la creación del proyecto en Supabase y la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql) y [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).
-* El backend queda preparado para conectarse a Supabase proveyendo `SUPABASE_URL` y `SUPABASE_ANON_KEY` en `apps/api/.env`. Si no se proporcionan, el fallback local garantiza operatividad y tests al 100%.
+* El usuario confirmó la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql), [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql) y [`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql) en el panel de Supabase Cloud.
+* **Verificación en Vivo Confirmada:**
+  * La RPC protegida `record_verified_attempt` está activa en la nube con `SET search_path = ''` y validaciones anti-NULL.
+  * Invocaciones autorizadas mediante `service_role` (backend) responden correctamente.
+  * Invocaciones no autorizadas mediante `anon` (cliente público) son rechazadas por PostgreSQL con código de error `42501: permission denied for function record_verified_attempt`.
+* Las credenciales se encuentran configuradas de forma segura: `SUPABASE_SERVICE_ROLE_KEY` reside exclusivamente en `apps/api/.env`, mientras que `apps/web/.env` opera únicamente con `VITE_SUPABASE_ANON_KEY`.

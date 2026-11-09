@@ -100,6 +100,45 @@ def test_evaluator_hint_penalties():
     assert res3.xp_awarded == 27
 
 
+def test_evaluator_xp_scales_without_artificial_minimum():
+    """
+    Verifica que el cálculo de XP respete proporcionalmente las recompensas base
+    de 0, 5, 10, 20 y 100 XP eliminando cualquier mínimo artificial de 10 XP.
+    """
+    cols = ["val"]
+    rows = [[1]]
+    student = make_result(cols, rows)
+    expected = make_result(cols, rows)
+
+    # Base 0 XP
+    for h in (0, 1, 2, 3):
+        assert evaluate_solution(student, expected, base_xp=0, hints_used=h).xp_awarded == 0
+
+    # Base 5 XP (Previamente colapsaba a 10 con GREATEST(10, ...))
+    assert evaluate_solution(student, expected, base_xp=5, hints_used=0).xp_awarded == 5
+    assert evaluate_solution(student, expected, base_xp=5, hints_used=1).xp_awarded == 4
+    assert evaluate_solution(student, expected, base_xp=5, hints_used=2).xp_awarded == 3
+    assert evaluate_solution(student, expected, base_xp=5, hints_used=3).xp_awarded == 2
+
+    # Base 10 XP (Previamente con pistas seguía dando 10 por el mínimo artificial)
+    assert evaluate_solution(student, expected, base_xp=10, hints_used=0).xp_awarded == 10
+    assert evaluate_solution(student, expected, base_xp=10, hints_used=1).xp_awarded == 8
+    assert evaluate_solution(student, expected, base_xp=10, hints_used=2).xp_awarded == 7
+    assert evaluate_solution(student, expected, base_xp=10, hints_used=3).xp_awarded == 5
+
+    # Base 20 XP
+    assert evaluate_solution(student, expected, base_xp=20, hints_used=0).xp_awarded == 20
+    assert evaluate_solution(student, expected, base_xp=20, hints_used=1).xp_awarded == 17
+    assert evaluate_solution(student, expected, base_xp=20, hints_used=2).xp_awarded == 14
+    assert evaluate_solution(student, expected, base_xp=20, hints_used=3).xp_awarded == 11
+
+    # Base 100 XP
+    assert evaluate_solution(student, expected, base_xp=100, hints_used=0).xp_awarded == 100
+    assert evaluate_solution(student, expected, base_xp=100, hints_used=1).xp_awarded == 85
+    assert evaluate_solution(student, expected, base_xp=100, hints_used=2).xp_awarded == 70
+    assert evaluate_solution(student, expected, base_xp=100, hints_used=3).xp_awarded == 55
+
+
 def test_evaluator_database_error():
     student = make_result([], [], status="ERROR", error="syntax error at or near 'FORM'")
     expected = make_result(["id"], [[1]])
@@ -108,3 +147,95 @@ def test_evaluator_database_error():
     assert res.status == EvaluationStatus.ERROR
     assert res.xp_awarded == 0
     assert "syntax error" in res.error
+
+
+# ==============================================================================
+# PRUEBAS DE PRECISIÓN DECIMAL Y REQUISITOS PEDAGÓGICOS (HALLAZGO SEC-07)
+# ==============================================================================
+
+def test_evaluator_decimal_exact_precision():
+    """Demuestra que valores Decimal con alta precisión no sufren truncamiento por float."""
+    from decimal import Decimal
+
+    cols = ["id", "monto_preciso"]
+    # Dos números que en float(IEEE 754) colapsarían por redondeo pero en Decimal son distintos
+    val1 = Decimal("10000000000000.00000001")
+    val2 = Decimal("10000000000000.00000002")
+
+    student = make_result(cols, [[1, val1]])
+    expected = make_result(cols, [[1, val2]])
+
+    res = evaluate_solution(student, expected)
+    assert res.status == EvaluationStatus.FAILED
+    assert "no coinciden con el conjunto esperado" in res.diff.reason
+
+
+def test_evaluator_decimal_scale_numerical_equivalence():
+    """Valida que 1754.5 y 1754.50 sean numéricamente equivalentes en evaluación de valor."""
+    from decimal import Decimal
+
+    cols = ["id", "total"]
+    student = make_result(cols, [[1, Decimal("1754.5")]])
+    expected = make_result(cols, [[1, Decimal("1754.50")]])
+
+    res = evaluate_solution(student, expected, enforce_scale=False)
+    assert res.status == EvaluationStatus.PASSED
+
+
+def test_evaluator_decimal_scale_strict_enforcement():
+    """Demuestra que si enforce_scale=True, 1754.5 y 1754.50 son distinguidos por su escala."""
+    from decimal import Decimal
+
+    cols = ["id", "total"]
+    student = make_result(cols, [[1, Decimal("1754.5")]])
+    expected = make_result(cols, [[1, Decimal("1754.50")]])
+
+    res = evaluate_solution(student, expected, enforce_scale=True)
+    assert res.status == EvaluationStatus.FAILED
+
+
+def test_evaluator_pedagogical_ast_check_fails_when_round_missing():
+    """
+    Demuestra la Capa 2: Si la consigna exige ROUND() y el estudiante multiplica directo
+    sin usar ROUND (arrojando los mismos números), el evaluador rechaza con aviso didáctico.
+    """
+    cols = ["nombre_producto", "precio", "precio_con_iva"]
+    rows = [["ProBook Ultra", 1450.0, 1754.5]]
+    student_res = make_result(cols, rows)
+    expected_res = make_result(cols, rows)
+
+    expected_sql = "SELECT nombre_producto, precio, ROUND(precio * 1.21, 2) AS precio_con_iva FROM productos;"
+    # Estudiante omitió ROUND()
+    student_sql = "SELECT nombre_producto, precio, precio * 1.21 AS precio_con_iva FROM productos;"
+
+    res = evaluate_solution(
+        student_result=student_res,
+        expected_result=expected_res,
+        student_sql=student_sql,
+        expected_sql=expected_sql,
+    )
+    assert res.status == EvaluationStatus.FAILED
+    assert res.diff is not None
+    assert "Requisito pedagógico no cumplido" in res.diff.reason
+    assert "ROUND()" in res.diff.reason
+
+
+def test_evaluator_pedagogical_ast_check_passes_when_round_present():
+    """Si el estudiante sí incluye la función ROUND() requerida, la evaluación aprueba."""
+    cols = ["nombre_producto", "precio", "precio_con_iva"]
+    rows = [["ProBook Ultra", 1450.0, 1754.5]]
+    student_res = make_result(cols, rows)
+    expected_res = make_result(cols, rows)
+
+    expected_sql = "SELECT nombre_producto, precio, ROUND(precio * 1.21, 2) AS precio_con_iva FROM productos;"
+    student_sql = "SELECT nombre_producto, precio, ROUND(p.precio * 1.21, 2) AS precio_con_iva FROM productos p;"
+
+    res = evaluate_solution(
+        student_result=student_res,
+        expected_result=expected_res,
+        student_sql=student_sql,
+        expected_sql=expected_sql,
+    )
+    assert res.status == EvaluationStatus.PASSED
+    assert res.diff is None
+

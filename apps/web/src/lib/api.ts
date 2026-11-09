@@ -8,6 +8,7 @@ import {
   QueryHistoryItem,
   SampleTableData,
 } from '@/types';
+import { supabase } from '@/lib/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
@@ -19,6 +20,22 @@ export class ApiError extends Error {
 }
 
 const LOCAL_STORAGE_HISTORY_KEY = 'qurio_query_history';
+
+/**
+ * Obtiene los encabezados HTTP para la API, adjuntando el JWT de Supabase si hay sesión activa.
+ */
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (data?.session?.access_token) {
+      headers['Authorization'] = `Bearer ${data.session.access_token}`;
+    }
+  } catch {
+    // Modo offline o sin sesión
+  }
+  return headers;
+}
 
 /**
  * Cliente de integración con la API de FastAPI para ejecución y evaluación semántica.
@@ -118,9 +135,10 @@ export const api = {
    */
   async executePlayground(query: string, database = 'ecommerce_sandbox'): Promise<ExecutionResult> {
     try {
+      const headers = await getAuthHeaders();
       const res = await fetch(`${API_BASE_URL}/playground/execute`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ query, database }),
       });
       if (!res.ok) {
@@ -149,9 +167,10 @@ export const api = {
     hintsRevealed = 0
   ): Promise<EvaluationResponse> {
     try {
+      const headers = await getAuthHeaders();
       const res = await fetch(`${API_BASE_URL}/exercises/${exerciseId}/submit`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ query, hints_revealed: hintsRevealed }),
       });
       if (!res.ok) {
