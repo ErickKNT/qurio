@@ -16,6 +16,7 @@ import {
 import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
 import { MetricTile, FormField, SuccessModal } from '@/components/molecules';
+import { AuthModal } from '@/components/molecules/AuthModal/AuthModal';
 import {
   MonacoEditorPanel,
   DataGridResults,
@@ -28,6 +29,7 @@ import {
 } from '@/components/organisms';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
+import { persistence } from '@/lib/persistence';
 import {
   api,
   FALLBACK_EXERCISES,
@@ -53,8 +55,9 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile } = useAuth();
+  const { profile, updateProfile, isCloudAuth } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // Estados del Currículum, Tablas y Gamificación
   const [tracks, setTracks] = useState<Track[]>(FALLBACK_TRACKS);
@@ -99,6 +102,25 @@ export const App: React.FC = () => {
     });
     setQueryHistory(api.getQueryHistory());
   }, []);
+
+  // Sincronizar ejercicios superados desde Supabase Cloud o persistencia local
+  useEffect(() => {
+    persistence.getCompletedExerciseIds(profile?.id).then((completedIds) => {
+      if (completedIds.length > 0) {
+        const completedSet = new Set(completedIds);
+        setExercises((prev) =>
+          prev.map((ex) => (completedSet.has(ex.id) ? { ...ex, is_completed: true } : ex))
+        );
+
+        setTracks((prev) =>
+          prev.map((tr) => ({
+            ...tr,
+            completed_exercises: completedIds.length,
+          }))
+        );
+      }
+    });
+  }, [profile?.id]);
 
   // Actualización dinámica del título de la pestaña (Anti-AI Slop Regla 1.1)
   useEffect(() => {
@@ -174,7 +196,39 @@ export const App: React.FC = () => {
         setResultColumns(evalResponse.columns.map((name) => ({ name, type: 'column' })));
         setResultRows(evalResponse.rows);
         setAwardedXp(evalResponse.xp_awarded);
-        setSuccessModalOpen(false);
+        setSuccessModalOpen(true);
+
+        // Persistir intento exitoso (Supabase Cloud + LocalStorage)
+        await persistence.recordAttempt({
+          userId: profile?.id,
+          exerciseId: activeExercise.id,
+          submittedSql: sqlCode.trim(),
+          status: 'PASSED',
+          executionTimeMs: evalResponse.execution_time_ms,
+          hintsUsed: hintsUnlocked,
+          xpAwarded: evalResponse.xp_awarded,
+        });
+
+        // Actualizar perfil local y XP
+        const nextXp = (profile?.total_xp || 0) + evalResponse.xp_awarded;
+        const nextLevel = Math.max(1, Math.floor(nextXp / 500) + 1);
+        await updateProfile({
+          total_xp: nextXp,
+          current_level: nextLevel,
+        });
+
+        // Marcar ejercicio como completado en el estado
+        setExercises((prev) =>
+          prev.map((ex) => (ex.id === activeExercise.id ? { ...ex, is_completed: true } : ex))
+        );
+
+        // Actualizar contador en tracks
+        setTracks((prev) =>
+          prev.map((tr) => ({
+            ...tr,
+            completed_exercises: Math.min(tr.total_exercises || 0, (tr.completed_exercises || 0) + 1),
+          }))
+        );
 
         // Guardar en historial
         api.saveQueryHistory({
@@ -193,9 +247,33 @@ export const App: React.FC = () => {
         setResultRows(evalResponse.rows || []);
         setResultDiff(evalResponse.diff);
         setResultMessage(evalResponse.message);
+
+        // Registrar intento fallido en persistencia
+        await persistence.recordAttempt({
+          userId: profile?.id,
+          exerciseId: activeExercise.id,
+          submittedSql: sqlCode.trim(),
+          status: 'FAILED',
+          executionTimeMs: evalResponse.execution_time_ms || 0,
+          hintsUsed: hintsUnlocked,
+          xpAwarded: 0,
+          errorMessage: evalResponse.message,
+        });
       } else {
         setExecutionStatus('ERROR');
         setResultError(evalResponse.error || evalResponse.message);
+
+        // Registrar intento con error en persistencia
+        await persistence.recordAttempt({
+          userId: profile?.id,
+          exerciseId: activeExercise.id,
+          submittedSql: sqlCode.trim(),
+          status: 'ERROR',
+          executionTimeMs: evalResponse.execution_time_ms || 0,
+          hintsUsed: hintsUnlocked,
+          xpAwarded: 0,
+          errorMessage: evalResponse.error || evalResponse.message,
+        });
       }
     } catch (err: any) {
       setExecutionStatus('ERROR');
@@ -203,7 +281,7 @@ export const App: React.FC = () => {
     } finally {
       setIsExecuting(false);
     }
-  }, [activeExercise, sqlCode, hintsUnlocked]);
+  }, [activeExercise, sqlCode, hintsUnlocked, profile, updateProfile]);
 
   // Avanzar al siguiente reto
   const handleNextExercise = () => {
@@ -278,6 +356,21 @@ export const App: React.FC = () => {
                 >
                   {isDark ? <Sun className="w-3.5 h-3.5 text-amber-streak" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
                 </button>
+
+                {/* Avatar y Gatillo de Autenticación */}
+                <button
+                  type="button"
+                  onClick={() => setAuthModalOpen(true)}
+                  className="flex items-center gap-1.5 pl-2 border-l border-border-subtle/50 text-xs font-mono text-content-muted hover:text-content-primary transition-colors"
+                  title="Gestionar sesión / Cuenta Supabase"
+                >
+                  <img
+                    src={profile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop'}
+                    alt={`Avatar de ${profile?.username || 'Usuario'}`}
+                    className="w-5 h-5 rounded-full object-cover border border-border-subtle"
+                  />
+                  <span className="hidden md:inline">{profile?.username || 'Estudiante'}</span>
+                </button>
               </div>
             </div>
           }
@@ -337,6 +430,12 @@ export const App: React.FC = () => {
           executionTimeMs={executionTime}
           hintsUsed={hintsUnlocked}
         />
+
+        {/* Modal de Autenticación Supabase */}
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+        />
       </>
     );
   }
@@ -365,41 +464,45 @@ export const App: React.FC = () => {
   // VISTA 2: DASHBOARD LAYOUT (DASHBOARD, TRACKS, PLAYGROUND, ACHIEVEMENTS, PROFILE)
   // ============================================================================
   return (
-    <DashboardLayout
-      currentPath={currentPath}
-      onNavigate={(path) => setCurrentPath(path as AppPath)}
-      title={getHeaderTitle()}
-    >
-      {/* VISTA A: RUTAS DE APRENDIZAJE */}
-      {currentPath === 'tracks' && (
-        <TracksView
-          tracks={tracks}
-          exercises={exercises}
-          onSelectExercise={handleOpenExerciseFromCatalog}
-        />
-      )}
+    <>
+      <DashboardLayout
+        currentPath={currentPath}
+        onNavigate={(path) => setCurrentPath(path as AppPath)}
+        title={getHeaderTitle()}
+        onOpenAuth={() => setAuthModalOpen(true)}
+      >
+        {/* VISTA A: RUTAS DE APRENDIZAJE */}
+        {currentPath === 'tracks' && (
+          <TracksView
+            tracks={tracks}
+            exercises={exercises}
+            onSelectExercise={handleOpenExerciseFromCatalog}
+          />
+        )}
 
-      {/* VISTA B: SQL PLAYGROUND LIBRE */}
-      {currentPath === 'playground' && (
-        <SqlPlaygroundView tables={tables} />
-      )}
+        {/* VISTA B: SQL PLAYGROUND LIBRE */}
+        {currentPath === 'playground' && (
+          <SqlPlaygroundView tables={tables} />
+        )}
 
-      {/* VISTA C: LOGROS & MEDALLAS */}
-      {currentPath === 'achievements' && (
-        <AchievementsView
-          achievements={achievements}
-          totalXp={profile?.total_xp || 480}
-        />
-      )}
+        {/* VISTA C: LOGROS & MEDALLAS */}
+        {currentPath === 'achievements' && (
+          <AchievementsView
+            achievements={achievements}
+            totalXp={profile?.total_xp || 480}
+          />
+        )}
 
-      {/* VISTA D: MI PERFIL */}
-      {currentPath === 'profile' && (
-        <UserProfileView
-          profile={profile}
-          history={queryHistory}
-          onOpenPlayground={() => setCurrentPath('playground')}
-        />
-      )}
+        {/* VISTA D: MI PERFIL */}
+        {currentPath === 'profile' && (
+          <UserProfileView
+            profile={profile}
+            history={queryHistory}
+            onOpenPlayground={() => setCurrentPath('playground')}
+            onOpenAuth={() => setAuthModalOpen(true)}
+            isCloudAuth={isCloudAuth}
+          />
+        )}
 
       {/* VISTA E: ERROR 404 (RELATION NOT FOUND) */}
       {currentPath === 'not-found' && (
@@ -691,6 +794,13 @@ export const App: React.FC = () => {
         </div>
       )}
     </DashboardLayout>
+
+    {/* Modal de Autenticación Supabase (Login / Registro / JWT) */}
+    <AuthModal
+      isOpen={authModalOpen}
+      onClose={() => setAuthModalOpen(false)}
+    />
+  </>
   );
 };
 
