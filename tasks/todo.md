@@ -120,5 +120,16 @@
 - [x] **T9.6:** Verificación de compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.60s`, 0 errores).
 - [x] **T9.7:** Commit en `feat/interactive-pedagogy-and-sqlbolt-learning`, merge a `main` y sincronización con GitHub.
 
+## Autocompletado Inteligente en Monaco Editor (`feat/monaco-sql-intellisense-and-aliases`) — Completada
+
+- [x] **T10.1:** Motor de autocompletado inteligente [`sqlCompleter.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/MonacoEditorPanel/sqlCompleter.ts) con soporte para keywords SQL en mayúsculas (`SELECT`, `FROM`, `WHERE`, `JOINs`, `GROUP BY`, `HAVING`, `ORDER BY`, `COUNT`, `ROW_NUMBER`, etc.).
+- [x] **T10.2:** Sugerencia contextual de nombres de tablas del esquema `Ecommerce_Production_DB` (`clientes`, `productos`, `pedidos`, etc.) con metadata de cantidad de filas y esquema public.
+- [x] **T10.3:** Sugerencia de nombres de columnas con tipos PostgreSQL (`VARCHAR`, `INT`, `NUMERIC`, `SERIAL`), indicación de PK y FK.
+- [x] **T10.4:** Resolución dinámica de alias de tabla (`FROM clientes c`, `JOIN pedidos p`): al escribir `c.` o `p.`, filtra e inserta exclusivamente las columnas de la tabla mapeada.
+- [x] **T10.5:** Configuración de `quickSuggestions`, `suggestOnTriggerCharacters`, `acceptSuggestionOnEnter` y `tabCompletion` en `MonacoEditorPanel.tsx`.
+- [x] **T10.6:** Verificación de compilación TypeScript estricta y build de producción Vite (`built in 5.53s`, 0 errores).
+- [x] **T10.7:** Commit en `feat/monaco-sql-intellisense-and-aliases`, merge a `main` y sincronización con GitHub.
+
+
 
 
