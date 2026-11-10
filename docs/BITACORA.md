@@ -6,17 +6,17 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 11.2: Certificación Final de Seguridad y Consistencia (`QURIO-PHASE-11.2-SECURITY-CERTIFICATION`) — Concluida**  
+* **Fase Actual:** **Fase 11.3: Auditoría Final del Procedimiento de Rollback y Continuidad Operativa (`QURIO-PHASE-11.3-ROLLBACK-AUDIT`) — Concluida**  
 * **Próxima Fase:** **Aprobación Formal del Piloto (Gate G-07) y Despliegue Controlado con Usuarios**  
 * **Rama Git Activa:** `feat/phase-11-pilot-readiness`  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
   * Contenedores Docker (`qurio-api` en 8000, `qurio-postgres-sandbox` en 5433): Operativos y verificados de forma exhaustiva; apagados de forma controlada (`docker compose down`) tras concluir las pruebas.
-  * API FastAPI: **100% Verificado** — Suite de **78 pruebas automatizadas pasando limpiamente en 61.17s** en `apps/api/tests/`. Incluye **15 pruebas de infraestructura de seguridad/migración** y **8 escenarios críticos de regresión** para la RPC `record_verified_attempt` v6.1 (idempotencia, no duplicación de XP, intentos previos de 0 XP, concurrencia, coherencia autoritativa de XP y reversión segura).
-  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` limpio (**2,171 módulos en 5.48s, 0 errores, 0 ocurrencias de `solution_query`**) y suite de **17 pruebas automatizadas en Vitest** (`npm run test`) pasando en 892ms (`progress.test.ts`, `persistence.test.ts`, `routing.test.ts`).
+  * API FastAPI: **100% Verificado** — Suite de **80 pruebas automatizadas pasando limpiamente en 61.50s** en `apps/api/tests/`. Incluye **15 pruebas de infraestructura de seguridad/migración** y **10 escenarios críticos de regresión/contingencia** (idempotencia de RPC v6.1, rollback v4.0 con preservación estricta de CLS/RLS, modo de contingencia en FastAPI sin adjudicación falsa de XP y recuperación íntegra de recompensas tras restablecimiento).
+  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` limpio (**2,171 módulos en 5.38s, 0 errores, 0 ocurrencias de `solution_query`**) y suite de **17 pruebas automatizadas en Vitest** (`npm run test`) pasando en 861ms (`progress.test.ts`, `persistence.test.ts`, `routing.test.ts`).
   * E2E en Navegador Real: **19 de 19 pruebas pasadas al 100% en Google Chrome real** vía Playwright (`pilot_e2e_suite.mjs`), con verificación indeleble de **0 XP oficial para invitados** en T06 y bloqueo en 4º reto en T07.
-  * Fidelidad Canónica al Blueprint v1.2: Respeto estricto de las decisiones aprobadas D-01 (precios hipotéticos de $129 MXN / $999 MXN), D-02 (eslogan general y lema SQL), D-03 (evaluar Stripe México), D-04 (evaluar ejecución Python sin arquitectura anticipada), D-05 (invitados 3 retos, 0 XP), D-06 (Teams diferido) y D-07 (prioridad estabilidad).
-  * Integridad de Supabase Cloud: **Zero Cloud Mutations** cumplido al 100% (0 escrituras en `bfvgqxfzftumwrleacof`). Scripts `03_security_hardening.sql` v6.1 y `rollback_security_hardening.sql` v4.0 documentados y listos para aplicación administrativa por el propietario.
-  * Veredicto Final: **LISTO PARA PILOTO CON RESTRICCIONES**.
+  * Continuidad Operativa (Alternativa B): Si la RPC no existe o falla, el Sandbox de PostgreSQL continúa evaluando las consultas con éxito, pero la API otorga estrictamente 0 XP oficial y notifica el modo contingencia sin falsificar progreso oficial.
+  * Integridad de Supabase Cloud: **Zero Cloud Mutations** cumplido al 100% (0 escrituras en `bfvgqxfzftumwrleacof`). Scripts `03_security_hardening.sql` v6.1 y `rollback_security_hardening.sql` v4.0 reconciliados, probados y listos para aplicación administrativa por el propietario.
+  * Veredicto Final: **APROBADO CON RESTRICCIONES**.
 
 ---
 
@@ -927,3 +927,40 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
   * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)
   * [`docs/audits/QURIO_PHASE_11_PILOT_READINESS.md`](audits/QURIO_PHASE_11_PILOT_READINESS.md)
+
+---
+
+### Entrada 30: Fase 11.3 — Auditoría Final del Procedimiento de Rollback y Continuidad Operativa
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (mantenida estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Auditar y verificar el procedimiento de contingencia y reversión en `rollback_security_hardening.sql`, contrastarlo con el hardening v6.1 y la arquitectura de FastAPI, purgar permisos residuales de columnas en `user_profiles`, implementar y certificar el Modo de Contingencia en el backend (Alternativa B), y conciliar las versiones documentales (v4.0).
+* **Actividades y Logros Clave:**
+  1. **Auditoría Exhaustiva de `rollback_security_hardening.sql` (v4.0):**
+     * **Firma Exacta:** Verificada la eliminación precisa de `record_verified_attempt(UUID, UUID, TEXT, VARCHAR, INT, TEXT, INT, INT)`.
+     * **Conservación del Índice Único Parcial:** Preservado y asegurado con `CREATE UNIQUE INDEX IF NOT EXISTS idx_single_awarded_passed_attempt`, impidiendo duplicación física de XP positivo.
+     * **Preservación de CLS y RLS:** `solution_query` permanece revocada para `anon` y `authenticated`. RLS explícito verificado en las 11 tablas del esquema público.
+     * **Purga de Permisos Residuales:** Se revocaron explícitamente todos los permisos de columna (`SELECT, INSERT, UPDATE, REFERENCES`) en `user_profiles` para `anon` y `PUBLIC`, garantizando que ninguna concesión previa de columnas visuales permanezca activa.
+     * **Secuencias:** Blindadas contra modificación (`UPDATE`/`ALTER`) para clientes.
+  2. **Continuidad Operativa en Backend FastAPI (Alternativa B Certificada):**
+     * Inspección confirmó que FastAPI no dispone (ni debe disponer por seguridad) de un mecanismo de inserción directa a tablas de progreso en caso de caída de la RPC.
+     * Se implementó en `app/core/supabase.py` y `app/modules/runner/router.py` el **Modo de Contingencia**: si la RPC no existe (post-rollback) o falla por red/configuración, el backend:
+       * Permite que la evaluación semántica en PostgreSQL Sandbox continúe con éxito (la práctica del alumno nunca se bloquea).
+       * Establece estrictamente `evaluation.xp_awarded = 0`.
+       * Emite un mensaje claro indicando que la práctica fue válida pero la certificación de XP está temporalmente en pausa.
+       * La UI jamás falsifica progreso oficial ni muestra `+35 XP acreditados` sin persistencia efectiva.
+     * No hay pérdida silenciosa de progreso: como no se registró XP falso, cuando la RPC se restablece, el estudiante puede volver a enviar su reto y la RPC v6.1 le acredita sus +35 XP legítimos.
+  3. **Pruebas Automatizadas Consolidadas (80 Pytest, 17 Vitest, 19 E2E):**
+     * Se incorporaron 2 pruebas de contingencia en `test_integration.py` (`test_contingency_mode_when_rpc_unavailable_awards_zero_xp_and_informs_user` y `test_contingency_mode_preserves_practice_and_allows_subsequent_reward_when_rpc_restored`).
+     * Se amplió `test_rollback_script_preserves_strict_security` en `test_supabase_migration.py` validando los 8 criterios de base de datos.
+     * Pytest: **80/80 pruebas pasadas** (61.50s).
+     * Vitest: **17/17 pruebas pasadas** (861ms).
+     * Compilación: **2,171 módulos limpios** en 5.38s.
+     * E2E Google Chrome: **19/19 pruebas pasadas** (100%).
+  4. **Conciliación Documental Homogénea:**
+     * Fuente de verdad establecida: `database/supabase/rollback_security_hardening.sql` **Versión 4.0**.
+     * Homogeneizadas todas las referencias en reportes previos y bitácora.
+* **Entregables de Fase 11.3:**
+  * [`docs/audits/QURIO_PHASE_11_3_ROLLBACK_AUDIT.md`](audits/QURIO_PHASE_11_3_ROLLBACK_AUDIT.md)
+  * [`docs/audits/QURIO_PHASE_11_3_CONTINGENCY_TESTS.md`](audits/QURIO_PHASE_11_3_CONTINGENCY_TESTS.md)
+  * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (v4.0 verificado)

@@ -1071,3 +1071,61 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
         with pytest.raises(InsufficientPrivilegeError):
             async with db_conn.transaction():
                 await db_conn.execute("UPDATE public.user_profiles SET level = 99 WHERE id = $1::UUID;", user_id)
+
+        # 7. Blindaje de solution_query: anon y authenticated NO pueden consultar solution_query
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('anon', 'public.exercises', 'solution_query', 'SELECT');"
+        ) is False
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.exercises', 'solution_query', 'SELECT');"
+        ) is False
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('service_role', 'public.exercises', 'solution_query', 'SELECT');"
+        ) is True
+
+        # 8. Ausencia total de permisos residuales de actualización para anon y PUBLIC en user_profiles
+        for col in ["display_name", "avatar_url", "bio", "updated_at", "xp", "level", "username"]:
+            assert await db_conn.fetchval(
+                f"SELECT has_column_privilege('anon', 'public.user_profiles', '{col}', 'UPDATE');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"""
+                SELECT EXISTS(
+                    SELECT 1 FROM information_schema.column_privileges
+                    WHERE table_schema = 'public'
+                      AND table_name = 'user_profiles'
+                      AND column_name = '{col}'
+                      AND grantee = 'PUBLIC'
+                      AND privilege_type = 'UPDATE'
+                );
+                """
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_column_privilege('anon', 'public.user_profiles', '{col}', 'INSERT');"
+            ) is False
+
+        # 9. authenticated solo puede modificar campos visuales seguros
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'display_name', 'UPDATE');"
+        ) is True
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'avatar_url', 'UPDATE');"
+        ) is True
+
+        # 10. RLS explícitamente habilitado en las 11 tablas tras rollback
+        all_11_tables = [
+            "user_profiles", "learning_paths", "modules", "lessons", "exercises",
+            "exercise_hints", "exercise_attempts", "user_progress", "achievements",
+            "user_achievements", "user_daily_activity"
+        ]
+        for tbl in all_11_tables:
+            rls_on = await db_conn.fetchval(
+                f"SELECT rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename = '{tbl}';"
+            )
+            assert rls_on is True, f"RLS debe continuar habilitado en {tbl} tras rollback"
+
+        # 11. Escritura denegada a authenticated en tablas educativas y de progreso
+        for tbl in ["learning_paths", "modules", "lessons", "exercise_hints", "achievements", "user_progress", "user_achievements", "user_daily_activity"]:
+            assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'INSERT');") is False
+            assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'UPDATE');") is False
+            assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'DELETE');") is False

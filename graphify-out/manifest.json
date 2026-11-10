@@ -72,9 +72,9 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/router.py": {
-    "mtime": 1794350789.5208907,
-    "seen": 1794351218.307921,
-    "ast_hash": "3c249dffefc0edf729be0b94fb88b801",
+    "mtime": 1794351627.9820266,
+    "seen": 1794352143.8725636,
+    "ast_hash": "d439784c5d88f3a1271b878f1fb68270",
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/schemas.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_integration.py": {
-    "mtime": 1794350795.5867944,
-    "seen": 1794351218.3097947,
-    "ast_hash": "b0402d3ce22b49a74a1d92a127b8e76d",
+    "mtime": 1794351891.8018467,
+    "seen": 1794352143.874337,
+    "ast_hash": "c0818d3b30ba62a216c8bdda059d8193",
     "semantic_hash": ""
   },
   "apps/api/tests/test_security.py": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794351197.0690832,
-    "seen": 1794351218.3444085,
-    "ast_hash": "f8ddaef8cee75aafd60f19627df9c4ed",
+    "mtime": 1794352120.875878,
+    "seen": 1794352143.9073532,
+    "ast_hash": "b15827ca830dd8c52267e03c6c1ffb2e",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -852,9 +852,9 @@
     "semantic_hash": ""
   },
   "apps/api/app/core/supabase.py": {
-    "mtime": 1794265802.0751798,
-    "seen": 1794266808.1894739,
-    "ast_hash": "e555f8b6c11af831e780b3ccafbebf6f",
+    "mtime": 1794351600.9215586,
+    "seen": 1794352143.8704457,
+    "ast_hash": "18ea628f96b9eefdc5ca6f9d45a7e96a",
     "semantic_hash": ""
   },
   "apps/api/tests/test_auth.py": {
@@ -870,9 +870,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_supabase_migration.py": {
-    "mtime": 1794350475.2697465,
-    "seen": 1794351218.3108156,
-    "ast_hash": "3dcc46bf4613ddff0b0b1a5f55c67be5",
+    "mtime": 1794351787.136514,
+    "seen": 1794352143.8752575,
+    "ast_hash": "3df21cab1bbf2495b3a7f56b73659e7e",
     "semantic_hash": ""
   },
   "docs/security/SECURITY_AUDIT.md": {
@@ -996,27 +996,39 @@
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_E2E_REPORT.md": {
-    "mtime": 1794351134.7638097,
-    "seen": 1794351218.346802,
+    "mtime": 1794351296.6108887,
+    "seen": 1794352143.9095068,
     "ast_hash": "87d8d076dfee23df47dbb538fac7ef63",
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_PILOT_READINESS.md": {
-    "mtime": 1794351163.8162384,
-    "seen": 1794351218.346805,
+    "mtime": 1794351296.7250855,
+    "seen": 1794352143.9095092,
     "ast_hash": "d8d87b101d8b1d9bc247b8ec918f562f",
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md": {
-    "mtime": 1794351107.6216133,
-    "seen": 1794351218.346807,
+    "mtime": 1794351297.146597,
+    "seen": 1794352143.9095109,
     "ast_hash": "10148de18e38c27815ad765e16ef6c12",
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md": {
-    "mtime": 1794351063.0746884,
-    "seen": 1794351218.3468091,
+    "mtime": 1794351297.238693,
+    "seen": 1794352143.9095125,
     "ast_hash": "205c46685f4b07d4e96865d09beda471",
+    "semantic_hash": ""
+  },
+  "docs/audits/QURIO_PHASE_11_3_CONTINGENCY_TESTS.md": {
+    "mtime": 1794352085.0933268,
+    "seen": 1794352143.9094965,
+    "ast_hash": "1ccb8f6e094ff3434335debf6f2cc6be",
+    "semantic_hash": ""
+  },
+  "docs/audits/QURIO_PHASE_11_3_ROLLBACK_AUDIT.md": {
+    "mtime": 1794352059.9437413,
+    "seen": 1794352143.9095037,
+    "ast_hash": "b323dee2742416f51bfc1873eea3b9be",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

@@ -25,13 +25,15 @@ async def record_verified_progress(
     """
     if not settings.SUPABASE_SERVICE_ROLE_KEY or not settings.SUPABASE_URL:
         logger.warning(
-            "SUPABASE_SERVICE_ROLE_KEY no configurado en backend. Omitiendo persistencia remota de intento verificado."
+            "SUPABASE_SERVICE_ROLE_KEY no configurado en backend. Activando modo contingencia (0 XP oficial persistido)."
         )
         return {
             "success": False,
             "already_passed": False,
-            "xp_awarded": xp_to_award,
+            "already_awarded": False,
+            "xp_awarded": 0,
             "reason": "service_role_key_not_configured",
+            "contingency_mode": True,
         }
 
     rpc_url = f"{settings.SUPABASE_URL.rstrip('/')}/rest/v1/rpc/record_verified_attempt"
@@ -56,7 +58,11 @@ async def record_verified_progress(
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.post(rpc_url, json=payload, headers=headers)
             if response.status_code == 200:
-                return response.json()
+                res_data = response.json()
+                if isinstance(res_data, dict):
+                    res_data.setdefault("success", True)
+                    return res_data
+                return {"success": True, "result": res_data}
             else:
                 logger.error(
                     f"Fallo en Supabase RPC record_verified_attempt ({response.status_code}): {response.text}"
@@ -64,14 +70,18 @@ async def record_verified_progress(
                 return {
                     "success": False,
                     "already_passed": False,
-                    "xp_awarded": xp_to_award,
+                    "already_awarded": False,
+                    "xp_awarded": 0,
                     "error": response.text,
+                    "contingency_mode": True,
                 }
     except Exception as e:
         logger.error(f"Error de red o comunicación al invocar Supabase RPC: {e}")
         return {
             "success": False,
             "already_passed": False,
-            "xp_awarded": xp_to_award,
+            "already_awarded": False,
+            "xp_awarded": 0,
             "error": str(e),
+            "contingency_mode": True,
         }

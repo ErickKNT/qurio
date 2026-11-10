@@ -91,8 +91,18 @@ async def test_submit_exercise_success_guest(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_submit_exercise_success_authenticated(client: AsyncClient):
-    # Ejercicio 1 evaluado como usuario autenticado: recibe XP oficial acreditado
+async def test_submit_exercise_success_authenticated(client: AsyncClient, monkeypatch):
+    # Ejercicio 1 evaluado como usuario autenticado con certificación RPC exitosa
+    async def fake_record_verified_progress(**kwargs):
+        return {
+            "success": True,
+            "already_passed": False,
+            "already_awarded": False,
+            "xp_awarded": kwargs.get("xp_to_award", 30),
+        }
+
+    monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_record_verified_progress)
+
     exercise_id = "e0000000-0000-0000-0000-000000000001"
     payload = {
         "query": "SELECT nombre_producto, precio FROM productos;",
@@ -143,8 +153,18 @@ async def test_guest_trial_limit_enforced(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_submit_exercise_star_challenge_left_join_authenticated(client: AsyncClient):
-    # Reto Estrella evaluado con usuario autenticado
+async def test_submit_exercise_star_challenge_left_join_authenticated(client: AsyncClient, monkeypatch):
+    # Reto Estrella evaluado con usuario autenticado y certificación RPC exitosa
+    async def fake_record_verified_progress(**kwargs):
+        return {
+            "success": True,
+            "already_passed": False,
+            "already_awarded": False,
+            "xp_awarded": kwargs.get("xp_to_award", 42),
+        }
+
+    monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_record_verified_progress)
+
     exercise_id = "e0000000-0000-0000-0000-000000000006"
     payload = {
         "query": "SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id WHERE p.pedido_id IS NULL;",
@@ -288,6 +308,95 @@ async def test_regression_authenticated_user_passes_exercise_4_and_receives_xp(c
         assert len(rpc_invocations) == 1
         assert rpc_invocations[0]["user_id"] == "usr_auth_verified_42"
         assert rpc_invocations[0]["xp_to_award"] == 35
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_contingency_mode_when_rpc_unavailable_awards_zero_xp_and_informs_user(client: AsyncClient, monkeypatch):
+    """
+    Fase 11.3 — Continuidad Operativa (Alternativa B):
+    Cuando la RPC record_verified_attempt no está disponible (ej. tras rollback o falla de red):
+    1. La práctica en sandbox tiene éxito (status = 'PASSED').
+    2. El backend NO adjudica XP (+0 XP oficial).
+    3. El mensaje informa explícitamente el modo de contingencia sin prometer falso XP.
+    """
+    async def fake_failed_rpc(**kwargs):
+        return {
+            "success": False,
+            "already_passed": False,
+            "already_awarded": False,
+            "xp_awarded": 0,
+            "error": "PGRST202: Could not find function record_verified_attempt",
+            "contingency_mode": True,
+        }
+
+    monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_failed_rpc)
+
+    exercise_id = "e0000000-0000-0000-0000-000000000002"
+    payload = {
+        "query": "SELECT nombre_producto, precio, stock FROM productos WHERE precio > 500;",
+        "hints_revealed": 0
+    }
+    app.dependency_overrides[get_optional_current_user] = lambda: AuthenticatedUser(
+        id="usr_contingency_test_1", email="student@qurio.dev", role="authenticated", is_guest=False
+    )
+    try:
+        response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "PASSED"
+        assert data["xp_awarded"] == 0, "En modo contingencia NUNCA se debe adjudicar XP no certificado"
+        assert "contingencia" in data["message"].lower()
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_contingency_mode_preserves_practice_and_allows_subsequent_reward_when_rpc_restored(client: AsyncClient, monkeypatch):
+    """
+    Fase 11.3 — No Pérdida Silenciosa de Progreso:
+    Un usuario que aprueba en modo contingencia (0 XP) puede volver a enviar su reto
+    cuando la RPC se restablezca y recibir su XP legítimo (+35 XP).
+    """
+    # 1. Primer intento durante contingencia
+    async def fake_failed_rpc(**kwargs):
+        return {"success": False, "already_passed": False, "xp_awarded": 0, "contingency_mode": True}
+
+    monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_failed_rpc)
+
+    exercise_id = "e0000000-0000-0000-0000-000000000002"
+    payload = {
+        "query": "SELECT nombre_producto, precio, stock FROM productos WHERE precio > 500;",
+        "hints_revealed": 0
+    }
+    app.dependency_overrides[get_optional_current_user] = lambda: AuthenticatedUser(
+        id="usr_contingency_test_2", email="student2@qurio.dev", role="authenticated", is_guest=False
+    )
+    try:
+        res1 = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+        assert res1.status_code == 200
+        data1 = res1.json()
+        assert data1["status"] == "PASSED"
+        assert data1["xp_awarded"] == 0
+
+        # 2. Restablecimiento de la RPC: ahora responde exitosamente
+        async def fake_restored_rpc(**kwargs):
+            return {
+                "success": True,
+                "already_passed": True,  # Ya había pasado en práctica
+                "already_awarded": False,  # Pero NUNCA se le había otorgado XP oficial
+                "xp_awarded": kwargs.get("xp_to_award", 35),
+            }
+
+        monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_restored_rpc)
+
+        res2 = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+        assert res2.status_code == 200
+        data2 = res2.json()
+        assert data2["status"] == "PASSED"
+        assert data2["xp_awarded"] == 35, "Al restaurar la RPC debe otorgarse el XP legítimo no acreditado previamente"
+        assert "35 xp acreditados" in data2["message"].lower()
     finally:
         app.dependency_overrides.clear()
 

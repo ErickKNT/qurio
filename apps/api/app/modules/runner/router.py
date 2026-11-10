@@ -186,8 +186,9 @@ async def submit_exercise_solution(
                 hints_used=request.hints_revealed,
                 xp_to_award=evaluation.xp_awarded,
             )
-            if "xp_awarded" in rpc_res:
-                evaluation.xp_awarded = rpc_res["xp_awarded"]
+            if rpc_res.get("success") is True:
+                # Certificación exitosa en Supabase Cloud vía RPC
+                evaluation.xp_awarded = rpc_res.get("xp_awarded", 0)
                 if evaluation.xp_awarded > 0:
                     evaluation.message = f"¡Reto Superado con Éxito! +{evaluation.xp_awarded} XP acreditados."
                 elif rpc_res.get("already_awarded") or rpc_res.get("already_passed"):
@@ -196,16 +197,13 @@ async def submit_exercise_solution(
                     )
                 else:
                     evaluation.message = "¡Reto Superado con Éxito!"
-            elif rpc_res.get("already_awarded") or rpc_res.get("already_passed"):
+            else:
+                # Alternativa B: Modo de contingencia técnica (RPC inexistente tras rollback, falla de red o service_role ausente)
+                # Regla de oro: No adjudicar XP no certificado ni engañar al cliente con falso progreso oficial
                 evaluation.xp_awarded = 0
                 evaluation.message = (
-                    "¡Reto resuelto correctamente! (Ya habías completado este reto previamente, ¡gran práctica!)"
-                )
-            else:
-                evaluation.message = (
-                    f"¡Reto Superado con Éxito! +{evaluation.xp_awarded} XP acreditados."
-                    if evaluation.xp_awarded > 0
-                    else "¡Reto Superado con Éxito!"
+                    "¡Reto resuelto correctamente! Modo de contingencia: tu consulta es válida, "
+                    "pero la certificación oficial de XP no está disponible temporalmente."
                 )
     elif evaluation.status == EvaluationStatus.FAILED and not user.is_guest:
         # Registrar intento fallido para analítica sin otorgar XP
