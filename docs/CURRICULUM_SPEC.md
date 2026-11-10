@@ -72,8 +72,8 @@ El currículum de Qurio entrena al estudiante para internalizar este modelo ment
 | **06** | `e0000000-...-0009` | **Productos en Rango Medio (BETWEEN)** | Comprender | [9.2. Comparison Predicates](https://www.postgresql.org/docs/16/functions-comparison.html) | Predicado de intervalo cerrado inclusivo: `precio BETWEEN 100 AND 800`. |
 | **07** | `e0000000-...-0021` | **Búsqueda por Patrón de Correo (LIKE)** | Aplicar | [9.7. Pattern Matching](https://www.postgresql.org/docs/16/functions-matching.html) | Coincidencia de comodín `%`: filtrar clientes cuyo email termine en `%@email.com`. |
 | **08** | `e0000000-...-0022` | **Filtro de Ciudades Específicas (IN)** | Aplicar | [9.24. Subquery Expressions (IN)](https://www.postgresql.org/docs/16/functions-subquery.html) | Membresía de conjunto estático: `ciudad IN ('Madrid', 'Barcelona', 'Valencia')`. |
-| **09** | `e0000000-...-0023` | **Productos en Riesgo de Stock (OR)** | Analizar | [9.2. Logical Operators](https://www.postgresql.org/docs/16/functions-logical.html) | Disyunción lógica relacional: identificar productos con `stock = 0 OR stock < 10`. |
-| **10** | `e0000000-...-0024` | **Facturas de Alto Valor No Pagadas (AND + NOT)** | Analizar | [9.2. Logical Operators](https://www.postgresql.org/docs/16/functions-logical.html) | Conjunción y negación: facturas con `total > 1000 AND estado_factura <> 'pagada'`. |
+| **09** | `e0000000-...-0023` | **Productos en Riesgo de Stock (OR)** | Analizar | [9.2. Logical Operators](https://www.postgresql.org/docs/16/functions-logical.html) | Disyunción lógica relacional: identificar productos con `stock <= 15 OR stock >= 75`. |
+| **10** | `e0000000-...-0024` | **Facturas de Alto Valor No Pagadas (AND + NOT)** | Analizar | [9.2. Logical Operators](https://www.postgresql.org/docs/16/functions-logical.html) | Conjunción y negación: facturas con `monto_total >= 400 AND estado_factura <> 'pagada'`. |
 
 #### Módulo 3: Ordenamiento y Paginación (4 Retos)
 | # | ID | Título | Bloom | Fuente Oficial PostgreSQL 16 | Concepto / Reto de Negocio |

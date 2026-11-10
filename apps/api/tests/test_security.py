@@ -7,9 +7,9 @@ from app.modules.curriculum.seed_data import SEED_EXERCISES
 # 1. PRUEBAS DEL CURRÍCULO OFICIAL (18 CONSULTAS)
 # ==============================================================================
 
-def test_all_18_curriculum_queries_pass_security():
+def test_all_curriculum_queries_pass_security():
     """Valida que todas las consultas oficiales del currículo pasen la validación AST."""
-    assert len(SEED_EXERCISES) == 18, "Se esperaban 18 ejercicios en el currículo"
+    assert len(SEED_EXERCISES) >= 18, f"Se esperaban al menos 18 ejercicios en el currículo, encontrados {len(SEED_EXERCISES)}"
     for eid, exercise in SEED_EXERCISES.items():
         is_safe, error = validate_sql_security(exercise.solution_query)
         assert is_safe is True, f"Fallo en ejercicio '{exercise.title}' ({eid}): {error}"

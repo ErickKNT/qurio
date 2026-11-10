@@ -54,9 +54,9 @@
     "semantic_hash": "cb8bd9d3865b2a248fe499d42e588a04"
   },
   "apps/api/app/modules/curriculum/seed_data.py": {
-    "mtime": 1794254303.2976773,
-    "seen": 1794266808.190441,
-    "ast_hash": "eebbce5e51c185b3b7a6043904c95afa",
+    "mtime": 1794268719.7723486,
+    "seen": 1794269020.0947301,
+    "ast_hash": "95d54fa5a21c686020eb4f62a72282b0",
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/__init__.py": {
@@ -114,9 +114,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_security.py": {
-    "mtime": 1794265802.0853617,
-    "seen": 1794266808.1916327,
-    "ast_hash": "274aaa20220232c76a3d711aa6576bc8",
+    "mtime": 1794268871.4760928,
+    "seen": 1794269020.098486,
+    "ast_hash": "a8dd9888fa84e550445414035184d24d",
     "semantic_hash": ""
   },
   "apps/web/package.json": {
@@ -690,14 +690,14 @@
     "semantic_hash": "05fe5402ed96bf608ae4ab746772e926"
   },
   "AGENTS.md": {
-    "mtime": 1794116671.0825174,
-    "seen": 1794252886.8075256,
-    "ast_hash": "db376356cdec20821f3a88afaaef183e",
-    "semantic_hash": "db376356cdec20821f3a88afaaef183e"
+    "mtime": 1794266817.9013977,
+    "seen": 1794269020.1286492,
+    "ast_hash": "1a4d7fb0c9e8ca74ed24baae9c5d8a8d",
+    "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794266454.9309363,
-    "seen": 1794266808.2219646,
+    "mtime": 1794268096.6931894,
+    "seen": 1794269020.128653,
     "ast_hash": "4c787f05209353208bcd3bd2e4d05abe",
     "semantic_hash": ""
   },
@@ -870,9 +870,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_supabase_migration.py": {
-    "mtime": 1794265802.0868332,
-    "seen": 1794266808.191634,
-    "ast_hash": "90c1386222eef059fc42f617a4386897",
+    "mtime": 1794268951.545399,
+    "seen": 1794269020.0984893,
+    "ast_hash": "95414f60033ed8989f9aba2bec4bafd7",
     "semantic_hash": ""
   },
   "docs/security/SECURITY_AUDIT.md": {
@@ -885,6 +885,12 @@
     "mtime": 1794265802.0976937,
     "seen": 1794266808.223574,
     "ast_hash": "894f98dadefcdf7615b5d4b7092c6e21",
+    "semantic_hash": ""
+  },
+  "docs/CURRICULUM_SPEC.md": {
+    "mtime": 1794268455.6805842,
+    "seen": 1794269020.1295934,
+    "ast_hash": "b22ea6e149c2b256d057b79f15b619e1",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

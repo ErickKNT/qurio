@@ -557,11 +557,14 @@ async def test_concurrent_different_exercises_no_lost_updates(create_test_user):
     - Reto 1 otorga 30 XP.
     - Reto 8 otorga 35 XP.
     - Cero actualizaciones perdidas (Lost Updates): El XP final es 65.
-    - Módulo 1 registra exercises_completed_count = 2 e is_completed = TRUE.
+    - Módulo 1 registra exercises_completed_count = 2 e is_completed = FALSE (2 de 4).
+    - Al completar los restantes (Reto 19 y Reto 20), is_completed pasa a TRUE.
     """
     user_id = await create_test_user("concur_diff_user")
-    ex1 = "e0000000-0000-0000-0000-000000000001"  # 30 XP
-    ex8 = "e0000000-0000-0000-0000-000000000008"  # 35 XP
+    ex1 = "e0000000-0000-0000-0000-000000000001"   # 30 XP
+    ex8 = "e0000000-0000-0000-0000-000000000008"   # 35 XP
+    ex19 = "e0000000-0000-0000-0000-000000000019"  # 35 XP
+    ex20 = "e0000000-0000-0000-0000-000000000020"  # 35 XP
 
     async def complete_ex(ex_id, xp):
         conn = await asyncpg.connect(**DB_CONFIG, database=TEST_DB_NAME)
@@ -605,7 +608,18 @@ async def test_concurrent_different_exercises_no_lost_updates(create_test_user):
             user_id, mod1,
         )
         assert prog["exercises_completed_count"] == 2
-        assert prog["is_completed"] is True
+        assert prog["is_completed"] is False
+
+        # Completar los retos 19 y 20 para validar el cierre completo del Módulo 1 (4/4)
+        await complete_ex(ex19, 35)
+        await complete_ex(ex20, 35)
+
+        prog_complete = await check_conn.fetchrow(
+            "SELECT exercises_completed_count, is_completed FROM public.user_progress WHERE user_id = $1 AND module_id = $2;",
+            user_id, mod1,
+        )
+        assert prog_complete["exercises_completed_count"] == 4
+        assert prog_complete["is_completed"] is True
     finally:
         await check_conn.close()
 
@@ -623,13 +637,15 @@ async def test_user_progress_consistency_on_failed_and_error(db_conn, create_tes
     3. Devuelvan en el JSON el estado real actual del módulo.
     """
     user_id = await create_test_user("progress_consistency_user")
-    ex1 = "e0000000-0000-0000-0000-000000000001"  # Módulo 1 (30 XP)
-    ex8 = "e0000000-0000-0000-0000-000000000008"  # Módulo 1 (35 XP)
+    ex1 = "e0000000-0000-0000-0000-000000000001"   # Módulo 1 (30 XP)
+    ex8 = "e0000000-0000-0000-0000-000000000008"   # Módulo 1 (35 XP)
+    ex19 = "e0000000-0000-0000-0000-000000000019"  # Módulo 1 (35 XP)
+    ex20 = "e0000000-0000-0000-0000-000000000020"  # Módulo 1 (35 XP)
 
     async with db_conn.transaction():
         await db_conn.execute("SET LOCAL ROLE service_role;")
 
-        # 1. Aprobar ejercicio 1 -> Módulo tiene 1/2 completado
+        # 1. Aprobar ejercicio 1 -> Módulo tiene 1/4 completado
         await db_conn.execute(
             "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 30);",
             user_id, ex1
@@ -644,21 +660,29 @@ async def test_user_progress_consistency_on_failed_and_error(db_conn, create_tes
         assert res_failed["exercises_completed_count"] == 1
         assert res_failed["module_completed"] is False
 
-        # 3. Aprobar ejercicio 8 -> Módulo completado (2/2)
+        # 3. Aprobar ejercicios restantes del Módulo 1 (ex8, ex19, ex20) -> Módulo completado (4/4)
         await db_conn.execute(
             "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 35);",
             user_id, ex8
         )
+        await db_conn.execute(
+            "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 35);",
+            user_id, ex19
+        )
+        await db_conn.execute(
+            "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 35);",
+            user_id, ex20
+        )
 
-        # 4. Enviar un ERROR en ejercicio 1 (repaso fallido) -> Debe preservar module_completed: TRUE y 2/2
+        # 4. Enviar un ERROR en ejercicio 1 (repaso fallido) -> Debe preservar module_completed: TRUE y 4/4
         row_error = await db_conn.fetchrow(
             "SELECT public.record_verified_attempt($1, $2, 'SQL', 'ERROR', 0, 'Syntax error', 0, 0) AS res;",
             user_id, ex1
         )
         res_error = json.loads(row_error["res"])
-        assert res_error["exercises_completed_count"] == 2
+        assert res_error["exercises_completed_count"] == 4
         assert res_error["module_completed"] is True
-        assert res_error["total_xp"] == 65  # XP intacto
+        assert res_error["total_xp"] == 135  # 30 + 35 + 35 + 35 = 135 XP intacto
 
 
 # ==============================================================================

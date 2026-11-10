@@ -91,7 +91,28 @@ SAMPLE_TABLE_DETALLE_PEDIDOS = SampleTableData(
     ],
 )
 
-# Catálogo completo de 18 ejercicios enriquecidos con didáctica interactiva estilo SQLBolt
+SAMPLE_TABLE_FACTURAS = SampleTableData(
+    tableName="facturas",
+    columns=["factura_id", "pedido_id", "fecha_emision", "monto_total", "estado_factura"],
+    rows=[
+        [201, 101, "2024-01-10", 1590.00, "pagada"],
+        [202, 102, "2024-01-12", 720.00, "pagada"],
+        [205, 105, "2024-01-20", 580.00, "anulada"],
+        [210, 110, "2024-02-05", 480.00, "pendiente"],
+    ],
+)
+
+SAMPLE_TABLE_PROVEEDORES = SampleTableData(
+    tableName="proveedores",
+    columns=["proveedor_id", "nombre_proveedor", "pais", "telefono"],
+    rows=[
+        [1, "TechDistro España S.L.", "España", "+34 91 123 4567"],
+        [2, "Nordic Peripherals AB", "Suecia", "+46 8 555 1234"],
+        [3, "Silicon Logistics Asia", "Taiwán", "+886 2 8765 4321"],
+    ],
+)
+
+# Catálogo completo de 32 ejercicios (Ruta 1 completa con 22 retos + Rutas 2 y 3) enriquecidos con didáctica interactiva estilo SQLBolt
 SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     # =========================================================================
     # RUTA 1: SQL Foundations (Módulos 1 al 4)
@@ -165,7 +186,73 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         sample_tables=[SAMPLE_TABLE_PRODUCTOS],
     ),
 
-    # Módulo 2 - Reto 3: Filtrado con WHERE (> 500)
+    
+    # Módulo 1 - Reto 3: Concatenación de Cadenas y Alias
+    "e0000000-0000-0000-0000-000000000019": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000019",
+        module_id="a0000000-0000-0000-0000-000000000001",
+        title="Concatenación de Nombre Completo",
+        prompt="El departamento de soporte requiere un directorio de clientes con su nombre completo unificado y su correo electrónico. Escribe una consulta que combine las columnas nombre y apellido separadas por un espacio bajo el alias cliente_completo, junto con la columna email de la tabla clientes.",
+        initial_code="-- Concatena nombre y apellido con un espacio\nSELECT ",
+        solution_query="SELECT nombre || ' ' || apellido AS cliente_completo, email FROM clientes;",
+        xp_reward=35,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=3,
+        hints=[
+            "Usa el operador de concatenación de cadenas de texto en SQL: '||'.",
+            "Para insertar un espacio en medio escribe: nombre || ' ' || apellido AS cliente_completo.",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador de tubería doble '||' permite concatenar cadenas de caracteres en SQL estándar y PostgreSQL. La cláusula AS renombra la columna resultante en la proyección.",
+            syntax="SELECT columna1 || ' ' || columna2 AS nombre_completo\nFROM tabla;",
+            key_points=[
+                "El operador || une valores de texto o columnas de tipo VARCHAR/TEXT.",
+                "Si un término es NULL, la concatenación en SQL estándar resulta en NULL (a menos que uses CONCAT).",
+            ],
+            execution_order_note="⚡ La concatenación se evalúa fila por fila en la fase de proyección SELECT.",
+        ),
+        objectives=[
+            "1. Identificar la tabla de origen 'clientes'.",
+            "2. Concatenar 'nombre', un espacio ' ' y 'apellido' bajo el alias 'cliente_completo'.",
+            "3. Proyectar la columna 'email'.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES],
+    ),
+
+    # Módulo 1 - Reto 4: Catálogo de Ciudades Únicas (DISTINCT)
+    "e0000000-0000-0000-0000-000000000020": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000020",
+        module_id="a0000000-0000-0000-0000-000000000001",
+        title="Catálogo de Ciudades Únicas (DISTINCT)",
+        prompt="El equipo de logística necesita conocer todas las ciudades únicas donde residen clientes para planificar nuevas rutas de entrega. Escribe una consulta que obtenga la lista de ciudades sin repeticiones de la tabla clientes, bajo la columna ciudad.",
+        initial_code="-- Obtén valores únicos de ciudad\nSELECT ",
+        solution_query="SELECT DISTINCT ciudad FROM clientes;",
+        xp_reward=35,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=4,
+        hints=[
+            "La palabra reservada DISTINCT se coloca inmediatamente después de SELECT.",
+            "Escribe: SELECT DISTINCT ciudad FROM clientes;",
+        ],
+        concept=ExerciseConcept(
+            summary="La cláusula DISTINCT elimina filas duplicadas del conjunto de resultados devuelto por la consulta relacional, garantizando unicidad en la proyección.",
+            syntax="SELECT DISTINCT columna\nFROM nombre_tabla;",
+            key_points=[
+                "DISTINCT opera sobre todas las columnas de la lista de selección en conjunto.",
+                "Internamente suele ejecutar una ordenación o un hash en memoria para descartar repetidos.",
+            ],
+            execution_order_note="⚡ DISTINCT se procesa casi al final del pipeline lógico, justo antes de ORDER BY y LIMIT.",
+        ),
+        objectives=[
+            "1. Usar la palabra clave DISTINCT tras SELECT.",
+            "2. Proyectar la columna 'ciudad' de la tabla 'clientes'.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES],
+    ),
+
+# Módulo 2 - Reto 5: Filtrado con WHERE (> 500)
     "e0000000-0000-0000-0000-000000000002": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000002",
         module_id="a0000000-0000-0000-0000-000000000002",
@@ -176,7 +263,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=35,
         difficulty="Principiante",
         check_order=False,
-        sort_order=3,
+        sort_order=5,
         hints=[
             "Agrega una cláusula WHERE después de FROM productos.",
             "Utiliza el operador de comparación mayor que (>).",
@@ -209,7 +296,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=35,
         difficulty="Principiante",
         check_order=False,
-        sort_order=4,
+        sort_order=6,
         hints=[
             "El operador BETWEEN valor_min AND valor_max incluye ambos extremos del intervalo.",
             "Equivale lógicamente a 'WHERE precio >= 100 AND precio <= 800'.",
@@ -231,6 +318,135 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         sample_tables=[SAMPLE_TABLE_PRODUCTOS],
     ),
 
+    
+    # Módulo 2 - Reto 7: Búsqueda por Patrón de Correo (LIKE)
+    "e0000000-0000-0000-0000-000000000021": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000021",
+        module_id="a0000000-0000-0000-0000-000000000002",
+        title="Búsqueda por Patrón de Correo (LIKE)",
+        prompt="El equipo de marketing desea enviar un comunicado a los usuarios registrados con cuentas corporativas estándar que utilicen el dominio genérico '@email.com'. Escribe una consulta que devuelva el nombre, apellido y email de todos los clientes cuyo correo electrónico termine exactamente en '@email.com'.",
+        initial_code="-- Filtra clientes con comodín LIKE\nSELECT ",
+        solution_query="SELECT nombre, apellido, email FROM clientes WHERE email LIKE '%@email.com';",
+        xp_reward=40,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=7,
+        hints=[
+            "Usa el operador LIKE en la cláusula WHERE.",
+            "El comodín '%' representa cero o más caracteres arbitrarios: LIKE '%@email.com'.",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador LIKE evalúa si una cadena coincide con un patrón específico utilizando comodines. En PostgreSQL, '%' coincide con cualquier secuencia de caracteres y '_' con un solo carácter.",
+            syntax="SELECT columnas\nFROM tabla\nWHERE columna LIKE 'patron%';",
+            key_points=[
+                "'%texto' coincide con cadenas que terminen en ese texto.",
+                "LIKE distingue entre mayúsculas y minúsculas; en PostgreSQL existe ILIKE para búsquedas insensibles.",
+            ],
+            execution_order_note="⚡ WHERE se evalúa sobre cada tupla leída de disco antes de enviar los datos al cliente.",
+        ),
+        objectives=[
+            "1. Proyectar 'nombre', 'apellido' y 'email'.",
+            "2. Aplicar WHERE email LIKE '%@email.com'.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES],
+    ),
+
+    # Módulo 2 - Reto 8: Filtro de Ciudades Específicas (IN)
+    "e0000000-0000-0000-0000-000000000022": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000022",
+        module_id="a0000000-0000-0000-0000-000000000002",
+        title="Filtro de Ciudades Específicas (IN)",
+        prompt="Operaciones ha lanzado una promoción especial de envíos exprés para los centros urbanos principales: Madrid, Barcelona y Valencia. Escribe una consulta que devuelva cliente_id, nombre, apellido y ciudad para los clientes que residan en cualquiera de estas tres ciudades.",
+        initial_code="-- Filtra mediante el operador IN\nSELECT ",
+        solution_query="SELECT cliente_id, nombre, apellido, ciudad FROM clientes WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia');",
+        xp_reward=40,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=8,
+        hints=[
+            "El operador IN permite comprobar la pertenencia a una lista de valores discretos.",
+            "Escribe WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia').",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador IN es una abreviación concisa y optimizada para múltiples condiciones OR (col = 'A' OR col = 'B' OR col = 'C'). Comprueba si un valor pertenece a una lista explícita.",
+            syntax="SELECT columnas\nFROM tabla\nWHERE columna IN (val1, val2, val3);",
+            key_points=[
+                "Mejora la legibilidad del código SQL evitando cadenas repetitivas de OR.",
+                "El optimizador de consultas de PostgreSQL suele transformar listas IN en búsquedas indexadas eficientes.",
+            ],
+            execution_order_note="⚡ La comprobación IN se ejecuta durante la fase de filtrado de filas WHERE.",
+        ),
+        objectives=[
+            "1. Proyectar 'cliente_id', 'nombre', 'apellido' y 'ciudad'.",
+            "2. Filtrar con WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia').",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES],
+    ),
+
+    # Módulo 2 - Reto 9: Productos en Riesgo de Stock (OR)
+    "e0000000-0000-0000-0000-000000000023": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000023",
+        module_id="a0000000-0000-0000-0000-000000000002",
+        title="Productos en Riesgo de Stock (OR)",
+        prompt="Almacén necesita identificar con urgencia los artículos que están en extremos de inventario (aquellos con existencias críticas menores o iguales a 15 unidades, o artículos con sobrestock igual o mayor a 75 unidades). Escribe una consulta que devuelva producto_id, nombre_producto y stock para los productos que cumplan alguna de estas dos condiciones.",
+        initial_code="-- Combina condiciones con OR\nSELECT ",
+        solution_query="SELECT producto_id, nombre_producto, stock FROM productos WHERE stock <= 15 OR stock >= 75;",
+        xp_reward=40,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=9,
+        hints=[
+            "Usa el operador lógico OR para combinar dos predicados de comparación.",
+            "Escribe WHERE stock <= 15 OR stock >= 75;",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador lógico OR devuelve TRUE si al menos una de las expresiones condicionales evaluadas es verdadera. Permite ampliar el conjunto de resultados para capturar múltiples criterios alternativos.",
+            syntax="SELECT columnas\nFROM tabla\nWHERE condicion1 OR condicion2;",
+            key_points=[
+                "A diferencia de AND, con OR basta que una condición se cumpla para que la fila pase el filtro.",
+                "Cuidado con la precedencia de operadores: AND tiene mayor prioridad que OR; usa paréntesis cuando combines ambos.",
+            ],
+            execution_order_note="⚡ El motor evalúa con cortocircuito: si la primera condición es TRUE, no necesita verificar la segunda.",
+        ),
+        objectives=[
+            "1. Proyectar 'producto_id', 'nombre_producto' y 'stock'.",
+            "2. Filtrar con WHERE stock <= 15 OR stock >= 75.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    # Módulo 2 - Reto 10: Facturas de Alto Valor No Pagadas (AND + NOT)
+    "e0000000-0000-0000-0000-000000000024": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000024",
+        module_id="a0000000-0000-0000-0000-000000000002",
+        title="Facturas de Alto Valor No Pagadas (AND + NOT)",
+        prompt="El departamento de cobranzas necesita auditar las facturas pendientes o en litigio de importe relevante. Escribe una consulta que devuelva factura_id, monto_total y estado_factura de todas las facturas cuyo monto_total sea mayor o igual a 400 y cuyo estado_factura sea diferente de 'pagada'.",
+        initial_code="-- Combina AND con el operador de desigualdad\nSELECT ",
+        solution_query="SELECT factura_id, monto_total, estado_factura FROM facturas WHERE monto_total >= 400 AND estado_factura <> 'pagada';",
+        xp_reward=45,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=10,
+        hints=[
+            "En SQL estándar la desigualdad se expresa con '<>' o '!='.",
+            "Combina ambas condiciones con AND: WHERE monto_total >= 400 AND estado_factura <> 'pagada'.",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador lógico AND exige que ambas condiciones se satisfagan simultáneamente. El operador de desigualdad '<>' (o '!=') excluye valores específicos del conjunto de resultados.",
+            syntax="SELECT columnas\nFROM tabla\nWHERE cond1 AND cond2 <> 'valor';",
+            key_points=[
+                "AND reduce la cardinalidad del resultado al exigir el cumplimiento de todos los predicados.",
+                "Recuerda que si un valor es NULL, cualquier comparación con <> devolverá UNKNOWN, no TRUE.",
+            ],
+            execution_order_note="⚡ El optimizador puede reordenar las condiciones del WHERE para evaluar primero el predicado más selectivo.",
+        ),
+        objectives=[
+            "1. Proyectar 'factura_id', 'monto_total' y 'estado_factura'.",
+            "2. Filtrar con WHERE monto_total >= 400 AND estado_factura <> 'pagada'.",
+        ],
+        sample_tables=[SAMPLE_TABLE_FACTURAS],
+    ),
+
     # Módulo 3 - Reto 5: Ordenamiento ORDER BY ASC
     "e0000000-0000-0000-0000-000000000003": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000003",
@@ -242,7 +458,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=40,
         difficulty="Principiante",
         check_order=True,
-        sort_order=5,
+        sort_order=11,
         hints=[
             "Usa WHERE pais = 'España'.",
             "Para ordenar utiliza ORDER BY apellido ASC.",
@@ -275,7 +491,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=40,
         difficulty="Principiante",
         check_order=True,
-        sort_order=6,
+        sort_order=12,
         hints=[
             "Ordena por la columna stock en dirección ascendente: ORDER BY stock ASC.",
             "Agrega la cláusula LIMIT 5 al final para acotar el resultado a 5 filas.",
@@ -297,6 +513,73 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         sample_tables=[SAMPLE_TABLE_PRODUCTOS],
     ),
 
+    
+    # Módulo 3 - Reto 13: Ordenamiento Multi-Criterio
+    "e0000000-0000-0000-0000-000000000025": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000025",
+        module_id="a0000000-0000-0000-0000-000000000003",
+        title="Ordenamiento Multi-Criterio",
+        prompt="Catalogación requiere listar los productos organizados por su categoría y valor comercial. Escribe una consulta que devuelva producto_id, categoria_id, nombre_producto y precio, ordenados primero por categoria_id en orden ascendente (ASC) y, para productos dentro de la misma categoría, por precio en orden descendente (DESC).",
+        initial_code="-- Ordena por múltiples columnas\nSELECT ",
+        solution_query="SELECT producto_id, categoria_id, nombre_producto, precio FROM productos ORDER BY categoria_id ASC, precio DESC;",
+        xp_reward=45,
+        difficulty="Principiante",
+        check_order=True,
+        sort_order=13,
+        hints=[
+            "Puedes incluir múltiples columnas separadas por comas en ORDER BY.",
+            "Especifica la dirección tras cada columna: ORDER BY categoria_id ASC, precio DESC.",
+        ],
+        concept=ExerciseConcept(
+            summary="La cláusula ORDER BY permite ordenar el resultado por múltiples columnas estableciendo prioridades: si hay valores idénticos en la primera columna, el motor desempata utilizando la segunda columna.",
+            syntax="SELECT columnas\nFROM tabla\nORDER BY col1 ASC, col2 DESC;",
+            key_points=[
+                "ASC ordena de menor a mayor (por defecto); DESC ordena de mayor a menor.",
+                "El orden en que listas las columnas en ORDER BY define la jerarquía del ordenamiento.",
+            ],
+            execution_order_note="⚡ ORDER BY se ejecuta después de SELECT, por lo que puede hacer referencia a columnas proyectadas o alias.",
+        ),
+        objectives=[
+            "1. Proyectar 'producto_id', 'categoria_id', 'nombre_producto' y 'precio'.",
+            "2. Ordenar por categoria_id ASC.",
+            "3. Desempatar con precio DESC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    # Módulo 3 - Reto 14: Paginación de Clientes (OFFSET)
+    "e0000000-0000-0000-0000-000000000026": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000026",
+        module_id="a0000000-0000-0000-0000-000000000003",
+        title="Paginación de Clientes (OFFSET)",
+        prompt="Para implementar paginación en el panel administrativo con 5 registros por página, obtén los clientes correspondientes a la segunda página. Escribe una consulta que devuelva cliente_id, nombre y email, ordenados por cliente_id ASC, omitiendo los primeros 5 clientes y limitando el resultado a los siguientes 5 registros.",
+        initial_code="-- Usa LIMIT y OFFSET para paginar\nSELECT ",
+        solution_query="SELECT cliente_id, nombre, email FROM clientes ORDER BY cliente_id ASC LIMIT 5 OFFSET 5;",
+        xp_reward=45,
+        difficulty="Principiante",
+        check_order=True,
+        sort_order=14,
+        hints=[
+            "Combina LIMIT para el tamaño de página y OFFSET para la cantidad de filas a saltar.",
+            "Escribe ORDER BY cliente_id ASC LIMIT 5 OFFSET 5;",
+        ],
+        concept=ExerciseConcept(
+            summary="OFFSET salta un número determinado de filas antes de comenzar a devolver resultados, mientras que LIMIT acota el número máximo de tuplas entregadas. Juntos forman el mecanismo clásico de paginación.",
+            syntax="SELECT columnas\nFROM tabla\nORDER BY id ASC LIMIT N OFFSET M;",
+            key_points=[
+                "OFFSET sin ORDER BY no es determinista: las bases de datos relacionales no garantizan orden sin ORDER BY.",
+                "OFFSET M salta M filas; LIMIT N toma las siguientes N filas.",
+            ],
+            execution_order_note="⚡ LIMIT y OFFSET son las últimas operaciones del pipeline de ejecución relacional.",
+        ),
+        objectives=[
+            "1. Proyectar 'cliente_id', 'nombre' y 'email'.",
+            "2. Ordenar por cliente_id ASC.",
+            "3. Aplicar LIMIT 5 OFFSET 5.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES],
+    ),
+
     # Módulo 4 - Reto 7: Agrupación GROUP BY & HAVING
     "e0000000-0000-0000-0000-000000000004": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000004",
@@ -308,7 +591,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=45,
         difficulty="Principiante",
         check_order=False,
-        sort_order=7,
+        sort_order=15,
         hints=[
             "Agrupa por categoria_id con GROUP BY.",
             "Para filtrar grupos agregados usa HAVING COUNT(*) > 2.",
@@ -342,7 +625,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=45,
         difficulty="Principiante",
         check_order=False,
-        sort_order=8,
+        sort_order=16,
         hints=[
             "Filtra primero con WHERE estado_pedido = 'completado'.",
             "Aplica COUNT(*), SUM(total) y ROUND(AVG(total), 2) con sus respectivos alias.",
@@ -368,6 +651,209 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     # RUTA 2: Relational SQL (Módulos 5 al 7)
     # =========================================================================
 
+    
+    # Módulo 4 - Reto 17: Rango de Precios por Categoría (MAX/MIN)
+    "e0000000-0000-0000-0000-000000000027": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000027",
+        module_id="a0000000-0000-0000-0000-000000000004",
+        title="Rango de Precios por Categoría (MAX/MIN)",
+        prompt="El departamento de pricing necesita analizar la dispersión de precios en cada departamento comercial. Escribe una consulta que devuelva el categoria_id, el precio más bajo bajo el alias precio_minimo y el precio más alto bajo el alias precio_maximo para cada categoría de productos.",
+        initial_code="-- Calcula precios extremos por categoría\nSELECT ",
+        solution_query="SELECT categoria_id, MIN(precio) AS precio_minimo, MAX(precio) AS precio_maximo FROM productos GROUP BY categoria_id;",
+        xp_reward=45,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=17,
+        hints=[
+            "Utiliza las funciones de agregación MIN(precio) y MAX(precio).",
+            "Agrupa las filas por categoria_id mediante GROUP BY categoria_id.",
+        ],
+        concept=ExerciseConcept(
+            summary="Las funciones de agregación MIN() y MAX() calculan los valores extremos dentro de cada grupo formado por GROUP BY. Si no hay GROUP BY, operan sobre la totalidad de la tabla.",
+            syntax="SELECT grupo, MIN(col), MAX(col)\nFROM tabla\nGROUP BY grupo;",
+            key_points=[
+                "MIN() y MAX() ignoran valores NULL en la columna evaluada.",
+                "Toda columna no agregada en SELECT debe figurar obligatoriamente en GROUP BY.",
+            ],
+            execution_order_note="⚡ GROUP BY colapsa las filas antes de que SELECT calcule MIN() y MAX().",
+        ),
+        objectives=[
+            "1. Proyectar 'categoria_id'.",
+            "2. Calcular MIN(precio) AS precio_minimo.",
+            "3. Calcular MAX(precio) AS precio_maximo.",
+            "4. Agrupar por 'categoria_id'.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    # Módulo 4 - Reto 18: Distribución de Clientes por País
+    "e0000000-0000-0000-0000-000000000028": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000028",
+        module_id="a0000000-0000-0000-0000-000000000004",
+        title="Distribución de Clientes por País",
+        prompt="Expansión internacional requiere un censo de clientes por país de residencia. Escribe una consulta que devuelva la columna pais y el número total de clientes bajo el alias total_clientes, agrupando por país y ordenando el resultado de mayor a menor número de clientes.",
+        initial_code="-- Agrupa clientes por país\nSELECT ",
+        solution_query="SELECT pais, COUNT(*) AS total_clientes FROM clientes GROUP BY pais ORDER BY total_clientes DESC;",
+        xp_reward=45,
+        difficulty="Principiante",
+        check_order=True,
+        sort_order=18,
+        hints=[
+            "Agrupa por pais usando GROUP BY pais.",
+            "Cuenta las filas con COUNT(*) AS total_clientes y ordena con ORDER BY total_clientes DESC.",
+        ],
+        concept=ExerciseConcept(
+            summary="COUNT(*) devuelve el recuento de tuplas en cada grupo relacional. Combinado con ORDER BY descendente, permite construir rankings de distribución de frecuencias.",
+            syntax="SELECT pais, COUNT(*) AS total\nFROM tabla\nGROUP BY pais\nORDER BY total DESC;",
+            key_points=[
+                "COUNT(*) cuenta todas las tuplas del grupo, incluyendo aquellas con columnas nulas.",
+                "Puedes usar el alias de agregación en ORDER BY porque ORDER BY se evalúa después de SELECT.",
+            ],
+            execution_order_note="⚡ GROUP BY particiona $\to$ SELECT proyecta y cuenta $\to$ ORDER BY ordena las filas colapsadas.",
+        ),
+        objectives=[
+            "1. Proyectar 'pais' y 'COUNT(*) AS total_clientes'.",
+            "2. Agrupar por 'pais'.",
+            "3. Ordenar por total_clientes DESC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES],
+    ),
+
+    # Módulo 4 - Reto 19: Stock Total por Proveedor
+    "e0000000-0000-0000-0000-000000000029": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000029",
+        module_id="a0000000-0000-0000-0000-000000000004",
+        title="Stock Total por Proveedor",
+        prompt="Gestión de proveedores necesita conocer el volumen total de inventario que suministra cada fabricante. Escribe una consulta que devuelva el proveedor_id y la suma de unidades disponibles bajo el alias stock_total para cada proveedor en la tabla productos.",
+        initial_code="-- Suma el stock por proveedor\nSELECT ",
+        solution_query="SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id;",
+        xp_reward=45,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=19,
+        hints=[
+            "Usa SUM(stock) AS stock_total para sumar las unidades.",
+            "Agrupa por proveedor_id con GROUP BY proveedor_id.",
+        ],
+        concept=ExerciseConcept(
+            summary="La función SUM() agrega valores numéricos de una columna en un acumulado total por grupo. Devuelve NULL si el grupo solo contiene valores NULL.",
+            syntax="SELECT grupo, SUM(numerico) AS total\nFROM tabla\nGROUP BY grupo;",
+            key_points=[
+                "SUM() solo es aplicable a columnas numéricas (INT, NUMERIC, DECIMAL, FLOAT).",
+                "Se evalúa después de WHERE y colapsa las filas que compartan el mismo valor en GROUP BY.",
+            ],
+            execution_order_note="⚡ GROUP BY crea los grupos en memoria y SUM() acumula las cantidades de cada grupo.",
+        ),
+        objectives=[
+            "1. Proyectar 'proveedor_id'.",
+            "2. Calcular SUM(stock) AS stock_total.",
+            "3. Agrupar por 'proveedor_id'.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_PROVEEDORES],
+    ),
+
+    # Módulo 4 - Reto 20: Proveedores de Alto Volumen (HAVING SUM)
+    "e0000000-0000-0000-0000-000000000030": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000030",
+        module_id="a0000000-0000-0000-0000-000000000004",
+        title="Proveedores de Alto Volumen (HAVING SUM)",
+        prompt="Compras desea clasificar a sus proveedores estratégicos. Escribe una consulta que obtenga el proveedor_id y el total de existencias bajo el alias stock_total, mostrando únicamente aquellos proveedores cuyo stock total acumulado supere estrictamente las 100 unidades.",
+        initial_code="-- Filtra grupos con HAVING\nSELECT ",
+        solution_query="SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id HAVING SUM(stock) > 100;",
+        xp_reward=50,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=20,
+        hints=[
+            "La cláusula HAVING se coloca después de GROUP BY.",
+            "Escribe HAVING SUM(stock) > 100;",
+        ],
+        concept=ExerciseConcept(
+            summary="HAVING es el mecanismo de filtrado para grupos agregados en SQL. Mientras WHERE filtra filas individuales ANTES de agrupar, HAVING filtra grupos DESPUÉS de que las agregaciones han sido calculadas.",
+            syntax="SELECT grupo, SUM(col)\nFROM tabla\nGROUP BY grupo\nHAVING SUM(col) > valor;",
+            key_points=[
+                "Prohibido usar agregados en WHERE: WHERE SUM(...) es un error de sintaxis en cualquier base de datos SQL.",
+                "HAVING evalúa predicados booleanos sobre funciones agregadas o columnas de agrupamiento.",
+            ],
+            execution_order_note="⚡ Orden crucial: WHERE (filtra filas) $\to$ GROUP BY (agrupa) $\to$ HAVING (descarta grupos completos).",
+        ),
+        objectives=[
+            "1. Proyectar 'proveedor_id' y 'SUM(stock) AS stock_total'.",
+            "2. Agrupar por 'proveedor_id'.",
+            "3. Filtrar los grupos con HAVING SUM(stock) > 100.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    # Módulo 4 - Reto 21: Clientes con Ticket Promedio Alto (HAVING AVG)
+    "e0000000-0000-0000-0000-000000000031": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000031",
+        module_id="a0000000-0000-0000-0000-000000000004",
+        title="Clientes con Ticket Promedio Alto (HAVING AVG)",
+        prompt="Fidelización busca identificar a los compradores con mayor poder adquisitivo por compra. Escribe una consulta sobre la tabla pedidos que devuelva el cliente_id y el importe promedio de sus compras redondeado a 2 decimales bajo el alias ticket_promedio, considerando únicamente a los clientes cuyo promedio de compras supere los 500 euros.",
+        initial_code="-- Filtra clientes por ticket promedio\nSELECT ",
+        solution_query="SELECT cliente_id, ROUND(AVG(total), 2) AS ticket_promedio FROM pedidos GROUP BY cliente_id HAVING AVG(total) > 500;",
+        xp_reward=50,
+        difficulty="Principiante",
+        check_order=False,
+        sort_order=21,
+        hints=[
+            "Usa ROUND(AVG(total), 2) AS ticket_promedio en SELECT.",
+            "Filtra en HAVING usando AVG(total) > 500.",
+        ],
+        concept=ExerciseConcept(
+            summary="AVG() calcula la media aritmética ignorando valores NULL. Combinado con HAVING AVG(...) > X permite identificar segmentos basados en comportamiento medio o representativo.",
+            syntax="SELECT cliente_id, ROUND(AVG(total), 2) AS avg_total\nFROM pedidos\nGROUP BY cliente_id\nHAVING AVG(total) > 500;",
+            key_points=[
+                "ROUND() en la proyección asegura la presentación limpia con 2 decimales.",
+                "HAVING puede utilizar la función agregada directamente sin alias: HAVING AVG(total) > 500.",
+            ],
+            execution_order_note="⚡ HAVING calcula el promedio de cada partición de cliente y descarta los que no alcancen el umbral.",
+        ),
+        objectives=[
+            "1. Proyectar 'cliente_id'.",
+            "2. Calcular ROUND(AVG(total), 2) AS ticket_promedio.",
+            "3. Agrupar por 'cliente_id'.",
+            "4. Filtrar con HAVING AVG(total) > 500.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    # Módulo 4 - Reto 22: Resumen de Pedidos por Estado
+    "e0000000-0000-0000-0000-000000000032": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000032",
+        module_id="a0000000-0000-0000-0000-000000000004",
+        title="Resumen de Pedidos por Estado",
+        prompt="Operaciones comerciales solicita un cuadro de control de pedidos. Escribe una consulta que devuelva estado_pedido, la cantidad de pedidos bajo el alias total_pedidos y la suma acumulada de dinero bajo el alias monto_acumulado, agrupando por el estado del pedido y ordenando por monto_acumulado en orden descendente.",
+        initial_code="-- Resumen consolidado por estado de pedido\nSELECT ",
+        solution_query="SELECT estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado FROM pedidos GROUP BY estado_pedido ORDER BY monto_acumulado DESC;",
+        xp_reward=50,
+        difficulty="Principiante",
+        check_order=True,
+        sort_order=22,
+        hints=[
+            "Proyecta estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado.",
+            "Agrupa por estado_pedido y ordena por monto_acumulado DESC.",
+        ],
+        concept=ExerciseConcept(
+            summary="En una sola consulta de agregación es posible combinar múltiples funciones agregadas (COUNT, SUM, AVG) sobre la misma partición para construir paneles ejecutivos y tableros analíticos.",
+            syntax="SELECT estado, COUNT(*), SUM(monto)\nFROM tabla\nGROUP BY estado\nORDER BY SUM(monto) DESC;",
+            key_points=[
+                "Permite auditar el estado del negocio agrupando por dimensiones categóricas ('completado', 'pendiente', 'cancelado').",
+                "ORDER BY sobre el resultado acumulado destaca de inmediato el segmento más relevante para el negocio.",
+            ],
+            execution_order_note="⚡ Agrupación $\to$ Cálculo múltiple (COUNT y SUM) $\to$ Ordenación final por la suma calculada.",
+        ),
+        objectives=[
+            "1. Proyectar 'estado_pedido'.",
+            "2. Calcular COUNT(*) AS total_pedidos.",
+            "3. Calcular SUM(total) AS monto_acumulado.",
+            "4. Agrupar por 'estado_pedido'.",
+            "5. Ordenar por monto_acumulado DESC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
     # Módulo 5 - Reto 9: INNER JOIN Fundamentos
     "e0000000-0000-0000-0000-000000000005": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000005",
@@ -379,7 +865,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=45,
         difficulty="Intermedio",
         check_order=False,
-        sort_order=9,
+        sort_order=23,
         hints=[
             "Usa INNER JOIN clientes c ON p.cliente_id = c.cliente_id.",
             "Proyecta p.pedido_id, c.nombre, c.apellido, p.total.",
@@ -412,7 +898,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=10,
+        sort_order=24,
         hints=[
             "Usa INNER JOIN clientes c ON c.cliente_id = p.cliente_id.",
             "Agrupa por c.cliente_id, c.nombre, c.apellido en la cláusula GROUP BY.",
@@ -446,7 +932,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=False,
-        sort_order=11,
+        sort_order=25,
         hints=[
             "Inicia realizando un LEFT JOIN desde la tabla clientes hacia la tabla pedidos usando la relación c.cliente_id = p.cliente_id.",
             "Cuando un cliente no tiene pedidos, las columnas provenientes de la tabla pedidos resultarán con valores NULL. Filtra usando WHERE p.pedido_id IS NULL.",
@@ -480,7 +966,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=False,
-        sort_order=12,
+        sort_order=26,
         hints=[
             "Une productos p con detalle_pedidos dp mediante LEFT JOIN usando producto_id.",
             "Filtra las filas donde la clave foránea o primaria de la tabla derecha sea nula: WHERE dp.detalle_id IS NULL.",
@@ -513,7 +999,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=13,
+        sort_order=27,
         hints=[
             "Encadena 4 cláusulas INNER JOIN siguiendo las claves foráneas correspondientes.",
             "Usa alias de tabla concisos: p, c, dp, pr, cat.",
@@ -551,7 +1037,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=14,
+        sort_order=41,
         hints=[
             "En la cláusula WHERE, escribe precio > (SELECT AVG(precio) FROM productos).",
             "No olvides ordenar con ORDER BY precio DESC.",
@@ -573,7 +1059,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         sample_tables=[SAMPLE_TABLE_PRODUCTOS],
     ),
 
-    # Módulo 9 - Reto 15: Expresiones Condicionales (CASE WHEN)
+    # Módulo 9 - Reto 42: Expresiones Condicionales (CASE WHEN)
     "e0000000-0000-0000-0000-000000000016": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000016",
         module_id="c0000000-0000-0000-0000-000000000009",
@@ -584,7 +1070,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=15,
+        sort_order=42,
         hints=[
             "Usa la sintaxis: CASE WHEN condicion1 THEN valor1 WHEN condicion2 THEN valor2 ELSE valor_defecto END AS segmento.",
             "Recuerda ordenar con ORDER BY total DESC.",
@@ -606,7 +1092,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         sample_tables=[SAMPLE_TABLE_PEDIDOS],
     ),
 
-    # Módulo 10 - Reto 16: Common Table Expressions (CTEs)
+    # Módulo 10 - Reto 43: Common Table Expressions (CTEs)
     "e0000000-0000-0000-0000-000000000017": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000017",
         module_id="c0000000-0000-0000-0000-000000000010",
@@ -617,7 +1103,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=60,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=16,
+        sort_order=43,
         hints=[
             "Inicia con WITH ventas_por_categoria AS ( ... )",
             "Dentro del CTE, cruza categorias, productos y detalle_pedidos y agrupa por c.nombre_categoria.",
@@ -640,7 +1126,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         sample_tables=[SAMPLE_TABLE_CATEGORIAS, SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_DETALLE_PEDIDOS],
     ),
 
-    # Módulo 11 - Reto 17: Window Functions (ROW_NUMBER)
+    # Módulo 11 - Reto 44: Window Functions (ROW_NUMBER)
     "e0000000-0000-0000-0000-000000000007": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000007",
         module_id="c0000000-0000-0000-0000-000000000011",
@@ -651,7 +1137,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=17,
+        sort_order=44,
         hints=["Usa la función ventana ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking."],
         concept=ExerciseConcept(
             summary="Las funciones ventana (Window Functions) realizan cálculos a través de particiones de tuplas sin colapsar el resultado en una sola fila. ROW_NUMBER() numera secuencialmente cada registro según la cláusula OVER (ORDER BY ...).",
@@ -670,7 +1156,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         sample_tables=[SAMPLE_TABLE_PRODUCTOS],
     ),
 
-    # Módulo 11 - Reto 18: Window Functions (DENSE_RANK & PARTITION BY)
+    # Módulo 11 - Reto 45: Window Functions (DENSE_RANK & PARTITION BY)
     "e0000000-0000-0000-0000-000000000018": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000018",
         module_id="c0000000-0000-0000-0000-000000000011",
@@ -681,7 +1167,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=65,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=18,
+        sort_order=45,
         hints=[
             "Usa DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria.",
             "Ordena al final por categoria_id ASC, ranking_categoria ASC.",
