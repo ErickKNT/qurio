@@ -112,6 +112,38 @@ SAMPLE_TABLE_PROVEEDORES = SampleTableData(
     ],
 )
 
+
+SAMPLE_TABLE_ALMACENES = SampleTableData(
+    tableName="almacenes",
+    columns=["almacen_id", "nombre_almacen", "ciudad", "capacidad_m2"],
+    rows=[
+        [1, "Hub Logístico Central Madrid", "Madrid", 5000],
+        [2, "Centro de Distribución Norte", "Bilbao", 2800],
+        [3, "Almacén Mediterráneo", "Valencia", 3500],
+    ],
+)
+
+SAMPLE_TABLE_INVENTARIO = SampleTableData(
+    tableName="inventario",
+    columns=["almacen_id", "producto_id", "cantidad_disponible"],
+    rows=[
+        [1, 1, 15],
+        [1, 4, 8],
+        [2, 2, 20],
+        [3, 3, 25],
+    ],
+)
+
+SAMPLE_TABLE_PAGOS = SampleTableData(
+    tableName="pagos",
+    columns=["pago_id", "factura_id", "metodo_pago", "monto", "fecha_pago", "estado_pago"],
+    rows=[
+        [1, 201, "tarjeta_credito", 1590.00, "2024-01-10", "aprobado"],
+        [2, 202, "transferencia", 720.00, "2024-01-12", "aprobado"],
+        [3, 203, "paypal", 215.00, "2024-01-15", "aprobado"],
+    ],
+)
+
 # Catálogo completo de 32 ejercicios (Ruta 1 completa con 22 retos + Rutas 2 y 3) enriquecidos con didáctica interactiva estilo SQLBolt
 SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     # =========================================================================
@@ -932,7 +964,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=False,
-        sort_order=25,
+        sort_order=28,
         hints=[
             "Inicia realizando un LEFT JOIN desde la tabla clientes hacia la tabla pedidos usando la relación c.cliente_id = p.cliente_id.",
             "Cuando un cliente no tiene pedidos, las columnas provenientes de la tabla pedidos resultarán con valores NULL. Filtra usando WHERE p.pedido_id IS NULL.",
@@ -966,7 +998,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=False,
-        sort_order=26,
+        sort_order=29,
         hints=[
             "Une productos p con detalle_pedidos dp mediante LEFT JOIN usando producto_id.",
             "Filtra las filas donde la clave foránea o primaria de la tabla derecha sea nula: WHERE dp.detalle_id IS NULL.",
@@ -999,7 +1031,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=27,
+        sort_order=33,
         hints=[
             "Encadena 4 cláusulas INNER JOIN siguiendo las claves foráneas correspondientes.",
             "Usa alias de tabla concisos: p, c, dp, pr, cat.",
@@ -1022,6 +1054,443 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         sample_tables=[SAMPLE_TABLE_PEDIDOS, SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_DETALLE_PEDIDOS, SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
     ),
 
+    # Módulo 5 - Reto 25: Catálogo con Nombre de Categoría
+    "e0000000-0000-0000-0000-000000000033": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000033",
+        module_id="b0000000-0000-0000-0000-000000000005",
+        title="Catálogo con Nombre de Categoría",
+        prompt="Catalogación necesita presentar el catálogo con el nombre de su categoría descriptiva en vez del código numérico. Escribe una consulta que devuelva el producto_id, nombre_producto, nombre_categoria y precio, relacionando las tablas productos y categorias mediante categoria_id. Ordena los resultados por nombre_categoria ASC y luego por nombre_producto ASC.",
+        initial_code="-- Cruza productos con categorias\nSELECT ",
+        solution_query="SELECT p.producto_id, p.nombre_producto, c.nombre_categoria, p.precio FROM productos p INNER JOIN categorias c ON p.categoria_id = c.categoria_id ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;",
+        xp_reward=45,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=25,
+        hints=[
+            "Usa INNER JOIN categorias c ON p.categoria_id = c.categoria_id.",
+            "Ordena con ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="El INNER JOIN sustituye claves foráneas numéricas por nombres descriptivos provenientes de tablas maestras o dimensiones (normalización relacional).",
+            syntax="SELECT p.producto_id, p.nombre_producto, c.nombre_categoria, p.precio\nFROM productos p\nINNER JOIN categorias c ON p.categoria_id = c.categoria_id\nORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;",
+            key_points=[
+                "Permite enriquecer entidades de catálogo sustituyendo códigos por etiquetas comprensibles.",
+                "Solo se conservan las filas que presenten correspondencia en ambas entidades.",
+            ],
+            execution_order_note="⚡ Se evalúa la condición de cruce ON p.categoria_id = c.categoria_id al escanear las tablas.",
+        ),
+        objectives=[
+            "1. Realizar INNER JOIN entre productos y categorias.",
+            "2. Proyectar producto_id, nombre_producto, nombre_categoria y precio.",
+            "3. Ordenar por nombre_categoria ASC, nombre_producto ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
+    ),
+
+    # Módulo 5 - Reto 26: Productos y sus Proveedores Directos
+    "e0000000-0000-0000-0000-000000000034": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000034",
+        module_id="b0000000-0000-0000-0000-000000000005",
+        title="Productos y sus Proveedores Directos",
+        prompt="El área de compras requiere auditar el origen geográfico de cada artículo del catálogo. Escribe una consulta que relacione las tablas productos y proveedores, devolviendo producto_id, nombre_producto, nombre_proveedor y el país del proveedor bajo el alias pais_proveedor. Ordena alfabéticamente por nombre_producto ASC.",
+        initial_code="-- Relaciona productos con sus proveedores\nSELECT ",
+        solution_query="SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor FROM productos pr INNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id ORDER BY pr.nombre_producto ASC;",
+        xp_reward=45,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=26,
+        hints=[
+            "Une productos pr con proveedores pv usando proveedor_id.",
+            "Asigna el alias pais_proveedor a pv.pais y ordena con ORDER BY pr.nombre_producto ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="Vincular una tabla transaccional o de artículos con sus entidades suministradoras es esencial en la gestión de la cadena de suministro.",
+            syntax="SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor\nFROM productos pr\nINNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id\nORDER BY pr.nombre_producto ASC;",
+            key_points=[
+                "El uso de alias cortos de tabla (pr, pv) simplifica la lectura y mantenimiento del código SQL.",
+                "El alias de columna renombra el atributo en la salida sin modificar el catálogo subyacente.",
+            ],
+            execution_order_note="⚡ Se asocian los productos con sus proveedores mediante su clave foránea común.",
+        ),
+        objectives=[
+            "1. Relacionar productos con proveedores mediante proveedor_id.",
+            "2. Proyectar producto_id, nombre_producto, nombre_proveedor y pais con alias pais_proveedor.",
+            "3. Ordenar por nombre_producto ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_PROVEEDORES],
+    ),
+
+    # Módulo 5 - Reto 27: Facturación Detallada con Pagos Aprobados
+    "e0000000-0000-0000-0000-000000000035": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000035",
+        module_id="b0000000-0000-0000-0000-000000000005",
+        title="Facturación Detallada con Pagos Aprobados",
+        prompt="Contabilidad solicita una conciliación de facturas con sus pagos exitosos. Escribe una consulta que una facturas con pagos mediante factura_id, proyectando factura_id, monto_total de la factura, metodo_pago y fecha_pago, considerando únicamente aquellos registros donde estado_pago = 'aprobado'. Ordena por factura_id ASC.",
+        initial_code="-- Concilia facturas con pagos aprobados\nSELECT ",
+        solution_query="SELECT f.factura_id, f.monto_total, pg.metodo_pago, pg.fecha_pago FROM facturas f INNER JOIN pagos pg ON f.factura_id = pg.factura_id WHERE pg.estado_pago = 'aprobado' ORDER BY f.factura_id ASC;",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=27,
+        hints=[
+            "Usa INNER JOIN pagos pg ON f.factura_id = pg.factura_id.",
+            "Filtra en WHERE pg.estado_pago = 'aprobado' y ordena por f.factura_id ASC.",
+        ],
+        concept=ExerciseConcept(
+            summary="La combinación de INNER JOIN con filtros WHERE permite conciliar movimientos financieros entre entidades relacionadas descartando transacciones pendientes o fallidas.",
+            syntax="SELECT f.factura_id, f.monto_total, pg.metodo_pago, pg.fecha_pago\nFROM facturas f\nINNER JOIN pagos pg ON f.factura_id = pg.factura_id\nWHERE pg.estado_pago = 'aprobado'\nORDER BY f.factura_id ASC;",
+            key_points=[
+                "El JOIN establece el vínculo 1:N o 1:1 entre facturas y sus abonos.",
+                "WHERE filtra las filas resultantes preservando solo los pagos conformes.",
+            ],
+            execution_order_note="⚡ JOIN empareja facturas con pagos $\to$ WHERE restringe a estado_pago = 'aprobado' $\to$ SELECT proyecta y ordena.",
+        ),
+        objectives=[
+            "1. Cruzar facturas con pagos por factura_id.",
+            "2. Filtrar pagos donde estado_pago = 'aprobado'.",
+            "3. Proyectar factura_id, monto_total, metodo_pago, fecha_pago y ordenar por factura_id ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_PAGOS],
+    ),
+
+    # Módulo 6 - Reto 30: Facturas Pendientes de Cobro (Anti-Join)
+    "e0000000-0000-0000-0000-000000000036": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000036",
+        module_id="b0000000-0000-0000-0000-000000000006",
+        title="Facturas Pendientes de Cobro (Anti-Join)",
+        prompt="Tesorería necesita listar las facturas emitidas para las cuales todavía no se ha registrado ningún abono en la tabla de pagos (patrón Anti-Join). Escribe una consulta mediante LEFT JOIN entre facturas y pagos que obtenga factura_id, pedido_id, fecha_emision y monto_total de aquellas facturas sin ningún pago asociado. Ordena por factura_id ASC.",
+        initial_code="-- Identifica facturas sin pagos registrados\nSELECT ",
+        solution_query="SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total FROM facturas f LEFT JOIN pagos p ON f.factura_id = p.factura_id WHERE p.pago_id IS NULL ORDER BY f.factura_id ASC;",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=30,
+        hints=[
+            "Haz un LEFT JOIN desde facturas f hacia pagos p por factura_id.",
+            "Filtra con WHERE p.pago_id IS NULL para encontrar facturas sin ningún abono.",
+            "Ordena por f.factura_id ASC.",
+        ],
+        concept=ExerciseConcept(
+            summary="El patrón Anti-Join con LEFT JOIN y predicado IS NULL es la técnica óptima y estándar en SQL para encontrar entidades principales que carecen de registros subordinados.",
+            syntax="SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total\nFROM facturas f\nLEFT JOIN pagos p ON f.factura_id = p.factura_id\nWHERE p.pago_id IS NULL\nORDER BY f.factura_id ASC;",
+            key_points=[
+                "LEFT JOIN asegura que todas las facturas aparezcan en el conjunto intermedio.",
+                "Las facturas sin pago tendrán p.pago_id con valor NULL; WHERE aísla exactamente esas filas.",
+            ],
+            execution_order_note="⚡ LEFT JOIN preserva facturas $\to$ WHERE filtra donde p.pago_id IS NULL.",
+        ),
+        objectives=[
+            "1. Efectuar LEFT JOIN entre facturas y pagos.",
+            "2. Filtrar con WHERE p.pago_id IS NULL.",
+            "3. Proyectar factura_id, pedido_id, fecha_emision, monto_total y ordenar por factura_id ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_PAGOS],
+    ),
+
+    # Módulo 6 - Reto 31: Productos Fuera del Almacén Central (Anti-Join Condicional)
+    "e0000000-0000-0000-0000-000000000037": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000037",
+        module_id="b0000000-0000-0000-0000-000000000006",
+        title="Productos Fuera del Almacén Central (Anti-Join Condicional)",
+        prompt="El responsable del Hub Logístico Central Madrid (almacen_id = 1) desea identificar qué productos del catálogo no disponen de existencias ubicadas en sus instalaciones. Escribe una consulta que relacione la tabla productos con inventario mediante un LEFT JOIN acotado al almacén 1 (ON p.producto_id = i.producto_id AND i.almacen_id = 1) y devuelva producto_id y nombre_producto de los artículos ausentes en dicho almacén. Ordena por producto_id ASC.",
+        initial_code="-- Detecta productos no inventariados en el almacén 1\nSELECT ",
+        solution_query="SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1 WHERE i.almacen_id IS NULL ORDER BY p.producto_id ASC;",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=31,
+        hints=[
+            "En el ON del LEFT JOIN incluye p.producto_id = i.producto_id AND i.almacen_id = 1.",
+            "En WHERE comprueba WHERE i.almacen_id IS NULL para encontrar las ausencias.",
+        ],
+        concept=ExerciseConcept(
+            summary="Agregar condiciones adicionales a la cláusula ON en un LEFT JOIN filtra la tabla derecha antes de realizar la unión, permitiendo evaluar la ausencia de una relación en un contexto específico.",
+            syntax="SELECT p.producto_id, p.nombre_producto\nFROM productos p\nLEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1\nWHERE i.almacen_id IS NULL\nORDER BY p.producto_id ASC;",
+            key_points=[
+                "Colocar el filtro de almacén en ON restringe qué filas de inventario se cruzan, no las filas de productos.",
+                "Si pusieras i.almacen_id = 1 en WHERE convertirías el LEFT JOIN en un INNER JOIN implícito.",
+            ],
+            execution_order_note="⚡ ON evalúa el predicado compuesto en la unión $\to$ WHERE detecta los nulos resultantes.",
+        ),
+        objectives=[
+            "1. Realizar LEFT JOIN con doble condición en ON (producto_id y almacen_id = 1).",
+            "2. Filtrar con WHERE i.almacen_id IS NULL.",
+            "3. Proyectar producto_id y nombre_producto ordenados por producto_id ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_INVENTARIO],
+    ),
+
+    # Módulo 6 - Reto 32: Censo Completo de Pedidos por Cliente (Preservando Ceros)
+    "e0000000-0000-0000-0000-000000000038": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000038",
+        module_id="b0000000-0000-0000-0000-000000000006",
+        title="Censo Completo de Pedidos por Cliente (Preservando Ceros)",
+        prompt="CRM requiere un censo íntegro de la cartera de clientes, visualizando cuántos pedidos ha efectuado cada usuario sin omitir a aquellos que nunca han comprado. Escribe una consulta mediante LEFT JOIN de clientes con pedidos que devuelva cliente_id, nombre, apellido y el recuento total de compras bajo el alias total_pedidos (usando COUNT(p.pedido_id)). Ordena los resultados por total_pedidos DESC y, en caso de empate, por cliente_id ASC.",
+        initial_code="-- Agrupa preservando clientes sin compras con COUNT(columna)\nSELECT ",
+        solution_query="SELECT c.cliente_id, c.nombre, c.apellido, COUNT(p.pedido_id) AS total_pedidos FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_pedidos DESC, c.cliente_id ASC;",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=32,
+        hints=[
+            "Usa COUNT(p.pedido_id) AS total_pedidos para contar únicamente pedidos existentes.",
+            "Agrupa por c.cliente_id, c.nombre, c.apellido y ordena con ORDER BY total_pedidos DESC, c.cliente_id ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="Diferencia crucial entre COUNT(*) y COUNT(columna): COUNT(*) cuenta filas físicas (daría 1 para clientes sin pedidos por la fila generada con NULLs), mientras que COUNT(p.pedido_id) ignora los NULLs y devuelve correctamente 0.",
+            syntax="SELECT c.cliente_id, c.nombre, COUNT(p.pedido_id) AS total_pedidos\nFROM clientes c\nLEFT JOIN pedidos p ON c.cliente_id = p.cliente_id\nGROUP BY c.cliente_id, c.nombre\nORDER BY total_pedidos DESC;",
+            key_points=[
+                "COUNT(expresion) solo suma tuplas donde 'expresion' NO sea nula.",
+                "Es el estándar relacional para métricas acumuladas que deben reflejar el cero absoluto.",
+            ],
+            execution_order_note="⚡ LEFT JOIN preserva entidades huérfanas $\to$ GROUP BY colapsa $\to$ COUNT(col) ignora los nulos.",
+        ),
+        objectives=[
+            "1. Efectuar LEFT JOIN entre clientes y pedidos.",
+            "2. Agrupar por cliente_id, nombre, apellido.",
+            "3. Contar pedidos con COUNT(p.pedido_id) AS total_pedidos.",
+            "4. Ordenar por total_pedidos DESC, cliente_id ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    # Módulo 7 - Reto 34: Historial de Ventas por Ciudad y Categoría
+    "e0000000-0000-0000-0000-000000000039": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000039",
+        module_id="b0000000-0000-0000-0000-000000000007",
+        title="Historial de Ventas por Ciudad y Categoría",
+        prompt="Dirección estratégica solicita un desglose de facturación territorial por categoría de producto. Conecta clientes, pedidos, detalle_pedidos, productos y categorias para calcular la suma de ventas (SUM(dp.cantidad * dp.precio_unitario)) bajo el alias monto_vendido, agrupada por la ciudad del cliente y el nombre_categoria. Ordena por ciudad ASC y luego por monto_vendido DESC.",
+        initial_code="-- Conecta 5 tablas y calcula ventas por ciudad y categoria\nSELECT ",
+        solution_query="SELECT c.ciudad, cat.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id INNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id INNER JOIN productos pr ON dp.producto_id = pr.producto_id INNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id GROUP BY c.ciudad, cat.nombre_categoria ORDER BY c.ciudad ASC, monto_vendido DESC;",
+        xp_reward=55,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=34,
+        hints=[
+            "Encadena 4 INNER JOINs desde clientes hasta categorias.",
+            "Agrupa por c.ciudad y cat.nombre_categoria, calculando SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido.",
+            "Ordena por c.ciudad ASC, monto_vendido DESC;",
+        ],
+        concept=ExerciseConcept(
+            summary="Al conectar un esquema relacional normalizado en estrella o copo de nieve, se pueden cruzar dimensiones geográficas (ciudad) con dimensiones de producto (categoría) para análisis multidimensional.",
+            syntax="SELECT c.ciudad, cat.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido\nFROM clientes c\nINNER JOIN pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id\nINNER JOIN productos pr ON dp.producto_id = pr.producto_id\nINNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id\nGROUP BY c.ciudad, cat.nombre_categoria\nORDER BY c.ciudad ASC, monto_vendido DESC;",
+            key_points=[
+                "El cálculo de línea (cantidad * precio_unitario) se evalúa antes de la agregación SUM().",
+                "Todas las columnas de dimensión no agregadas deben incluirse en GROUP BY.",
+            ],
+            execution_order_note="⚡ Cadena de JOINs genera el cubo de datos $\to$ GROUP BY agrupa por ciudad y categoría $\to$ SUM acumula.",
+        ),
+        objectives=[
+            "1. Unir clientes, pedidos, detalle_pedidos, productos y categorias.",
+            "2. Calcular SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido.",
+            "3. Agrupar por c.ciudad y cat.nombre_categoria.",
+            "4. Ordenar por c.ciudad ASC, monto_vendido DESC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS, SAMPLE_TABLE_DETALLE_PEDIDOS, SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
+    ),
+
+    # Módulo 7 - Reto 35: Conciliación de Pedidos, Facturación y Pagos
+    "e0000000-0000-0000-0000-000000000040": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000040",
+        module_id="b0000000-0000-0000-0000-000000000007",
+        title="Conciliación de Pedidos, Facturación y Pagos",
+        prompt="Auditoría financiera requiere verificar la trazabilidad íntegra entre órdenes de compra, facturación emitida y pagos liquidados. Escribe una consulta que una pedidos con facturas y pagos, proyectando pedido_id, cliente_id, monto_total de la factura como monto_factura, el monto del pago como monto_pago y el metodo_pago. Ordena por pedido_id ASC.",
+        initial_code="-- Cruza pedidos con facturas y pagos\nSELECT ",
+        solution_query="SELECT p.pedido_id, p.cliente_id, f.monto_total AS monto_factura, pg.monto AS monto_pago, pg.metodo_pago FROM pedidos p INNER JOIN facturas f ON p.pedido_id = f.pedido_id INNER JOIN pagos pg ON f.factura_id = pg.factura_id ORDER BY p.pedido_id ASC;",
+        xp_reward=55,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=35,
+        hints=[
+            "Une pedidos p con facturas f por pedido_id, y facturas f con pagos pg por factura_id.",
+            "Usa f.monto_total AS monto_factura y pg.monto AS monto_pago.",
+            "Ordena por p.pedido_id ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="Las consultas multi-tabla en el dominio contable conectan la orden comercial con el comprobante fiscal y la transacción bancaria para certificar la consistencia del flujo de caja.",
+            syntax="SELECT p.pedido_id, p.cliente_id, f.monto_total AS monto_factura, pg.monto AS monto_pago, pg.metodo_pago\nFROM pedidos p\nINNER JOIN facturas f ON p.pedido_id = f.pedido_id\nINNER JOIN pagos pg ON f.factura_id = pg.factura_id\nORDER BY p.pedido_id ASC;",
+            key_points=[
+                "Permite contrastar si el importe facturado coincide con el importe cobrado.",
+                "Identifica discrepancias en importes o modalidades de pago entre órdenes.",
+            ],
+            execution_order_note="⚡ pedidos se une a facturas $\to$ facturas se une a pagos $\to$ proyección de atributos financieros.",
+        ),
+        objectives=[
+            "1. Cruzar pedidos, facturas y pagos mediante sus claves foráneas.",
+            "2. Proyectar pedido_id, cliente_id, monto_factura, monto_pago y metodo_pago.",
+            "3. Ordenar por pedido_id ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS, SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_PAGOS],
+    ),
+
+    # Módulo 7 - Reto 36: Trazabilidad Física de Inventario por Almacén
+    "e0000000-0000-0000-0000-000000000041": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000041",
+        module_id="b0000000-0000-0000-0000-000000000007",
+        title="Trazabilidad Física de Inventario por Almacén",
+        prompt="Operaciones logísticas necesita un informe de existencias distribuidas por punto de almacenamiento. Conecta las tablas productos, inventario y almacenes, proyectando nombre_producto, nombre_almacen, la ciudad del almacén y cantidad_disponible, filtrando únicamente registros con existencias mayores a 10 unidades. Ordena por nombre_producto ASC y luego por nombre_almacen ASC.",
+        initial_code="-- Conecta productos, inventario y almacenes\nSELECT ",
+        solution_query="SELECT pr.nombre_producto, a.nombre_almacen, a.ciudad, i.cantidad_disponible FROM productos pr INNER JOIN inventario i ON pr.producto_id = i.producto_id INNER JOIN almacenes a ON i.almacen_id = a.almacen_id WHERE i.cantidad_disponible > 10 ORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;",
+        xp_reward=55,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=36,
+        hints=[
+            "Une productos pr con inventario i por producto_id, e inventario i con almacenes a por almacen_id.",
+            "Filtra en WHERE i.cantidad_disponible > 10 y ordena con ORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="En modelos de inventario multi-almacén (relación N:M entre productos y almacenes mediante la tabla de enlace inventario), conectar las tres entidades resuelve la ubicación física y disponibilidad exacta.",
+            syntax="SELECT pr.nombre_producto, a.nombre_almacen, a.ciudad, i.cantidad_disponible\nFROM productos pr\nINNER JOIN inventario i ON pr.producto_id = i.producto_id\nINNER JOIN almacenes a ON i.almacen_id = a.almacen_id\nWHERE i.cantidad_disponible > 10\nORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;",
+            key_points=[
+                "La tabla 'inventario' actúa como tabla de unión (junction table) con atributos descriptivos adicionales (cantidad_disponible).",
+                "El filtro WHERE restringe las existencias antes del ordenamiento.",
+            ],
+            execution_order_note="⚡ Cruce N:M resuelto mediante tabla intermedia $\to$ filtrado de stock $\to$ ordenamiento compuesto.",
+        ),
+        objectives=[
+            "1. Conectar productos, inventario y almacenes.",
+            "2. Filtrar donde cantidad_disponible > 10.",
+            "3. Proyectar nombre_producto, nombre_almacen, ciudad, cantidad_disponible.",
+            "4. Ordenar por nombre_producto ASC, nombre_almacen ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_INVENTARIO, SAMPLE_TABLE_ALMACENES],
+    ),
+
+    # Módulo 8 - Reto 37: Directorio Operativo Unificado (UNION)
+    "e0000000-0000-0000-0000-000000000042": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000042",
+        module_id="b0000000-0000-0000-0000-000000000008",
+        title="Directorio Operativo Unificado (UNION)",
+        prompt="Planificación territorial necesita construir un censo consolidado de todas las ciudades con presencia de la empresa, distinguiendo si la presencia es comercial (clientes) o logística (almacenes). Escribe una consulta mediante el operador UNION que combine ciudad y el literal 'cliente' AS tipo_entidad de la tabla clientes, con ciudad y el literal 'almacen' AS tipo_entidad de almacenes. Ordena por ciudad ASC y tipo_entidad ASC.",
+        initial_code="-- Combina ciudades de clientes y almacenes con UNION\nSELECT ",
+        solution_query="SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes UNION SELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes ORDER BY ciudad ASC, tipo_entidad ASC;",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=37,
+        hints=[
+            "El primer bloque es SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes.",
+            "Usa UNION con el segundo bloque: SELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes.",
+            "Finaliza la instrucción con ORDER BY ciudad ASC, tipo_entidad ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador UNION combina verticalmente el resultado de dos consultas compatibles en tipos de datos y número de columnas, eliminando filas duplicadas de forma automática.",
+            syntax="SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes\nUNION\nSELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes\nORDER BY ciudad ASC, tipo_entidad ASC;",
+            key_points=[
+                "A diferencia de los JOINs que combinan horizontalmente columnas, los operadores de conjunto combinan verticalmente filas.",
+                "Cada consulta componente debe proyectar el mismo número de columnas y de tipos compatibles.",
+            ],
+            execution_order_note="⚡ Se evalúa cada consulta por separado $\to$ UNION une los conjuntos y descarta duplicados $\to$ ORDER BY final.",
+        ),
+        objectives=[
+            "1. Construir la consulta sobre clientes proyectando ciudad y literal 'cliente' AS tipo_entidad.",
+            "2. Unir con UNION la consulta sobre almacenes proyectando ciudad y 'almacen' AS tipo_entidad.",
+            "3. Ordenar por ciudad ASC, tipo_entidad ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_ALMACENES],
+    ),
+
+    # Módulo 8 - Reto 38: Ciudades sin Presencia de Almacenes (EXCEPT)
+    "e0000000-0000-0000-0000-000000000043": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000043",
+        module_id="b0000000-0000-0000-0000-000000000008",
+        title="Ciudades sin Presencia de Almacenes (EXCEPT)",
+        prompt="Expansión comercial busca detectar mercados desabastecidos de infraestructura logística propia. Escribe una consulta utilizando el operador de diferencia de conjuntos EXCEPT que obtenga las ciudades de la tabla clientes que NO existan en la tabla almacenes. Ordena la lista alfabéticamente por ciudad ASC.",
+        initial_code="-- Diferencia de conjuntos con EXCEPT\nSELECT ",
+        solution_query="SELECT ciudad FROM clientes EXCEPT SELECT ciudad FROM almacenes ORDER BY ciudad ASC;",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=38,
+        hints=[
+            "Escribe SELECT ciudad FROM clientes seguido de EXCEPT SELECT ciudad FROM almacenes.",
+            "Agrega ORDER BY ciudad ASC; al final.",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador EXCEPT (o MINUS en otros motores) devuelve todas las tuplas distintas devueltas por la primera consulta que no están presentes en el resultado de la segunda consulta.",
+            syntax="SELECT ciudad FROM clientes\nEXCEPT\nSELECT ciudad FROM almacenes\nORDER BY ciudad ASC;",
+            key_points=[
+                "Aplica la resta de conjuntos del álgebra relacional: A - B.",
+                "Elimina duplicados automáticamente en el conjunto resultante.",
+            ],
+            execution_order_note="⚡ Se generan los dos conjuntos $\to$ EXCEPT sustrae los elementos de B presentes en A $\to$ ORDER BY.",
+        ),
+        objectives=[
+            "1. Seleccionar 'ciudad' de 'clientes'.",
+            "2. Aplicar 'EXCEPT' seleccionando 'ciudad' de 'almacenes'.",
+            "3. Ordenar por 'ciudad ASC'.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_ALMACENES],
+    ),
+
+    # Módulo 8 - Reto 39: Matriz de Cobertura Almacén-Categoría (CROSS JOIN)
+    "e0000000-0000-0000-0000-000000000044": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000044",
+        module_id="b0000000-0000-0000-0000-000000000008",
+        title="Matriz de Cobertura Almacén-Categoría (CROSS JOIN)",
+        prompt="Para la auditoría de cobertura de almacenamiento, el equipo directivo requiere generar la matriz completa de combinaciones posibles entre cada almacén y cada categoría de producto registrada. Escribe una consulta mediante un producto cartesiano explícito (CROSS JOIN) entre las tablas almacenes y categorias, devolviendo nombre_almacen y nombre_categoria. Ordena por nombre_almacen ASC y nombre_categoria ASC.",
+        initial_code="-- Genera el producto cartesiano con CROSS JOIN\nSELECT ",
+        solution_query="SELECT a.nombre_almacen, c.nombre_categoria FROM almacenes a CROSS JOIN categorias c ORDER BY a.nombre_almacen ASC, c.nombre_categoria ASC;",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=39,
+        hints=[
+            "Usa CROSS JOIN entre almacenes a y categorias c.",
+            "Ordena el resultado por a.nombre_almacen ASC, c.nombre_categoria ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="CROSS JOIN genera el producto cartesiano completo entre dos conjuntos: cada tupla de la primera tabla se combina con cada una de las tuplas de la segunda tabla (N x M).",
+            syntax="SELECT a.nombre_almacen, c.nombre_categoria\nFROM almacenes a\nCROSS JOIN categorias c\nORDER BY a.nombre_almacen ASC, c.nombre_categoria ASC;",
+            key_points=[
+                "No requiere cláusula ON porque no impone restricción de claves.",
+                "Es la técnica canónica para generar grillas de combinaciones, matrices de prueba o calendarios.",
+            ],
+            execution_order_note="⚡ Se computa el producto cartesiano de cardinalidad |A| * |B| $\to$ SELECT $\to$ ORDER BY.",
+        ),
+        objectives=[
+            "1. Aplicar CROSS JOIN entre 'almacenes a' y 'categorias c'.",
+            "2. Proyectar 'nombre_almacen' y 'nombre_categoria'.",
+            "3. Ordenar por nombre_almacen ASC, nombre_categoria ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_ALMACENES, SAMPLE_TABLE_CATEGORIAS],
+    ),
+
+    # Módulo 8 - Reto 40: Pares de Productos de la Misma Categoría (SELF JOIN)
+    "e0000000-0000-0000-0000-000000000045": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000045",
+        module_id="b0000000-0000-0000-0000-000000000008",
+        title="Pares de Productos de la Misma Categoría (SELF JOIN)",
+        prompt="El motor de recomendaciones busca sugerir productos alternativos de la misma categoría. Escribe una consulta mediante un auto-cruce (SELF JOIN) sobre la tabla productos (p1 y p2) que empareje artículos que compartan la misma categoria_id, asegurando que p1.producto_id < p2.producto_id (para evitar pares simétricos y descartar emparejamientos consigo mismo). Proyecta p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b, p1.precio AS precio_a y p2.precio AS precio_b. Ordena por p1.categoria_id ASC, producto_a ASC y producto_b ASC.",
+        initial_code="-- Auto-cruce de productos con condición de desigualdad\nSELECT ",
+        solution_query="SELECT p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b, p1.precio AS precio_a, p2.precio AS precio_b FROM productos p1 INNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id ORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC;",
+        xp_reward=55,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=40,
+        hints=[
+            "Une productos p1 con productos p2 en ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id.",
+            "Ordena por p1.categoria_id ASC, producto_a ASC, producto_b ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="Un SELF JOIN relaciona una tabla consigo misma tratándola como dos instancias relacionales separadas mediante alias distintos. La desigualdad estricta (<) previene pares espejo (A,B y B,A) y auto-emparejamientos (A,A).",
+            syntax="SELECT p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b\nFROM productos p1\nINNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id\nORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC;",
+            key_points=[
+                "Los alias p1 y p2 son indispensables para que el motor distinga a cuál instancia corresponde cada atributo.",
+                "El filtro 'p1.id < p2.id' es el patrón matemático clásico para combinaciones sin repetición.",
+            ],
+            execution_order_note="⚡ La tabla se instancia virtualmente dos veces y se filtra por categoría idéntica y clave menor estricta.",
+        ),
+        objectives=[
+            "1. Realizar SELF JOIN sobre 'productos' usando alias p1 y p2.",
+            "2. Unir por 'p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id'.",
+            "3. Proyectar categoria_id, producto_a, producto_b, precio_a, precio_b.",
+            "4. Ordenar por categoria_id ASC, producto_a ASC, producto_b ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS],
+    ),
+
     # =========================================================================
     # RUTA 3: Advanced Queries (Módulos 8 al 11)
     # =========================================================================
@@ -1029,7 +1498,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     # Módulo 8 - Reto 14: Subconsultas Escalares
     "e0000000-0000-0000-0000-000000000015": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000015",
-        module_id="c0000000-0000-0000-0000-000000000008",
+        module_id="c0000000-0000-0000-0000-000000000009",
         title="Productos sobre el Promedio de Precio",
         prompt="Estrategia de precios necesita listar los productos que se venden por encima de la media del catálogo completo. Escribe una consulta que devuelva el nombre_producto y su precio para aquellos artículos cuyo precio sea estrictamente superior al promedio global de precios de la tabla productos. Ordena por precio de mayor a menor.",
         initial_code="-- Usa una subconsulta para comparar con el promedio global\nSELECT ",
@@ -1062,7 +1531,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     # Módulo 9 - Reto 42: Expresiones Condicionales (CASE WHEN)
     "e0000000-0000-0000-0000-000000000016": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000016",
-        module_id="c0000000-0000-0000-0000-000000000009",
+        module_id="c0000000-0000-0000-0000-000000000010",
         title="Segmentación de Pedidos por Monto",
         prompt="Finanzas desea clasificar los pedidos según su cuantía para priorizar la logística. Escribe una consulta que devuelva el pedido_id, el total del pedido y una columna llamada segmento calculada de la siguiente forma: si total >= 1000 asigna 'Alto Valor', si total >= 300 asigna 'Medio Valor', y en cualquier otro caso 'Bajo Valor'. Ordena por total descendente.",
         initial_code="-- Clasifica los pedidos en tres segmentos según su monto\nSELECT ",
@@ -1070,7 +1539,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=42,
+        sort_order=44,
         hints=[
             "Usa la sintaxis: CASE WHEN condicion1 THEN valor1 WHEN condicion2 THEN valor2 ELSE valor_defecto END AS segmento.",
             "Recuerda ordenar con ORDER BY total DESC.",
@@ -1095,7 +1564,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     # Módulo 10 - Reto 43: Common Table Expressions (CTEs)
     "e0000000-0000-0000-0000-000000000017": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000017",
-        module_id="c0000000-0000-0000-0000-000000000010",
+        module_id="c0000000-0000-0000-0000-000000000011",
         title="Facturación por Categoría mediante CTE",
         prompt="Para la junta directiva, prepara un informe de facturación por categoría usando una Common Table Expression (CTE). Define una expresión WITH llamada ventas_por_categoria que sume (cantidad * precio_unitario) agrupando por el nombre_categoria, y luego selecciona nombre_categoria y facturacion ordenados de mayor a menor facturación.",
         initial_code="-- Estructura la consulta analítica usando WITH ... AS\nWITH ",
@@ -1103,7 +1572,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=60,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=43,
+        sort_order=46,
         hints=[
             "Inicia con WITH ventas_por_categoria AS ( ... )",
             "Dentro del CTE, cruza categorias, productos y detalle_pedidos y agrupa por c.nombre_categoria.",
@@ -1129,7 +1598,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     # Módulo 11 - Reto 44: Window Functions (ROW_NUMBER)
     "e0000000-0000-0000-0000-000000000007": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000007",
-        module_id="c0000000-0000-0000-0000-000000000011",
+        module_id="c0000000-0000-0000-0000-000000000012",
         title="Ranking de Productos por Precio (ROW_NUMBER)",
         prompt="El área de pricing desea clasificar los productos del más caro al más económico. Devuelve el producto_id, nombre_producto, precio y una columna llamada ranking con la posición de cada producto del más caro al más barato.",
         initial_code="-- Emplea ROW_NUMBER() OVER (...)\nSELECT ",
@@ -1137,7 +1606,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=44,
+        sort_order=48,
         hints=["Usa la función ventana ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking."],
         concept=ExerciseConcept(
             summary="Las funciones ventana (Window Functions) realizan cálculos a través de particiones de tuplas sin colapsar el resultado en una sola fila. ROW_NUMBER() numera secuencialmente cada registro según la cláusula OVER (ORDER BY ...).",
@@ -1159,7 +1628,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     # Módulo 11 - Reto 45: Window Functions (DENSE_RANK & PARTITION BY)
     "e0000000-0000-0000-0000-000000000018": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000018",
-        module_id="c0000000-0000-0000-0000-000000000011",
+        module_id="c0000000-0000-0000-0000-000000000012",
         title="Ranking Relativo por Categoría (DENSE_RANK)",
         prompt="Análisis de surtido necesita clasificar los artículos dentro de cada categoría según su precio. Escribe una consulta que devuelva categoria_id, nombre_producto, precio y una columna analítica llamada ranking_categoria usando DENSE_RANK() con partición por categoria_id y orden descendente de precio. Ordena el resultado final por categoria_id ASC y ranking_categoria ASC.",
         initial_code="-- Usa DENSE_RANK() particionado por categoria_id\nSELECT ",

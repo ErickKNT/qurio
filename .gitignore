@@ -42,7 +42,9 @@ wheels/
 .coverage
 htmlcov/
 
-# Editor & OS
+# Scratch / Temporary Scripts
+scratch/
+
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
