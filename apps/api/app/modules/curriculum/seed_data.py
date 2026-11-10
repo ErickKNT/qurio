@@ -1657,4 +1657,174 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         ],
         sample_tables=[SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
     ),
+
+    # Módulo 9 - Reto 42: Clientes con Pedidos de Alto Monto (IN Subquery)
+    "e0000000-0000-0000-0000-000000000046": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000046",
+        module_id="c0000000-0000-0000-0000-000000000009",
+        title="Clientes con Pedidos de Alto Monto (IN Subquery)",
+        prompt="El equipo de cuentas VIP necesita identificar a todos los clientes que han realizado al menos una orden de compra de alto valor (total >= 1000). Escribe una consulta sobre la tabla clientes que proyecte cliente_id, nombre, apellido y email, filtrando con una subconsulta no correlacionada mediante el operador IN sobre la tabla pedidos. Ordena por cliente_id ASC.",
+        initial_code="-- Filtra clientes con una subconsulta en IN\nSELECT ",
+        solution_query="SELECT cliente_id, nombre, apellido, email FROM clientes WHERE cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000) ORDER BY cliente_id ASC;",
+        xp_reward=55,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=42,
+        hints=[
+            "En la cláusula WHERE usa: cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000).",
+            "Proyecta cliente_id, nombre, apellido y email.",
+            "Ordena los resultados con ORDER BY cliente_id ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador IN combinado con una subconsulta evalúa si el valor de un atributo pertenece al conjunto de valores devuelto por la subconsulta interna.",
+            syntax="SELECT cliente_id, nombre, email\nFROM clientes\nWHERE cliente_id IN (\n    SELECT cliente_id FROM pedidos WHERE total >= 1000\n)\nORDER BY cliente_id ASC;",
+            key_points=[
+                "La subconsulta interna se ejecuta una sola vez y genera un conjunto estático de identificadores en memoria.",
+                "Es equivalente a una lista fija de valores pero generada dinámicamente según el estado de la base de datos.",
+            ],
+            execution_order_note="⚡ La subconsulta interna genera el conjunto de cliente_id $\to$ WHERE evalúa la pertenencia para cada cliente.",
+        ),
+        objectives=[
+            "1. Construir la subconsulta para pedidos con total >= 1000.",
+            "2. Filtrar clientes usando WHERE cliente_id IN (subconsulta).",
+            "3. Proyectar cliente_id, nombre, apellido, email y ordenar por cliente_id ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    # Módulo 9 - Reto 43: Comprobación de Existencia Eficiente (EXISTS)
+    "e0000000-0000-0000-0000-000000000047": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000047",
+        module_id="c0000000-0000-0000-0000-000000000009",
+        title="Comprobación de Existencia Eficiente (EXISTS)",
+        prompt="Marketing busca premiar a los usuarios activos con compras confirmadas. Escribe una consulta sobre la tabla clientes que obtenga cliente_id, nombre y apellido para aquellos usuarios que tengan al menos una orden registrada con estado_pedido = 'completado'. Emplea una subconsulta correlacionada con el operador EXISTS (comprobando p.cliente_id = c.cliente_id) y ordena por cliente_id ASC.",
+        initial_code="-- Subconsulta correlacionada con EXISTS\nSELECT ",
+        solution_query="SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado') ORDER BY c.cliente_id ASC;",
+        xp_reward=55,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=43,
+        hints=[
+            "Usa WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado').",
+            "Proyecta c.cliente_id, c.nombre, c.apellido.",
+            "Finaliza con ORDER BY c.cliente_id ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="El operador EXISTS evalúa si una subconsulta correlacionada devuelve al menos una fila. Posee cortocircuito booleano (short-circuit), deteniendo la búsqueda en cuanto encuentra la primera coincidencia.",
+            syntax="SELECT c.cliente_id, c.nombre\nFROM clientes c\nWHERE EXISTS (\n    SELECT 1 FROM pedidos p\n    WHERE p.cliente_id = c.cliente_id AND p.estado = 'completado'\n)\nORDER BY c.cliente_id ASC;",
+            key_points=[
+                "SELECT 1 en la subconsulta es la convención canónica porque a EXISTS solo le importa la existencia de filas, no los valores de columnas.",
+                "En grandes volúmenes de datos con índices adecuados, EXISTS suele superar el rendimiento de IN y JOIN cuando no se requieren columnas de la tabla relacionada.",
+            ],
+            execution_order_note="⚡ Por cada fila de clientes externa, el motor evalúa la subconsulta y se detiene tan pronto como encuentra una coincidencia.",
+        ),
+        objectives=[
+            "1. Emplear EXISTS con SELECT 1.",
+            "2. Correlacionar 'p.cliente_id = c.cliente_id' y filtrar 'p.estado_pedido = \'completado\' '.",
+            "3. Proyectar cliente_id, nombre, apellido y ordenar por cliente_id ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    # Módulo 10 - Reto 45: Pivoteo Manual de Ventas por Estado (Conditional Aggregation)
+    "e0000000-0000-0000-0000-000000000048": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000048",
+        module_id="c0000000-0000-0000-0000-000000000010",
+        title="Pivoteo Manual de Ventas por Estado (Conditional Aggregation)",
+        prompt="Control de gestión necesita un cuadro de mando que desglose el importe monetario acumulado de cada cliente según el estado de la compra. Escribe una consulta sobre la tabla pedidos que devuelva cliente_id, la suma de compras completadas bajo el alias ventas_completadas (sumando total cuando estado_pedido = 'completado', de lo contrario 0) y la suma de compras pendientes bajo ventas_pendientes (sumando total cuando estado_pedido = 'pendiente', de lo contrario 0). Agrupa por cliente_id y ordena por cliente_id ASC.",
+        initial_code="-- Agregación condicional con CASE dentro de SUM\nSELECT ",
+        solution_query="SELECT cliente_id, SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas, SUM(CASE WHEN estado_pedido = 'pendiente' THEN total ELSE 0 END) AS ventas_pendientes FROM pedidos GROUP BY cliente_id ORDER BY cliente_id ASC;",
+        xp_reward=60,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=45,
+        hints=[
+            "Escribe SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas.",
+            "Escribe SUM(CASE WHEN estado_pedido = 'pendiente' THEN total ELSE 0 END) AS ventas_pendientes.",
+            "Agrupa por cliente_id y ordena por cliente_id ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="La agregación condicional (Conditional Aggregation) anida expresiones CASE dentro de funciones agregadas como SUM() o COUNT(), transformando valores categóricos en columnas métricas independientes (técnica clásica de pivoteo).",
+            syntax="SELECT cliente_id,\n       SUM(CASE WHEN estado = 'A' THEN monto ELSE 0 END) AS total_a,\n       SUM(CASE WHEN estado = 'B' THEN monto ELSE 0 END) AS total_b\nFROM pedidos\nGROUP BY cliente_id\nORDER BY cliente_id ASC;",
+            key_points=[
+                "Permite transponer filas a columnas sin depender de extensiones propietarias como tablefunc/crosstab.",
+                "La cláusula ELSE 0 previene la propagación de nulos al acumular sumas numéricas.",
+            ],
+            execution_order_note="⚡ Por cada fila se evalúa el CASE $\to$ SUM acumula el valor condicional para el grupo.",
+        ),
+        objectives=[
+            "1. Anidar CASE dentro de SUM para 'completado' y 'pendiente'.",
+            "2. Asignar los alias 'ventas_completadas' y 'ventas_pendientes'.",
+            "3. Agrupar por 'cliente_id' y ordenar por 'cliente_id ASC'.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    # Módulo 11 - Reto 47: CTEs Múltiples Encadenadas (Pipeline de Datos)
+    "e0000000-0000-0000-0000-000000000049": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000049",
+        module_id="c0000000-0000-0000-0000-000000000011",
+        title="CTEs Múltiples Encadenadas (Pipeline de Datos)",
+        prompt="Dirección comercial requiere un pipeline analítico para identificar clientes que superen el gasto medio global. Define dos Common Table Expressions (CTEs): la primera, llamada gasto_clientes, debe calcular cliente_id y SUM(total) AS total_gastado agrupando por cliente_id en pedidos. La segunda, llamada promedio_general, debe calcular AVG(total_gastado) AS gasto_medio a partir de gasto_clientes. Finalmente, consulta gasto_clientes y promedio_general para proyectar cliente_id y total_gastado de aquellos clientes con total_gastado estrictamente superior a gasto_medio. Ordena por total_gastado DESC.",
+        initial_code="-- Encadena dos CTEs separadas por coma\nWITH ",
+        solution_query="WITH gasto_clientes AS (SELECT cliente_id, SUM(total) AS total_gastado FROM pedidos GROUP BY cliente_id), promedio_general AS (SELECT AVG(total_gastado) AS gasto_medio FROM gasto_clientes) SELECT g.cliente_id, g.total_gastado FROM gasto_clientes g, promedio_general p WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC;",
+        xp_reward=60,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=47,
+        hints=[
+            "Declara WITH gasto_clientes AS (...), promedio_general AS (...) separadas por coma sin repetir la palabra WITH.",
+            "En la segunda CTE calcula AVG(total_gastado) AS gasto_medio a partir de gasto_clientes.",
+            "En la consulta final filtra WHERE g.total_gastado > p.gasto_medio y ordena por g.total_gastado DESC;",
+        ],
+        concept=ExerciseConcept(
+            summary="Es posible encadenar múltiples CTEs separadas por comas bajo una única cláusula WITH. Cada CTE puede referenciar a las CTEs declaradas previamente, creando un pipeline analítico limpio y modular.",
+            syntax="WITH cte_1 AS (\n    SELECT ...\n),\ncte_2 AS (\n    SELECT ... FROM cte_1\n)\nSELECT ... FROM cte_1, cte_2 WHERE ...;",
+            key_points=[
+                "Las CTEs encadenadas se evalúan secuencialmente en el alcance léxico de la consulta.",
+                "Evitan anidamientos ilegibles de subconsultas profundas y facilitan la depuración paso a paso.",
+            ],
+            execution_order_note="⚡ cte_1 calcula los totales por cliente $\to$ cte_2 calcula el promedio $\to$ query principal filtra y ordena.",
+        ),
+        objectives=[
+            "1. Declarar 'gasto_clientes' con el total gastado por cliente.",
+            "2. Declarar 'promedio_general' calculando el promedio a partir de la primera CTE.",
+            "3. Filtrar en la consulta final 'total_gastado > gasto_medio' y ordenar DESC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    # Módulo 12 - Reto 50: Análisis de Intervalo Temporal entre Pedidos (LAG)
+    "e0000000-0000-0000-0000-000000000050": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000050",
+        module_id="c0000000-0000-0000-0000-000000000012",
+        title="Análisis de Intervalo Temporal entre Pedidos (LAG)",
+        prompt="El equipo de retención de clientes desea estudiar el comportamiento de recompra. Escribe una consulta sobre la tabla pedidos que proyecte pedido_id, cliente_id, fecha_pedido y el valor del pedido cronológicamente anterior del mismo cliente bajo el alias fecha_pedido_anterior, calculado mediante la función de ventana LAG(fecha_pedido) particionando por cliente_id y ordenando por fecha_pedido ASC. Ordena los resultados finales por cliente_id ASC y fecha_pedido ASC.",
+        initial_code="-- Emplea LAG() OVER (PARTITION BY ... ORDER BY ...)\nSELECT ",
+        solution_query="SELECT pedido_id, cliente_id, fecha_pedido, LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior FROM pedidos ORDER BY cliente_id ASC, fecha_pedido ASC;",
+        xp_reward=60,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=50,
+        hints=[
+            "Usa LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior.",
+            "Proyecta pedido_id, cliente_id, fecha_pedido y fecha_pedido_anterior.",
+            "Ordena la salida con ORDER BY cliente_id ASC, fecha_pedido ASC;",
+        ],
+        concept=ExerciseConcept(
+            summary="La función analítica de ventana LAG() permite acceder a los datos de una fila anterior dentro de la misma partición sin necesidad de recurrir a costosos auto-cruces (SELF JOINs).",
+            syntax="SELECT pedido_id, cliente_id, fecha_pedido,\n       LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_anterior\nFROM pedidos\nORDER BY cliente_id ASC, fecha_pedido ASC;",
+            key_points=[
+                "PARTITION BY cliente_id reinicia la ventana para cada comprador, evitando comparar fechas de clientes distintos.",
+                "Para el primer pedido de cada cliente, LAG() devuelve NULL al no existir un antecesor.",
+            ],
+            execution_order_note="⚡ Se particionan los pedidos por cliente $\to$ se ordenan temporalmente $\to$ LAG proyecta la fecha anterior.",
+        ),
+        objectives=[
+            "1. Emplear LAG(fecha_pedido) con PARTITION BY cliente_id y ORDER BY fecha_pedido ASC.",
+            "2. Nombrar el cálculo como 'fecha_pedido_anterior'.",
+            "3. Ordenar el resultado final por cliente_id ASC, fecha_pedido ASC.",
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
 }

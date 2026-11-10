@@ -1,23 +1,23 @@
 # Graph Report - Qurio  (2026-11-09)
 
 ## Corpus Check
-- 147 files · ~206,554 words
+- 137 files · ~202,893 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 3, .example 2, .ini 1)
 
 ## Summary
-- 1540 nodes · 2365 edges · 93 communities (77 shown, 16 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 165 edges (avg confidence: 0.95)
+- 1523 nodes · 2322 edges · 95 communities (76 shown, 19 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 166 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `eb6d7411`
+- Built from commit: `2ef26893`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- react
-- App.tsx
+- cn
+- api.ts
 - Docker Sandbox Infrastructure
 - package.json
 - Supabase Cloud Authentication Context
@@ -25,8 +25,8 @@
 - TypeScript Web Compilation Configuration
 - Curriculum Repository and Settings
 - test_security.py
-- supabase.py
-- Badge
+- router.py
+- types/index.ts
 - AuthenticatedUser
 - evaluate_solution
 - FastAPI Application Lifespan
@@ -38,7 +38,7 @@
 - Agent Workflow Automation Shell
 - PostgreSQL Docker Sandbox
 - Hardening Controls
-- 3. Registro Cronológico de Entradas
+- App.tsx
 - Qurio — Plataforma Interactiva de Aprendizaje SQL & Analítica Relacional
 - Qurio — Product Requirements Document (PRD)
 - Qurio — Software Architecture Document (SAD)
@@ -46,7 +46,7 @@
 - Test-Driven Development
 - Context Engineering
 - test_auth.py
-- router.py
+- decode_jwt_token
 - Git Workflow and Versioning
 - Optimization Patterns
 - Shipping and Launch
@@ -74,14 +74,14 @@
 - DESIGN.md
 - Source-Driven Development
 - Refinement & Evaluation Criteria
-- cn
+- Settings
 - SQL Academy --- Propuesta de producto y arquitectura del MVP
-- DashboardLayout.tsx
+- test_guest_rate_limit
 - useTheme.tsx
 - Ideation Frameworks Reference
 - Ponytail Help
 - InMemoryRateLimiter
-- security.py
+- conftest.py
 - Modalidades de aprendizaje
 - 4. Arquitectura técnica
 - 1. Fases del Proyecto
@@ -92,6 +92,8 @@
 - sqlCompleter.ts
 - Bitácora de Desarrollo — Qurio
 - ponytail-debt/SKILL.md
+- Achievement
+- TableSchemaInfo
 - 15. Documentación técnica que debe elaborarse
 - 6. Motor de evaluación SQL
 - Declaración de Intención: Qurio MVP
@@ -107,14 +109,16 @@
 2. `react` - 36 edges
 3. `Badge()` - 35 edges
 4. `Button` - 34 edges
-5. `validate_sql_security()` - 28 edges
-6. `3. Registro Cronológico de Entradas` - 28 edges
+5. `3. Registro Cronológico de Entradas` - 29 edges
+6. `validate_sql_security()` - 28 edges
 7. `evaluate_solution()` - 26 edges
 8. `lucide-react` - 26 edges
 9. `App()` - 25 edges
 10. `EvaluationStatus` - 20 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `[2026-11-09] — Entrada 20: Fase 10 — Expansión Curricular Integral a 50 Retos (Rutas 1, 2 y 3)` --references--> `validate_sql_security()`  [INFERRED]
+  docs/BITACORA.md → apps/api/app/modules/runner/security.py
 - `Entrada 24 — Generación del Grafo de Conocimiento y Visualización Interactiva con Graphify` --references--> `evaluate_solution()`  [INFERRED]
   docs/BITACORA.md → apps/api/app/modules/runner/evaluator.py
 - `Entrada 24 — Generación del Grafo de Conocimiento y Visualización Interactiva con Graphify` --references--> `validate_sql_security()`  [INFERRED]
@@ -123,21 +127,19 @@
   docs/BITACORA.md → apps/api/app/modules/runner/security.py
 - `2.2 Conservación del Índice Único Parcial en el Procedimiento de Rollback` --references--> `test_rollback_script_preserves_strict_security()`  [INFERRED]
   docs/security/SECURITY_REMEDIATION_RESULTS.md → apps/api/tests/test_supabase_migration.py
-- `[2026-11-09] — Entrada 16: Corrección Integral de Tema (ThemeProvider y Mutación Síncrona DOM)` --references--> `App()`  [INFERRED]
-  docs/BITACORA.md → apps/web/src/App.tsx
 
 ## Import Cycles
 - None detected.
 
-## Communities (93 total, 16 thin omitted)
+## Communities (95 total, 19 thin omitted)
 
-### Community 0 - "react"
-Cohesion: 0.10
-Nodes (26): BadgeProps, ButtonProps, RadioTabProps, TextInputProps, AchievementCardProps, ICON_MAP, AuthModalProps, AuthMode (+18 more)
+### Community 0 - "cn"
+Cohesion: 0.05
+Nodes (112): App(), Badge(), BadgeProps, Button, ButtonProps, KbdShortcut(), KbdShortcutProps, RadioTab() (+104 more)
 
-### Community 1 - "App.tsx"
-Cohesion: 0.07
-Nodes (42): AppPath, ModuleAccordionProps, SchemaTableItemProps, TrackCardProps, DataGridResultsProps, ExerciseSpecPanelProps, SpecTab, SqlPlaygroundViewProps (+34 more)
+### Community 1 - "api.ts"
+Cohesion: 0.13
+Nodes (12): ApiError, DEFAULT_QUERY_HISTORY, SAMPLE_TABLE_ALMACENES, SAMPLE_TABLE_CATEGORIAS, SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_DETALLE_PEDIDOS, SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_INVENTARIO (+4 more)
 
 ### Community 2 - "Docker Sandbox Infrastructure"
 Cohesion: 0.05
@@ -145,11 +147,11 @@ Nodes (42): build, container_name, depends_on, environment, networks, ports, res
 
 ### Community 3 - "package.json"
 Cohesion: 0.06
-Nodes (39): dependencies, clsx@^2.1.1, lucide-react@^1.16.0, @monaco-editor/react@^4.7.0, react@^18.3.1, react-dom@^18.3.1, @supabase/supabase-js@^2.49.1, tailwind-merge@^2.6.0 (+31 more)
+Nodes (38): dependencies, clsx@^2.1.1, lucide-react@^1.16.0, @monaco-editor/react@^4.7.0, react@^18.3.1, react-dom@^18.3.1, @supabase/supabase-js@^2.49.1, tailwind-merge@^2.6.0 (+30 more)
 
 ### Community 4 - "Supabase Cloud Authentication Context"
-Cohesion: 0.20
-Nodes (13): UserProfileViewProps, AuthContext, AuthContextType, ExerciseAttemptData, persistence, isSupabaseConfigured, rawUrl, supabase (+5 more)
+Cohesion: 0.23
+Nodes (12): AuthContext, AuthContextType, ExerciseAttemptData, persistence, isSupabaseConfigured, rawUrl, supabase, supabaseAnonKey (+4 more)
 
 ### Community 5 - "test_integration.py"
 Cohesion: 0.36
@@ -160,24 +162,24 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, lib, module, moduleResolution, noEmit (+11 more)
 
 ### Community 7 - "Curriculum Repository and Settings"
-Cohesion: 0.15
-Nodes (5): Settings, ExerciseRepository, ExerciseConcept, ExerciseDetail, SampleTableData
+Cohesion: 0.25
+Nodes (4): ExerciseRepository, ExerciseConcept, ExerciseDetail, SampleTableData
 
 ### Community 8 - "test_security.py"
 Cohesion: 0.07
-Nodes (28): enforce_row_limit(), strip_sql_comments(), validate_sql_security(), test_all_curriculum_queries_pass_security(), test_allow_parenthesized_subqueries(), test_allow_recursive_cte(), test_allow_set_operations_union_intersect_except(), test_block_alter_table() (+20 more)
+Nodes (28): inspect_pedagogical_requirements(), enforce_row_limit(), strip_sql_comments(), validate_sql_security(), test_all_curriculum_queries_pass_security(), test_allow_parenthesized_subqueries(), test_allow_recursive_cte(), test_allow_set_operations_union_intersect_except() (+20 more)
 
-### Community 10 - "Badge"
-Cohesion: 0.23
-Nodes (22): App(), Badge(), Button, AchievementCard(), AuthModal(), ModuleAccordion(), SchemaTableItem(), TrackCard() (+14 more)
+### Community 10 - "types/index.ts"
+Cohesion: 0.15
+Nodes (12): TrackCardProps, TracksViewProps, AchievementCategory, Difficulty, EvaluationResponse, ExecutionResult, ExerciseConcept, ExerciseHint (+4 more)
 
 ### Community 11 - "AuthenticatedUser"
-Cohesion: 0.19
-Nodes (4): check_rate_limit(), get_client_ip(), execute_playground_query(), submit_exercise_solution()
+Cohesion: 0.22
+Nodes (5): AuthenticatedUser, check_rate_limit(), get_client_ip(), execute_playground_query(), submit_exercise_solution()
 
 ### Community 12 - "evaluate_solution"
-Cohesion: 0.15
-Nodes (19): evaluate_solution(), normalize_cell(), row_to_comparable_tuple(), EvaluationStatus, make_result(), test_evaluator_column_count_mismatch(), test_evaluator_column_name_mismatch(), test_evaluator_database_error() (+11 more)
+Cohesion: 0.08
+Nodes (27): evaluate_solution(), normalize_cell(), row_to_comparable_tuple(), ColumnInfo, DiffResult, EvaluationResponse, EvaluationStatus, ExecutionResult (+19 more)
 
 ### Community 13 - "FastAPI Application Lifespan"
 Cohesion: 0.18
@@ -193,15 +195,15 @@ Nodes (3): get_exercise(), health_check(), list_exercises()
 
 ### Community 16 - "test_supabase_migration.py"
 Cohesion: 0.06
-Nodes (29): create_test_user(), db_conn(), setup_mock_supabase_environment(), test_authoritative_xp_calculation_across_rewards_and_hints(), test_concurrent_different_exercises_no_lost_updates(), test_concurrent_same_exercise_independent_connections(), test_effective_privileges_matrix(), test_first_pass_with_zero_xp_counts_as_passed() (+21 more)
+Nodes (24): create_test_user(), db_conn(), setup_mock_supabase_environment(), test_authoritative_xp_calculation_across_rewards_and_hints(), test_concurrent_different_exercises_no_lost_updates(), test_concurrent_same_exercise_independent_connections(), test_effective_privileges_matrix(), test_first_pass_with_zero_xp_counts_as_passed() (+16 more)
 
 ### Community 29 - "Hardening Controls"
 Cohesion: 0.05
 Nodes (42): Broken Access Control, Broken Authentication, Cross-Site Scripting (XSS), Data Classification, Dependency Audit Triage, Destructive Operations on Derived Paths, File Upload Safety, Hardening Patterns (+34 more)
 
-### Community 30 - "3. Registro Cronológico de Entradas"
-Cohesion: 0.10
-Nodes (25): SuccessModal(), DataGridResults(), ExerciseSpecPanel(), [2026-11-07] — Entrada 01: Inicio, Inspección y Setup de Skills, [2026-11-07] — Entrada 02: Revisión del Sistema de Diseño Visual, [2026-11-07] — Entrada 03: Entrevista de Requerimientos y Declaración de Intención, [2026-11-07] — Entrada 04: Especificación Técnica (PRD y SAD), [2026-11-07] — Entrada 05: Directrices de Autenticidad y Atomic Design Pragmático (+17 more)
+### Community 30 - "App.tsx"
+Cohesion: 0.20
+Nodes (10): AppPath, DataGridResultsProps, UserProfileViewProps, ACHIEVEMENTS_CATALOG, api, FALLBACK_EXERCISES, FALLBACK_TRACKS, ColumnInfo (+2 more)
 
 ### Community 31 - "Qurio — Plataforma Interactiva de Aprendizaje SQL & Analítica Relacional"
 Cohesion: 0.06
@@ -228,12 +230,8 @@ Cohesion: 0.07
 Nodes (28): Anti-Patterns, Common Rationalizations, Compress before dropping, Confusion Management, Context Budget Management, Context Engineering, Context Packing Strategies, Level 1: Rules Files (+20 more)
 
 ### Community 37 - "test_auth.py"
-Cohesion: 0.11
-Nodes (13): AuthenticatedUser, decode_jwt_token(), get_jwk_client(), get_optional_current_user(), get_required_current_user(), ec_key_pair(), make_valid_token(), test_expired_token_raises_401() (+5 more)
-
-### Community 38 - "router.py"
-Cohesion: 0.14
-Nodes (9): inspect_pedagogical_requirements(), ColumnInfo, DiffResult, EvaluationResponse, ExecutionResult, ExerciseSubmitRequest, QueryExecuteRequest, SandboxRunner (+1 more)
+Cohesion: 0.12
+Nodes (10): get_optional_current_user(), get_required_current_user(), ec_key_pair(), make_valid_token(), test_expired_token_raises_401(), test_guest_user_when_no_authorization_header(), test_malformed_header_raises_401(), test_required_user_rejects_guest() (+2 more)
 
 ### Community 39 - "Git Workflow and Versioning"
 Cohesion: 0.07
@@ -343,21 +341,13 @@ Nodes (12): Common Rationalizations, Overview, Red Flags, Retrieval Safety: Trea
 Cohesion: 0.17
 Nodes (11): 1. User Value, 2. Feasibility, 3. Differentiation, Assumption Audit, Core Evaluation Dimensions, Decision Framework, Might Be True (Nice to Have), Must Be True (Dealbreakers) (+3 more)
 
-### Community 66 - "cn"
-Cohesion: 0.22
-Nodes (27): KbdShortcut(), KbdShortcutProps, RadioTab(), TextInput, MetricTile(), SearchInput(), SearchInputProps, StreakPill() (+19 more)
-
 ### Community 67 - "SQL Academy --- Propuesta de producto y arquitectura del MVP"
 Cohesion: 0.17
 Nodes (11): 10. Estructura del repositorio, 11. API inicial, 13. Plan de desarrollo, 16. Decisiones pendientes, 17. Principios del proyecto, 18. Próximo paso recomendado, 3. Rutas de aprendizaje, 7. Seguridad del motor de ejecución (+3 more)
 
-### Community 68 - "DashboardLayout.tsx"
-Cohesion: 0.28
-Nodes (6): GithubIcon(), PrivacyModal(), PrivacyModalProps, DashboardLayoutProps, GithubIcon(), [2026-11-09] — Entrada 14: Fase 6 — Autenticidad, Calidad & Estándares Anti-AI Slop
-
 ### Community 69 - "useTheme.tsx"
-Cohesion: 0.24
-Nodes (8): AuthProvider(), getInitialTheme(), syncDOMWithTheme(), Theme, ThemeContext, ThemeContextType, ThemeProvider(), Entrada 23 — Arquitectura Canónica de Autenticación React (AuthProvider), Inicio y Cierre de Sesión Real
+Cohesion: 0.27
+Nodes (7): AuthProvider(), getInitialTheme(), syncDOMWithTheme(), Theme, ThemeContext, ThemeContextType, ThemeProvider()
 
 ### Community 70 - "Ideation Frameworks Reference"
 Cohesion: 0.22
@@ -376,8 +366,8 @@ Cohesion: 0.29
 Nodes (7): 4. Arquitectura técnica, A. Application Database, Arquitectura lógica, B. SQL Execution Engine, Enfoque arquitectónico, Separación de bases de datos, Stack tecnológico
 
 ### Community 76 - "1. Fases del Proyecto"
-Cohesion: 0.25
-Nodes (7): 1. Fases del Proyecto, Fase 1: Cimientos de Datos & Docker (`feat/database-and-docker-infra`), Fase 2: Motor de Ejecución y Evaluación (`feat/fastapi-runner-evaluator`), Fase 4: Flujo End-to-End del Ejercicio (`feat/exercise-ide-flow`), Fase 5: Rutas, Playground y Gamificación (`feat/curriculum-and-gamification`), Fase 6: Autenticidad, Pulido y Despliegue (`feat/authenticity-and-polish`), Plan de Implementación General — Qurio MVP
+Cohesion: 0.29
+Nodes (6): 1. Fases del Proyecto, Fase 1: Cimientos de Datos & Docker (`feat/database-and-docker-infra`), Fase 2: Motor de Ejecución y Evaluación (`feat/fastapi-runner-evaluator`), Fase 5: Rutas, Playground y Gamificación (`feat/curriculum-and-gamification`), Fase 6: Autenticidad, Pulido y Despliegue (`feat/authenticity-and-polish`), Plan de Implementación General — Qurio MVP
 
 ### Community 77 - "ponytail-audit/SKILL.md"
 Cohesion: 0.40
@@ -396,8 +386,8 @@ Cohesion: 0.40
 Nodes (4): Before you write, Levels, Ponytail, The smallest complete change
 
 ### Community 81 - "sqlCompleter.ts"
-Cohesion: 0.60
-Nodes (4): extractTableAliases(), registerSqlCompletionProvider(), SQL_KEYWORDS, [2026-11-09] — Entrada 20: Autocompletado Inteligente en Monaco Editor y Resolución de Alias SQL
+Cohesion: 0.47
+Nodes (5): extractTableAliases(), registerSqlCompletionProvider(), SQL_KEYWORDS, ECOMMERCE_TABLES_SCHEMA, [2026-11-09] — Entrada 20: Autocompletado Inteligente en Monaco Editor y Resolución de Alias SQL
 
 ### Community 82 - "Bitácora de Desarrollo — Qurio"
 Cohesion: 0.40
@@ -406,6 +396,14 @@ Nodes (4): 1. Estado Actual del Proyecto, 2. Tablero de Control de Fases, 4. Est
 ### Community 83 - "ponytail-debt/SKILL.md"
 Cohesion: 0.50
 Nodes (3): Boundaries, Output, Scan
+
+### Community 84 - "Achievement"
+Cohesion: 0.67
+Nodes (3): AchievementCardProps, AchievementsViewProps, Achievement
+
+### Community 85 - "TableSchemaInfo"
+Cohesion: 0.67
+Nodes (3): SchemaTableItemProps, SqlPlaygroundViewProps, TableSchemaInfo
 
 ### Community 87 - "15. Documentación técnica que debe elaborarse"
 Cohesion: 0.50
@@ -441,23 +439,23 @@ Nodes (3): 9. Alcance del MVP, Fuera del MVP, Incluido
 
 ## Knowledge Gaps
 - **3 isolated node(s):** `Pragmatic Atomic Design`, `Supabase Cloud Authentication & Persistence`, `PostgreSQL Docker Sandbox`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 973 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 972 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Entrada 24 — Generación del Grafo de Conocimiento y Visualización Interactiva con Graphify` connect `Badge` to `test_security.py`, `cn`, `evaluate_solution`, `3. Registro Cronológico de Entradas`?**
-  _High betweenness centrality (0.093) - this node is a cross-community bridge._
+- **Why does `Entrada 24 — Generación del Grafo de Conocimiento y Visualización Interactiva con Graphify` connect `cn` to `test_security.py`, `evaluate_solution`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
 - **Are the 5 inferred relationships involving `Badge()` (e.g. with `[2026-11-08] — Entrada 09: Fase 3 — Frontend Base & Atomic Design Pragmático` and `Entrada 24 — Generación del Grafo de Conocimiento y Visualización Interactiva con Graphify`) actually correct?**
   _`Badge()` has 5 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Pragmatic Atomic Design`, `Supabase Cloud Authentication & Persistence`, `PostgreSQL Docker Sandbox` to the rest of the system?**
   _3 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `react` be split into smaller, more focused modules?**
-  _Cohesion score 0.10017730496453901 - nodes in this community are weakly interconnected._
-- **Why does `evaluate_solution()` connect `evaluate_solution` to `Badge`, `AuthenticatedUser`, `router.py`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
-- **Should `App.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.06857142857142857 - nodes in this community are weakly interconnected._
-- **Why does `validate_sql_security()` connect `test_security.py` to `security.py`, `Badge`, `router.py`?**
-  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Should `cn` be split into smaller, more focused modules?**
+  _Cohesion score 0.05148005148005148 - nodes in this community are weakly interconnected._
+- **Why does `evaluate_solution()` connect `evaluate_solution` to `test_security.py`, `router.py`, `AuthenticatedUser`, `cn`?**
+  _High betweenness centrality (0.048) - this node is a cross-community bridge._
+- **Should `api.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
+- **Why does `validate_sql_security()` connect `test_security.py` to `cn`, `evaluate_solution`?**
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._

@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Hardening de Seguridad & AST (Fase 9) — Concluida**  
+* **Fase Actual:** **Expansión Curricular Piramidal a 50 Retos (Fase 10) — Concluida**  
 * **Próxima Fase:** **Operación, Métricas en Vivo y Nuevas Prácticas**  
-* **Rama Git Activa:** `main` (mergeada y sincronizada en GitHub)  
+* **Rama Git Activa:** `feat/curriculum-expansion-50-exercises` (sincronizada en GitHub)  
 * **Infraestructura Activa:**
   * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
   * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico (26/26 tests pasando).
@@ -32,6 +32,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **+** | **Temas (Claro/Oscuro) & README** | ✅ Concluida | `feat/theme-support-and-readme` | Tokens Tailwind CSS dinámicos, toggle sol/luna, temas Monaco reactivos y README.md exhaustivo. |
 | **7** | **Expansión Curricular (3 Rutas)** | ✅ Concluida | `feat/curriculum-expansion-3-tracks` | 18 ejercicios completos, didáctica SQLBolt, checklist de sub-objetivos interactiva. |
 | **9** | **Hardening de Seguridad & AST** | ✅ Concluida | `main` (vía `security/phase-9-hardening`) | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress en Supabase Cloud. |
+| **10** | **Expansión Curricular Piramidal (50 Retos)** | ✅ Concluida | `feat/curriculum-expansion-50-exercises` | Pirámide completa de 50 retos fundamentados en ISO/IEC 9075:2016 y PostgreSQL 16, 12 módulos, 10 tablas de muestra, 100% verificado en sandbox. |
 
 ---
 
@@ -597,6 +598,41 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * Migración `03_security_hardening.sql` autorizada y aplicada exitosamente en Supabase Cloud por el usuario.
   * Verificación en vivo comprobada: llamadas de clientes anónimos bloqueadas con `42501` y backend certificado con `service_role`.
   * Rama `security/phase-9-hardening` fusionada a `main` y sincronizada en GitHub.
+
+---
+
+### [2026-11-09] — Entrada 20: Fase 10 — Expansión Curricular Integral a 50 Retos (Rutas 1, 2 y 3)
+* **Rama:** `feat/curriculum-expansion-50-exercises`.
+* **Fundamentación Formal & Anti-AI Slop:**
+  * Redacción y publicación de la especificación pedagógica integral en [`docs/CURRICULUM_SPEC.md`](file:///c:/Desarrollo/Qurio/docs/CURRICULUM_SPEC.md).
+  * Todos los 50 retos sustentados en el estándar **ISO/IEC 9075:2016 (SQL Core)**, la documentación oficial de **PostgreSQL 16** y la **Taxonomía de Bloom**.
+  * Cada reto cuenta con `concept` (resumen, sintaxis formal, puntos clave y nota de orden lógico de procesamiento), `objectives` (lista de comprobación interactiva), `hints` (1 a 3 pistas progresivas con penalización porcentual decreciente) y `sample_tables` (10 tablas pedagógicas compartidas).
+* **Distribución Piramidal Entregada:**
+  1. **Ruta 1 — SQL Foundations (22 Retos — 44%):**
+     * Módulo 1: SELECT & Proyecciones de Datos (4 retos: proyecciones atómicas, cálculos con IVA, concatenación `||`, `DISTINCT`).
+     * Módulo 2: Filtrado con WHERE y Operadores Lógicos (6 retos: `>`, `BETWEEN`, `LIKE`, `IN`, `OR`, `AND + <>`).
+     * Módulo 3: Ordenamiento y Paginación (4 retos: `ORDER BY ASC/DESC`, `LIMIT`, multi-criterio, `OFFSET`).
+     * Módulo 4: Agregación y Agrupamiento (8 retos: `COUNT(*)`, métricas ejecutivas, `MIN/MAX`, distribución geográfica, `SUM(stock)`, `HAVING SUM`, `HAVING AVG`, embudo de estados).
+  2. **Ruta 2 — Relational SQL & Joins (18 Retos — 36%):**
+     * Módulo 5: Uniones Fundamentales (INNER JOIN) (5 retos: pedidos-clientes, gasto acumulado, catálogo con categorías, productos-proveedores, facturación con pagos).
+     * Módulo 6: Detección de Ausencias (LEFT JOIN & NULL) (5 retos: clientes inactivos, stock sin ventas, facturas sin cobro, ausencias en almacén central, censo con `COUNT(col)`).
+     * Módulo 7: Consultas Multi-Tabla en Cascada (4 retos: desglose pentagonal, ventas territoriales por categoría, conciliación pedidos-facturas-pagos, trazabilidad física en almacenes).
+     * Módulo 8: Operaciones de Conjunto y Joins Especiales (4 retos: censo unificado con `UNION`, mercados desabastecidos con `EXCEPT`, matriz de distribución con `CROSS JOIN`, pares alternativos con `SELF JOIN`).
+  3. **Ruta 3 — Advanced Queries & Analytics (10 Retos — 20%):**
+     * Módulo 9: Subconsultas Analíticas (3 retos: promedio escalar, clientes VIP con `IN`, comprobación de existencia con `EXISTS`).
+     * Módulo 10: Expresiones Condicionales (CASE WHEN) (2 retos: segmentación de pedidos, pivoteo condicional con `SUM(CASE ...)`).
+     * Módulo 11: Common Table Expressions (CTEs con WITH) (2 retos: facturación modular por categoría, pipeline encadenado de 2 pasos).
+     * Módulo 12: Funciones de Ventana Analíticas (Window Functions) (3 retos: ranking absoluto con `ROW_NUMBER`, ranking relativo particionado con `DENSE_RANK`, análisis cronológico con `LAG`).
+* **Sincronización de Componentes y Código:**
+  * **Backend ([`apps/api/app/modules/curriculum/seed_data.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/seed_data.py)):** Catálogo completo de 50 ejercicios tipados en Pydantic con 10 tablas de muestra y 112 pistas.
+  * **Base de Datos ([`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql)):** DDL de inserción de 3 rutas, 12 módulos, 50 ejercicios y 112 pistas.
+  * **Frontend ([`apps/web/src/lib/api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts)):** Soporte offline completo con las 10 tablas de muestra, 50 ejercicios en `FALLBACK_EXERCISES` y contadores de módulos en `FALLBACK_TRACKS`.
+* **Garantía de Calidad y Resultados de Verificación:**
+  * **Ejecución en Sandbox Docker:** 50/50 consultas ejecutadas contra PostgreSQL Sandbox en el puerto 5433 arrojando cardinalidades no degeneradas ($>0$ filas).
+  * **Validación AST de Seguridad:** 50/50 consultas validadas contra `validate_sql_security` sin falsos positivos.
+  * **Suite Pytest Completa:** **64/64 pruebas pasando en 3.47s** (100% éxito).
+  * **Compilación Frontend Vite:** **0 errores TypeScript** (`tsc && vite build` completado exitosamente).
+  * **Grafo de Conocimiento (Graphify):** Actualizado conforme a la regla del proyecto (`python -m graphify update .`), indexando **1,540 nodos, 2,365 aristas y 93 comunidades**.
 
 
 ---

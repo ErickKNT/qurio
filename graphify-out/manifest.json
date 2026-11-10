@@ -54,9 +54,9 @@
     "semantic_hash": "cb8bd9d3865b2a248fe499d42e588a04"
   },
   "apps/api/app/modules/curriculum/seed_data.py": {
-    "mtime": 1794269534.313905,
-    "seen": 1794269677.4189641,
-    "ast_hash": "c3a934a4bbae351e5fc3b2300b90913f",
+    "mtime": 1794269798.035087,
+    "seen": 1794269921.7526288,
+    "ast_hash": "b7ee7fa513421293e88231854cf8d26e",
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/__init__.py": {
@@ -360,9 +360,9 @@
     "semantic_hash": "501dbefce3bdfe944cecf55933c7a6ee"
   },
   "apps/web/src/lib/api.ts": {
-    "mtime": 1794269616.7124832,
-    "seen": 1794269677.4357316,
-    "ast_hash": "7be9562fe1929742da4fa27ad7e4443a",
+    "mtime": 1794269847.1289036,
+    "seen": 1794269921.7699523,
+    "ast_hash": "f5860cebca47273e022a8eb209a0f725",
     "semantic_hash": ""
   },
   "apps/web/src/lib/persistence.ts": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794265925.606417,
-    "seen": 1794266808.2223392,
-    "ast_hash": "82efe8f53f4999d8e63de27f1b7e305a",
+    "mtime": 1794269908.774747,
+    "seen": 1794269921.7872503,
+    "ast_hash": "9480bdaa925dd1468149e8fc0baf36a1",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -891,66 +891,6 @@
     "mtime": 1794268455.6805842,
     "seen": 1794269020.1295934,
     "ast_hash": "b22ea6e149c2b256d057b79f15b619e1",
-    "semantic_hash": ""
-  },
-  "scratch/apply_tanda2.py": {
-    "mtime": 1794269447.940582,
-    "seen": 1794269677.4392612,
-    "ast_hash": "10bd3c39055c5d1066e15dc36b9496b0",
-    "semantic_hash": ""
-  },
-  "scratch/build_tanda2.py": {
-    "mtime": 1794269279.0519626,
-    "seen": 1794269677.4392645,
-    "ast_hash": "86486ef45d3a221ad789df36d1e6ac38",
-    "semantic_hash": ""
-  },
-  "scratch/check_modules.py": {
-    "mtime": 1794269180.870307,
-    "seen": 1794269677.439267,
-    "ast_hash": "635ace7c5d09e370f50f34b00ad0d248",
-    "semantic_hash": ""
-  },
-  "scratch/generate_sql_tanda2.py": {
-    "mtime": 1794269501.084512,
-    "seen": 1794269677.4392686,
-    "ast_hash": "7e7f404d5d0b3dd92da28c84c9e2c8e7",
-    "semantic_hash": ""
-  },
-  "scratch/inspect_sandbox_data.py": {
-    "mtime": 1794269075.5644364,
-    "seen": 1794269677.4392705,
-    "ast_hash": "c45443d1eeb11e17070e0caa6884184c",
-    "semantic_hash": ""
-  },
-  "scratch/inspect_sandbox_schema.py": {
-    "mtime": 1794269063.2610054,
-    "seen": 1794269677.439272,
-    "ast_hash": "6c3d6b37dd379ef07e5a9dc2be19bfd3",
-    "semantic_hash": ""
-  },
-  "scratch/sync_frontend_api.py": {
-    "mtime": 1794269613.0765433,
-    "seen": 1794269677.4392743,
-    "ast_hash": "9d525b6e5d24fa54a83490e78e04846b",
-    "semantic_hash": ""
-  },
-  "scratch/test_all_45_exercises.py": {
-    "mtime": 1794269469.8426828,
-    "seen": 1794269677.4392762,
-    "ast_hash": "ebc1963d35ec51e4433e843387f7c406",
-    "semantic_hash": ""
-  },
-  "scratch/test_ast_tanda2.py": {
-    "mtime": 1794269149.9806192,
-    "seen": 1794269677.4392781,
-    "ast_hash": "c31659feae3bb690d00949c3bb408cda",
-    "semantic_hash": ""
-  },
-  "scratch/verify_tanda2.py": {
-    "mtime": 1794269111.0144243,
-    "seen": 1794269677.43928,
-    "ast_hash": "2dd2c6d3d4e9f23ef82b8569ac19c9fa",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {
