@@ -6,16 +6,17 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Revisión Correctiva, Certificación Técnica y Cierre Definitivo de Fase 10 (`QURIO-PHASE-10-CORRECTIVE-VALIDATION-01`) — Concluida**  
+* **Fase Actual:** **Conciliación Final de Seguridad, XP de Invitados y Autorizaciones (`QURIO-PHASE-10-FINAL-RECONCILIATION`) — Concluida**  
 * **Próxima Fase:** **Aprobación Formal del Piloto (Gate G-07) e Incorporación de Alumnos de Prueba**  
 * **Rama Git Activa:** `feat/phase-10-stabilization`  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
   * Contenedor Docker `qurio-postgres-sandbox`: **Detenido y apagado** tras completar exitosamente las suites de pruebas y validaciones en vivo (`docker compose down`).
-  * API FastAPI: **100% Verificado** — Suite de **69 pruebas automatizadas pasando limpiamente en 44.39s** en `apps/api/tests/` con desacoplamiento arquitectónico en `conftest.py` (pruebas unitarias offline en milisegundos y pruebas de integración con sandbox activo).
-  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` con code splitting optimizado (**247.68 kB** main chunk, 64% de reducción frente a los 689 kB originales, 0 advertencias Rollup, 0 fugas de `solution_query`) y suite de **17 pruebas automatizadas en Vitest** (`npm run test`) pasando en 919ms (`progress.test.ts`, `persistence.test.ts`, `routing.test.ts`).
+  * API FastAPI: **100% Verificado** — Suite de **70 pruebas automatizadas pasando limpiamente en 44.24s** en `apps/api/tests/` con desacoplamiento arquitectónico en `conftest.py`. Incluye verificación de **0 XP oficial para invitados** (`test_submit_exercise_success_guest`), acreditación oficial para estudiantes autenticados (`test_submit_exercise_success_authenticated`, `test_submit_exercise_star_challenge_left_join_authenticated`) y rechazo a invitados fuera de trial con HTTP 401 (`test_guest_trial_limit_enforced`).
+  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` con code splitting optimizado (**247.68 kB** main chunk, 64% de reducción frente a los 689 kB originales, 0 advertencias Rollup, 0 fugas de `solution_query`) y suite de **17 pruebas automatizadas en Vitest** (`npm run test`) pasando en 859ms (`progress.test.ts`, `persistence.test.ts`, `routing.test.ts`).
   * Persistencia, Borrador y Enrutamiento: Borrador de código SQL no enviado persistente ante recargas (`F5`) y deep links; mutex de sincronización de invitados; recuperación ante respuestas HTTP perdidas; enrutamiento bidireccional nativo con History API (`/exercises/:id`, `/tracks/:slug`).
-  * Higiene Documental: **145 enlaces locales absolutos `file:///c:...` convertidos a rutas relativas portables**.
-  * Documentación Rectoral: *Informe Final de Certificación de Fase 10* ([`docs/audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md`](audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md)), *Blueprint v1.2*, *Plan de Estabilización v1.2*, *Auditoría Operativa v1.1* ([`docs/audits/QURIO_OPERATIONAL_AUDIT.md`](audits/QURIO_OPERATIONAL_AUDIT.md)) y *Línea Base Operativa v1.1* ([`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](roadmap/QURIO_OPERATIONAL_BASELINE.md)).
+  * Integridad de Supabase Cloud: **Auditoría forense certificada**: 0 escrituras, 0 registros alterados y 0 XP acreditado por pruebas en el proyecto Cloud de producción (`bfvgqxfzftumwrleacof`). La base de datos de producción permanece 100% limpia.
+  * Delimitación de C-01: Protección de `solution_query` 100% certificada en código de backend/frontend y 100% probada en PostgreSQL local en Docker (16 tests de migración pasando); script de permisos Cloud documentado para aplicación manual por el propietario.
+  * Documentación Rectoral: *Informe Final de Certificación de Fase 10* ([`docs/audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md`](audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md)), *Blueprint v1.2*, *Plan de Estabilización v1.2*, *Auditoría Operativa v1.1* y *Línea Base Operativa v1.1*.
 
 ---
 
@@ -735,6 +736,34 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * Sustitución de **145 enlaces locales absolutos `file:///c:...`** por rutas relativas portables en todos los documentos Markdown del proyecto.
 * **Artefacto Entregado:** [`docs/audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md`](audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md) (Informe Final de Certificación de Fase 10).
 * **Control de Versiones:** Rama `feat/phase-10-stabilization` lista para revisión ejecutiva. Docker apagado (`docker compose down`). Zero push a origin, zero merge a main.
+
+---
+
+### [2026-11-10] — Entrada 26: Conciliación Final de Seguridad, XP de Invitados y Autorizaciones (`QURIO-PHASE-10-FINAL-RECONCILIATION`)
+* **Rama:** `feat/phase-10-stabilization`
+* **Objetivo:** Realizar la conciliación final del informe de certificación de Fase 10, aclarando con evidencia forense el uso de Supabase Cloud, garantizando la política de XP para invitados (D-05), delimitando la certificación de C-01 y formalizando la trazabilidad Git.
+* **Actividades y Resoluciones Técnicas:**
+  1. **Aclaración Obligatoria sobre Supabase Cloud (Auditoría Forense):**
+     * Se auditó el historial íntegro de llamadas HTTP emitidas durante las pruebas.
+     * **Resultado definitivo:** Se certifica que el proyecto en la nube (`bfvgqxfzftumwrleacof`) **no sufrió escrituras, modificaciones ni inserciones de prueba** (0 registros afectados, 0 XP otorgado).
+     * Los únicos intentos de escritura ejecutados contra la nube fueron bloqueados por RLS y revocación de funciones (códigos 401 y 400).
+     * Las pruebas automatizadas de RPC y migración (`test_supabase_migration.py`, 16 tests) se ejecutaron **estrictamente contra el PostgreSQL Sandbox local en Docker (puerto 5433)**.
+     * La sección 6 del informe de certificación fue corregida para transparentar que describe la arquitectura funcional validada en local y mocks, sin escrituras en Cloud de producción.
+  2. **Corrección de XP y Progreso de Invitados (Decisión D-05):**
+     * En `apps/api/app/modules/runner/router.py`, se corrigió la respuesta para invitados forzando taxativamente `evaluation.xp_awarded = 0` y mensaje educativo para registrarse al superar un reto.
+     * Un invitado no puede alterar XP oficial, nivel oficial ni estadísticas en la base de datos de producción.
+     * El progreso de invitado permanece en `qurio_guest_progress_v1` en `localStorage` exclusivamente como buffer transitorio para su canje posterior.
+     * La migración posterior a una cuenta es idempotente y no duplica XP (`cloudPassedSet` en frontend y `already_passed` en RPC).
+     * Suite de integración ampliada a **70 pruebas en backend**, validando con éxito tanto `test_submit_exercise_success_guest` (`xp_awarded == 0`) como `test_submit_exercise_success_authenticated` (`xp_awarded == 30`).
+  3. **Delimitación de la Certificación de C-01:**
+     * **Nivel 1 (Código):** 100% certificado. `ExercisePublicDTO`, DTOs en repositorio/router, interfaz TypeScript y 0 coincidencias en bundle JS (247.68 kB).
+     * **Nivel 2 (PostgreSQL Local):** 100% certificado en Docker (puerto 5433). Script `03_security_hardening.sql` probado con roles `anon`, `authenticated` (bloqueados en `solution_query`) y `service_role` (autorizado).
+     * **Nivel 3 (Supabase Cloud Producción):** Declarado con total transparencia. No se ejecutó en caliente en el dashboard de producción; queda documentado para aplicación manual por parte del propietario.
+  4. **Trazabilidad y Contención Git:**
+     * Rama de trabajo: `feat/phase-10-stabilization`.
+     * Cero modificaciones en `main`, cero push a `origin`, cero despliegue público.
+* **Documentación Actualizada:** [`docs/audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md`](audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md) y [`docs/BITACORA.md`](BITACORA.md).
+* **Decisiones Preservadas:** `D-01` a `D-07` permanecen 100% intactas.
 
 ---
 

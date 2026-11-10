@@ -170,7 +170,8 @@ async def submit_exercise_solution(
     # 4. Autoridad central del backend para otorgar XP y registrar progreso
     if evaluation.status == EvaluationStatus.PASSED:
         if user.is_guest:
-            # Modo invitado: no persiste en Supabase
+            # Modo invitado: no persiste en Supabase ni otorga XP oficial (D-05)
+            evaluation.xp_awarded = 0
             evaluation.message = (
                 "¡Reto Superado con Éxito en modo invitado! Inicia sesión para guardar tu progreso y ganar XP."
             )

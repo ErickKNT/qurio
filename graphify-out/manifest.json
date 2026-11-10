@@ -72,9 +72,9 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/router.py": {
-    "mtime": 1794336456.5173225,
-    "seen": 1794339135.895564,
-    "ast_hash": "4ccca4fc179c1097c66f1f6ad9933b4f",
+    "mtime": 1794339847.6216323,
+    "seen": 1794340698.3270876,
+    "ast_hash": "92957fa55260060a407df086ca355937",
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/schemas.py": {
@@ -96,8 +96,8 @@
     "semantic_hash": ""
   },
   "apps/api/tests/conftest.py": {
-    "mtime": 1794337855.690091,
-    "seen": 1794339135.896479,
+    "mtime": 1794339269.4879746,
+    "seen": 1794340698.3280284,
     "ast_hash": "b1c5b2e17339620783a172a3b5209017",
     "semantic_hash": ""
   },
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_integration.py": {
-    "mtime": 1794336458.5573914,
-    "seen": 1794339135.8972385,
-    "ast_hash": "bf91c7ae47932d230197f594c424d63f",
+    "mtime": 1794339859.698389,
+    "seen": 1794340698.3286338,
+    "ast_hash": "affc5053199332656bbfa972714dbffd",
     "semantic_hash": ""
   },
   "apps/api/tests/test_security.py": {
@@ -132,8 +132,8 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794338293.9561796,
-    "seen": 1794339135.8994358,
+    "mtime": 1794339269.5916908,
+    "seen": 1794340698.3305936,
     "ast_hash": "0ac82ef7ab828dbe799255851524461a",
     "semantic_hash": ""
   },
@@ -366,8 +366,8 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/persistence.ts": {
-    "mtime": 1794338013.094663,
-    "seen": 1794339135.910896,
+    "mtime": 1794339270.1058357,
+    "seen": 1794340698.3433812,
     "ast_hash": "830e3c4fce345fe1741dd43ad49aaa5b",
     "semantic_hash": ""
   },
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794339116.336984,
-    "seen": 1794339135.927209,
-    "ast_hash": "6eee43a47c99baf2a788bc13447bae8e",
+    "mtime": 1794340685.150182,
+    "seen": 1794340698.3617954,
+    "ast_hash": "27d0a7a7eee5470d3f09139a27a9f6d9",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -966,9 +966,9 @@
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md": {
-    "mtime": 1794339064.611131,
-    "seen": 1794339135.9275196,
-    "ast_hash": "31c1743b6616e15d2689c2030e1d7b63",
+    "mtime": 1794340641.808961,
+    "seen": 1794340698.3634365,
+    "ast_hash": "b79efb6635bf5479da851a5add4ea701",
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_10_STABILIZATION_REPORT.md": {

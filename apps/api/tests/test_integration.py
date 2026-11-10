@@ -74,8 +74,8 @@ async def test_list_and_get_exercises(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_submit_exercise_success(client: AsyncClient):
-    # Ejercicio 1: Catálogo Básico de Productos (SELECT nombre_producto, precio FROM productos)
+async def test_submit_exercise_success_guest(client: AsyncClient):
+    # Ejercicio 1 evaluado como invitado (Trial): aprueba pero NO recibe XP oficial (D-05)
     exercise_id = "e0000000-0000-0000-0000-000000000001"
     payload = {
         "query": "SELECT nombre_producto, precio FROM productos;",
@@ -85,8 +85,32 @@ async def test_submit_exercise_success(client: AsyncClient):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "PASSED"
-    assert data["xp_awarded"] == 30
+    assert data["xp_awarded"] == 0
+    assert "modo invitado" in data["message"].lower()
     assert data["diff"] is None
+
+
+@pytest.mark.asyncio
+async def test_submit_exercise_success_authenticated(client: AsyncClient):
+    # Ejercicio 1 evaluado como usuario autenticado: recibe XP oficial acreditado
+    exercise_id = "e0000000-0000-0000-0000-000000000001"
+    payload = {
+        "query": "SELECT nombre_producto, precio FROM productos;",
+        "hints_revealed": 0
+    }
+    app.dependency_overrides[get_optional_current_user] = lambda: AuthenticatedUser(
+        id="usr_auth_test_123", email="student@qurio.dev", role="authenticated", is_guest=False
+    )
+    try:
+        response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "PASSED"
+        assert data["xp_awarded"] == 30
+        assert "acreditados" in data["message"].lower() or "éxito" in data["message"].lower()
+        assert data["diff"] is None
+    finally:
+        app.dependency_overrides.clear()
 
 
 @pytest.mark.asyncio
