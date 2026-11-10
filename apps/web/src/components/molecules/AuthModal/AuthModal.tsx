@@ -55,6 +55,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const { signIn, signUp, resetPassword, isCloudAuth, isDemoMode } = useAuth();
 
+  React.useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setSignupSuccess(null);
+      setForgotSuccess(null);
+      setFormError(null);
+      setSuccessMessage(null);
+      setShowPassword(false);
+    }
+  }, [isOpen, initialMode]);
+
   if (!isOpen) return null;
 
   const handleClose = () => {

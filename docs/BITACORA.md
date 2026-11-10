@@ -775,3 +775,55 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * Invocaciones autorizadas mediante `service_role` (backend) responden correctamente.
   * Invocaciones no autorizadas mediante `anon` (cliente público) son rechazadas por PostgreSQL con código de error `42501: permission denied for function record_verified_attempt`.
 * Las credenciales se encuentran configuradas de forma segura: `SUPABASE_SERVICE_ROLE_KEY` reside exclusivamente en `apps/api/.env`, mientras que `apps/web/.env` opera únicamente con `VITE_SUPABASE_ANON_KEY`.
+
+---
+
+### Entrada 27: Fase 11 — Preparación y Validación Controlada del Piloto
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (creada a partir de `feat/phase-10-stabilization` en commit `bba65c2`).
+* **Objetivo:** Ejecutar la preparación y validación técnica integral previa al despliegue del piloto controlado con estudiantes reales, cubriendo auditoría de código, auditoría de seguridad perimetral de Supabase Cloud en modo solo lectura, remediación de vulnerabilidades y pruebas E2E en Google Chrome real.
+* **Actividades y Logros Clave:**
+  1. **Auditoría Técnica y Remediación de Vulnerabilidades:**
+     * Se auditó la cadena de suministro de dependencias de frontend: `npm audit` detectó una vulnerabilidad crítica en `dompurify <=3.4.16` (CVE de Cross-Site Scripting y manipulación de anidamientos).
+     * Se aplicó la remediación mediante override en `apps/web/package.json` fijando `dompurify: "^3.4.17"`.
+     * Se verificó con `npm audit --registry=https://registry.npmjs.org`: **0 vulnerabilidades encontradas** sobre 175 paquetes.
+     * En backend, las dependencias en `apps/api/requirements.txt` (FastAPI 0.162, Starlette 1.10, Pydantic 2.14, asyncpg 0.32, sqlglot 30.30, PyJWT 2.15, cryptography 50.0) fueron validadas y certificadas libres de vulnerabilidades.
+  2. **Auditoría de Solo Lectura de Supabase Cloud (`bfvgqxfzftumwrleacof`):**
+     * Se comprobó de forma no invasiva la API REST pública de Cloud utilizando la clave `anon`:
+       * La RPC `record_verified_attempt` está debidamente bloqueada para llamadas directas anónimas (`HTTP 401: 42501 permission denied for function`).
+       * La tabla `exercise_attempts` rechaza lecturas anónimas (`HTTP 401: permission denied for table`).
+       * **Hallazgo Alto (H-01):** La tabla `exercises` en Supabase Cloud aún expone la columna `solution_query` a consultas anónimas directas (`HTTP 200`), dado que el script `03_security_hardening.sql` no ha sido ejecutado por el propietario en el panel en la nube.
+       * Se generó la guía detallada de aplicación en [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md) para que el propietario aplique el script en el SQL Editor de Supabase antes del ingreso de estudiantes.
+  3. **Suite Completa de Pruebas E2E en Navegador Real (Google Chrome):**
+     * Se implementó el banco de pruebas automatizado con Playwright (`apps/web/e2e/pilot_e2e_suite.mjs`) e infraestructura de servidor SPA local (`apps/web/e2e/spa_server.mjs`).
+     * Se levantó la pila completa (FastAPI en 8000, PostgreSQL Sandbox en 5433, SPA en 5173).
+     * Se ejecutaron 19 pruebas de integración en Google Chrome real cubriendo:
+       * Carga de Dashboard y metatítulos dinámicos (`T01`, `T01.1`).
+       * Navegación y deep links (`T02`, `T03`, `T03.1`).
+       * Preservación de borradores SQL ante recargas (F5) con purga tras éxito (`T04`, `T06.1`).
+       * Evaluación semántica con fallo pedagógico y comparativa de diff (`T05`).
+       * Evaluación correcta en modo invitado con registro local y 0 XP oficial (`T06`).
+       * Enforce de límite de cuota trial (HTTP 401 en 4º reto para invitados) (`T07`).
+       * Formularios de registro y recuperación de contraseña sin alerts nativos (`T08`, `T08.1`, `T09`).
+       * Consola interactiva de SQL Playground (`T10`, `T10.1`).
+       * Página 404 temática SQL (`T11`, `T11.1`).
+       * Perfil de usuario autenticado (`T12`).
+       * Resiliencia ante caídas de red y errores 500 (`T13`).
+     * **Resultado E2E:** **19 de 19 pruebas pasadas al 100%**.
+  4. **Corrección de UX en Navegación React (`App.tsx` & `AuthModal.tsx`):**
+     * Se corrigió la condición de enrutamiento en `App.tsx` para evitar que las actualizaciones del array de ejercicios en memoria reinicien el estado `executionStatus` a `'IDLE'` al resolver un reto.
+     * Se añadió un hook `useEffect` en `AuthModal.tsx` para garantizar que cada apertura del modal inicie de forma limpia en el modo solicitado (`signin` por defecto) y restablezca cualquier mensaje transitorio.
+  5. **Baterías Automatizadas Consolidadas:**
+     * Backend Pytest: **70/70 pruebas pasadas** (44.63s).
+     * Frontend Vitest: **17/17 pruebas pasadas** (507ms).
+     * Compilación de producción Vite: **Limpia (0 errores)** en 5.41s.
+  6. **Contención Git y Veredicto:**
+     * Rama: `feat/phase-11-pilot-readiness`.
+     * Zero Push, Zero Merge, cero modificaciones en `main`.
+     * **Veredicto:** **LISTO PARA PILOTO CON RESTRICCIÓN ADMINISTRATIVA PREVIA** (aplicación de `03_security_hardening.sql` en Supabase Cloud).
+* **Entregables Documentales Generados:**
+  * [`docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md`](audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md)
+  * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
+  * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)
+  * [`docs/audits/QURIO_PHASE_11_PILOT_READINESS.md`](audits/QURIO_PHASE_11_PILOT_READINESS.md)

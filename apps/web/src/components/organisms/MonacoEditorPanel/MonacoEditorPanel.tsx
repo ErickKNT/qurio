@@ -99,6 +99,14 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
       onExecute();
     });
 
+    // 5. Exponer helper seguro para automatización y pruebas de navegador
+    if (typeof window !== 'undefined') {
+      (window as any).__setEditorSql = (val: string) => {
+        editor.setValue(val);
+        onChange(val);
+      };
+    }
+
     editor.focus();
   };
 

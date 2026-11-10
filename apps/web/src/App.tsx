@@ -161,12 +161,15 @@ export const App: React.FC = () => {
       if (parsed.path === 'exercise' && parsed.exerciseId) {
         const idx = exercises.findIndex((e) => e.id === parsed.exerciseId);
         if (idx !== -1) {
-          setCurrentExerciseIndex(idx);
-          const draft = persistence.getExerciseDraft(exercises[idx].id);
-          setSqlCode(draft !== null ? draft : exercises[idx].initial_code);
-          setExecutionStatus('IDLE');
-          setResultError(undefined);
-          setResultDiff(undefined);
+          // Solo resetear estado y borrador si el usuario navegó a un ejercicio distinto
+          if (idx !== currentExerciseIndex) {
+            setCurrentExerciseIndex(idx);
+            const draft = persistence.getExerciseDraft(exercises[idx].id);
+            setSqlCode(draft !== null ? draft : exercises[idx].initial_code);
+            setExecutionStatus('IDLE');
+            setResultError(undefined);
+            setResultDiff(undefined);
+          }
         } else {
           setPendingExerciseId(parsed.exerciseId);
         }
