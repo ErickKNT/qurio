@@ -964,3 +964,43 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * [`docs/audits/QURIO_PHASE_11_3_ROLLBACK_AUDIT.md`](audits/QURIO_PHASE_11_3_ROLLBACK_AUDIT.md)
   * [`docs/audits/QURIO_PHASE_11_3_CONTINGENCY_TESTS.md`](audits/QURIO_PHASE_11_3_CONTINGENCY_TESTS.md)
   * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (v4.0 verificado)
+
+---
+
+### Entrada 31: Cierre Definitivo de Fase 11.3 — Corrección Sintáctica, Blindaje de Secuencias, Simulación Realista PGRST202 y Congelamiento de Seguridad
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver los últimos hallazgos de la auditoría independiente de rollback, corregir la sintaxis de revocación por columna en PostgreSQL, blindar totalmente las secuencias contra roles de cliente, certificar la conmutación a Modo de Contingencia ante el error realista PostgREST `PGRST202`, generar la matriz definitiva de permisos y congelar definitivamente el alcance de la Fase 11.3 sin abrir subfases adicionales.
+* **Actividades y Logros Clave:**
+  1. **Alineación Sintáctica en PostgreSQL (`rollback_security_hardening.sql` v4.1 y `03_security_hardening.sql` v6.1):**
+     * Corrección estricta de cláusulas `REVOKE` por columna utilizando la sintaxis estándar de PostgreSQL: `REVOKE UPDATE, INSERT (...) ON TABLE public.<tabla> FROM ...;`.
+     * Eliminación de operaciones no soportadas por columna (`DELETE`, `TRUNCATE`) de las listas de columnas, asegurando su revocación exclusiva a nivel de tabla.
+     * Corrección de nombres canónicos de columnas en `public.user_progress` (`exercises_completed_count` en lugar de referencias desactualizadas).
+  2. **Blindaje Integral de Secuencias en Schema `public`:**
+     * Revocación absoluta de todos los privilegios sobre secuencias para roles de cliente:
+       `REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC, anon, authenticated;`
+     * Concesión exclusiva de privilegios sobre secuencias al rol de administración interna del backend:
+       `GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;`
+     * Validación automatizada en PostgreSQL comprobando que ninguna secuencia otorga `USAGE` ni `SELECT` a `anon` ni `authenticated`.
+  3. **Prueba de Integración con Simulación Realista de Error PostgREST `PGRST202`:**
+     * Implementada `test_contingency_mode_with_realistic_pgrst202_postgrest_error` en `apps/api/tests/test_integration.py`.
+     * Interceptación defensiva a nivel de transporte HTTP asíncrono devolviendo exactamente el payload emitido por PostgREST ante desincronización de caché o eliminación de RPC (`HTTP 404 Not Found`, `code: "PGRST202"`).
+     * Comprobada la resiliencia integral:
+       * `record_verified_progress` captura el error sin excepciones no controladas.
+       * Endpoint `/api/v1/exercises/{exercise_id}/submit` responde `HTTP 200 OK` con `status='PASSED'` y `xp_awarded=0`.
+       * Mensaje transparente advierte al alumno sobre la operación en modo de contingencia.
+       * Cero llamadas hacia internet o hacia Supabase Cloud.
+  4. **Baterías Automatizadas Consolidadas (100% de Éxito):**
+     * Backend Pytest: **81/81 pruebas pasadas** (62.43s) cubriendo autenticación, evaluador semántico, sandbox, seguridad AST con SQLGlot, límites de invitados, matriz CLS, concurrencia, idempotencia, rollback v4.1 y contingencia ante PGRST202.
+     * Frontend Vitest: **17/17 pruebas pasadas** (1.14s).
+     * Compilación de producción Vite: **2,171 módulos transformados limpiamente (0 errores)** en 5.54s.
+     * E2E en Navegador Real Google Chrome: **19/19 flujos pasados** (22.80s).
+     * Auditoría npm: **0 vulnerabilidades**.
+  5. **Veredicto Final y Congelamiento:**
+     * **Veredicto Único:** **APROBADO CON RESTRICCIONES OPERATIVAS EXTERNAS** (código y plataforma 100% listos; ejecución manual previa de `03_security_hardening.sql` v6.1 en Supabase Cloud reservada para el administrador de producción).
+     * Alcance de Fase 11.3 definitivamente congelado.
+* **Entregables Certificados:**
+  * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (Versión definitiva v4.1)
+  * [`database/supabase/03_security_hardening.sql`](../database/supabase/03_security_hardening.sql) (Versión canónica v6.1)
+  * [`docs/audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md`](audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md) (Informe canónico de certificación y congelamiento)

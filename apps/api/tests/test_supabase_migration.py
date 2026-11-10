@@ -79,9 +79,11 @@ async def setup_mock_supabase_environment():
         hardening_sql = (ROOT_DIR / "database" / "supabase" / "03_security_hardening.sql").read_text(encoding="utf-8")
         await conn.execute(hardening_sql)
 
-        # F. Permisos complementarios sobre secuencias
+        # F. Blindaje estricto de secuencias (cero privilegios para clientes)
         await conn.execute("""
-            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+            CREATE SEQUENCE IF NOT EXISTS public.test_pilot_seq;
+            REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC, anon, authenticated;
+            GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
         """)
 
     finally:
@@ -984,6 +986,10 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
 
     # Ejecutar rollback dentro de una transacción aislada para no destruir el setup del suite
     async with db_conn.transaction():
+        # Crear una secuencia de prueba para asegurar que el blindaje de secuencias del rollback opere sobre secuencias reales
+        await db_conn.execute("CREATE SEQUENCE IF NOT EXISTS public.test_pilot_seq;")
+        # Otorgar temporalmente permisos para comprobar que el script los revoca efectivamente
+        await db_conn.execute("GRANT USAGE, SELECT ON SEQUENCE public.test_pilot_seq TO authenticated, anon;")
         await db_conn.execute(rollback_sql)
 
         # 1. Verificar eliminación de la RPC
@@ -1129,3 +1135,28 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
             assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'INSERT');") is False
             assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'UPDATE');") is False
             assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'DELETE');") is False
+
+        # 12. Secuencias en esquema public: revocadas para anon y authenticated, accesibles por service_role
+        sequences = await db_conn.fetch("""
+            SELECT sequencename AS sequence_name
+            FROM pg_sequences
+            WHERE schemaname = 'public';
+        """)
+        assert len(sequences) > 0, "Debe existir al menos una secuencia en public para verificar el blindaje"
+        for seq_row in sequences:
+            seq_name = seq_row["sequence_name"]
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('anon', 'public.{seq_name}', 'USAGE');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('anon', 'public.{seq_name}', 'SELECT');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('authenticated', 'public.{seq_name}', 'USAGE');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('authenticated', 'public.{seq_name}', 'SELECT');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('service_role', 'public.{seq_name}', 'USAGE');"
+            ) is True

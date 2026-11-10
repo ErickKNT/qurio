@@ -1,8 +1,11 @@
 import pytest
+import httpx
 from httpx import AsyncClient
 
 from app.main import app
+from app.core.config import settings
 from app.core.auth import AuthenticatedUser, get_optional_current_user
+from app.core.supabase import record_verified_progress
 
 
 @pytest.mark.asyncio
@@ -397,6 +400,77 @@ async def test_contingency_mode_preserves_practice_and_allows_subsequent_reward_
         assert data2["status"] == "PASSED"
         assert data2["xp_awarded"] == 35, "Al restaurar la RPC debe otorgarse el XP legítimo no acreditado previamente"
         assert "35 xp acreditados" in data2["message"].lower()
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_contingency_mode_with_realistic_pgrst202_postgrest_error(client: AsyncClient, monkeypatch):
+    """
+    Fase 11.3: Simulación realista del error PostgREST PGRST202 (función no encontrada en caché de esquema),
+    típico ante rollback o desincronización de PostgREST, verificado sin tocar Supabase Cloud:
+    1. Invoca directamente record_verified_progress con transporte mock HTTP 404 (PGRST202).
+    2. Invoca el endpoint /api/v1/exercises/{exercise_id}/submit con un usuario autenticado.
+    3. Verifica que la práctica en Sandbox devuelve status='PASSED', no arroja HTTP 500,
+       establece estrictamente xp_awarded=0 e informa la advertencia de contingencia.
+    """
+    postgrest_pgrst202_payload = {
+        "code": "PGRST202",
+        "details": None,
+        "hint": "If a new function was created in the database with this name and parameters, try reloading the schema cache.",
+        "message": "Could not find the function public.record_verified_attempt(execution_time_ms, hints_used, p_error_message, p_exercise_id, p_hints_used, p_status, p_submitted_sql, p_user_id, p_xp_to_award, status, submitted_sql) in the schema cache",
+    }
+
+    # Asegurar que las variables de entorno de Supabase simulan estar configuradas
+    monkeypatch.setattr(settings, "SUPABASE_URL", "https://mock-test-project.supabase.co")
+    monkeypatch.setattr(settings, "SUPABASE_SERVICE_ROLE_KEY", "mock_service_role_secret_token_12345")
+
+    # Mockear httpx.AsyncClient.post para interceptar exclusivamente la llamada a Supabase RPC
+    original_post = httpx.AsyncClient.post
+
+    async def mock_post(self, url, *args, **kwargs):
+        if "record_verified_attempt" in str(url):
+            return httpx.Response(
+                status_code=404,
+                json=postgrest_pgrst202_payload,
+                request=httpx.Request("POST", str(url)),
+            )
+        return await original_post(self, url, *args, **kwargs)
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", mock_post)
+
+    # 1. Invocación directa a record_verified_progress
+    direct_res = await record_verified_progress(
+        user_id="usr_mock_pgrst202",
+        exercise_id="e0000000-0000-0000-0000-000000000001",
+        submitted_sql="SELECT 1;",
+        status="PASSED",
+        execution_time_ms=12,
+        xp_to_award=30,
+    )
+    assert direct_res["success"] is False
+    assert direct_res["contingency_mode"] is True
+    assert direct_res["xp_awarded"] == 0
+    assert "PGRST202" in direct_res["error"]
+
+    # 2. Invocación a través del endpoint FastAPI /submit con usuario autenticado
+    exercise_id = "e0000000-0000-0000-0000-000000000002"
+    payload = {
+        "query": "SELECT nombre_producto, precio, stock FROM productos WHERE precio > 500;",
+        "hints_revealed": 0,
+    }
+    app.dependency_overrides[get_optional_current_user] = lambda: AuthenticatedUser(
+        id="usr_mock_pgrst202", email="student_pgrst@qurio.dev", role="authenticated", is_guest=False
+    )
+    try:
+        response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+        # Comprobar que no hay 500 y que la consulta en sandbox fue evaluada exitosamente
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "PASSED"
+        assert data["xp_awarded"] == 0, "No se debe conceder XP cuando PostgREST reporta PGRST202"
+        assert "contingencia" in data["message"].lower()
+        assert "no está disponible temporalmente" in data["message"].lower()
     finally:
         app.dependency_overrides.clear()
 

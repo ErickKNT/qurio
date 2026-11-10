@@ -72,8 +72,8 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/router.py": {
-    "mtime": 1794351627.9820266,
-    "seen": 1794352143.8725636,
+    "mtime": 1794352203.7683449,
+    "seen": 1794354351.2529917,
     "ast_hash": "d439784c5d88f3a1271b878f1fb68270",
     "semantic_hash": ""
   },
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_integration.py": {
-    "mtime": 1794351891.8018467,
-    "seen": 1794352143.874337,
-    "ast_hash": "c0818d3b30ba62a216c8bdda059d8193",
+    "mtime": 1794353902.2954507,
+    "seen": 1794354351.254977,
+    "ast_hash": "c35adc686b76e6e49a0300d852b137a1",
     "semantic_hash": ""
   },
   "apps/api/tests/test_security.py": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794352120.875878,
-    "seen": 1794352143.9073532,
-    "ast_hash": "b15827ca830dd8c52267e03c6c1ffb2e",
+    "mtime": 1794354333.4028268,
+    "seen": 1794354351.2908914,
+    "ast_hash": "01d3552988ff7b189a8f57236f34cad3",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -852,8 +852,8 @@
     "semantic_hash": ""
   },
   "apps/api/app/core/supabase.py": {
-    "mtime": 1794351600.9215586,
-    "seen": 1794352143.8704457,
+    "mtime": 1794352203.4902833,
+    "seen": 1794354351.2506473,
     "ast_hash": "18ea628f96b9eefdc5ca6f9d45a7e96a",
     "semantic_hash": ""
   },
@@ -870,9 +870,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_supabase_migration.py": {
-    "mtime": 1794351787.136514,
-    "seen": 1794352143.8752575,
-    "ast_hash": "3df21cab1bbf2495b3a7f56b73659e7e",
+    "mtime": 1794353700.3018203,
+    "seen": 1794354351.2559478,
+    "ast_hash": "aaa0c7067e68848f46cbd66ec016d583",
     "semantic_hash": ""
   },
   "docs/security/SECURITY_AUDIT.md": {
@@ -1029,6 +1029,12 @@
     "mtime": 1794352059.9437413,
     "seen": 1794352143.9095037,
     "ast_hash": "b323dee2742416f51bfc1873eea3b9be",
+    "semantic_hash": ""
+  },
+  "docs/audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md": {
+    "mtime": 1794354307.0427437,
+    "seen": 1794354351.2933643,
+    "ast_hash": "05c888e3b5ee5413606f617e97798cb5",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

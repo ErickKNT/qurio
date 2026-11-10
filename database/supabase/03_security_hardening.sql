@@ -131,9 +131,9 @@ REVOKE ALL ON TABLE public.user_profiles FROM PUBLIC, anon;
 REVOKE UPDATE, INSERT, DELETE, TRUNCATE ON TABLE public.user_profiles FROM authenticated;
 
 REVOKE UPDATE (id, username, level, xp, current_streak_days, max_streak_days, created_at)
-    ON public.user_profiles FROM authenticated, anon, PUBLIC;
+    ON TABLE public.user_profiles FROM authenticated, anon, PUBLIC;
 REVOKE INSERT (id, username, display_name, avatar_url, bio, level, xp, current_streak_days, max_streak_days, created_at, updated_at)
-    ON public.user_profiles FROM authenticated, anon, PUBLIC;
+    ON TABLE public.user_profiles FROM authenticated, anon, PUBLIC;
 
 GRANT SELECT ON TABLE public.user_profiles TO authenticated, anon;
 GRANT UPDATE (display_name, avatar_url, bio, updated_at)
@@ -218,8 +218,9 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.achievements FROM PUBLIC
 GRANT SELECT ON TABLE public.achievements TO anon, authenticated;
 GRANT ALL ON TABLE public.achievements TO service_role;
 
--- H. Permisos sobre secuencias
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+-- H. Blindaje estricto de secuencias (cero privilegios para clientes)
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC, anon, authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
 -- ==============================================================================
 -- 5. RESTRICCIÓN DE UNICIDAD CONDICIONAL (ANTI-DUPLICADOS DE XP)
