@@ -6,15 +6,15 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Definición Estratégica (Blueprint v1.2) y Planificación de Fase 10 (Estabilización Técnica v1.2) — Concluida a nivel documental**  
-* **Próxima Fase:** **Ejecución de Fase 10 — Estabilización y Preparación Comercial (Brechas `C-01` a `C-05`, aún pendientes de implementación en código)**  
-* **Rama Git Activa:** `docs/product-business-blueprint-v1`  
-* **Infraestructura Activa:**
-  * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
-  * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico (26/26 tests pasando).
-  * Frontend React 18 + Vite corriendo en `http://localhost:5173` con soporte dinámico de tema claro/oscuro, Monaco Editor con temas `qurio-dark`/`qurio-light` y DataGrid (Build de producción 100% verificado).
-  * Proyecto Supabase en la nube con esquemas DDL `01_schema.sql` y catálogo semilla `02_seed_curriculum.sql` desplegados.
-  * Documentación completa `README.md` en la raíz del repositorio.
+* **Fase Actual:** **Auditoría Operativa y Definición de la Nueva Línea Base (`QURIO-OPERATIONAL-BASELINE-01`) — Concluida**  
+* **Próxima Fase:** **Ejecución de Fase 10 — Estabilización Técnica (`PR-10.1` a `PR-10.4`, Brechas `C-01` a `C-05`, pendiente de autorización del propietario)**  
+* **Rama Git Activa:** `docs/operational-baseline-v1`  
+* **Estado Operativo Real de Infraestructura (Verificación Forense):**
+  * Contenedor Docker `qurio-postgres-sandbox`: **Detenido** (demonio de Docker apagado a solicitud expresa del usuario; verificado en puerto `5433` cuando se encuentra activo).
+  * API FastAPI: **Detenido** en entorno local (código fuente y dependencias verificados; suite de **64 pruebas automatizadas** en `tests/`).
+  * Frontend React 18 + Vite: **Detenido** en entorno local (Build de producción `dist/` 100% verificado mediante `tsc && vite build` en 6.29s).
+  * Proyecto Supabase Cloud: Esquemas DDL `01_schema.sql`, catálogo semilla `02_seed_curriculum.sql` y hardening de seguridad `03_security_hardening.sql` desplegados en producción.
+  * Documentación Rectoral: *Blueprint v1.2*, *Plan de Estabilización v1.2*, *Auditoría Operativa v1.0* ([`docs/audits/QURIO_OPERATIONAL_AUDIT.md`](audits/QURIO_OPERATIONAL_AUDIT.md)) y *Línea Base Operativa v1.0* ([`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](roadmap/QURIO_OPERATIONAL_BASELINE.md)).
 
 ---
 
@@ -24,16 +24,18 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | :---: | :--- | :---: | :---: | :--- |
 | **0** | **Definición y Especificación** | ✅ Concluida | `main` | Declaración de intención, PRD, SAD, Sistema de Diseño y Reglas. |
 | **1** | **Cimientos de Datos & Docker** | ✅ Concluida | `feat/database-and-docker-infra` | Sandbox PostgreSQL aislado, dataset de 10 tablas, esquemas Supabase y docker-compose. |
-| **2** | **Motor de Ejecución y Evaluación** | ✅ Concluida | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y 26 tests automatizados. |
+| **2** | **Motor de Ejecución y Evaluación** | ✅ Concluida | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y pruebas iniciales. |
 | **3** | **Frontend Base & Atomic Design** | ✅ Concluida | `feat/web-atomic-design` | React + Vite + Tailwind, árbol de componentes (átomos/moléculas/organismos/plantillas), auth y build validado. |
 | **4** | **Flujo Principal End-to-End** | ✅ Concluida | `feat/exercise-ide-flow` | Monaco Editor, DataGrid tabular con tipos de datos, especificación del ejercicio con pistas, cliente API FastAPI y modal de recompensa XP. |
 | **5** | **Catálogo, Playground & Gamificación** | ✅ Concluida | `feat/curriculum-and-gamification` | Rutas con syllabus interactivo, SQL Playground libre con explorador de esquemas, Logros con filtros y Mi Perfil con mapa de calor. |
 | **6** | **Autenticidad, Calidad & Despliegue** | ✅ Concluida | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG propio, metadatos OG, adaptabilidad móvil y transparencia de contacto. |
 | **+** | **Temas (Claro/Oscuro) & README** | ✅ Concluida | `feat/theme-support-and-readme` | Tokens Tailwind CSS dinámicos, toggle sol/luna, temas Monaco reactivos y README.md exhaustivo. |
 | **7** | **Expansión Curricular (3 Rutas)** | ✅ Concluida | `feat/curriculum-expansion-3-tracks` | 18 ejercicios completos, didáctica SQLBolt, checklist de sub-objetivos interactiva. |
-| **9** | **Hardening de Seguridad & AST** | ✅ Concluida | `main` (vía `security/phase-9-hardening`) | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress en Supabase Cloud. |
+| **9** | **Hardening de Seguridad & AST** | ✅ Concluida | `main` (vía `security/phase-9-hardening`) | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress en Supabase Cloud (Suite de 64 pruebas en backend). |
 | **8/9+** | **Expansión Curricular Piramidal (50 Retos)** | ✅ Concluida | `main` (vía `feat/curriculum-expansion-50-exercises`) | Pirámide completa de 50 retos fundamentados en ISO/IEC 9075:2016 y PostgreSQL 16, 12 módulos, 10 tablas de muestra, 100% verificado en sandbox. |
-| **10 (Plan)** | **Blueprint v1.2 & Plan de Estabilización (Fase 10 v1.2)** | 📋 Planificada | `docs/product-business-blueprint-v1` | `QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` v1.2 (Decisiones `D-01` a `D-07` aprobadas) y `PHASE_10_STABILIZATION_PLAN.md` v1.2 (Diagnóstico y plan de `C-01` a `C-05`, pendientes de codificar). |
+| **10 (Doc)** | **Blueprint v1.2 & Plan de Estabilización v1.2** | ✅ Concluida | `docs/product-business-blueprint-v1` | `QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` v1.2 y `PHASE_10_STABILIZATION_PLAN.md` v1.2 sincronizados. |
+| **10 (Base)** | **Auditoría Operativa y Línea Base de Desarrollo** | ✅ Concluida | `docs/operational-baseline-v1` | `QURIO_OPERATIONAL_AUDIT.md` (diagnóstico forense) y `QURIO_OPERATIONAL_BASELINE.md` (prioridades de grupo piloto). |
+| **10 (Ejec)** | **Estabilización Técnica (`PR-10.1` a `PR-10.4`)** | 📋 Planificada | `fix/c01-protect-solution-query` (pendiente) | Corrección secuencial de brechas prioritarias `C-01` a `C-05` antes de abrir a usuarios piloto. |
 
 ---
 
@@ -554,7 +556,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ---
 
-### Entrada 27 — Cierre Definitivo de Fase 9: Hardening de Seguridad y Ajustes Finales (v5.0)
+### Entrada 27 (Reconciliación Cronológica: Cierre de Fase 9) — Hardening de Seguridad y Ajustes Finales (v5.0)
+> [!NOTE]
+> **Nota de Trazabilidad Histórica:** Esta entrada fue numerada como 27 en el historial de trabajo preliminar, pero cronológicamente antecede a la Entrada 20 (Expansión Curricular) y Entrada 22 (Blueprint v1.2). Se conserva íntegra sin reescribir para preservar la veracidad del historial.
 * **Fecha:** 2026-11-09
 * **Rama:** `security/phase-9-hardening` (aislada de `main`, protegida sin despliegue automático).
 * **Objetivo:** Ejecutar los dos ajustes finales requeridos para cerrar formalmente la Fase 9:
@@ -644,6 +648,25 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   1. [`docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`](file:///c:/Desarrollo/Qurio/docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md) (**Versión `1.2`**).
   2. [`docs/roadmap/PHASE_10_STABILIZATION_PLAN.md`](file:///c:/Desarrollo/Qurio/docs/roadmap/PHASE_10_STABILIZATION_PLAN.md) (**Versión `1.2`**).
 * **Estado de Código e Infraestructura:** **Cero modificaciones en código, SQL, migraciones ni infraestructura. No se ha iniciado la implementación de PR-10.1.**
+
+---
+
+### [2026-11-10] — Entrada 23: Auditoría del Estado Operativo y Definición de la Nueva Línea Base (`QURIO-OPERATIONAL-BASELINE-01`)
+* **Rama:** `docs/operational-baseline-v1` (ramificada desde `main` / `add8b6d` tras sincronizar documentación v1.2).
+* **Objetivo:** Ejecutar una auditoría técnica y forense integral del repositorio Qurio para contrastar afirmaciones documentales contra el estado real del código, evaluar el flujo de 21 pasos de aceptación del estudiante y establecer una nueva línea base operativa orientada estrictamente al éxito del primer grupo piloto.
+* **Resultados de la Auditoría Forense:**
+  * **Verificación de Git:** Rama `main` en commit `add8b6d`. Las 17 ramas de características históricas están 100% fusionadas a `main`. `origin/main` sincronizado.
+  * **Verificación de Currículo (50 Retos):** Paridad comprobada 1:1 en los 7 atributos entre `seed_data.py`, `02_seed_curriculum.sql` y `api.ts`. Se detectó que la variable se llama `SEED_EXERCISES` (no `EXERCISES_SEED`) y que `TRACKS_SEED`/`MODULES_SEED` no existen en backend.
+  * **Verificación de Seguridad (Brecha C-01, P0):** Se confirmó que `solution_query` está expuesta en 50 ocurrencias en el bundle JS compilado (`dist/assets/index-*.js`), en `FALLBACK_EXERCISES`, en respuestas de la API (`GET /exercises`) y en PostgREST (`SELECT * FROM exercises`).
+  * **Verificación de Persistencia (Brecha C-02, P1):** Confirmada la doble escritura en el frontend (`persistence.ts`) que es rechazada con `42501` y silenciada en consola, bloqueando la edición de perfil.
+  * **Verificación de Progreso (Brecha C-03, P1):** Confirmado que `App.tsx` asigna el total global a todas las rutas simultáneamente y suma `+1` a todas al resolver cualquier reto.
+  * **Verificación de Esquema (Brecha C-04, P2):** Confirmada la discrepancia `pagos` vs `metodos_pago`, conteos de filas ficticios en `api.ts` y que `ExerciseSpecPanel` solo muestra 4 de las 10 tablas del sandbox.
+  * **Verificación de Navegación (Brecha C-05, P1):** Confirmada la ausencia de React Router: estado en memoria con `useState`, sin URLs para retos (`/exercises/:id`) y pérdida de vista en recarga (`F5`).
+  * **Verificación de Infraestructura y Pruebas:** Docker Sandbox apagado conforme a solicitud previa; suite de 64 pruebas en FastAPI bloqueada si Docker no corre debido al fixture global en `conftest.py`; frontend sin test runner configurado (`package.json`).
+* **Artefactos Entregados:**
+  1. [`docs/audits/QURIO_OPERATIONAL_AUDIT.md`](file:///c:/Desarrollo/Qurio/docs/audits/QURIO_OPERATIONAL_AUDIT.md) (**Informe Forense de Auditoría v1.0**).
+  2. [`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](file:///c:/Desarrollo/Qurio/docs/roadmap/QURIO_OPERATIONAL_BASELINE.md) (**Nueva Línea Base Operativa v1.0**).
+* **Estado de Código e Infraestructura:** **Cero modificaciones en código de aplicación (`apps/web`, `apps/api`), cero cambios en esquemas SQL (`database/`), cero cambios en Supabase Cloud. No se inició `PR-10.1`.**
 
 
 ---
