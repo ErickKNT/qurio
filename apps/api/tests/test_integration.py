@@ -219,3 +219,71 @@ async def test_playground_recursive_cte_timeout(client: AsyncClient):
     assert data["status"] == "ERROR"
     assert "Tiempo de ejecución excedido" in data["error"]
 
+
+@pytest.mark.asyncio
+async def test_regression_guest_xp_strictly_zero_and_no_rpc_called(client: AsyncClient, monkeypatch):
+    """
+    Regresión Crítica Fase 11.1 (D-05 / C-03):
+    Garantiza que un usuario invitado que resuelve un ejercicio aprobado:
+    1. Recibe 'xp_awarded' estrictamente igual a 0.
+    2. Recibe el mensaje formativo invitando a registrarse.
+    3. Jamás invoca la RPC 'record_verified_progress' (0 escrituras en Supabase).
+    """
+    rpc_invocations = []
+
+    async def fake_record_verified_progress(**kwargs):
+        rpc_invocations.append(kwargs)
+        return {"success": True}
+
+    monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_record_verified_progress)
+
+    exercise_id = "e0000000-0000-0000-0000-000000000001"
+    payload = {
+        "query": "SELECT nombre_producto, precio FROM productos;",
+        "hints_revealed": 0
+    }
+    response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "PASSED"
+    assert data["xp_awarded"] == 0, "Un invitado NUNCA debe recibir XP oficial"
+    assert "modo invitado" in data["message"].lower()
+    assert len(rpc_invocations) == 0, "Un invitado NUNCA debe invocar record_verified_progress"
+
+
+@pytest.mark.asyncio
+async def test_regression_authenticated_user_passes_exercise_4_and_receives_xp(client: AsyncClient, monkeypatch):
+    """
+    Regresión Crítica Fase 11.1:
+    Garantiza que un usuario autenticado puede resolver ejercicios fuera del trial (ej. Ejercicio 4),
+    recibe XP oficial mayor a 0 y certifica el intento en la RPC de Supabase.
+    """
+    rpc_invocations = []
+
+    async def fake_record_verified_progress(**kwargs):
+        rpc_invocations.append(kwargs)
+        return {"success": True, "already_passed": False}
+
+    monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_record_verified_progress)
+
+    exercise_id = "e0000000-0000-0000-0000-000000000002"
+    payload = {
+        "query": "SELECT nombre_producto, precio, stock FROM productos WHERE precio > 500;",
+        "hints_revealed": 0
+    }
+    app.dependency_overrides[get_optional_current_user] = lambda: AuthenticatedUser(
+        id="usr_auth_verified_42", email="verified@qurio.dev", role="authenticated", is_guest=False
+    )
+    try:
+        response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "PASSED"
+        assert data["xp_awarded"] == 35
+        assert len(rpc_invocations) == 1
+        assert rpc_invocations[0]["user_id"] == "usr_auth_verified_42"
+        assert rpc_invocations[0]["xp_to_award"] == 35
+    finally:
+        app.dependency_overrides.clear()
+
+

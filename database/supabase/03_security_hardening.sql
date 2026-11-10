@@ -1,8 +1,8 @@
 -- ==============================================================================
--- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 9)
--- Versión: 5.0 (Cálculo Autoritativo de XP sin Mínimo Artificial, Blindaje CLS
---          Integral en exercise_attempts con REVOKE SELECT explícito, search_path=''
---          y Diagnóstico Multi-Fuente de XP)
+-- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 11.1)
+-- Versión: 6.0 (Blindaje Integral CLS/RLS en public.exercises, public.user_progress
+--          y Catálogos Educativos, con Aislamiento Estricto de solution_query,
+--          search_path='' y RPC record_verified_attempt de Firma Única)
 -- NOTA: Este archivo es para revisión y autorización previa del usuario.
 -- NO se ejecuta automáticamente en producción sin aprobación explícita.
 -- ==============================================================================
@@ -119,6 +119,70 @@ GRANT ALL ON TABLE public.exercise_attempts TO service_role;
 
 -- 6. Eliminar explícitamente la política RLS residual de inserción directa (Defensa en Profundidad)
 DROP POLICY IF EXISTS "User Insert Own Attempts" ON public.exercise_attempts;
+
+-- C. Blindaje de Soluciones sobre public.exercises (Anti-Exfiltración de solution_query)
+-- 1. Revocar todos los privilegios a nivel de tabla
+REVOKE ALL ON TABLE public.exercises FROM PUBLIC, anon, authenticated;
+REVOKE SELECT ON TABLE public.exercises FROM PUBLIC, anon, authenticated;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.exercises FROM PUBLIC, anon, authenticated;
+
+-- 2. Otorgar SELECT únicamente sobre columnas públicas educativas (excluyendo terminantemente solution_query)
+GRANT SELECT (
+    id,
+    module_id,
+    title,
+    prompt,
+    initial_code,
+    target_database,
+    xp_reward,
+    difficulty,
+    check_order,
+    sort_order,
+    created_at
+) ON TABLE public.exercises TO anon, authenticated;
+
+-- 3. Acceso administrativo y de lectura completa reservado para service_role (backend evaluador)
+GRANT ALL ON TABLE public.exercises TO service_role;
+
+-- D. Blindaje sobre public.exercise_hints
+REVOKE ALL ON TABLE public.exercise_hints FROM PUBLIC, anon, authenticated;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.exercise_hints FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.exercise_hints TO anon, authenticated;
+GRANT ALL ON TABLE public.exercise_hints TO service_role;
+
+-- E. Blindaje sobre public.user_progress (Progreso Oficial solo mutable por RPC)
+REVOKE ALL ON TABLE public.user_progress FROM PUBLIC, anon;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.user_progress FROM authenticated;
+GRANT SELECT ON TABLE public.user_progress TO authenticated;
+GRANT ALL ON TABLE public.user_progress TO service_role;
+
+-- F. Blindaje sobre public.user_achievements y public.user_daily_activity
+REVOKE ALL ON TABLE public.user_achievements FROM PUBLIC, anon;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.user_achievements FROM authenticated;
+GRANT SELECT ON TABLE public.user_achievements TO authenticated;
+GRANT ALL ON TABLE public.user_achievements TO service_role;
+
+REVOKE ALL ON TABLE public.user_daily_activity FROM PUBLIC, anon;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.user_daily_activity FROM authenticated;
+GRANT SELECT ON TABLE public.user_daily_activity TO authenticated;
+GRANT ALL ON TABLE public.user_daily_activity TO service_role;
+
+-- G. Blindaje de Catálogos Estáticos (Solo Lectura Pública, Escritura Solo service_role)
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.learning_paths FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.learning_paths TO anon, authenticated;
+GRANT ALL ON TABLE public.learning_paths TO service_role;
+
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.modules FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.modules TO anon, authenticated;
+GRANT ALL ON TABLE public.modules TO service_role;
+
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.lessons FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.lessons TO anon, authenticated;
+GRANT ALL ON TABLE public.lessons TO service_role;
+
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.achievements FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.achievements TO anon, authenticated;
+GRANT ALL ON TABLE public.achievements TO service_role;
 
 -- ==============================================================================
 -- 3. RESTRICCIÓN DE UNICIDAD CONDICIONAL (ANTI-DUPLICADOS DE XP)

@@ -178,6 +178,39 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
         assert can_up is True, f"Columna {col} en user_profiles debe permitir UPDATE a authenticated"
 
     # --------------------------------------------------------------------------
+    # B.2 Privilegios de Columna (CLS) sobre public.exercises (Anti-Exfiltración)
+    # --------------------------------------------------------------------------
+    assert await db_conn.fetchval(
+        "SELECT has_column_privilege('anon', 'public.exercises', 'solution_query', 'SELECT');"
+    ) is False, "anon NO debe tener SELECT sobre solution_query"
+    assert await db_conn.fetchval(
+        "SELECT has_column_privilege('authenticated', 'public.exercises', 'solution_query', 'SELECT');"
+    ) is False, "authenticated NO debe tener SELECT sobre solution_query"
+    assert await db_conn.fetchval(
+        "SELECT has_column_privilege('service_role', 'public.exercises', 'solution_query', 'SELECT');"
+    ) is True, "service_role SÍ debe tener SELECT sobre solution_query"
+
+    public_cols = ["id", "module_id", "title", "prompt", "initial_code", "target_database", "xp_reward", "difficulty"]
+    for col in public_cols:
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('anon', 'public.exercises', '{col}', 'SELECT');"
+        ) is True, f"anon debe tener SELECT educativo sobre columna {col}"
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('authenticated', 'public.exercises', '{col}', 'SELECT');"
+        ) is True, f"authenticated debe tener SELECT educativo sobre columna {col}"
+
+    # Privilegios sobre public.user_progress: Solo mutable por RPC (service_role / postgres)
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.user_progress', 'INSERT');"
+    ) is False, "authenticated no debe tener INSERT directo sobre user_progress"
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.user_progress', 'UPDATE');"
+    ) is False, "authenticated no debe tener UPDATE directo sobre user_progress"
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('anon', 'public.user_progress', 'SELECT');"
+    ) is False, "anon no debe tener SELECT sobre user_progress"
+
+    # --------------------------------------------------------------------------
     # C. Privilegios de Tabla y Columna sobre public.exercise_attempts
     # --------------------------------------------------------------------------
     # Tabla:
@@ -263,6 +296,31 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
         await db_conn.execute("SET LOCAL ROLE authenticated;")
         with pytest.raises(InsufficientPrivilegeError):
             await db_conn.execute("DELETE FROM public.exercise_attempts;")
+
+    # 4. Intento de SELECT solution_query en exercises por authenticated
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("SELECT solution_query FROM public.exercises;")
+
+    # 5. Intento de SELECT solution_query en exercises por anon
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE anon;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("SELECT solution_query FROM public.exercises;")
+
+    # 6. Intento de INSERT directo en user_progress por authenticated
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        await db_conn.execute(f"SET LOCAL request.jwt.claim.sub = '{user_id}';")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute(
+                """
+                INSERT INTO public.user_progress (user_id, module_id, exercises_completed_count)
+                VALUES ($1::UUID, 'a0000000-0000-0000-0000-000000000001'::UUID, 10);
+                """,
+                user_id
+            )
 
     # --------------------------------------------------------------------------
     # E. Inspección Estricta de ACL en la RPC mediante aclexplode

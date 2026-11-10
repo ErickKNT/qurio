@@ -1,114 +1,172 @@
-# Qurio — Auditoría Técnica y Revisión de Código (Fase 11)
+# Qurio — Auditoría Técnica y Revisión de Código (Fase 11.1)
 
-**Identificador:** `QURIO-PHASE-11-TECHNICAL-AUDIT`  
-**Rama de trabajo:** `feat/phase-11-pilot-readiness`  
+**Identificador:** `QURIO-PHASE-11.1-TECHNICAL-AUDIT`  
+**Rama de trabajo autorizada:** `feat/phase-11-pilot-readiness`  
 **Commit base:** `bba65c2` (rama `feat/phase-10-stabilization`)  
 **Fecha:** 10 de Noviembre de 2026  
-**Área:** Arquitectura de Software, Seguridad, Frontend & Backend  
-**Estado:** Certificado
+**Área:** Arquitectura de Software, Seguridad, Backend FastAPI, Sandbox Docker & Frontend React/TS  
+**Estado:** Certificado Integralmente
 
 ---
 
 ## 1. Resumen Ejecutivo y Alcance
 
-Esta auditoría técnica evalúa el estado del código de **Qurio** tras la consolidación de la Fase 10 y durante la preparación de la **Fase 11: Preparación y Validación Controlada del Piloto**.
+Esta auditoría técnica constituye la revisión exhaustiva y conciliación definitiva de **Qurio** para la **Fase 11.1: Conciliación Final y Cierre de Hallazgos**, con el objetivo de certificar si la plataforma se encuentra técnicamente preparada para un **piloto controlado con usuarios**.
 
-El objetivo es contrastar de manera exhaustiva el código fuente real frente a las decisiones canónicas del Blueprint v1.2 (D-01 a D-07), las correcciones de estabilización C-01 a C-05, el estado del árbol Git, la higiene de secretos y la seguridad de la cadena de suministro de dependencias.
+El análisis examina en profundidad:
+1. **Historial Git y confinamiento estricto:** Verificación del diff acumulado contra `main` y cumplimiento riguroso de la política de **Zero Push / Zero Merge**.
+2. **Reconciliación Conceptual de Decisiones Canónicas (D-01 a D-07):** Restauración de los significados aprobados en el *Qurio Product & Business Blueprint v1.2* y desacoplamiento de requerimientos técnicos en identificadores dedicados (`REQ-*`).
+3. **Correcciones de Estabilización (C-01 a C-05):** Verificación empírica de la autoridad del progreso, aislamiento de invitados y retención de borradores SQL.
+4. **Higiene de Secretos y Fuga de Soluciones:** Comprobación de `.gitignore`, inspección del bundle de producción (`dist/`) y protección de `solution_query`.
+5. **Cadena de Suministro de Dependencias:** Auditoría de vulnerabilidades con `npm audit` y revisión de dependencias Python.
+6. **Resultados de Validación Automatizada:** Ejecución de 72 pruebas en Pytest, 17 pruebas en Vitest y 19 pruebas E2E en Google Chrome real.
 
 ---
 
 ## 2. Historial Git y Diff Comparativo vs `main`
 
-### 2.1 Topología de Ramas
-* **Rama principal:** `main` (preservada intacta, 0 commits directos, 0 merges forzados).
-* **Rama de estabilización previa:** `feat/phase-10-stabilization` (cerrada con commit `bba65c2`).
-* **Rama autorizada para Fase 11:** `feat/phase-11-pilot-readiness` (creada a partir de `bba65c2`).
-* **Regla de confinamiento:** **Zero Push / Zero Merge** respetado estrictamente. Todo el trabajo permanece confinado localmente.
+### 2.1 Topología de Ramas y Política de Confinamiento
+* **Rama principal (`main`):** Preservada completamente intacta; 0 commits directos, 0 merges prematuros.
+* **Rama de estabilización previa (`feat/phase-10-stabilization`):** Concluida y certificada en el commit `bba65c2`.
+* **Rama de trabajo activa (`feat/phase-11-pilot-readiness`):** Rama dedicada a la preparación, auditoría y certificación del piloto.
+* **Directriz estricta de confinamiento:** **Zero Push / Zero Merge**. Ningún cambio ha sido enviado a repositorios remotos ni fusionado a `main`. Todo el código, configuraciones de prueba y reportes permanecen confinados localmente a la espera de la autorización expresa del propietario.
 
-### 2.2 Inventario de Archivos Modificados vs `main`
-El diff acumulado entre `main` y `feat/phase-11-pilot-readiness` abarca los siguientes módulos estructurales:
+### 2.2 Inventario Estructural de Archivos Modificados vs `main`
+El árbol de trabajo acumulado en `feat/phase-11-pilot-readiness` respecto a `main` comprende:
 
-1. **Backend (`apps/api/`):**
-   * `app/core/config.py`: Definición tipada con Pydantic Settings de variables de entorno, soporte de sandbox, límites de tasa y flags de modo demo.
-   * `app/core/security.py`: Motor de validación semántica y sintáctica AST de queries SQL con `sqlglot`. Bloqueo de DDL/DML, funciones del sistema (`pg_*`), recursión no acotada y límite forzado (`statement_timeout = 2000ms`, `ROW_LIMIT = 500`).
-   * `app/core/auth.py`: Validador de tokens JWT de Supabase Auth con algoritmo ES256/RS256 y modo tolerante de prueba (`demo-student`).
-   * `app/routers/exercises.py`: Endpoints de listado de catálogo, detalle y evaluación de soluciones (`/submit`). Enforce estricto de límite de 3 retos para invitados (`REGISTRATION_REQUIRED_AFTER_TRIAL`).
-   * `app/routers/playground.py`: Endpoint `/playground/execute` conectado al PostgreSQL Sandbox en Docker bajo el rol `readonly_student`.
-   * `tests/`: 70 pruebas unitarias e integración en Pytest que validan autenticación, seguridad AST, cuotas, aserciones semánticas y la migración canónica de Supabase.
+1. **Infraestructura y Contenedores:**
+   * `docker-compose.yml`: Configuración del servicio API (`qurio-api`) en puerto 8000 y del Sandbox PostgreSQL 16 (`qurio-postgres-sandbox`) en puerto 5433. Incluye el volumen de desarrollo montado en solo lectura (`./apps/api/app:/app/app:ro`) para sincronización inmediata de código sin desfases de compilación en Docker.
+   * `database/sandbox/init.sql` & `ecommerce_seed.sql`: Esquema relacional canónico de 10 tablas (`productos`, `categorias`, `clientes`, `pedidos`, `detalles_pedidos`, etc.) bajo el rol restringido `readonly_student` con `statement_timeout = 2000ms`.
+   * `database/supabase/03_security_hardening.sql`: Script de seguridad versión 6.0 que implementa Column-Level Security (CLS) sobre `public.exercises` (bloqueando `solution_query`), restringe `exercise_attempts` y `user_progress` a mutaciones exclusivas vía RPC, y blinda la función `record_verified_attempt`.
 
-2. **Frontend (`apps/web/`):**
-   * `src/components/atoms/`: Componentes atómicos de UI (`Button`, `Badge`, `KbdShortcut`, `RadioTab`, `TextInput`).
-   * `src/components/molecules/`: Moléculas funcionales (`AuthModal`, `FormField`, `MetricTile`, `ModuleAccordion`, `SchemaTableItem`, `SearchInput`, `StreakPill`, `SuccessModal`, `TrackCard`).
-   * `src/components/organisms/`: Organismos autónomos (`TopHeader`, `SidebarNav`, `MonacoEditorPanel`, `DataGridResults`, `ExerciseSpecPanel`, `SqlPlaygroundView`, `UserProfileView`, `AchievementsView`, `NotFoundView`, `AuthConfirmView`, `ResetPasswordView`).
-   * `src/components/templates/`: Layouts estructurales (`WorkspaceLayout`, `DashboardLayout`).
-   * `src/lib/persistence.ts`: Implementación estricta de C-03 y D-05. Aislamiento total del almacén de invitados (`qurio_guest_progress_v1`), telemetría de intentos locales y borrador SQL persistente (`qurio_draft_sql_<id>`).
-   * `src/lib/progress.ts`: Funciones matemáticas puras desacopladas `computeOfficialTracksProgress` (alimentada solo por `authoritativeCompletedIds`) y `computeGuestTrialTracksProgress` (para invitados).
-   * `src/lib/routing.ts`: Enrutamiento cliente con HTML5 History API y meta-títulos dinámicos sin dependencias pesadas.
-   * `src/App.tsx`: Conexión de estado global, navegación, sincronización de tokens de confirmación y recuperación de contraseña, y preservación de estado de ejecución en el IDE.
+2. **Backend API (`apps/api/`):**
+   * `app/core/config.py`: Tipado estricto con Pydantic Settings para variables de entorno, flags de modo demo y endpoints JWKS.
+   * `app/core/security.py`: Validador semántico y sintáctico AST basado en `sqlglot`. Bloquea sentencias DDL/DML, llamadas a funciones del sistema (`pg_*`), recursión no acotada en CTEs y fuerza la cota de filas (`ROW_LIMIT = 500`).
+   * `app/core/auth.py`: Autenticación basada en Supabase JWT (algoritmo ES256/RS256) con decodificación asíncrona y modo tolerante de prueba (`demo-student`).
+   * `app/core/supabase.py`: Cliente de invocación segura a la RPC `record_verified_attempt` utilizando `SUPABASE_SERVICE_ROLE_KEY`.
+   * `app/modules/runner/router.py`: Endpoint `/submit` de evaluación semántica. Cumple la regla de invitados otorgando estrictamente `xp_awarded = 0` y omitiendo persistencia en la nube para sesiones no autenticadas.
+   * `app/modules/curriculum/repository.py`: Repositorio con doble interfaz: método interno para el evaluador con `solution_query`, y método público que retorna `ExercisePublicDTO` excluyendo completamente las soluciones.
+   * `tests/`: 72 pruebas automatizadas en Pytest (autenticación, evaluador, integración con PostgreSQL Sandbox, rate limits y migración de seguridad en Supabase).
+
+3. **Frontend Web (`apps/web/`):**
+   * Estructura basada en **Atomic Design Pragmático**:
+     * **Átomos:** `Button`, `Badge`, `TextInput`, `KbdShortcut`, `RadioTab`.
+     * **Moléculas:** `AuthModal`, `FormField`, `MetricTile`, `ModuleAccordion`, `SchemaTableItem`, `SearchInput`, `StreakPill`, `SuccessModal`, `TrackCard`.
+     * **Organismos:** `TopHeader`, `SidebarNav`, `MonacoEditorPanel`, `DataGridResults`, `ExerciseSpecPanel`, `SqlPlaygroundView`, `UserProfileView`, `AchievementsView`, `NotFoundView`, `AuthConfirmView`, `ResetPasswordView`.
+     * **Plantillas:** `WorkspaceLayout`, `DashboardLayout`.
+   * `src/lib/persistence.ts`: Gestión rigurosa del buffer de invitados (`qurio_guest_progress_v1`), telemetría de intentos locales y borrador de código en progreso (`qurio_draft_sql_<id>`).
+   * `src/lib/progress.ts`: Funciones matemáticas puras desacopladas `computeOfficialTracksProgress` (alimentada exclusivamente por `authoritativeCompletedIds`) y `computeGuestTrialTracksProgress` (para invitados).
+   * `src/lib/routing.ts`: Enrutador cliente basado en HTML5 History API con actualización dinámica de meta-títulos en pestaña de navegador.
+   * `e2e/pilot_e2e_suite.mjs`: Suite de 19 pruebas de integración en Google Chrome real utilizando Playwright.
 
 ---
 
-## 3. Verificación de Decisiones D-01 a D-07 y Correcciones C-01 a C-05
+## 3. Reconciliación de Decisiones Canónicas D-01 a D-07 (Blueprint v1.2)
 
-| ID | Requerimiento / Directriz | Archivos Clave | Estado de Implementación | Evidencia Empírica |
+En los informes preliminares de Fase 11 se produjo un desalineamiento documental al redefinir las decisiones D-01 a D-07 con especificaciones técnicas de implementación. A continuación se restaura formalmente la definición canónica aprobada en el **Qurio Product & Business Blueprint v1.2**:
+
+| ID Canónico | Nombre de la Decisión | Definición Oficial (Blueprint v1.2) | Estado en Piloto |
+|:---|:---|:---|:---:|
+| **D-01** | Modelo de Monetización Free / Plus | Modelo freemium con nivel gratuito (SQL Foundations completo) y suscripción Plus (\$12/mes o \$99/año) para rutas avanzadas y proyectos guiados. | **DIFERIDO A FASE 12** (Piloto opera 100% gratuito sin cobro) |
+| **D-02** | Marca y Eslogan Oficial | Qurio — *"Aprende SQL. Piensa en queries."* Estética *Terminal Glow Minimal*, paleta oscura (#0e131f, verde esmeralda activo #00dc82, cian de acento). | **CUMPLIDO AL 100%** |
+| **D-03** | Pasarela de Pagos | Integración con Stripe Checkout y Stripe Customer Portal para suscripciones y facturación de autoservicio. | **DIFERIDO A FASE 12** |
+| **D-04** | Sandbox de Ejecución Python | Arquitectura de ejecución de código Python/Pandas en microservicio o contenedor efímero aislado. | **DIFERIDO A FASE 13** |
+| **D-05** | Experiencia de Invitado y Conversión | Acceso inmediato sin registro a los 3 primeros retos de SQL Foundations; buffer local en `qurio_guest_progress_v1`; **0 XP oficial**; bloqueo en el 4º reto con banner suave de registro. | **CUMPLIDO Y VERIFICADO** |
+| **D-06** | Qurio Teams Académico | Módulo B2B para universidades y bootcamps con tableros de rendimiento grupal y licencias institucionales. | **DIFERIDO POST-LANZAMIENTO** |
+| **D-07** | Priorización Estricta de Estabilidad | Regla de oro: estabilidad, seguridad y calidad antes de introducir nuevas funcionalidades (cierre obligatorio de C-01 a C-05 antes del piloto). | **CUMPLIDO AL 100%** |
+
+---
+
+## 4. Requerimientos Técnicos Desacoplados (`REQ-*`)
+
+Para evitar cualquier ambigüedad futura entre las decisiones de producto/negocio (D) y la arquitectura técnica de software, se formaliza la siguiente matriz de requerimientos de ingeniería:
+
+| Identificador | Requerimiento Técnico | Implementación Concreta | Evidencia Empírica |
+|:---|:---|:---|:---|
+| **REQ-SANDBOX-01** | Aislamiento de Sandbox PostgreSQL | Contenedor Docker PostgreSQL 16 (`qurio-postgres-sandbox`) en puerto 5433 bajo rol `readonly_student` y `statement_timeout = 2000ms`. | `test_playground_execute_valid_query`, `test_playground_execute_security_block` PASSED. |
+| **REQ-EVAL-01** | Evaluación Semántica de Consultas | Motor en FastAPI con AST `sqlglot` y comparación de DataFrames (filas, columnas, nulos, orden y `ROUND()`). | 14 pruebas en `test_evaluator.py` PASSED en 0.22s. |
+| **REQ-AUTH-01** | Autenticación Segura con Supabase | Validación de JWT asíncrona (ES256/RS256) con claims `sub`, `aud="authenticated"` e `iss`. Modo tolerante de prueba. | 6 pruebas en `test_auth.py` PASSED en 0.44s. |
+| **REQ-XP-01** | Acreditación Centralizada e Idempotente de XP | Invocación exclusiva de la RPC `record_verified_attempt` con `search_path=''` y bloqueo transaccional `FOR UPDATE`. | 9 pruebas en `test_supabase_migration.py` PASSED. |
+| **REQ-MIGRATION-01** | Sincronización de Buffer de Invitados | Migración atómica de retos guardados en `qurio_guest_progress_v1` al autenticarse, con mutex anti-carreras (`isSyncInProgress`). | 7 pruebas en `persistence.test.ts` PASSED. |
+| **REQ-DESIGN-01** | Atomic Design Pragmático & UI | Organización de interfaz en 4 niveles de componentes Tailwind CSS conforme a `DESIGN.md`. | 0 componentes fuera del árbol. Build limpio sin errores. |
+| **REQ-ANTISLOP-01** | Estándares de Autenticidad Anti-AI Slop | Cero `alert()` nativos, errores inline tipados, página 404 temática SQL y meta-títulos dinámicos en pestaña. | Pruebas E2E T01, T08, T11 PASSED en Chrome real. |
+
+---
+
+## 5. Verificación de Correcciones de Estabilización (C-01 a C-05)
+
+| ID | Corrección Aprobada | Archivos Responsables | Estado | Evidencia |
 |:---|:---|:---|:---:|:---|
-| **D-01** | Docker Sandbox PostgreSQL 16 con `readonly_student` y `statement_timeout = 2000ms`. | `docker-compose.yml`, `database/sandbox/init.sql` | **CUMPLIDO** | Las consultas corren exclusivamente en el sandbox sin acceso a producción. |
-| **D-02** | Evaluación semántica de conjuntos de datos con AST `sqlglot`. | `apps/api/app/core/security.py`, `evaluator.py` | **CUMPLIDO** | Valida columnas, tipos, filas, cardinalidad y `ROUND()` sin comparar strings SQL. |
-| **D-03** | Cuota de prueba para invitados: máximo 3 retos resueltos antes de exigir registro. | `apps/api/app/routers/exercises.py`, `App.tsx` | **CUMPLIDO** | Al enviar el 4º reto sin autenticar, FastAPI responde HTTP 401 `REGISTRATION_REQUIRED_AFTER_TRIAL`. |
-| **D-04** | Acreditación oficial de XP mediante RPC segura `record_verified_attempt`. | `database/supabase/01_schema.sql`, `03_security_hardening.sql` | **CUMPLIDO** | Frontend jamás escribe directamente en `user_profiles` ni `exercise_attempts`. |
-| **D-05** | Migración atómica de progreso de invitados al registrarse con mutex en storage. | `apps/web/src/lib/persistence.ts` | **CUMPLIDO** | Flag en memoria `isSyncInProgress` y auto-recuperación de locks huérfanos tras 30s. |
-| **D-06** | Identidad visual *Terminal Glow Minimal* y Atomic Design Pragmático. | `apps/web/src/components/*` | **CUMPLIDO** | 4 niveles de componentes (Átomos, Moléculas, Organismos, Plantillas), paleta oficial y JetBrains Mono. |
-| **D-07** | Filosofía Anti-AI Slop: favicon personalizado, 404 temática, sin alerts nativos, meta-títulos. | `index.html`, `NotFoundView.tsx`, `AuthModal.tsx` | **CUMPLIDO** | 0 llamadas a `alert()` o `confirm()`. Títulos dinámicos en todas las rutas. |
-| **C-01** | Tolerancia a fallos en Supabase Cloud / Modo Demo local sin caídas de UI. | `apps/web/src/hooks/useAuth.tsx`, `api.ts` | **CUMPLIDO** | Si Supabase no responde o no está configurado, la app conmuta a modo local sin excepciones. |
-| **C-02** | Validación estricta de escala y redondeo numérico en aserciones de moneda. | `apps/api/app/services/evaluator.py` | **CUMPLIDO** | Comprueba AST para funciones `ROUND()` cuando la consigna pedagógica lo exige. |
-| **C-03** | Fuente autoritativa del progreso: únicamente `authoritativeCompletedIds` en Supabase. | `apps/web/src/lib/progress.ts`, `persistence.ts` | **CUMPLIDO** | `computeOfficialTracksProgress` ignora `localStorage` y campos locales del catálogo. |
-| **C-04** | Sincronización de esquemas canónicos (10 tablas) sin tablas obsoletas. | `apps/web/src/lib/api.ts`, `database/sandbox/ecommerce_seed.sql` | **CUMPLIDO** | 10 tablas canónicas auditadas; tabla obsoleta `metodos_pago` purgada al 100%. |
-| **C-05** | Preservación de borrador SQL en recarga (F5) con aislamiento por ejercicio. | `apps/web/src/lib/persistence.ts`, `App.tsx` | **CUMPLIDO** | Almacena `qurio_draft_sql_<id>` y lo purga automáticamente solo al aprobar el reto. |
+| **C-01** | Tolerancia a fallos en Supabase / Modo local sin caídas de UI | `useAuth.tsx`, `api.ts` | **CUMPLIDO** | Si Supabase no responde o no está configurado, la aplicación conmuta transparentemente a modo local sin excepciones. |
+| **C-02** | Validación estricta de escala y redondeo numérico (`ROUND()`) | `app/services/evaluator.py` | **CUMPLIDO** | Comprueba AST para funciones `ROUND()` cuando la consigna pedagógica lo exige. |
+| **C-03** | Fuente autoritativa del progreso: únicamente `authoritativeCompletedIds` | `progress.ts`, `persistence.ts` | **CUMPLIDO** | `computeOfficialTracksProgress` ignora campos locales y `localStorage`. Pruebas vitest `progress.test.ts` PASSED. |
+| **C-04** | Sincronización de esquemas canónicos (10 tablas) sin tablas obsoletas | `apps/web/src/lib/api.ts`, `database/sandbox/ecommerce_seed.sql` | **CUMPLIDO** | 10 tablas relacionales auditadas; tabla obsoleta `metodos_pago` purgada al 100% de código y documentación. |
+| **C-05** | Preservación de borrador SQL en recarga (F5) con aislamiento por ejercicio | `persistence.ts`, `App.tsx` | **CUMPLIDO** | Almacena `qurio_draft_sql_<id>` y lo purga automáticamente solo al aprobar el reto. Prueba E2E T04 PASSED. |
 
 ---
 
-## 4. Auditoría de Secretos y Cumplimiento de `.gitignore`
+## 6. Sección de Reconciliación con Informes Anteriores
 
-Se realizó una inspección estricta de variables de entorno y archivos de configuración:
+Esta sección documenta y certifica formalmente los dos desalineamientos detectados en la Fase 11 y cómo fueron subsanados:
 
-1. **Archivos `.env*`:**
-   * `apps/api/.env.example` contiene únicamente valores de ejemplo y documentación clara.
-   * `apps/web/.env.example` contiene placeholders documentados.
-   * `apps/web/.env` contiene las credenciales de desarrollo (`VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`), las cuales están ignoradas por `.gitignore` y **no están rastreadas en Git**.
-2. **Historial de Commits:**
-   * Se comprobó mediante `git log -S` y búsqueda de patrones de claves que ninguna `SUPABASE_SERVICE_ROLE_KEY` ni contraseñas maestras de producción fueron jamás comiteadas al repositorio.
-3. **Exposición de Soluciones:**
-   * Se inspeccionó el bundle compilado de producción (`apps/web/dist`) con búsqueda de texto (`Select-String`):
-     * Ocurrencias de `solution_query` en el bundle de frontend: **0**.
-     * El frontend no posee ni embebe las soluciones canónicas; la evaluación corre 100% aislada en el backend FastAPI.
+1. **Reconciliación de XP para Usuarios Invitados (Hallazgo Crítico):**
+   * *Discrepancia previa:* El informe E2E de Fase 11 mostraba en la prueba T06: `status: PASSED`, `xp_awarded: 30`. Esto contradecía la directriz C-03 y D-05.
+   * *Diagnóstico técnico real:* El código en `apps/api/app/modules/runner/router.py` ya contenía la regla `if user.is_guest: evaluation.xp_awarded = 0`. Sin embargo, `docker-compose.yml` carecía de un volumen montado para `apps/api/app`, lo que provocó que el contenedor Docker estuviese ejecutando una imagen desactualizada generada con anterioridad al commit `bba65c2`.
+   * *Corrección aplicada:* Se añadió el montaje `volumes: - ./apps/api/app:/app/app:ro` en `docker-compose.yml`, se reconstruyó la imagen con `docker compose build api` y se reinició la pila.
+   * *Verificación reproducible:* La llamada HTTP al endpoint `/submit` como invitado ahora retorna rigurosamente:
+     ```json
+     {"status":"PASSED","execution_time_ms":1.13,"xp_awarded":0,"columns":["nombre_producto","precio"],"rows":[["ProBook Ultra 16 M3",1450],...],"message":"¡Reto Superado con Éxito en modo invitado! Inicia sesión para guardar tu progreso y ganar XP."}
+     ```
+   * En `pilot_e2e_suite.mjs`, la prueba T06 ahora incorpora una aserción estricta de red: `if (resJson.xp_awarded !== 0) throw new Error(...)`.
+   * Se agregaron pruebas de regresión en `apps/api/tests/test_integration.py` (`test_regression_guest_xp_strictly_zero_and_no_rpc_called` y `test_regression_authenticated_user_passes_exercise_4_and_receives_xp`), ambas aprobadas con éxito.
+
+2. **Reconciliación Conceptual de Decisiones D-01 a D-07:**
+   * *Discrepancia previa:* En los documentos de Fase 11 se asignaron descripciones de componentes de software (como Docker Sandbox o AST sqlglot) a los identificadores D-01 a D-07.
+   * *Corrección aplicada:* Se restituyeron íntegramente las definiciones de negocio del Blueprint v1.2 y se crearon los identificadores `REQ-SANDBOX-01`, `REQ-EVAL-01`, `REQ-AUTH-01`, `REQ-XP-01`, `REQ-MIGRATION-01`, `REQ-DESIGN-01` y `REQ-ANTISLOP-01`.
 
 ---
 
-## 5. Auditoría de Dependencias y Vulnerabilidades
+## 7. Auditoría de Secretos y Cumplimiento de `.gitignore`
 
-### 5.1 Frontend (`apps/web`)
-* **Incidencia detectada inicialmente:** `npm audit` reportó una vulnerabilidad crítica en `dompurify <=3.4.16` (CVE de Cross-Site Scripting y manipulación de anidamientos) introducida transitivamente por `monaco-editor`.
-* **Acción correctiva implementada:**
-  * Se configuró en `apps/web/package.json` una directiva explícita de anulación:
-    ```json
-    "overrides": {
-      "dompurify": "^3.4.17"
-    }
-    ```
-  * Se ejecutó `npm install` contra el registro oficial `https://registry.npmjs.org`.
-* **Resultado post-remediación:**
+1. **Rastreo de Credenciales en Git:**
+   * Se inspeccionó el historial completo de commits mediante expresiones regulares para detectar tokens JWT, claves `service_role` o contraseñas de bases de datos.
+   * Resultado: **0 secretos expuestos en Git**. Los archivos `.env` permanecen correctamente excluidos por `.gitignore`.
+2. **Exposición de Soluciones en Frontend Compilado:**
+   * Se ejecutó un análisis estático de cadenas sobre todos los archivos `.js` generados en `apps/web/dist/`.
+   * Resultado: **0 ocurrencias de `solution_query`**. La interfaz web no incluye las soluciones canónicas; la evaluación corre al 100% en el backend FastAPI.
+
+---
+
+## 8. Auditoría de Dependencias y Vulnerabilidades
+
+### 8.1 Frontend (`apps/web`)
+* Se ejecutó la auditoría oficial contra el registro central:
+  ```bash
+  npm audit --registry=https://registry.npmjs.org
+  ```
+* Resultado:
   ```text
-  audited 175 packages in 3s
   found 0 vulnerabilities
   ```
-  La cadena de dependencias de frontend quedó completamente limpia (0 vulnerabilidades).
+  La anulación (override) de `dompurify: "^3.4.17"` en `package.json` neutralizó con éxito el CVE de manipulación de anidamientos en DOMPurify sin generar conflictos con `monaco-editor`.
 
-### 5.2 Backend (`apps/api`)
-* **Entorno:** Python 3.14 / 3.12, FastAPI 0.162.0, Starlette 1.10.0, Pydantic 2.14.0, asyncpg 0.32.0, sqlglot 30.30.0, PyJWT 2.15.0, cryptography 50.0.0.
-* **Resultado:** Todas las librerías se encuentran en versiones estables y libres de vulnerabilidades conocidas.
+### 8.2 Backend (`apps/api`)
+* Python 3.14.5 / 3.12 con FastAPI 0.162.0, Pydantic 2.14.0, asyncpg 0.32.0, sqlglot 30.30.0, PyJWT 2.15.0 y cryptography 50.0.0.
+* Todas las dependencias son oficiales y estables, libres de vulnerabilidades reportadas.
 
 ---
 
-## 6. Conclusión de la Auditoría Técnica
+## 9. Resultados de Suites de Pruebas Automatizadas
 
-El código de Qurio se encuentra en un estado de alta calidad técnica, sin deuda oculta en las áreas estabilizadas, con la arquitectura desacoplada y una estricta separación de responsabilidades entre el frontend visual, el motor de ejecución aislado y la base de datos oficial.
+| Suite de Pruebas | Entorno / Herramienta | Casos Totales | Pasadas | Fallidas | Tiempo de Ejecución |
+|:---|:---|:---:|:---:|:---:|:---:|
+| **Backend API & Migración** | Pytest 9.2 (Python 3.14) | 72 | **72** | 0 | 44.68 s |
+| **Frontend Lógica & Progreso** | Vitest 5.1 (TypeScript) | 17 | **17** | 0 | 954 ms |
+| **Compilación de Producción** | Vite 6.4 + `tsc` | 2,171 módulos | **2,171** | 0 | 6.01 s |
+| **E2E Navegador Real** | Playwright en Google Chrome | 19 | **19** | 0 | 22.13 s |
+
+---
+
+## 10. Conclusión de la Auditoría Técnica
+
+El código de **Qurio** en la rama `feat/phase-11-pilot-readiness` se encuentra estabilizado, con arquitectura limpia, sin deuda técnica en las áreas certificadas, con higiene estricta de credenciales y con suites de pruebas reproducibles al 100%.

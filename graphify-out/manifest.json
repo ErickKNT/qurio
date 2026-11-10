@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_integration.py": {
-    "mtime": 1794340817.48329,
-    "seen": 1794347545.2947664,
-    "ast_hash": "affc5053199332656bbfa972714dbffd",
+    "mtime": 1794348521.037995,
+    "seen": 1794349581.302071,
+    "ast_hash": "e51d180ed7f0a4d87e2c23325a646283",
     "semantic_hash": ""
   },
   "apps/api/tests/test_security.py": {
@@ -132,8 +132,8 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794347085.6828933,
-    "seen": 1794347545.2967436,
+    "mtime": 1794347661.629007,
+    "seen": 1794349581.3041966,
     "ast_hash": "8921e4112de6cc8d5eaf9ba54ea7d1ed",
     "semantic_hash": ""
   },
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "docker-compose.yml": {
-    "mtime": 1794265802.0936868,
-    "seen": 1794266808.2084124,
-    "ast_hash": "713e1d5baac950b16568ac515f9d28ae",
+    "mtime": 1794348422.1410007,
+    "seen": 1794349581.320494,
+    "ast_hash": "46c2710d803942cee364634effcba395",
     "semantic_hash": ""
   },
   "skills-lock.json": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794347522.8759248,
-    "seen": 1794347545.3279276,
-    "ast_hash": "5140e8b281b067c42e1ece43f19fbe1e",
+    "mtime": 1794349567.6990652,
+    "seen": 1794349581.335242,
+    "ast_hash": "513e03c2033d8ed8bd3c9c1ce3293869",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -870,9 +870,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_supabase_migration.py": {
-    "mtime": 1794270113.8036454,
-    "seen": 1794336289.6640873,
-    "ast_hash": "95414f60033ed8989f9aba2bec4bafd7",
+    "mtime": 1794348999.6068704,
+    "seen": 1794349581.3029835,
+    "ast_hash": "7d731777f25b0416d1ad9bfdae171f3a",
     "semantic_hash": ""
   },
   "docs/security/SECURITY_AUDIT.md": {
@@ -978,9 +978,9 @@
     "semantic_hash": ""
   },
   "apps/web/e2e/pilot_e2e_suite.mjs": {
-    "mtime": 1794347034.4215255,
-    "seen": 1794347545.2964058,
-    "ast_hash": "b0d1aa064c7152d339eb41b00547b237",
+    "mtime": 1794349319.9574957,
+    "seen": 1794349581.3029873,
+    "ast_hash": "d80c92b9691a3bfc79721951f65b7040",
     "semantic_hash": ""
   },
   "apps/web/e2e/spa_server.mjs": {
@@ -996,27 +996,27 @@
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_E2E_REPORT.md": {
-    "mtime": 1794347445.5452888,
-    "seen": 1794347545.3298402,
-    "ast_hash": "0856b87c04cb3783acaa9e2229940765",
+    "mtime": 1794349513.2055964,
+    "seen": 1794349581.3373857,
+    "ast_hash": "029e3d505135f3a2e5018d25a06f3576",
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_PILOT_READINESS.md": {
-    "mtime": 1794347500.2690241,
-    "seen": 1794347545.3298428,
-    "ast_hash": "b5454d3917853c71fb8e86604f0e3e4a",
+    "mtime": 1794349536.4098866,
+    "seen": 1794349581.3373885,
+    "ast_hash": "6d07391d6d9896d151f2a01d2aacf174",
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md": {
-    "mtime": 1794347474.4812095,
-    "seen": 1794347545.329845,
-    "ast_hash": "9b96ddc3b96c548f211a5da9fdac94df",
+    "mtime": 1794349482.6642363,
+    "seen": 1794349581.3373907,
+    "ast_hash": "cbbf1a94e97694258d4eee630487dc79",
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md": {
-    "mtime": 1794347416.517926,
-    "seen": 1794347545.3298469,
-    "ast_hash": "1eab010e1464bc06670f1a12a6b6a874",
+    "mtime": 1794349444.150154,
+    "seen": 1794349581.3373923,
+    "ast_hash": "e0969b36709edbd29159f6b93cc9dfb9",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

@@ -214,6 +214,11 @@ async function runE2ESuite() {
       const resJson = await submitRes.json();
       console.log('   [T06 Debug] API Submit Response:', JSON.stringify(resJson).slice(0, 150));
 
+      // Verificación estricta C-03 / D-05: Huéspedes NUNCA reciben XP oficial
+      if (resJson.xp_awarded !== 0) {
+        throw new Error(`Infracción C-03 / D-05: La API devolvió xp_awarded = ${resJson.xp_awarded} para un invitado. Debe ser estrictamente 0.`);
+      }
+
       // Esperar indicación de reto superado en UI
       await page.waitForFunction(() => {
         const text = document.body.textContent || '';
@@ -293,23 +298,28 @@ async function runE2ESuite() {
       // Cambiar a modo Registro
       await page.click('button:has-text("Registrarse")');
       await page.waitForSelector('text=Crea tu Cuenta de Ingeniero', { timeout: 3000 });
+      await page.waitForTimeout(300);
 
       // Probar validación inline: contraseña corta (<6 chars)
-      await page.fill('input[type="email"]', 'pilot_user_01@qurio.dev');
       await page.fill('input[placeholder="tu_usuario_sql"]', 'pilot_student');
+      await page.fill('input[type="email"]', 'pilot_user_01@qurio.dev');
       await page.fill('input[type="password"]', '123');
-      await page.click('button:has-text("Crear Cuenta")');
-      await page.waitForSelector('text=al menos 6 caracteres', { timeout: 3000 });
+      await page.waitForTimeout(200);
+      await page.locator('form button[type="submit"]').click();
+      await page.waitForSelector('text=al menos 6 caracteres', { timeout: 5000 });
       logPass('T08: Validación Inline de Contraseña en Registro', 'Error inline capturado sin alerts nativos');
 
       // Completar contraseña válida
       await page.fill('input[type="password"]', 'SafePilotPass2026!');
-      await page.click('button:has-text("Crear Cuenta")');
+      await page.waitForTimeout(200);
+      await page.locator('form button[type="submit"]').click();
 
       // Esperar pantalla de confirmación
       await page.waitForSelector('text=CORREO DE ACTIVACIÓN ENVIADO', { timeout: 5000 });
       logPass('T08.1: Pantalla Interactiva de Activación', 'Feedback claro con correo enviado');
     } catch (err) {
+      const modalText = await page.evaluate(() => document.querySelector('[role="dialog"]')?.textContent || document.body.textContent || '').catch(() => '');
+      console.error('   [T08 Debug Modal Text]:', modalText.slice(0, 400));
       logFail('T08: Flujo de Registro (Sign Up)', err);
     } finally {
       // Garantizar cierre del modal para no bloquear siguientes pruebas

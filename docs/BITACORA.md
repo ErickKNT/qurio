@@ -827,3 +827,48 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
   * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)
   * [`docs/audits/QURIO_PHASE_11_PILOT_READINESS.md`](audits/QURIO_PHASE_11_PILOT_READINESS.md)
+
+---
+
+### Entrada 28: Fase 11.1 — Conciliación Final, Cierre de Hallazgos y Certificación del Piloto
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (mantenida estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver definitivamente las discrepancias detectadas en los informes preliminares de Fase 11, subsanar la caché desactualizada del contenedor Docker en la evaluación de invitados, blindar `03_security_hardening.sql` con nombres canónicos de columnas, restaurar las decisiones D-01 a D-07 del Blueprint v1.2 y generar evidencia reproducible al 100%.
+* **Actividades y Logros Clave:**
+  1. **Resolución de la Discrepancia Crítica de XP en Invitados (C-03 & D-05):**
+     * **Causa Raíz:** El código en `apps/api/app/modules/runner/router.py` ya contaba con la cota `xp_awarded = 0`, pero `docker-compose.yml` carecía de un volumen montado para `apps/api/app`, ejecutando una imagen desfasada previa al commit `bba65c2` que devolvía `xp_awarded: 30`.
+     * **Corrección:** Se agregó el volumen `./apps/api/app:/app/app:ro` en `docker-compose.yml`, se reconstruyó la imagen con `docker compose build api` y se reinició la pila.
+     * **Validación Empírica:** La llamada HTTP al endpoint `/submit` como invitado devuelve taxativamente `"xp_awarded": 0`.
+     * **Regresiones:** Se añadieron 2 pruebas en `apps/api/tests/test_integration.py` (`test_regression_guest_xp_strictly_zero_and_no_rpc_called` y `test_regression_authenticated_user_passes_exercise_4_and_receives_xp`). Total Pytest: **72 pruebas pasadas**.
+  2. **Endurecimiento Riguroso de `03_security_hardening.sql` (v6.0):**
+     * Se auditaron las columnas físicas de `public.exercises` (`id, module_id, title, prompt, initial_code, target_database, xp_reward, difficulty, check_order, sort_order, created_at`), eliminando referencias erróneas a columnas ficticias (`track_id`, `description`).
+     * Se implementó Column-Level Security (CLS) sobre `exercises`: `solution_query` queda completamente denegada para `anon` y `authenticated`, siendo accesible únicamente por `service_role`.
+     * Se blindó `public.user_progress` contra modificaciones directas de estudiantes, delegando actualizaciones exclusivamente a la RPC `record_verified_attempt`.
+     * Se corrigió la firma exacta de 8 parámetros de la RPC: `record_verified_attempt(UUID, UUID, TEXT, VARCHAR, INT, TEXT, INT, INT)`.
+     * Se verificó en `test_supabase_migration.py`: 9 pruebas de privilegios efectivos y transacciones aprobadas al 100%.
+  3. **Reconciliación Conceptual de Decisiones D-01 a D-07:**
+     * Se restauraron las definiciones de producto del Blueprint v1.2 (D-01: Free/Plus, D-02: Marca y eslogan, D-03: Stripe diferido, D-04: Python diferido, D-05: Invitados 3 retos con 0 XP, D-06: Teams diferido, D-07: Estabilidad prioritaria).
+     * Se formalizaron identificadores técnicos desacoplados: `REQ-SANDBOX-01`, `REQ-EVAL-01`, `REQ-AUTH-01`, `REQ-XP-01`, `REQ-MIGRATION-01`, `REQ-DESIGN-01`, `REQ-ANTISLOP-01`.
+  4. **Clasificación Honesta y Transparente de la Suite E2E:**
+     * Se clasificaron las 19 pruebas de `pilot_e2e_suite.mjs` en 4 niveles de fidelidad:
+       * **Tier A (12 pruebas):** Navegador real contra API local y Docker PostgreSQL Sandbox real.
+       * **Tier B (3 pruebas):** Intercepción de rutas de red (`page.route()`) para proteger la nube.
+       * **Tier C (3 pruebas):** Pruebas de almacenamiento local (`localStorage`).
+       * **Tier D:** Flujos que requieren infraestructura cloud real delimitados con claridad.
+     * En T06 se agregó la aserción estricta de red `if (resJson.xp_awarded !== 0) throw new Error(...)`, verificando `xp_awarded === 0`.
+  5. **Baterías Automatizadas Consolidadas:**
+     * Backend Pytest: **72/72 pruebas pasadas** (44.68s).
+     * Frontend Vitest: **17/17 pruebas pasadas** (954ms).
+     * Compilación de producción Vite: **Limpia (0 errores)** en 6.01s (2,171 módulos, 0 fugas de `solution_query`).
+     * Seguridad de dependencias: `npm audit` reportó **0 vulnerabilidades**.
+     * E2E Google Chrome: **19/19 pruebas pasadas** al 100%.
+  6. **Contención Git y Veredicto Final:**
+     * Rama de trabajo: `feat/phase-11-pilot-readiness`.
+     * Política respetada: Zero Push, Zero Merge, cero modificaciones en `main`.
+     * **Veredicto:** **LISTO PARA PILOTO CON RESTRICCIONES** (requiere que el propietario aplique `03_security_hardening.sql` en Supabase Cloud antes de entregar accesos).
+* **Entregables Documentales Reconciliados y Actualizados:**
+  * [`docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md`](audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md)
+  * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
+  * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)
+  * [`docs/audits/QURIO_PHASE_11_PILOT_READINESS.md`](audits/QURIO_PHASE_11_PILOT_READINESS.md)

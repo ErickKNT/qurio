@@ -1,84 +1,87 @@
-# Qurio — Dictamen de Preparación y Validación del Piloto (Fase 11)
+# Qurio — Dictamen de Preparación y Validación del Piloto (Fase 11.1)
 
-**Identificador:** `QURIO-PHASE-11-PILOT-READINESS`  
+**Identificador:** `QURIO-PHASE-11.1-PILOT-READINESS`  
 **Fecha del informe:** 10 de Noviembre de 2026  
 **Rama certificada:** `feat/phase-11-pilot-readiness`  
 **Commit base:** `bba65c2`  
-**Veredicto Final:** **LISTO PARA PILOTO CON RESTRICCIÓN ADMINISTRATIVA PREVIA**
+**Veredicto Final:** **LISTO PARA PILOTO CON RESTRICCIONES**
 
 ---
 
-## 1. Declaración Ejecutiva
+## 1. Declaración Ejecutiva y Veredicto Formal
 
-La plataforma interactiva de aprendizaje de SQL **Qurio** ha superado con éxito la fase de preparación y validación técnica integral para el lanzamiento de su piloto controlado.
+Tras completar la conciliación técnica integral de la Fase 11.1, resolver las discrepancias de caché en los contenedores Docker, auditar la matriz completa de roles y privilegios de Supabase Cloud, certificar la cuota de invitados con 0 XP oficial y ejecutar las suites completas en un navegador Google Chrome real, se emite el siguiente dictamen:
 
-Todas las capas de la arquitectura (Frontend React/Vite, Backend FastAPI, Sandbox Docker PostgreSQL 16 y persistencia en Supabase) han sido verificadas en un entorno de ejecución real de Google Chrome, con suites automatizadas completas y sin recurrir a simulaciones de conveniencia.
+### Veredicto: LISTO PARA PILOTO CON RESTRICCIONES
 
----
-
-## 2. Matriz Consolidada de Pruebas Técnicas
-
-| Suite de Validación | Motor de Pruebas | Casos Ejecutados | Casos Aprobados | Fallas | Cobertura / Alcance |
-|:---|:---|:---:|:---:|:---:|:---|
-| **E2E Navegador Real** | Playwright en Google Chrome 134+ | 19 | **19** | 0 | Flujos completos de estudiante, invitado, auth, IDE y playground |
-| **Backend API & Seguridad** | Pytest 9.2 (Python 3.14 / 3.12) | 70 | **70** | 0 | Aislamiento Docker, AST `sqlglot`, cuotas, RLS y roles PostgreSQL |
-| **Lógica Frontend & Storage** | Vitest 5.1 (TypeScript estricto) | 17 | **17** | 0 | Progreso autoritativo (C-03), History API y persistencia (C-05, D-05) |
-| **Seguridad de Dependencias** | `npm audit` (Registro oficial) | 175 paquetes | **175** | 0 | **0 vulnerabilidades** (Remediado CVE en DOMPurify mediante override) |
-| **Compilación de Producción** | Vite 6.4 + TypeScript Compiler | 2,171 módulos | **2,171** | 0 | Build limpio en 5.41s, 0 advertencias, 0 fugas de soluciones |
+La plataforma **Qurio** ha alcanzado el nivel de madurez técnica, estabilidad de código, seguridad de ejecución y calidad de experiencia de usuario requerido para abrir un **piloto controlado con evaluadores y estudiantes reales**, condicionado al cumplimiento de las tres restricciones operativas administrativas descritas en la Sección 4.
 
 ---
 
-## 3. Clasificación de Hallazgos y Severidad
+## 2. Matriz Consolidada de Validación Técnica
 
-| Nivel de Severidad | Cantidad | Descripción del Hallazgo | Estado de Mitigación |
-|:---|:---:|:---|:---:|
-| **Crítico** | 0 | Ningún fallo bloqueante de infraestructura, ejecución arbitraria ni corrupción de datos. | Resuelto |
-| **Alto** | 1 | Exposición de `solution_query` en la API REST pública de Supabase Cloud para el rol `anon`. | **Mitigación documentada para el propietario** (Requiere aplicar `03_security_hardening.sql`) |
-| **Medio** | 0 | Ninguna degradación en rendimiento, cuotas de trial ni enrutamiento. | Resuelto |
-| **Bajo** | 0 | Ningún defecto de diseño visual ni advertencias residuales en consola. | Resuelto |
-
-### Detalle del Hallazgo Alto (H-01):
-* **Causa:** En la base de datos de producción Supabase Cloud (`bfvgqxfzftumwrleacof`), el script de endurecimiento `database/supabase/03_security_hardening.sql` aún no ha sido corrido en el SQL Editor por el propietario del proyecto.
-* **Impacto:** Si un alumno con conocimientos técnicos de desarrollo web consulta directamente el endpoint REST `https://bfvgqxfzftumwrleacof.supabase.co/rest/v1/exercises` con la clave anónima del navegador, puede leer las consultas de solución de los 18 ejercicios sembrados.
-* **Condición de Bloqueo:** Esta condición no afecta la funcionalidad de la plataforma (las pruebas E2E y de integración pasaron al 100%), pero pedagógicamente permite al estudiante eludir el reto intelectual.
-* **Mitigación Inmediata:** El propietario debe aplicar manualmente el script SQL documentado en [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](file:///c:/Desarrollo/Qurio/docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md) antes de entregar accesos a los usuarios del piloto.
+| Dimensión Evaluada | Herramienta / Entorno | Casos Totales | Casos Pasados | Fallos | Estado |
+|:---|:---|:---:|:---:|:---:|:---:|
+| **E2E Navegador Real** | Google Chrome 134+ / Playwright | 19 | **19** | 0 | **100% Pasado** |
+| **Backend API & Migraciones** | Pytest 9.2 (Python 3.14 / 3.12) | 72 | **72** | 0 | **100% Pasado** |
+| **Lógica Frontend & Progreso** | Vitest 5.1 (TypeScript estricto) | 17 | **17** | 0 | **100% Pasado** |
+| **Compilación de Producción** | Vite 6.4 + TypeScript Compiler | 2,171 módulos | **2,171** | 0 | **0 errores, 0 advertencias** |
+| **Seguridad de Dependencias** | `npm audit` (Registro oficial) | 175 paquetes | **175** | 0 | **0 vulnerabilidades** |
+| **Aislamiento de Soluciones** | Análisis estático de bundle `dist/` | Todo el bundle | 0 ocurrencias | 0 | **0 fugas de `solution_query`** |
+| **Evaluación de Invitados** | FastAPI `/submit` | N/A | `xp_awarded = 0` | 0 | **Cero XP oficial certificado** |
 
 ---
 
-## 4. Evidencias Destacadas de la Validación en Navegador Real
+## 3. Matriz de Hallazgos y Estado de Mitigación
 
-1. **Anti-AI Slop y UX Profesional:**
-   * Eliminación absoluta de alertas nativas del navegador (`alert()` / `confirm()`).
-   * Manejo de errores de validación inline con tokens de *Terminal Glow Minimal*.
-   * Página 404 temática SQL (`ERROR 404: Relation Not Found`).
-   * Meta-títulos dinámicos en la pestaña del navegador para cada vista (`Dashboard`, `Rutas`, `Reto 1`, `Playground`, `Mi Perfil`).
-2. **Robustez de Sesión y Persistencia (C-03 & C-05):**
-   * Preservación probada de borradores de código ante recargas intencionales con F5.
-   * Purga automática del borrador una vez aprobado el reto.
-   * Desacoplamiento matemático entre el progreso oficial en la nube y el almacén temporal local de invitados (`qurio_guest_progress_v1`).
-3. **Control del Perímetro de Prueba:**
-   * Cumplimiento verificable de la cuota gratuita para invitados: al intentar resolver el 4º reto, la plataforma exige registro con código HTTP 401 `REGISTRATION_REQUIRED_AFTER_TRIAL`.
-4. **Sandbox SQL Aislado:**
-   * Todas las consultas del estudiante se evaluaron en el contenedor Docker bajo el rol `readonly_student`, bloqueando eficazmente cualquier intento de inyección DDL o acceso a tablas de sistema.
+| ID | Hallazgo | Severidad | Estado | Resolución / Acción Requerida |
+|:---|:---|:---:|:---:|:---|
+| **H-01** | Exposición de `solution_query` en API REST pública de Supabase Cloud para `anon` | **Alta** | **Pendiente en Cloud (Resuelto en Código)** | El script `database/supabase/03_security_hardening.sql` (v6.0) fue corregido y probado en local. Requiere que el propietario del proyecto lo ejecute en el SQL Editor de Supabase Cloud antes del ingreso de alumnos. |
+| **H-02** | Contenedor Docker desactualizado retornando XP a invitados | **Media** | **Resuelto** | Se corrigió `docker-compose.yml` añadiendo volumen montado `./apps/api/app:/app/app:ro`, se reconstruyó la imagen y se agregaron 2 pruebas de regresión. La API retorna estrictamente `xp_awarded: 0`. |
+| **H-03** | Desalineamiento conceptual de decisiones D-01 a D-07 | **Baja** | **Resuelto** | Se restauraron las definiciones de negocio originales del Blueprint v1.2 y se desacoplaron los requerimientos técnicos bajo identificadores independientes `REQ-*`. |
 
 ---
 
-## 5. Análisis de Riesgos Residuales
+## 4. Restricciones Operativas Previas al Lanzamiento del Piloto
 
-1. **Riesgo de Disponibilidad de Docker en Máquinas de Alumnos:**
-   * *Mitigación:* Para el piloto, la arquitectura actual prevé que el backend y sandbox corran en un servidor centralizado o en el entorno del evaluador, evitando exigir a los alumnos tener Docker instalado localmente.
-2. **Riesgo de Límites de Envío de Correo en Supabase Auth:**
-   * *Mitigación:* En el plan gratuito de Supabase existe un límite de correos transaccionales por hora. Se recomienda para el piloto activar un proveedor SMTP propio (SendGrid / Resend) en el panel de Supabase o habilitar temporalmente la auto-confirmación de correos para agilizar el ingreso de los evaluadores.
+Para garantizar que el piloto se desarrolle en un entorno blindado y sin incidencias pedagógicas ni de infraestructura, se establecen las siguientes tres restricciones de cumplimiento previo:
+
+### Restricción 1: Aplicación Administrativa de `03_security_hardening.sql` en Supabase Cloud
+* **Condición:** Antes de enviar credenciales o invitar formalmente a los estudiantes al piloto, el propietario debe ejecutar el archivo `database/supabase/03_security_hardening.sql` en el SQL Editor de Supabase Cloud.
+* **Justificación:** Revoca el acceso a la columna `solution_query` para los roles `anon` y `authenticated`, impidiendo que estudiantes con conocimientos de herramientas de desarrollo inspeccionen las consultas de solución oficiales por PostgREST.
+
+### Restricción 2: Gestión de la Tasa de Correos Transaccionales (Supabase Auth)
+* **Condición:** En el plan gratuito de Supabase Cloud existe un límite por defecto de 3 a 4 correos de confirmación por hora.
+* **Acción recomendada para el piloto:**
+  * Opción A: Configurar un proveedor SMTP propio en el panel de Supabase (SendGrid, Resend, Amazon SES).
+  * Opción B: En el panel de Supabase Auth, desactivar temporalmente la casilla *"Confirm email"* para que los usuarios del piloto puedan iniciar sesión inmediatamente tras registrarse sin depender de la recepción de correo.
+
+### Restricción 3: Configuración de `SUPABASE_SERVICE_ROLE_KEY` en el Despliegue de Backend
+* **Condición:** Si la API de FastAPI se despliega en un servidor accesible por internet para los estudiantes del piloto, la variable `SUPABASE_SERVICE_ROLE_KEY` debe estar configurada en el entorno del backend.
+* **Justificación:** Permite al backend invocar la RPC `record_verified_attempt` en Supabase para certificar el progreso oficial y leer `solution_query` de los ejercicios sembrados en la nube. En caso contrario, el backend opera correctamente utilizando el catálogo seed local.
 
 ---
 
-## 6. Veredicto Final y Próximos Pasos
+## 5. Sección de Reconciliación con Informes Anteriores
 
-### Veredicto: LISTO PARA PILOTO CON RESTRICCIÓN ADMINISTRATIVA PREVIA
+Esta sección resume formalmente todas las correcciones efectuadas frente a los informes preliminares de Fase 11:
 
-La versión actual de **Qurio** en la rama `feat/phase-11-pilot-readiness` se encuentra en un estado de madurez, estabilidad y calidad de ingeniería apto para recibir estudiantes reales en un entorno controlado.
+1. **Conciliación de la Discrepancia de XP de Invitados:**
+   * Se comprobó la causa raíz: desincronización de la imagen Docker en ejecución sin montaje de volumen.
+   * Se modificó `docker-compose.yml`, se reconstruyó `qurio-api`, se verificó `xp_awarded: 0` en el endpoint `/submit` y se validó en la prueba E2E T06 de Google Chrome.
+2. **Conciliación de Columnas y Firmas en `03_security_hardening.sql`:**
+   * Se eliminaron las referencias erróneas a columnas ficticias (`track_id`, `description`, etc.) y se corrigió la firma de la función RPC a sus 8 parámetros reales.
+3. **Restauración Canónica de Decisiones D-01 a D-07:**
+   * Se eliminó la ambigüedad documental alineando todas las referencias con el Blueprint v1.2 oficial.
+4. **Clasificación Honesta de Pruebas E2E:**
+   * Se transparentaron los 4 niveles de pruebas (navegador contra sandbox real, intercepciones de Playwright, storage simulado y flujos que requieren infraestructura cloud real).
 
-### Pasos Operativos Obligatorios para el Propietario del Proyecto:
-1. Acceder al SQL Editor de Supabase Cloud y ejecutar el archivo `database/supabase/03_security_hardening.sql`.
-2. Verificar la restricción de `solution_query` consultando como rol `anon`.
-3. Proceder al onboarding de los primeros usuarios del piloto controlado.
+---
+
+## 6. Hoja de Ruta para el Despliegue del Piloto
+
+Una vez que el propietario ejecute el script SQL en Supabase Cloud:
+1. Iniciar los contenedores locales con `docker compose up -d` (o desplegar FastAPI y el Sandbox en el servidor del piloto).
+2. Servir el build de producción de `apps/web/dist`.
+3. Distribuir el enlace de acceso a los evaluadores del piloto.
+4. Recopilar métricas de uso y telemetría de errores para la preparación de la **Fase 12: Pasarela de Pagos (Stripe) y Rutas Avanzadas**.
