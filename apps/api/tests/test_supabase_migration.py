@@ -744,43 +744,223 @@ async def test_user_progress_consistency_on_failed_and_error(db_conn, create_tes
 
 
 # ==============================================================================
-# 6. REGLAS FUNCIONALES DE XP: APROBACIÓN CON 0 XP
+# 6. REGLAS FUNCIONALES DE XP E IDEMPOTENCIA DESACOPLADA (FASE 11.2)
 # ==============================================================================
 
 @pytest.mark.asyncio
-async def test_first_pass_with_zero_xp_counts_as_passed(db_conn, create_test_user):
+async def test_regression_scenario_1_first_pass_with_xp(db_conn, create_test_user):
+    """Escenario 1: Primera aprobación legítima con XP."""
+    user_id = await create_test_user("scen1_user")
+    ex1 = "e0000000-0000-0000-0000-000000000001"  # xp_reward = 30
+
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        row = await db_conn.fetchrow(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30) AS res;",
+            user_id, ex1
+        )
+        res = json.loads(row["res"])
+        assert res["success"] is True
+        assert res["already_passed"] is False
+        assert res["already_awarded"] is False
+        assert res["xp_awarded"] == 30
+        assert res["total_xp"] == 30
+
+    # Verificar BD física
+    attempts = await db_conn.fetch(
+        "SELECT status, xp_awarded FROM public.exercise_attempts WHERE user_id = $1 AND exercise_id = $2;",
+        user_id, ex1
+    )
+    assert len(attempts) == 1
+    assert attempts[0]["status"] == "PASSED"
+    assert attempts[0]["xp_awarded"] == 30
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_2_second_pass_no_duplicate_xp(db_conn, create_test_user):
+    """Escenario 2: Segunda aprobación del mismo reto no otorga XP adicional (Idempotencia)."""
+    user_id = await create_test_user("scen2_user")
+    ex1 = "e0000000-0000-0000-0000-000000000001"
+
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        # Primer intento: cobra 30 XP
+        await db_conn.execute(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30);",
+            user_id, ex1
+        )
+        # Segundo intento: solicita 30 XP pero ya fue premiado
+        row2 = await db_conn.fetchrow(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 12, NULL, 0, 30) AS res;",
+            user_id, ex1
+        )
+        res2 = json.loads(row2["res"])
+        assert res2["success"] is True
+        assert res2["already_passed"] is True
+        assert res2["already_awarded"] is True
+        assert res2["xp_awarded"] == 0
+        assert res2["total_xp"] == 30
+
+        # Tercer intento: modo práctica con 0 XP solicitado
+        row3 = await db_conn.fetchrow(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 15, NULL, 0, 0) AS res;",
+            user_id, ex1
+        )
+        res3 = json.loads(row3["res"])
+        assert res3["xp_awarded"] == 0
+        assert res3["total_xp"] == 30
+
+    profile_xp = await db_conn.fetchval("SELECT xp FROM public.user_profiles WHERE id = $1;", user_id)
+    assert profile_xp == 30
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_3_and_4_first_pass_zero_xp_then_legitimate_reward(db_conn, create_test_user):
     """
-    Demuestra la regla funcional canónica de Qurio:
-    Si un ejercicio es aprobado con 0 XP (p_xp_to_award = 0), el ejercicio queda
-    registrado como PASSED. Intentos posteriores reconocen que ya fue superado
-    (already_passed = TRUE) y no duplican ni otorgan XP tardío.
+    Escenarios 3 y 4:
+    3. Primera aprobación con cero XP (ej. práctica o migración).
+    4. Aprobación posterior donde el usuario reclama la recompensa legítima,
+       verificando que un intento previo con 0 XP no impida recibir el XP oficial.
     """
-    user_id = await create_test_user("zero_xp_user")
+    user_id = await create_test_user("scen34_user")
     ex1 = "e0000000-0000-0000-0000-000000000001"
 
     async with db_conn.transaction():
         await db_conn.execute("SET LOCAL ROLE service_role;")
 
-        # Primer intento aprobado pero con 0 XP
+        # Escenario 3: Primera aprobación con 0 XP
         row1 = await db_conn.fetchrow(
-            "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 0) AS res;",
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 0) AS res;",
             user_id, ex1
         )
         res1 = json.loads(row1["res"])
         assert res1["success"] is True
         assert res1["already_passed"] is False
+        assert res1["already_awarded"] is False
         assert res1["xp_awarded"] == 0
+        assert res1["total_xp"] == 0
 
-        # Segundo intento aprobado solicitando 30 XP
+        # Escenario 4: Aprobación posterior reclamando la recompensa autorizada
         row2 = await db_conn.fetchrow(
-            "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 30) AS res;",
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30) AS res;",
             user_id, ex1
         )
         res2 = json.loads(row2["res"])
         assert res2["success"] is True
-        assert res2["already_passed"] is True  # Reconoce que ya fue aprobado previamente
-        assert res2["xp_awarded"] == 0         # No permite canje tardío de XP
-        assert res2["total_xp"] == 0
+        assert res2["already_passed"] is True     # Ya había aprobado antes
+        assert res2["already_awarded"] is False   # Pero no había recibido XP
+        assert res2["xp_awarded"] == 30          # Ahora SÍ recibe su recompensa legítima
+        assert res2["total_xp"] == 30
+
+        # Intento subsiguiente: Ahora already_awarded es TRUE y ya no recibe XP adicional
+        row3 = await db_conn.fetchrow(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30) AS res;",
+            user_id, ex1
+        )
+        res3 = json.loads(row3["res"])
+        assert res3["already_awarded"] is True
+        assert res3["xp_awarded"] == 0
+        assert res3["total_xp"] == 30
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_5_concurrent_requests_same_user_and_exercise(create_test_user):
+    """
+    Escenario 5: Dos solicitudes concurrentes intentando cobrar XP sobre el mismo ejercicio.
+    El bloqueo transaccional y el índice condicional garantizan que solo una cobre el XP.
+    """
+    user_id = await create_test_user("scen5_concurrent_user")
+    ex1 = "e0000000-0000-0000-0000-000000000001"
+
+    conn1 = await asyncpg.connect(**DB_CONFIG, database=TEST_DB_NAME)
+    conn2 = await asyncpg.connect(**DB_CONFIG, database=TEST_DB_NAME)
+
+    try:
+        await conn1.execute("SET ROLE service_role;")
+        await conn2.execute("SET ROLE service_role;")
+
+        async def exec_attempt(conn):
+            row = await conn.fetchrow(
+                "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30) AS res;",
+                user_id, ex1
+            )
+            return json.loads(row["res"])
+
+        res1, res2 = await asyncio.gather(exec_attempt(conn1), exec_attempt(conn2))
+
+        # Uno debió cobrar 30 y el otro 0
+        xp_awarded_sum = res1["xp_awarded"] + res2["xp_awarded"]
+        assert xp_awarded_sum == 30, f"La suma de XP acreditado debe ser exactamente 30, obtuvo {xp_awarded_sum}"
+
+        # Verificar perfil en BD
+        final_xp = await conn1.fetchval("SELECT xp FROM public.user_profiles WHERE id = $1;", user_id)
+        assert final_xp == 30
+    finally:
+        await conn1.close()
+        await conn2.close()
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_6_reject_inconsistent_and_exceeding_xp(db_conn, create_test_user):
+    """
+    Escenario 6: Rechazo estricto de XP superior al cálculo autoritativo
+    o de valores positivos arbitrarios inconsistentes con el cálculo.
+    """
+    user_id = await create_test_user("scen6_inconsistent_user")
+    ex1 = "e0000000-0000-0000-0000-000000000001"  # xp_reward = 30
+
+    # A. Intentar otorgar más XP del base (31 > 30)
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        with pytest.raises(PostgresError) as exc_info:
+            await db_conn.execute(
+                "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 31);",
+                user_id, ex1
+            )
+        assert "exceeds authoritative calculated XP" in str(exc_info.value)
+
+    # B. Intentar pasar un valor positivo arbitrariamente menor (15 != 30)
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        with pytest.raises(PostgresError) as exc_info:
+            await db_conn.execute(
+                "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 15);",
+                user_id, ex1
+            )
+        assert "is inconsistent with authoritative calculated XP" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_7_nonexistent_user(db_conn):
+    """Escenario 7: Rechazo de usuario inexistente."""
+    fake_user = "00000000-0000-0000-0000-000000000000"
+    ex1 = "e0000000-0000-0000-0000-000000000001"
+
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        with pytest.raises(PostgresError) as exc_info:
+            await db_conn.execute(
+                "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 30);",
+                fake_user, ex1
+            )
+        assert "User profile with id" in str(exc_info.value)
+        assert "does not exist" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_8_nonexistent_exercise(db_conn, create_test_user):
+    """Escenario 8: Rechazo de ejercicio inexistente."""
+    user_id = await create_test_user("scen8_user")
+    fake_ex = "00000000-0000-0000-0000-000000000000"
+
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        with pytest.raises(PostgresError) as exc_info:
+            await db_conn.execute(
+                "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 30);",
+                user_id, fake_ex
+            )
+        assert "not found in public.exercises" in str(exc_info.value)
 
 
 # ==============================================================================

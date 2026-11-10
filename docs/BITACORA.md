@@ -6,17 +6,17 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Conciliación Final de Seguridad, XP de Invitados y Autorizaciones (`QURIO-PHASE-10-FINAL-RECONCILIATION`) — Concluida**  
-* **Próxima Fase:** **Aprobación Formal del Piloto (Gate G-07) e Incorporación de Alumnos de Prueba**  
-* **Rama Git Activa:** `feat/phase-10-stabilization`  
+* **Fase Actual:** **Fase 11.2: Certificación Final de Seguridad y Consistencia (`QURIO-PHASE-11.2-SECURITY-CERTIFICATION`) — Concluida**  
+* **Próxima Fase:** **Aprobación Formal del Piloto (Gate G-07) y Despliegue Controlado con Usuarios**  
+* **Rama Git Activa:** `feat/phase-11-pilot-readiness`  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
-  * Contenedor Docker `qurio-postgres-sandbox`: **Detenido y apagado** tras completar exitosamente las suites de pruebas y validaciones en vivo (`docker compose down`).
-  * API FastAPI: **100% Verificado** — Suite de **70 pruebas automatizadas pasando limpiamente en 44.24s** en `apps/api/tests/` con desacoplamiento arquitectónico en `conftest.py`. Incluye verificación de **0 XP oficial para invitados** (`test_submit_exercise_success_guest`), acreditación oficial para estudiantes autenticados (`test_submit_exercise_success_authenticated`, `test_submit_exercise_star_challenge_left_join_authenticated`) y rechazo a invitados fuera de trial con HTTP 401 (`test_guest_trial_limit_enforced`).
-  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` con code splitting optimizado (**247.68 kB** main chunk, 64% de reducción frente a los 689 kB originales, 0 advertencias Rollup, 0 fugas de `solution_query`) y suite de **17 pruebas automatizadas en Vitest** (`npm run test`) pasando en 859ms (`progress.test.ts`, `persistence.test.ts`, `routing.test.ts`).
-  * Persistencia, Borrador y Enrutamiento: Borrador de código SQL no enviado persistente ante recargas (`F5`) y deep links; mutex de sincronización de invitados; recuperación ante respuestas HTTP perdidas; enrutamiento bidireccional nativo con History API (`/exercises/:id`, `/tracks/:slug`).
-  * Integridad de Supabase Cloud: **Auditoría forense certificada**: 0 escrituras, 0 registros alterados y 0 XP acreditado por pruebas en el proyecto Cloud de producción (`bfvgqxfzftumwrleacof`). La base de datos de producción permanece 100% limpia.
-  * Delimitación de C-01: Protección de `solution_query` 100% certificada en código de backend/frontend y 100% probada en PostgreSQL local en Docker (16 tests de migración pasando); script de permisos Cloud documentado para aplicación manual por el propietario.
-  * Documentación Rectoral: *Informe Final de Certificación de Fase 10* ([`docs/audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md`](audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md)), *Blueprint v1.2*, *Plan de Estabilización v1.2*, *Auditoría Operativa v1.1* y *Línea Base Operativa v1.1*.
+  * Contenedores Docker (`qurio-api` en 8000, `qurio-postgres-sandbox` en 5433): Operativos y verificados de forma exhaustiva; apagados de forma controlada (`docker compose down`) tras concluir las pruebas.
+  * API FastAPI: **100% Verificado** — Suite de **78 pruebas automatizadas pasando limpiamente en 61.17s** en `apps/api/tests/`. Incluye **15 pruebas de infraestructura de seguridad/migración** y **8 escenarios críticos de regresión** para la RPC `record_verified_attempt` v6.1 (idempotencia, no duplicación de XP, intentos previos de 0 XP, concurrencia, coherencia autoritativa de XP y reversión segura).
+  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` limpio (**2,171 módulos en 5.48s, 0 errores, 0 ocurrencias de `solution_query`**) y suite de **17 pruebas automatizadas en Vitest** (`npm run test`) pasando en 892ms (`progress.test.ts`, `persistence.test.ts`, `routing.test.ts`).
+  * E2E en Navegador Real: **19 de 19 pruebas pasadas al 100% en Google Chrome real** vía Playwright (`pilot_e2e_suite.mjs`), con verificación indeleble de **0 XP oficial para invitados** en T06 y bloqueo en 4º reto en T07.
+  * Fidelidad Canónica al Blueprint v1.2: Respeto estricto de las decisiones aprobadas D-01 (precios hipotéticos de $129 MXN / $999 MXN), D-02 (eslogan general y lema SQL), D-03 (evaluar Stripe México), D-04 (evaluar ejecución Python sin arquitectura anticipada), D-05 (invitados 3 retos, 0 XP), D-06 (Teams diferido) y D-07 (prioridad estabilidad).
+  * Integridad de Supabase Cloud: **Zero Cloud Mutations** cumplido al 100% (0 escrituras en `bfvgqxfzftumwrleacof`). Scripts `03_security_hardening.sql` v6.1 y `rollback_security_hardening.sql` v4.0 documentados y listos para aplicación administrativa por el propietario.
+  * Veredicto Final: **LISTO PARA PILOTO CON RESTRICCIONES**.
 
 ---
 
@@ -868,6 +868,61 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * Política respetada: Zero Push, Zero Merge, cero modificaciones en `main`.
      * **Veredicto:** **LISTO PARA PILOTO CON RESTRICCIONES** (requiere que el propietario aplique `03_security_hardening.sql` en Supabase Cloud antes de entregar accesos).
 * **Entregables Documentales Reconciliados y Actualizados:**
+  * [`docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md`](audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md)
+  * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
+  * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)
+  * [`docs/audits/QURIO_PHASE_11_PILOT_READINESS.md`](audits/QURIO_PHASE_11_PILOT_READINESS.md)
+
+---
+
+### Entrada 29: Fase 11.2 — Certificación Final de Seguridad, Consistencia y Preparación del Piloto
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (mantenida estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver los últimos hallazgos de idempotencia de la RPC en Supabase, perfeccionar el script de seguridad `03_security_hardening.sql` (v6.1) y su reversión (`rollback_security_hardening.sql` v4.0), restaurar la fidelidad al Blueprint v1.2, validar 8 escenarios críticos de regresión y emitir el dictamen formal definitivo para la autorización del piloto.
+* **Actividades y Logros Clave:**
+  1. **Perfeccionamiento e Idempotencia de la RPC `record_verified_attempt` (v6.1):**
+     * **Disociación de Estado:** Se separó la verificación de intento aprobado (`v_already_passed`) de la verificación de recompensa otorgada (`v_already_awarded`).
+     * **Desbloqueo de XP tras Prueba:** Un intento anterior con `xp_awarded = 0` (modo invitado o práctica) ya no bloquea una recompensa legítima cuando el usuario se autentica.
+     * **Anti-Duplicados:** Si `v_already_awarded = TRUE`, la RPC fuerza `v_effective_xp := 0` y no incrementa el XP del usuario.
+     * **Validación Autoritativa de Coherencia:** La RPC rechaza cualquier solicitud con `p_xp_to_award > 0` que no coincida exactamente con el cálculo canónico (`v_authoritative_xp`), admitiendo expresamente `0` cuando no se solicita XP.
+  2. **Auditoría Integral de Infraestructura de Base de Datos (`03_security_hardening.sql` v6.1):**
+     * Se habilitó explícitamente Row Level Security (RLS) en las 11 tablas del esquema público.
+     * Se implementaron políticas RLS idempotentes con `DROP POLICY IF EXISTS ...; CREATE POLICY ...;`.
+     * Se otorgó `GRANT ALL ON TABLE public.user_profiles TO service_role;` garantizando interoperabilidad del backend.
+     * Se mantuvo la protección Column-Level Security (CLS) sobre `solution_query` en `exercises` para `anon` y `authenticated`.
+     * Se preparó y verificó el script de reversión `rollback_security_hardening.sql` (v4.0).
+  3. **Suite Exhaustiva de Regresión (8 Escenarios Críticos en Pytest):**
+     * En `apps/api/tests/test_supabase_migration.py` se implementaron y verificaron 15 pruebas cubriendo:
+       1. Primer pase con XP otorgado.
+       2. Segundo pase sin XP duplicado (`xp_awarded = 0`).
+       3. Primer pase con 0 XP (modo práctica / trial).
+       4. Pase posterior con recompensa legítima (+30 XP acreditados).
+       5. Dos solicitudes concurrentes simultáneas sobre el mismo reto y usuario.
+       6. Rechazo de XP inconsistente o inflado.
+       7. Rechazo de usuario inexistente con excepción.
+       8. Rechazo de ejercicio inexistente con excepción.
+       9. Prueba de script de reversión confirmando preservación de seguridad CLS.
+     * Total Pytest: **78 pruebas pasadas en 61.17s**.
+  4. **Fidelidad Canónica al Blueprint v1.2 (D-01 a D-07):**
+     * D-01: Free/Plus con precios hipotéticos de **$129 MXN mensuales y $999 MXN anuales**.
+     * D-02: Eslogan general: «Aprende datos. Practica. Construye tu futuro.» y lema SQL: «Aprende SQL. Piensa en queries.».
+     * D-03: Evaluar Stripe México, sin integración aprobada todavía.
+     * D-04: Evaluar alternativas de ejecución de Python sin elegir arquitectura anticipadamente.
+     * D-05: Invitados con 3 ejercicios gratuitos y 0 XP oficial.
+     * D-06: Teams académico pospuesto.
+     * D-07: Priorizar estabilidad antes de nuevas funcionalidades.
+  5. **Baterías Automatizadas Consolidadas:**
+     * Backend Pytest: **78/78 pruebas pasadas** (61.17s).
+     * Frontend Vitest: **17/17 pruebas pasadas** (892ms).
+     * Compilación de producción: **Limpia (2,171 módulos, 0 errores, 0 fugas de `solution_query`)** en 5.48s.
+     * Seguridad de dependencias: `npm audit` reportó **0 vulnerabilidades**.
+     * E2E Google Chrome: **19/19 pruebas pasadas** al 100% (20.85s).
+  6. **Contención Git y Veredicto Final:**
+     * Rama de trabajo: `feat/phase-11-pilot-readiness`.
+     * Zero Push / Zero Merge cumplido rigurosamente.
+     * **Veredicto Definitivo:** **LISTO PARA PILOTO CON RESTRICCIONES** (aplicación administrativa de `03_security_hardening.sql` v6.1 en Supabase Cloud antes del ingreso de estudiantes).
+* **Entregables Documentales Certificados:**
   * [`docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md`](audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md)
   * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
   * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)

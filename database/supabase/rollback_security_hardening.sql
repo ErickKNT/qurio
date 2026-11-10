@@ -41,6 +41,7 @@ REVOKE INSERT (id, username, display_name, avatar_url, bio, level, xp, current_s
 GRANT SELECT ON TABLE public.user_profiles TO authenticated, anon;
 GRANT UPDATE (display_name, avatar_url, bio, updated_at)
     ON public.user_profiles TO authenticated;
+GRANT ALL ON TABLE public.user_profiles TO service_role;
 
 -- 4. Estado Blindado de public.exercise_attempts
 -- Los clientes NO TIENEN PERMISOS DE INSERCIÓN DIRECTA NI MODIFICACIÓN.
@@ -63,8 +64,24 @@ GRANT ALL ON TABLE public.exercise_attempts TO service_role;
 -- Eliminar de forma definitiva cualquier política residual de inserción directa
 DROP POLICY IF EXISTS "User Insert Own Attempts" ON public.exercise_attempts;
 
+-- 5. Estado Blindado de public.exercises (Anti-Exfiltración de solution_query)
+-- Se mantiene la revocación de solution_query para anon y authenticated
+REVOKE ALL ON TABLE public.exercises FROM PUBLIC, anon, authenticated;
+REVOKE SELECT ON TABLE public.exercises FROM PUBLIC, anon, authenticated;
+GRANT SELECT (
+    id, module_id, title, prompt, initial_code, target_database,
+    xp_reward, difficulty, check_order, sort_order, created_at
+) ON TABLE public.exercises TO anon, authenticated;
+GRANT ALL ON TABLE public.exercises TO service_role;
+
+-- 6. Estado Blindado de public.user_progress
+REVOKE ALL ON TABLE public.user_progress FROM PUBLIC, anon;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.user_progress FROM authenticated;
+GRANT SELECT ON TABLE public.user_progress TO authenticated;
+GRANT ALL ON TABLE public.user_progress TO service_role;
+
 -- ==============================================================================
--- 5. PROCEDIMIENTO OPERACIONAL DE CONTINGENCIA
+-- 7. PROCEDIMIENTO OPERACIONAL DE CONTINGENCIA
 -- ==============================================================================
 -- Si se revierte record_verified_attempt() por una contingencia técnica:
 -- a) El backend FastAPI sigue certificando intentos directamente mediante

@@ -186,13 +186,27 @@ async def submit_exercise_solution(
                 hints_used=request.hints_revealed,
                 xp_to_award=evaluation.xp_awarded,
             )
-            if rpc_res.get("already_passed"):
+            if "xp_awarded" in rpc_res:
+                evaluation.xp_awarded = rpc_res["xp_awarded"]
+                if evaluation.xp_awarded > 0:
+                    evaluation.message = f"¡Reto Superado con Éxito! +{evaluation.xp_awarded} XP acreditados."
+                elif rpc_res.get("already_awarded") or rpc_res.get("already_passed"):
+                    evaluation.message = (
+                        "¡Reto resuelto correctamente! (Ya habías completado este reto previamente, ¡gran práctica!)"
+                    )
+                else:
+                    evaluation.message = "¡Reto Superado con Éxito!"
+            elif rpc_res.get("already_awarded") or rpc_res.get("already_passed"):
                 evaluation.xp_awarded = 0
                 evaluation.message = (
                     "¡Reto resuelto correctamente! (Ya habías completado este reto previamente, ¡gran práctica!)"
                 )
             else:
-                evaluation.message = f"¡Reto Superado con Éxito! +{evaluation.xp_awarded} XP acreditados."
+                evaluation.message = (
+                    f"¡Reto Superado con Éxito! +{evaluation.xp_awarded} XP acreditados."
+                    if evaluation.xp_awarded > 0
+                    else "¡Reto Superado con Éxito!"
+                )
     elif evaluation.status == EvaluationStatus.FAILED and not user.is_guest:
         # Registrar intento fallido para analítica sin otorgar XP
         await record_verified_progress(

@@ -1,6 +1,6 @@
-# Qurio — Informe de Pruebas End-to-End (E2E) en Navegador Real (Fase 11.1)
+# Qurio — Informe de Pruebas End-to-End (E2E) en Navegador Real (Fase 11.2)
 
-**Identificador:** `QURIO-PHASE-11.1-E2E-REPORT`  
+**Identificador:** `QURIO-PHASE-11.2-E2E-REPORT`  
 **Fecha de ejecución:** 10 de Noviembre de 2026  
 **Navegador empleado:** Google Chrome 134+ (Modo Real Headless, Windows 11)  
 **Entorno de ejecución:** 
@@ -81,7 +81,7 @@ Durante la ejecución de T06, el navegador Google Chrome envió la consulta can�
   ```json
   {
     "status": "PASSED",
-    "execution_time_ms": 1.13,
+    "execution_time_ms": 1.08,
     "xp_awarded": 0,
     "columns": ["nombre_producto", "precio"],
     "rows": [

@@ -262,7 +262,12 @@ async def test_regression_authenticated_user_passes_exercise_4_and_receives_xp(c
 
     async def fake_record_verified_progress(**kwargs):
         rpc_invocations.append(kwargs)
-        return {"success": True, "already_passed": False}
+        return {
+            "success": True,
+            "already_passed": False,
+            "already_awarded": False,
+            "xp_awarded": kwargs.get("xp_to_award", 35),
+        }
 
     monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_record_verified_progress)
 

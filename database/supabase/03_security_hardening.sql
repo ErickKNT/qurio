@@ -1,8 +1,7 @@
 -- ==============================================================================
--- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 11.1)
--- Versión: 6.0 (Blindaje Integral CLS/RLS en public.exercises, public.user_progress
---          y Catálogos Educativos, con Aislamiento Estricto de solution_query,
---          search_path='' y RPC record_verified_attempt de Firma Única)
+-- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 11.2)
+-- Versión: 6.1 (Certificación Definitiva de Seguridad, Idempotencia Desacoplada de XP,
+--          Consistencia Estricta de Recompensa y Blindaje Integral RLS/CLS)
 -- NOTA: Este archivo es para revisión y autorización previa del usuario.
 -- NO se ejecuta automáticamente en producción sin aprobación explícita.
 -- ==============================================================================
@@ -62,71 +61,107 @@ ORDER BY discrepancy DESC;
 */
 
 -- ==============================================================================
--- 2. RESTRICCIÓN DE PRIVILEGIOS DE TABLA Y COLUMNA (CLS)
+-- 2. HABILITACIÓN DE ROW LEVEL SECURITY (RLS) EN TODAS LAS TABLAS
+-- ==============================================================================
+ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.learning_paths ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.modules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exercises ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exercise_hints ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exercise_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_daily_activity ENABLE ROW LEVEL SECURITY;
+
+-- ==============================================================================
+-- 3. POLÍTICAS RLS IDEMPOTENTES Y DEFINITIVAS
+-- ==============================================================================
+
+-- A. Catálogo educativo y lectura pública
+DROP POLICY IF EXISTS "Public Read Learning Paths" ON public.learning_paths;
+CREATE POLICY "Public Read Learning Paths" ON public.learning_paths FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Modules" ON public.modules;
+CREATE POLICY "Public Read Modules" ON public.modules FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Lessons" ON public.lessons;
+CREATE POLICY "Public Read Lessons" ON public.lessons FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Exercises" ON public.exercises;
+DROP POLICY IF EXISTS "Public Read Safe Exercises" ON public.exercises;
+CREATE POLICY "Public Read Safe Exercises" ON public.exercises FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Hints" ON public.exercise_hints;
+CREATE POLICY "Public Read Hints" ON public.exercise_hints FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Achievements" ON public.achievements;
+CREATE POLICY "Public Read Achievements" ON public.achievements FOR SELECT USING (true);
+
+-- B. Perfiles de usuario
+DROP POLICY IF EXISTS "Public Read Profiles" ON public.user_profiles;
+CREATE POLICY "Public Read Profiles" ON public.user_profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "User Update Own Profile" ON public.user_profiles;
+CREATE POLICY "User Update Own Profile" ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
+
+-- C. Intentos, progreso y actividad personal del estudiante
+DROP POLICY IF EXISTS "User Read Own Attempts" ON public.exercise_attempts;
+CREATE POLICY "User Read Own Attempts" ON public.exercise_attempts FOR SELECT USING (auth.uid() = user_id);
+
+-- Eliminar explícitamente cualquier política residual de inserción directa de clientes
+DROP POLICY IF EXISTS "User Insert Own Attempts" ON public.exercise_attempts;
+
+DROP POLICY IF EXISTS "User Read Own Progress" ON public.user_progress;
+CREATE POLICY "User Read Own Progress" ON public.user_progress FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "User Read Own Achievements" ON public.user_achievements;
+CREATE POLICY "User Read Own Achievements" ON public.user_achievements FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "User Read Own Daily Activity" ON public.user_daily_activity;
+CREATE POLICY "User Read Own Daily Activity" ON public.user_daily_activity FOR SELECT USING (auth.uid() = user_id);
+
+-- ==============================================================================
+-- 4. RESTRICCIÓN DE PRIVILEGIOS DE TABLA Y COLUMNA (CLS)
 -- ==============================================================================
 
 -- A. Blindaje sobre public.user_profiles
--- Revocar todos los privilegios a nivel de tabla
 REVOKE ALL ON TABLE public.user_profiles FROM PUBLIC, anon;
 REVOKE UPDATE, INSERT, DELETE, TRUNCATE ON TABLE public.user_profiles FROM authenticated;
 
--- Revocar explícitamente cualquier permiso a nivel de columna (UPDATE e INSERT)
 REVOKE UPDATE (id, username, level, xp, current_streak_days, max_streak_days, created_at)
     ON public.user_profiles FROM authenticated, anon, PUBLIC;
 REVOKE INSERT (id, username, display_name, avatar_url, bio, level, xp, current_streak_days, max_streak_days, created_at, updated_at)
     ON public.user_profiles FROM authenticated, anon, PUBLIC;
 
--- Otorgar estrictamente solo lectura general y actualización de campos visuales de perfil
 GRANT SELECT ON TABLE public.user_profiles TO authenticated, anon;
 GRANT UPDATE (display_name, avatar_url, bio, updated_at)
     ON public.user_profiles TO authenticated;
+GRANT ALL ON TABLE public.user_profiles TO service_role;
 
--- B. Blindaje exhaustivo sobre public.exercise_attempts (SEC-04)
--- 1. Revocación a nivel de tabla
+-- B. Blindaje sobre public.exercise_attempts (SEC-04)
 REVOKE ALL ON TABLE public.exercise_attempts FROM PUBLIC, anon, authenticated;
 REVOKE DELETE, TRUNCATE ON TABLE public.exercise_attempts FROM PUBLIC, anon, authenticated;
 
--- 2. Revocación explícita a nivel de columna (INSERT y UPDATE en TODAS las columnas)
--- Garantiza que ningún privilegio de columna previo permita eludir el control de tabla
 REVOKE INSERT (id, user_id, exercise_id, submitted_sql, status, execution_time_ms, error_message, hints_used, xp_awarded, created_at)
     ON public.exercise_attempts FROM PUBLIC, anon, authenticated;
 
 REVOKE UPDATE (id, user_id, exercise_id, submitted_sql, status, execution_time_ms, error_message, hints_used, xp_awarded, created_at)
     ON public.exercise_attempts FROM PUBLIC, anon, authenticated;
 
--- 3. Revocación explícita de SELECT por columna para PUBLIC y anon
--- Garantiza que ningún privilegio previo o residual de lectura por columna exponga intentos a roles no autenticados
-REVOKE SELECT (
-    id,
-    user_id,
-    exercise_id,
-    submitted_sql,
-    status,
-    execution_time_ms,
-    error_message,
-    hints_used,
-    xp_awarded,
-    created_at
-)
-ON public.exercise_attempts
-FROM PUBLIC, anon;
+REVOKE SELECT (id, user_id, exercise_id, submitted_sql, status, execution_time_ms, error_message, hints_used, xp_awarded, created_at)
+    ON public.exercise_attempts FROM PUBLIC, anon;
 
--- 4. Concesión restringida: Solo lectura personal auditada por RLS para el estudiante
 GRANT SELECT ON TABLE public.exercise_attempts TO authenticated;
-
--- 5. Acceso total reservado exclusivamente para backend (service_role)
 GRANT ALL ON TABLE public.exercise_attempts TO service_role;
 
--- 6. Eliminar explícitamente la política RLS residual de inserción directa (Defensa en Profundidad)
-DROP POLICY IF EXISTS "User Insert Own Attempts" ON public.exercise_attempts;
-
 -- C. Blindaje de Soluciones sobre public.exercises (Anti-Exfiltración de solution_query)
--- 1. Revocar todos los privilegios a nivel de tabla
 REVOKE ALL ON TABLE public.exercises FROM PUBLIC, anon, authenticated;
 REVOKE SELECT ON TABLE public.exercises FROM PUBLIC, anon, authenticated;
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.exercises FROM PUBLIC, anon, authenticated;
 
--- 2. Otorgar SELECT únicamente sobre columnas públicas educativas (excluyendo terminantemente solution_query)
+-- Otorgar SELECT únicamente sobre columnas públicas educativas (excluyendo terminantemente solution_query)
 GRANT SELECT (
     id,
     module_id,
@@ -141,7 +176,6 @@ GRANT SELECT (
     created_at
 ) ON TABLE public.exercises TO anon, authenticated;
 
--- 3. Acceso administrativo y de lectura completa reservado para service_role (backend evaluador)
 GRANT ALL ON TABLE public.exercises TO service_role;
 
 -- D. Blindaje sobre public.exercise_hints
@@ -167,7 +201,7 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.user_daily_activity FROM
 GRANT SELECT ON TABLE public.user_daily_activity TO authenticated;
 GRANT ALL ON TABLE public.user_daily_activity TO service_role;
 
--- G. Blindaje de Catálogos Estáticos (Solo Lectura Pública, Escritura Solo service_role)
+-- G. Blindaje de Catálogos Estáticos
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.learning_paths FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON TABLE public.learning_paths TO anon, authenticated;
 GRANT ALL ON TABLE public.learning_paths TO service_role;
@@ -184,8 +218,11 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON TABLE public.achievements FROM PUBLIC
 GRANT SELECT ON TABLE public.achievements TO anon, authenticated;
 GRANT ALL ON TABLE public.achievements TO service_role;
 
+-- H. Permisos sobre secuencias
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+
 -- ==============================================================================
--- 3. RESTRICCIÓN DE UNICIDAD CONDICIONAL (ANTI-DUPLICADOS DE XP)
+-- 5. RESTRICCIÓN DE UNICIDAD CONDICIONAL (ANTI-DUPLICADOS DE XP)
 -- ==============================================================================
 -- Garantiza en el motor físico de PostgreSQL que no puedan existir dos registros con
 -- status='PASSED' y xp_awarded > 0 para el mismo (user_id, exercise_id).
@@ -195,7 +232,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_single_awarded_passed_attempt
     WHERE status = 'PASSED' AND xp_awarded > 0;
 
 -- ==============================================================================
--- 4. FUNCIÓN RPC: record_verified_attempt (Autoridad Central de Certificación)
+-- 6. FUNCIÓN RPC: record_verified_attempt (Autoridad Central de Certificación)
 -- ==============================================================================
 CREATE OR REPLACE FUNCTION public.record_verified_attempt(
     p_user_id UUID,
@@ -220,6 +257,7 @@ DECLARE
     v_penalty_rate NUMERIC;
     v_authoritative_xp INT := 0;
     v_already_passed BOOLEAN := FALSE;
+    v_already_awarded BOOLEAN := FALSE;
     v_effective_xp INT := 0;
     v_new_xp INT := 0;
     v_new_level INT := 1;
@@ -229,8 +267,6 @@ DECLARE
 BEGIN
     -- -------------------------------------------------------------------------
     -- A. Validación Rigurosa Anti-NULL y Límites de Parámetros
-    -- Cada condición evalúa explícitamente IS NULL para evitar que valores nulos
-    -- eludan la validación booleana en PostgreSQL (ej. 'NOT IN' con NULL evalúa a NULL).
     -- -------------------------------------------------------------------------
     IF p_user_id IS NULL OR p_exercise_id IS NULL THEN
         RAISE EXCEPTION 'user_id and exercise_id must not be null';
@@ -275,11 +311,6 @@ BEGIN
 
     -- -------------------------------------------------------------------------
     -- C. Cálculo Autoritativo de XP sin Mínimo Artificial
-    -- El valor de XP se deriva directamente del registro oficial en exercises.
-    -- Se valida que e.xp_reward sea no nulo y no negativo.
-    -- La penalización oficial es de 15% por pista (0 a 3 pistas = 0% a 45% de deducción).
-    -- El XP calculado nunca supera la recompensa base ni desciende de 0.
-    -- Se elimina cualquier cota mínima artificial (como un umbral rígido de 10 XP).
     -- -------------------------------------------------------------------------
     SELECT e.module_id, e.xp_reward INTO v_module_id, v_base_xp
     FROM public.exercises e
@@ -293,25 +324,30 @@ BEGIN
         RAISE EXCEPTION 'Invalid xp_reward (%) for exercise % in public.exercises', v_base_xp, p_exercise_id;
     END IF;
 
-    -- Cálculo de XP con penalización porcentual sobre base real
+    -- Cálculo de XP con penalización porcentual (15% por pista, máx 45%)
     v_penalty_rate := LEAST(0.45, GREATEST(0.0, p_hints_used * 0.15));
     v_authoritative_xp := LEAST(v_base_xp, GREATEST(0, pg_catalog.floor(v_base_xp * (1.0 - v_penalty_rate))::INT));
 
-    -- Validación defensiva del parámetro p_xp_to_award:
-    -- Preservado en la RPC para validar la consistencia del backend contra la BD.
-    -- Si el llamador intenta otorgar más XP que el valor autoritativo, se aborta la transacción.
+    -- Validación estricta de consistencia de XP:
+    -- Solo se admiten dos comportamientos legítimos:
+    -- 1) p_xp_to_award = 0: Operación explícita sin recompensa (modo práctica, pruebas o reintentos).
+    -- 2) p_xp_to_award = v_authoritative_xp: Recompensa legítima calculada autoritativamente.
+    -- Cualquier discrepancia (p_xp_to_award > v_authoritative_xp o valor positivo arbitrario) es rechazada.
     IF p_xp_to_award > v_authoritative_xp THEN
         RAISE EXCEPTION 'p_xp_to_award (%) exceeds authoritative calculated XP (%) for exercise % with % hints',
             p_xp_to_award, v_authoritative_xp, p_exercise_id, p_hints_used;
     END IF;
 
+    IF p_xp_to_award > 0 AND p_xp_to_award <> v_authoritative_xp THEN
+        RAISE EXCEPTION 'p_xp_to_award (%) is inconsistent with authoritative calculated XP (%) for exercise % with % hints',
+            p_xp_to_award, v_authoritative_xp, p_exercise_id, p_hints_used;
+    END IF;
+
     -- -------------------------------------------------------------------------
-    -- D. Verificación de Idempotencia Formativa
-    -- Regla Qurio: Solo la primera aprobación del ejercicio acredita XP.
-    -- Sesiones posteriores de práctica son registradas pero con 0 XP.
-    -- Si p_xp_to_award es 0 (modo práctica o test sin recompensa), se respeta 0.
+    -- D. Verificación de Idempotencia y Estado Previo de XP
     -- -------------------------------------------------------------------------
     IF p_status = 'PASSED' THEN
+        -- 1. ¿Ha sido aprobado previamente este ejercicio por el usuario?
         SELECT EXISTS (
             SELECT 1 FROM public.exercise_attempts a
             WHERE a.user_id = p_user_id
@@ -319,14 +355,26 @@ BEGIN
               AND a.status = 'PASSED'
         ) INTO v_already_passed;
 
-        IF NOT v_already_passed THEN
-            IF p_xp_to_award = 0 AND v_authoritative_xp > 0 THEN
-                v_effective_xp := 0; -- Acreditación voluntaria o prueba con 0 XP
-            ELSE
-                v_effective_xp := v_authoritative_xp;
-            END IF;
+        -- 2. ¿Ya recibió XP oficial por este ejercicio en algún intento previo?
+        SELECT EXISTS (
+            SELECT 1 FROM public.exercise_attempts a
+            WHERE a.user_id = p_user_id
+              AND a.exercise_id = p_exercise_id
+              AND a.status = 'PASSED'
+              AND a.xp_awarded > 0
+        ) INTO v_already_awarded;
+
+        -- Determinación del XP efectivo a acreditar:
+        IF v_already_awarded THEN
+            -- Caso 1: El usuario ya recibió XP por este ejercicio en el pasado -> 0 XP adicional (Idempotencia).
+            v_effective_xp := 0;
+        ELSIF p_xp_to_award = 0 THEN
+            -- Caso 2: Operación explícita con cero XP (modo práctica o migración sin XP).
+            v_effective_xp := 0;
         ELSE
-            v_effective_xp := 0; -- Reto ya superado previamente: 0 XP adicional
+            -- Caso 3: El usuario NO ha recibido XP por este ejercicio aún (incluso si tuvo intentos previos con 0 XP)
+            -- y solicita la recompensa legítima autorizada -> Se otorga v_authoritative_xp.
+            v_effective_xp := v_authoritative_xp;
         END IF;
     ELSE
         v_effective_xp := 0;
@@ -359,7 +407,7 @@ BEGIN
     -- F. Actualización Atómica de Perfil y Progreso de Módulos
     -- -------------------------------------------------------------------------
     IF p_status = 'PASSED' THEN
-        -- 1. Actualizar XP y Nivel en user_profiles
+        -- 1. Actualizar XP y Nivel en user_profiles (solo si v_effective_xp > 0)
         UPDATE public.user_profiles
         SET xp = xp + v_effective_xp,
             level = 1 + pg_catalog.floor((xp + v_effective_xp) / 500)::INT,
@@ -404,7 +452,6 @@ BEGIN
     ELSE
         -- ---------------------------------------------------------------------
         -- F.2 Intentos FAILED o ERROR: Preservar y reportar el estado REAL del progreso
-        -- No alterar XP y recuperar el progreso actual exacto del módulo
         -- ---------------------------------------------------------------------
         v_new_xp := v_current_xp;
         v_new_level := v_current_level;
@@ -426,6 +473,7 @@ BEGIN
     RETURN pg_catalog.jsonb_build_object(
         'success', TRUE,
         'already_passed', v_already_passed,
+        'already_awarded', v_already_awarded,
         'xp_awarded', v_effective_xp,
         'total_xp', COALESCE(v_new_xp, 0),
         'level', COALESCE(v_new_level, 1),
@@ -436,7 +484,7 @@ END;
 $$;
 
 -- ==============================================================================
--- 5. ASIGNACIÓN DE PROPIETARIO Y PERMISOS ESTRICTOS DE EJECUCIÓN (FIRMA COMPLETA)
+-- 7. ASIGNACIÓN DE PROPIETARIO Y PERMISOS ESTRICTOS DE EJECUCIÓN (FIRMA COMPLETA)
 -- ==============================================================================
 ALTER FUNCTION public.record_verified_attempt(
     UUID, UUID, TEXT, VARCHAR, INT, TEXT, INT, INT
