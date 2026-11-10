@@ -32,9 +32,9 @@ En cumplimiento de los requerimientos de cierre para la **Fase 9: Hardening de S
 
 ### 2.1 Revocación Explícita de `SELECT` por Columna en `exercise_attempts`
 Para asegurar que ningún privilegio previo a nivel de columna permita a roles no autenticados acceder a los intentos de los estudiantes:
-* **Verificación de Esquema:** Se comprobó que las diez columnas coincidan exactamente con el esquema oficial ([`01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql#L106-L125)):
+* **Verificación de Esquema:** Se comprobó que las diez columnas coincidan exactamente con el esquema oficial ([`01_schema.sql`](../../database/supabase/01_schema.sql#L106-L125)):
   `id`, `user_id`, `exercise_id`, `submitted_sql`, `status`, `execution_time_ms`, `error_message`, `hints_used`, `xp_awarded`, `created_at`.
-* **Fragmento SQL Definitivo ([`03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql#L97-L113)):**
+* **Fragmento SQL Definitivo ([`03_security_hardening.sql`](../../database/supabase/03_security_hardening.sql#L97-L113)):**
   ```sql
   -- Revocación explícita de SELECT por columna para PUBLIC y anon
   REVOKE SELECT (
@@ -55,7 +55,7 @@ Para asegurar que ningún privilegio previo a nivel de columna permita a roles n
   -- Concesión restringida: Solo lectura personal auditada por RLS para el estudiante
   GRANT SELECT ON TABLE public.exercise_attempts TO authenticated;
   ```
-* **Diagnóstico de Privilegios ([`diagnose_privileges.sql`](file:///c:/Desarrollo/Qurio/database/supabase/diagnose_privileges.sql#L37-L65)):**
+* **Diagnóstico de Privilegios ([`diagnose_privileges.sql`](../../database/supabase/diagnose_privileges.sql#L37-L65)):**
   Se implementó una consulta que distingue con exactitud matemática entre:
   * Privilegios efectivos (`has_column_privilege`): `anon_effective_select = FALSE` en las 10 columnas; `auth_effective_select = TRUE` (filtrado por RLS).
   * Privilegios directos por columna en la ACL (`pg_attribute.attacl` con `aclexplode`): `public_explicit_column_select = FALSE` y `anon_explicit_column_select = FALSE` en todas las columnas.
@@ -64,7 +64,7 @@ Para asegurar que ningún privilegio previo a nivel de columna permita a roles n
 
 ### 2.2 Conservación del Índice Único Parcial en el Procedimiento de Rollback
 * **Principio de Integridad:** El índice condicional `idx_single_awarded_passed_attempt` constituye una salvaguarda de almacenamiento físico independiente de la RPC.
-* **Fragmento SQL Definitivo ([`rollback_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/rollback_security_hardening.sql#L20-L28)):**
+* **Fragmento SQL Definitivo ([`rollback_security_hardening.sql`](../../database/supabase/rollback_security_hardening.sql#L20-L28)):**
   ```sql
   -- 1. Eliminar la función RPC record_verified_attempt
   DROP FUNCTION IF EXISTS public.record_verified_attempt(
@@ -160,9 +160,9 @@ dist/assets/index-CLyu80KF.js   631.60 kB │ gzip: 172.93 kB
 * **Rama Principal (`main`):** Limpia, inalterada y protegida.
 * **Supabase Cloud:** Intacto. Cero modificaciones remotas.
 * **Entregables Finales:**
-  1. [`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql) (v5.0)
-  2. [`database/supabase/rollback_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/rollback_security_hardening.sql) (v3.0)
-  3. [`database/supabase/diagnose_privileges.sql`](file:///c:/Desarrollo/Qurio/database/supabase/diagnose_privileges.sql) (v3.0)
-  4. [`apps/api/tests/test_supabase_migration.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_supabase_migration.py) (v5.0)
-  5. [`docs/BITACORA.md`](file:///c:/Desarrollo/Qurio/docs/BITACORA.md) (Entrada 27 de cierre de fase)
-  6. [`docs/security/SECURITY_REMEDIATION_RESULTS.md`](file:///c:/Desarrollo/Qurio/docs/security/SECURITY_REMEDIATION_RESULTS.md) (v5.0)
+  1. [`database/supabase/03_security_hardening.sql`](../../database/supabase/03_security_hardening.sql) (v5.0)
+  2. [`database/supabase/rollback_security_hardening.sql`](../../database/supabase/rollback_security_hardening.sql) (v3.0)
+  3. [`database/supabase/diagnose_privileges.sql`](../../database/supabase/diagnose_privileges.sql) (v3.0)
+  4. [`apps/api/tests/test_supabase_migration.py`](../../apps/api/tests/test_supabase_migration.py) (v5.0)
+  5. [`docs/BITACORA.md`](../BITACORA.md) (Entrada 27 de cierre de fase)
+  6. [`docs/security/SECURITY_REMEDIATION_RESULTS.md`](SECURITY_REMEDIATION_RESULTS.md) (v5.0)

@@ -160,3 +160,14 @@ export interface QueryHistoryItem {
   execution_time_ms: number;
   row_count: number;
 }
+
+export type AppPath =
+  | 'dashboard'
+  | 'playground'
+  | 'tracks'
+  | 'achievements'
+  | 'profile'
+  | 'exercise'
+  | 'auth-confirm'
+  | 'reset-password'
+  | 'not-found';

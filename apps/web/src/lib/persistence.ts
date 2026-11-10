@@ -4,6 +4,9 @@ import { UserProfile, EvaluationStatus } from '@/types';
 export const GUEST_PROGRESS_STORAGE_KEY = 'qurio_guest_progress_v1';
 export const LOCAL_PROFILE_STORAGE_KEY = 'qurio_user_profile';
 export const ATTEMPTS_STORAGE_KEY = 'qurio_local_attempts';
+export const DRAFT_SQL_PREFIX = 'qurio_draft_sql_';
+
+let isSyncInProgress = false;
 
 export interface ExerciseAttemptData {
   userId?: string;
@@ -175,63 +178,120 @@ export const persistence = {
 
   /**
    * Migración idempotente del progreso de invitado a la cuenta de usuario autenticado (D-05).
+   * Protegida contra invocaciones concurrentes superpuestas mediante mutex de sincronización.
    */
   async syncGuestProgress(
     userId: string,
     submitSolutionCallback: (exerciseId: string, sql: string, hints: number) => Promise<any>
   ): Promise<{ syncedCount: number; errors: number }> {
-    this.recoverInterruptedGuestSync();
-    const items = this.getGuestProgress();
-    const pendingItems = items.filter((i) => i.sync_status === 'pending');
-    if (pendingItems.length === 0) return { syncedCount: 0, errors: 0 };
-
-    // 1. Obtener los IDs ya aprobados en la nube para asegurar idempotencia estricta
-    let cloudPassedSet = new Set<string>();
-    try {
-      const cloudIds = await this.getCompletedExerciseIds(userId);
-      cloudPassedSet = new Set(cloudIds);
-    } catch {
-      // Continuar con precaución
+    if (isSyncInProgress) {
+      return { syncedCount: 0, errors: 0 };
     }
+    isSyncInProgress = true;
 
-    let syncedCount = 0;
-    let errors = 0;
+    try {
+      this.recoverInterruptedGuestSync();
+      const items = this.getGuestProgress();
+      const pendingItems = items.filter((i) => i.sync_status === 'pending');
+      if (pendingItems.length === 0) return { syncedCount: 0, errors: 0 };
 
-    for (const item of pendingItems) {
-      if (cloudPassedSet.has(item.exercise_id)) {
-        // Ya completado en la nube: marcar como sincronizado sin reenviar
-        item.sync_status = 'synced';
-        syncedCount++;
-        continue;
-      }
-
-      // Marcar en vuelo con timestamp de bloqueo (30s)
-      item.sync_status = 'syncing';
-      item.sync_started_at = Date.now();
-      this.saveGuestCompletedExercise(item);
-
+      // 1. Obtener los IDs ya aprobados en la nube para asegurar idempotencia estricta
+      let cloudPassedSet = new Set<string>();
       try {
-        await submitSolutionCallback(item.exercise_id, item.submitted_sql, item.hints_used);
-        item.sync_status = 'synced';
-        syncedCount++;
-      } catch (err) {
-        console.warn(`No se pudo sincronizar ejercicio ${item.exercise_id}:`, err);
-        item.sync_status = 'pending';
-        item.sync_started_at = undefined;
-        errors++;
+        const cloudIds = await this.getCompletedExerciseIds(userId);
+        cloudPassedSet = new Set(cloudIds);
+      } catch {
+        // Continuar con precaución
       }
-      this.saveGuestCompletedExercise(item);
-    }
 
-    // Limpiar items confirmados y sincronizados
+      let syncedCount = 0;
+      let errors = 0;
+
+      for (const item of pendingItems) {
+        if (cloudPassedSet.has(item.exercise_id)) {
+          // Ya completado en la nube: marcar como sincronizado en local y storage sin reenviar
+          item.sync_status = 'synced';
+          this.saveGuestCompletedExercise(item);
+          syncedCount++;
+          continue;
+        }
+
+        // Marcar en vuelo con timestamp de bloqueo (30s)
+        item.sync_status = 'syncing';
+        item.sync_started_at = Date.now();
+        this.saveGuestCompletedExercise(item);
+
+        try {
+          await submitSolutionCallback(item.exercise_id, item.submitted_sql, item.hints_used);
+          item.sync_status = 'synced';
+          syncedCount++;
+        } catch (err) {
+          console.warn(`No se pudo sincronizar ejercicio ${item.exercise_id}:`, err);
+          item.sync_status = 'pending';
+          item.sync_started_at = undefined;
+          errors++;
+        }
+        this.saveGuestCompletedExercise(item);
+      }
+
+      // Limpiar items confirmados y sincronizados
+      try {
+        const remaining = this.getGuestProgress().filter((i) => i.sync_status !== 'synced');
+        localStorage.setItem(GUEST_PROGRESS_STORAGE_KEY, JSON.stringify(remaining));
+      } catch (e) {
+        console.warn('Error al limpiar ejercicios sincronizados:', e);
+      }
+
+      return { syncedCount, errors };
+    } finally {
+      isSyncInProgress = false;
+    }
+  },
+
+  /**
+   * Obtiene el borrador de código SQL no enviado para un ejercicio específico (C-05).
+   */
+  getExerciseDraft(exerciseId: string): string | null {
     try {
-      const remaining = this.getGuestProgress().filter((i) => i.sync_status !== 'synced');
-      localStorage.setItem(GUEST_PROGRESS_STORAGE_KEY, JSON.stringify(remaining));
-    } catch (e) {
-      console.warn('Error al limpiar ejercicios sincronizados:', e);
+      if (!exerciseId) return null;
+      return localStorage.getItem(`${DRAFT_SQL_PREFIX}${exerciseId}`);
+    } catch {
+      return null;
     }
+  },
 
-    return { syncedCount, errors };
+  /**
+   * Guarda de forma persistente el borrador de código SQL del estudiante.
+   * Si el código coincide con el código inicial o está vacío, elimina el borrador.
+   */
+  saveExerciseDraft(exerciseId: string, code: string, initialCode?: string): void {
+    try {
+      if (!exerciseId) return;
+      if (initialCode !== undefined && code === initialCode) {
+        localStorage.removeItem(`${DRAFT_SQL_PREFIX}${exerciseId}`);
+        return;
+      }
+      if (!code || !code.trim()) {
+        localStorage.removeItem(`${DRAFT_SQL_PREFIX}${exerciseId}`);
+        return;
+      }
+      localStorage.setItem(`${DRAFT_SQL_PREFIX}${exerciseId}`, code);
+    } catch (e) {
+      console.warn('Error al guardar borrador de ejercicio:', e);
+    }
+  },
+
+  /**
+   * Elimina el borrador de un ejercicio (al resolverlo exitosamente o restablecer).
+   */
+  clearExerciseDraft(exerciseId: string): void {
+    try {
+      if (exerciseId) {
+        localStorage.removeItem(`${DRAFT_SQL_PREFIX}${exerciseId}`);
+      }
+    } catch (e) {
+      console.warn('Error al limpiar borrador de ejercicio:', e);
+    }
   },
 
   /**

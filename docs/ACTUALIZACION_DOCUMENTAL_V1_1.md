@@ -47,7 +47,7 @@
   * Se eliminó la promesa de rendimiento no verificada de sincronización en `< 100 ms`.
 
 #### 1.4 Rutas y referencias documentales
-* Se sustituyeron todas las rutas absolutas locales (`file:///c:/Desarrollo/Qurio/...`) por rutas relativas al repositorio (`../roadmap/PHASE_10_STABILIZATION_PLAN.md`, `../../apps/...`, `../../database/...`, `../../AGENTS.md`, `../../README.md`) y se verificó la consistencia de todas las referencias internas.
+* Se sustituyeron todas las rutas absolutas locales (`../...`) por rutas relativas al repositorio (`../roadmap/PHASE_10_STABILIZATION_PLAN.md`, `../../apps/...`, `../../database/...`, `../../AGENTS.md`, `../../README.md`) y se verificó la consistencia de todas las referencias internas.
 
 #### 1.5 Estado del documento (Encabezado, Alcance y Sección 11.2)
 * El encabezado y la sección de alcance distinguen explícitamente entre:
@@ -113,7 +113,7 @@ Se actualizó el documento a la **versión `1.1`**, conservando su estructura ge
 +| **Estado de Decisiones (`D-01` a `D-07`)** | **Aprobadas por el propietario del producto** |
 +| **Estado del Documento** | **Propuesta estratégica y arquitectónica documentada — Validación final del documento completo pendiente** |
  | **Repositorio de referencia** | [`https://github.com/ErickKNT/qurio`](https://github.com/ErickKNT/qurio) |
--| **Plan técnico vinculado** | [`docs/roadmap/PHASE_10_STABILIZATION_PLAN.md`](file:///c:/Desarrollo/Qurio/docs/roadmap/PHASE_10_STABILIZATION_PLAN.md) |
+-| **Plan técnico vinculado** | [`docs/roadmap/PHASE_10_STABILIZATION_PLAN.md`](roadmap/PHASE_10_STABILIZATION_PLAN.md) |
 +| **Plan técnico vinculado** | [`docs/roadmap/PHASE_10_STABILIZATION_PLAN.md`](../roadmap/PHASE_10_STABILIZATION_PLAN.md) (v1.1) |
 ...
 -## Alcance del Documento
@@ -164,7 +164,7 @@ Se actualizó el documento a la **versión `1.1`**, conservando su estructura ge
 -| **Versión** | `1.0` |
 -| **Fecha de elaboración** | `9 de noviembre de 2026` |
 -| **Estado** | **Diagnóstico forense completado — Planificado para ejecución (Código sin modificar)** |
--| **Documento rector vinculado** | [`docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` (v1.1)](file:///c:/Desarrollo/Qurio/docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md) |
+-| **Documento rector vinculado** | [`docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` (v1.1)](product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md) |
 +| **Versión** | `1.1` |
 +| **Fecha de actualización** | `10 de noviembre de 2026` |
 +| **Estado** | **Diagnóstico forense y especificación v1.1 completados — Planificado para ejecución (Código e infraestructura sin modificar)** |

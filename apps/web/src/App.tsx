@@ -24,17 +24,39 @@ import {
   DataGridResults,
   ExerciseSpecPanel,
   TracksView,
-  SqlPlaygroundView,
-  AchievementsView,
-  UserProfileView,
-  NotFoundView,
-  AuthConfirmView,
-  ResetPasswordView,
 } from '@/components/organisms';
+
+// Lazy loading de vistas secundarias para optimización y code splitting del bundle
+const SqlPlaygroundView = React.lazy(() =>
+  import('@/components/organisms/SqlPlaygroundView/SqlPlaygroundView').then((m) => ({ default: m.SqlPlaygroundView }))
+);
+const AchievementsView = React.lazy(() =>
+  import('@/components/organisms/AchievementsView/AchievementsView').then((m) => ({ default: m.AchievementsView }))
+);
+const UserProfileView = React.lazy(() =>
+  import('@/components/organisms/UserProfileView/UserProfileView').then((m) => ({ default: m.UserProfileView }))
+);
+const NotFoundView = React.lazy(() =>
+  import('@/components/organisms/NotFoundView/NotFoundView').then((m) => ({ default: m.NotFoundView }))
+);
+const AuthConfirmView = React.lazy(() =>
+  import('@/components/organisms/AuthConfirmView/AuthConfirmView').then((m) => ({ default: m.AuthConfirmView }))
+);
+const ResetPasswordView = React.lazy(() =>
+  import('@/components/organisms/ResetPasswordView/ResetPasswordView').then((m) => ({ default: m.ResetPasswordView }))
+);
+
+const ViewLoadingFallback: React.FC = () => (
+  <div className="flex flex-col items-center justify-center min-h-[360px] gap-3 text-content-muted">
+    <div className="w-6 h-6 border-2 border-cyan-accent border-t-transparent rounded-full animate-spin" />
+    <span className="text-xs font-mono text-cyan-accent/80">Cargando módulo de la aplicación...</span>
+  </div>
+);
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { persistence } from '@/lib/persistence';
 import { computeOfficialTracksProgress, computeGuestTrialTracksProgress } from '@/lib/progress';
+import { pathToUrl, parseLocation } from '@/lib/routing';
 import {
   api,
   FALLBACK_EXERCISES,
@@ -51,18 +73,8 @@ import {
   TableSchemaInfo,
   Achievement,
   QueryHistoryItem,
+  AppPath,
 } from '@/types';
-
-export type AppPath =
-  | 'dashboard'
-  | 'playground'
-  | 'tracks'
-  | 'achievements'
-  | 'profile'
-  | 'exercise'
-  | 'not-found'
-  | 'auth-confirm'
-  | 'reset-password';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<AppPath>('dashboard');
@@ -104,54 +116,6 @@ export const App: React.FC = () => {
 
   const activeExercise = exercises[currentExerciseIndex] || FALLBACK_EXERCISES[0];
 
-  // Helper de conversión de AppPath a URL amigable
-  const pathToUrl = useCallback((path: AppPath, params?: { exerciseId?: string; trackSlug?: string }) => {
-    switch (path) {
-      case 'dashboard':
-        return '/';
-      case 'tracks':
-        return params?.trackSlug ? `/tracks/${params.trackSlug}` : '/tracks';
-      case 'playground':
-        return '/playground';
-      case 'achievements':
-        return '/achievements';
-      case 'profile':
-        return '/profile';
-      case 'exercise':
-        return params?.exerciseId ? `/exercises/${params.exerciseId}` : '/exercises';
-      case 'auth-confirm':
-        return '/auth/confirm';
-      case 'reset-password':
-        return '/reset-password';
-      case 'not-found':
-        return '/404';
-      default:
-        return '/';
-    }
-  }, []);
-
-  // Parser de URL a AppPath y parámetros
-  const parseLocation = useCallback((pathname: string): { path: AppPath; exerciseId?: string; trackSlug?: string } => {
-    const clean = pathname.replace(/\/+$/, '') || '/';
-    if (clean === '/' || clean === '') return { path: 'dashboard' };
-    if (clean === '/tracks') return { path: 'tracks' };
-    if (clean.startsWith('/tracks/')) {
-      const slug = clean.replace('/tracks/', '');
-      return { path: 'tracks', trackSlug: slug };
-    }
-    if (clean === '/playground') return { path: 'playground' };
-    if (clean === '/achievements') return { path: 'achievements' };
-    if (clean === '/profile') return { path: 'profile' };
-    if (clean === '/exercises' || clean === '/exercise') return { path: 'exercise' };
-    if (clean.startsWith('/exercises/')) {
-      const id = clean.replace('/exercises/', '');
-      return { path: 'exercise', exerciseId: id };
-    }
-    if (clean === '/auth/confirm' || clean === '/auth-confirm') return { path: 'auth-confirm' };
-    if (clean === '/reset-password') return { path: 'reset-password' };
-    return { path: 'not-found' };
-  }, []);
-
   // Navegación con History API
   const navigate = useCallback(
     (newPath: AppPath, params?: { exerciseId?: string; trackSlug?: string }, replace = false) => {
@@ -165,7 +129,7 @@ export const App: React.FC = () => {
         }
       }
     },
-    [pathToUrl]
+    []
   );
 
   // Sincronización de enrutamiento web y detección de tokens de Supabase Auth
@@ -198,7 +162,11 @@ export const App: React.FC = () => {
         const idx = exercises.findIndex((e) => e.id === parsed.exerciseId);
         if (idx !== -1) {
           setCurrentExerciseIndex(idx);
-          setSqlCode(exercises[idx].initial_code);
+          const draft = persistence.getExerciseDraft(exercises[idx].id);
+          setSqlCode(draft !== null ? draft : exercises[idx].initial_code);
+          setExecutionStatus('IDLE');
+          setResultError(undefined);
+          setResultDiff(undefined);
         } else {
           setPendingExerciseId(parsed.exerciseId);
         }
@@ -208,7 +176,7 @@ export const App: React.FC = () => {
     handleLocationChange();
     window.addEventListener('popstate', handleLocationChange);
     return () => window.removeEventListener('popstate', handleLocationChange);
-  }, [exercises, parseLocation]);
+  }, [exercises]);
 
   // Cargar ejercicios e historial al inicio
   useEffect(() => {
@@ -219,7 +187,11 @@ export const App: React.FC = () => {
           const idx = data.findIndex((e) => e.id === pendingExerciseId);
           if (idx !== -1) {
             setCurrentExerciseIndex(idx);
-            setSqlCode(data[idx].initial_code);
+            const draft = persistence.getExerciseDraft(data[idx].id);
+            setSqlCode(draft !== null ? draft : data[idx].initial_code);
+            setExecutionStatus('IDLE');
+            setResultError(undefined);
+            setResultDiff(undefined);
             setPendingExerciseId(null);
           }
         }
@@ -280,7 +252,8 @@ export const App: React.FC = () => {
     const ex = exercises[index];
     if (ex) {
       setCurrentExerciseIndex(index);
-      setSqlCode(ex.initial_code);
+      const draft = persistence.getExerciseDraft(ex.id);
+      setSqlCode(draft !== null ? draft : ex.initial_code);
       setHintsUnlocked(0);
       setExecutionStatus('IDLE');
       setResultError(undefined);
@@ -296,7 +269,11 @@ export const App: React.FC = () => {
     } else {
       setExercises((prev) => [ex, ...prev]);
       setCurrentExerciseIndex(0);
-      setSqlCode(ex.initial_code);
+      const draft = persistence.getExerciseDraft(ex.id);
+      setSqlCode(draft !== null ? draft : ex.initial_code);
+      setExecutionStatus('IDLE');
+      setResultError(undefined);
+      setResultDiff(undefined);
     }
     navigate('exercise', { exerciseId: ex.id });
   };
@@ -344,6 +321,9 @@ export const App: React.FC = () => {
           hintsUsed: hintsUnlocked,
           xpAwarded: evalResponse.xp_awarded,
         });
+
+        // Limpiar el borrador local al resolver exitosamente
+        persistence.clearExerciseDraft(activeExercise.id);
 
         // Marcar ejercicio como completado en el estado
         setExercises((prev) =>
@@ -428,6 +408,14 @@ export const App: React.FC = () => {
   const handleNextExercise = () => {
     const nextIndex = (currentExerciseIndex + 1) % exercises.length;
     handleSelectExercise(nextIndex);
+  };
+
+  // Manejo reactivo de cambios en el editor con preservación de borrador local (C-05)
+  const handleSqlCodeChange = (newCode: string) => {
+    setSqlCode(newCode);
+    if (activeExercise?.id) {
+      persistence.saveExerciseDraft(activeExercise.id, newCode, activeExercise.initial_code);
+    }
   };
 
   const handleValidateEmail = (val: string) => {
@@ -550,9 +538,17 @@ export const App: React.FC = () => {
           editorContent={
             <MonacoEditorPanel
               value={sqlCode}
-              onChange={setSqlCode}
+              onChange={handleSqlCodeChange}
               onExecute={handleExecuteSolution}
-              onReset={() => setSqlCode(activeExercise.initial_code)}
+              onReset={() => {
+                if (activeExercise?.id) {
+                  persistence.clearExerciseDraft(activeExercise.id);
+                }
+                setSqlCode(activeExercise.initial_code);
+                setExecutionStatus('IDLE');
+                setResultError(undefined);
+                setResultDiff(undefined);
+              }}
               isLoading={isExecuting}
               isSubmitMode={true}
             />
@@ -642,50 +638,62 @@ export const App: React.FC = () => {
 
         {/* VISTA B: SQL PLAYGROUND LIBRE */}
         {currentPath === 'playground' && (
-          <SqlPlaygroundView tables={tables} />
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <SqlPlaygroundView tables={tables} />
+          </React.Suspense>
         )}
 
         {/* VISTA C: LOGROS & MEDALLAS */}
         {currentPath === 'achievements' && (
-          <AchievementsView
-            achievements={achievements}
-            totalXp={profile?.total_xp || 480}
-          />
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <AchievementsView
+              achievements={achievements}
+              totalXp={profile?.total_xp || 480}
+            />
+          </React.Suspense>
         )}
 
         {/* VISTA D: MI PERFIL */}
         {currentPath === 'profile' && (
-          <UserProfileView
-            profile={profile}
-            history={queryHistory}
-            onOpenPlayground={() => navigate('playground')}
-            onOpenAuth={() => setAuthModalOpen(true)}
-            isCloudAuth={isCloudAuth}
-          />
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <UserProfileView
+              profile={profile}
+              history={queryHistory}
+              onOpenPlayground={() => navigate('playground')}
+              onOpenAuth={() => setAuthModalOpen(true)}
+              isCloudAuth={isCloudAuth}
+            />
+          </React.Suspense>
         )}
 
-      {/* VISTA E: ERROR 404 (RELATION NOT FOUND) */}
-      {currentPath === 'not-found' && (
-        <NotFoundView
-          missingPath="v_reporte_anual"
-          onNavigate={(path) => navigate(path as AppPath)}
-        />
-      )}
+        {/* VISTA E: ERROR 404 (RELATION NOT FOUND) */}
+        {currentPath === 'not-found' && (
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <NotFoundView
+              missingPath="v_reporte_anual"
+              onNavigate={(path) => navigate(path as AppPath)}
+            />
+          </React.Suspense>
+        )}
 
-      {/* VISTA F: CONFIRMACIÓN DE CUENTA SUPABASE (EMAIL VERIFICATION) */}
-      {currentPath === 'auth-confirm' && (
-        <AuthConfirmView
-          onNavigate={(path) => navigate(path as AppPath)}
-          userEmail={profile?.username ? `${profile.username}@qurio.dev` : undefined}
-        />
-      )}
+        {/* VISTA F: CONFIRMACIÓN DE CUENTA SUPABASE (EMAIL VERIFICATION) */}
+        {currentPath === 'auth-confirm' && (
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <AuthConfirmView
+              onNavigate={(path) => navigate(path as AppPath)}
+              userEmail={profile?.username ? `${profile.username}@qurio.dev` : undefined}
+            />
+          </React.Suspense>
+        )}
 
-      {/* VISTA G: RESTABLECER CONTRASEÑA */}
-      {currentPath === 'reset-password' && (
-        <ResetPasswordView
-          onNavigate={(path) => navigate(path as AppPath)}
-        />
-      )}
+        {/* VISTA G: RESTABLECER CONTRASEÑA */}
+        {currentPath === 'reset-password' && (
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <ResetPasswordView
+              onNavigate={(path) => navigate(path as AppPath)}
+            />
+          </React.Suspense>
+        )}
 
       {/* VISTA E: DASHBOARD PRINCIPAL */}
       {currentPath === 'dashboard' && (

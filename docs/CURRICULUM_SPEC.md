@@ -174,5 +174,5 @@ Cada uno de los 50 ejercicios definidos en esta especificación cumple las sigui
 1. **Aserciones Semánticas en Docker:** Las 50 soluciones de referencia se ejecutan contra el PostgreSQL Sandbox local (`localhost:5433`).
 2. **Cardinalidad No Degenerada:** Ninguna consulta devuelve 0 filas (conjunto vacío involuntario) ni la totalidad ciega de la tabla, garantizando que el filtro o cálculo sea significativo.
 3. **Soporte Bidireccional:**
-   * Archivo de producción en la nube: [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).
-   * Catálogo de resiliencia offline de la API: [`apps/api/app/modules/curriculum/seed_data.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/seed_data.py).
+   * Archivo de producción en la nube: [`database/supabase/02_seed_curriculum.sql`](../database/supabase/02_seed_curriculum.sql).
+   * Catálogo de resiliencia offline de la API: [`apps/api/app/modules/curriculum/seed_data.py`](../apps/api/app/modules/curriculum/seed_data.py).

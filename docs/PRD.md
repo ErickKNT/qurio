@@ -4,8 +4,8 @@
 **Versión:** 1.0 (MVP)  
 **Fecha:** Noviembre 2026  
 **Estado:** Propuesto para revisión y aprobación  
-**Documento de Intención de Referencia:** [`docs/intent/qurio-mvp.md`](file:///c:/Desarrollo/Qurio/docs/intent/qurio-mvp.md)  
-**Sistema de Diseño de Referencia:** [`Terminal Glow Minimal`](file:///c:/Desarrollo/Qurio/docs/stitch_qurio_interactive_sql_platform/stitch_qurio_interactive_sql_platform/terminal_glow_minimal/DESIGN.md)
+**Documento de Intención de Referencia:** [`docs/intent/qurio-mvp.md`](intent/qurio-mvp.md)  
+**Sistema de Diseño de Referencia:** [`Terminal Glow Minimal`](stitch_qurio_interactive_sql_platform/stitch_qurio_interactive_sql_platform/terminal_glow_minimal/DESIGN.md)
 
 ---
 

@@ -10,7 +10,7 @@
 | **Commit de Cierre** | `32d1c80` (*feat(phase-10): complete stabilization and close operational baseline (C-01 to C-05)*) |
 | **Repositorio Remoto** | `https://github.com/ErickKNT/qurio.git` (sincronizada y actualizada en `origin`) |
 | **Estado de Verificación** | **100% Ejecutable y Automatizado (69 tests Backend + 8 tests Frontend + Build Limpio)** |
-| **Documentos Rectores Vinculados** | [`docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`](file:///c:/Desarrollo/Qurio/docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md) (v1.2)<br>[`docs/roadmap/PHASE_10_STABILIZATION_PLAN.md`](file:///c:/Desarrollo/Qurio/docs/roadmap/PHASE_10_STABILIZATION_PLAN.md) (v1.2)<br>[`docs/audits/QURIO_OPERATIONAL_AUDIT.md`](file:///c:/Desarrollo/Qurio/docs/audits/QURIO_OPERATIONAL_AUDIT.md) (v1.1)<br>[`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](file:///c:/Desarrollo/Qurio/docs/roadmap/QURIO_OPERATIONAL_BASELINE.md) (v1.1)<br>[`docs/BITACORA.md`](file:///c:/Desarrollo/Qurio/docs/BITACORA.md) (Entrada 24) |
+| **Documentos Rectores Vinculados** | [`docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`](../product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md) (v1.2)<br>[`docs/roadmap/PHASE_10_STABILIZATION_PLAN.md`](../roadmap/PHASE_10_STABILIZATION_PLAN.md) (v1.2)<br>[`docs/audits/QURIO_OPERATIONAL_AUDIT.md`](QURIO_OPERATIONAL_AUDIT.md) (v1.1)<br>[`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](../roadmap/QURIO_OPERATIONAL_BASELINE.md) (v1.1)<br>[`docs/BITACORA.md`](../BITACORA.md) (Entrada 24) |
 
 ---
 
@@ -50,22 +50,22 @@ Bajo la directriz ejecutiva de **avanzar mediante entregables funcionales comple
 La auditoría forense reveló que `solution_query` se encontraba expuesta en texto plano en 50 puntos del código estático compilado del frontend (`dist/assets/index-*.js`), en el catálogo offline `FALLBACK_EXERCISES` de `api.ts`, en la interfaz TypeScript `Exercise` y en las respuestas JSON serializadas por los endpoints `GET /api/v1/exercises` y `GET /api/v1/exercises/{exercise_id}` de FastAPI. Cualquier usuario con conocimientos básicos de herramientas de desarrollador (`F12`) podía extraer las soluciones oficiales y superar los 50 retos sin escribir código.
 
 #### 2.1.2 Solución Arquitectónica en Backend (`apps/api/`)
-1. **Separación de DTOs en [`seed_data.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/seed_data.py):**
+1. **Separación de DTOs en [`seed_data.py`](../../apps/api/app/modules/curriculum/seed_data.py):**
    * Se creó la clase `ExercisePublicDTO` conteniendo únicamente las propiedades formativas necesarias para el estudiante (`id`, `module_id`, `title`, `prompt`, `initial_code`, `xp_reward`, `difficulty`, `check_order`, `sort_order`, `hints`, `concept`, `objectives`, `sample_tables`).
    * Se excluyó de forma estricta el campo `solution_query`.
    * Se dotó a `ExerciseDetail` del método de transformación `.to_public_dto() -> ExercisePublicDTO`.
-2. **Desacoplamiento de Acceso en [`repository.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/repository.py):**
+2. **Desacoplamiento de Acceso en [`repository.py`](../../apps/api/app/modules/curriculum/repository.py):**
    * Se crearon los métodos `list_public() -> List[ExercisePublicDTO]` y `get_public_by_id(exercise_id: str) -> Optional[ExercisePublicDTO]`, los cuales proyectan únicamente DTOs protegidos.
    * Se creó `get_internal_for_evaluation(exercise_id: str) -> Optional[ExerciseDetail]` para uso exclusivo del evaluador semántico interno (`submit_exercise_solution`).
-3. **Restricción de Endpoints en [`router.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/router.py):**
+3. **Restricción de Endpoints en [`router.py`](../../apps/api/app/modules/runner/router.py):**
    * `GET /api/v1/exercises` cambió su `response_model` a `List[ExercisePublicDTO]`.
    * `GET /api/v1/exercises/{exercise_id}` cambió su `response_model` a `ExercisePublicDTO`.
    * `POST /api/v1/exercises/{exercise_id}/submit` consume `get_internal_for_evaluation()` en el servidor para ejecutar la consulta de referencia contra el sandbox Docker sin exponerla al cliente en ningún momento.
 
 #### 2.1.3 Solución en Frontend (`apps/web/`)
-1. **Tipado Estricto en [`types/index.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/types/index.ts):**
+1. **Tipado Estricto en [`types/index.ts`](../../apps/web/src/types/index.ts):**
    * Se eliminó definitivamente la propiedad `solution_query?: string` de la interfaz `Exercise`.
-2. **Purga del Catálogo Offline en [`api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts):**
+2. **Purga del Catálogo Offline en [`api.ts`](../../apps/web/src/lib/api.ts):**
    * Se purgaron las 50 líneas que declaraban `solution_query: "..."` en `FALLBACK_EXERCISES`.
 3. **Verificación de Empaquetado:**
    * La ejecución de `npm run build` produjo un bundle en `dist/assets/*.js` donde la búsqueda de `solution_query` devolvió **0 resultados**.
@@ -93,7 +93,7 @@ El backend FastAPI ya persistía autoritativamente los intentos mediante la RPC 
 
 Dado que el hardening de seguridad (Fase 9) revocó con éxito los privilegios de escritura directa sobre esas tablas y columnas para el rol `authenticated`, PostgreSQL rechazaba cada una de estas peticiones con error `42501 (insufficient privilege)`. En `persistence.ts`, estos errores eran capturados silenciosamente con `console.warn`, pero generaban ruido en consola y bloqueaban funciones legítimas del usuario como actualizar su nombre o avatar en `updateProfile()`.
 
-#### 2.2.2 Remediación en Frontend ([`persistence.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/persistence.ts))
+#### 2.2.2 Remediación en Frontend ([`persistence.ts`](../../apps/web/src/lib/persistence.ts))
 1. **Eliminación Total de Mutaciones Directas:**
    * Se suprimieron todas las operaciones `.insert()` y `.update()` directas a `exercise_attempts`, `user_profiles` y `user_daily_activity`.
    * El cliente asume al backend como la única autoridad certificadora de progreso.
@@ -107,7 +107,7 @@ Dado que el hardening de seguridad (Fase 9) revocó con éxito los privilegios d
    * `getCompletedExerciseIds(userId)` para usuarios autenticados consulta exclusivamente `exercise_attempts` en Supabase Cloud.
    * Se eliminó la línea `const merged = new Set([...localCompleted, ...cloudIds])`, garantizando que ningún dato manipulado en `localStorage` pueda inflar el progreso oficial de una cuenta.
 
-#### 2.2.3 Límite de Prueba de Invitados en Backend ([`router.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/router.py))
+#### 2.2.3 Límite de Prueba de Invitados en Backend ([`router.py`](../../apps/api/app/modules/runner/router.py))
 * En el endpoint `POST /api/v1/exercises/{exercise_id}/submit`:
   ```python
   GUEST_TRIAL_EXERCISE_IDS = {
@@ -130,7 +130,7 @@ Dado que el hardening de seguridad (Fase 9) revocó con éxito los privilegios d
    * Si el usuario cierra el navegador o recarga la página mientras un ejercicio está en vuelo (`sync_status === 'syncing'`), el elemento podía quedar bloqueado permanentemente.
    * La función comprueba: si `sync_status === 'syncing'` y `Date.now() - sync_started_at > 30000` (más de 30 segundos), el elemento es restaurado automáticamente a `'pending'` con `sync_started_at = undefined`.
 3. **Migración Idempotente (`syncGuestProgress`):**
-   * Al iniciar sesión (`onAuthStateChange` con evento `SIGNED_IN` en [`useAuth.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/hooks/useAuth.tsx)):
+   * Al iniciar sesión (`onAuthStateChange` con evento `SIGNED_IN` en [`useAuth.tsx`](../../apps/web/src/hooks/useAuth.tsx)):
      1. Ejecuta primero `recoverInterruptedGuestSync()`.
      2. Consulta la lista oficial de ejercicios completados en la nube (`cloudPassedSet`).
      3. Si el ejercicio del invitado ya fue superado previamente en la cuenta de usuario, se marca `'synced'` de inmediato sin realizar peticiones de red innecesarias.
@@ -142,13 +142,13 @@ Dado que el hardening de seguridad (Fase 9) revocó con éxito los privilegios d
 ### 2.3 Bloque C — Integridad del Currículo y Progreso (`C-03` + `C-04`)
 
 #### 2.3.1 Diagnóstico de la Brecha
-* En [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx) línea 129: al cargar los ejercicios completados, se ejecutaba `setTracks(prev => prev.map(tr => ({ ...tr, completed_exercises: completedIds.length })))`. Si un alumno completaba 5 retos de la Ruta 1, las Rutas 2 y 3 mostraban erróneamente 5 retos completados.
+* En [`App.tsx`](../../apps/web/src/App.tsx) línea 129: al cargar los ejercicios completados, se ejecutaba `setTracks(prev => prev.map(tr => ({ ...tr, completed_exercises: completedIds.length })))`. Si un alumno completaba 5 retos de la Ruta 1, las Rutas 2 y 3 mostraban erróneamente 5 retos completados.
 * En `handleExecuteSolution`: al resolver cualquier reto, se sumaba `+1` a todas las rutas indiscriminadamente.
 * En `TrackCard.tsx`: mientras se sincronizaba con la red, se mostraba `0%` por defecto en lugar de un estado de carga visual.
 * En `ExerciseSpecPanel.tsx`: solo se mostraban 4 de las 10 tablas del sandbox.
 * En `README.md` y `docs/CURRICULUM_SPEC.md`: la tabla física `pagos` era llamada `metodos_pago` con 5 filas (cuando `pagos` tiene 11 filas).
 
-#### 2.3.2 Módulo de Progreso Puro ([`progress.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/progress.ts))
+#### 2.3.2 Módulo de Progreso Puro ([`progress.ts`](../../apps/web/src/lib/progress.ts))
 Se implementaron funciones matemáticas puras y deterministas:
 ```typescript
 export function computeOfficialTracksProgress(
@@ -198,7 +198,7 @@ export function computeOfficialTracksProgress(
 }
 ```
 
-#### 2.3.3 Tratamiento de Carga y Shimmer Skeleton ([`TrackCard.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/TrackCard/TrackCard.tsx))
+#### 2.3.3 Tratamiento de Carga y Shimmer Skeleton ([`TrackCard.tsx`](../../apps/web/src/components/molecules/TrackCard/TrackCard.tsx))
 * Se añadió la propiedad `is_progress_loading?: boolean` y `completed_exercises?: number | null`.
 * Cuando `isLoading = track.is_progress_loading || track.completed_exercises === null`:
   * Badge superior: Renderiza `<span className="animate-pulse ...">Sincronizando...</span>`.
@@ -207,7 +207,7 @@ export function computeOfficialTracksProgress(
   * Se elimina el parpadeo de `0/20 (0%)` mientras los datos se recuperan de la nube.
 
 #### 2.3.4 Esquema Relacional Canónico de 10 Tablas
-1. **Exposición en IDE ([`ExerciseSpecPanel.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx)):**
+1. **Exposición en IDE ([`ExerciseSpecPanel.tsx`](../../apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx)):**
    Se configuraron las 10 tablas del dataset relacional con sus columnas, PKs y FKs:
    * `clientes` (7 columnas)
    * `categorias` (3 columnas)
@@ -220,7 +220,7 @@ export function computeOfficialTracksProgress(
    * `facturas` (5 columnas)
    * `pagos` (6 columnas)
 2. **Sincronización de Conteos de Filas:**
-   Se alinearon los conteos en `ECOMMERCE_TABLES_SCHEMA` de [`api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts) y en [`README.md`](file:///c:/Desarrollo/Qurio/README.md) con la fuente canónica física de [`ecommerce_seed.sql`](file:///c:/Desarrollo/Qurio/database/sandbox/ecommerce_seed.sql):
+   Se alinearon los conteos en `ECOMMERCE_TABLES_SCHEMA` de [`api.ts`](../../apps/web/src/lib/api.ts) y en [`README.md`](../../README.md) con la fuente canónica física de [`ecommerce_seed.sql`](../../database/sandbox/ecommerce_seed.sql):
    * `clientes`: 15
    * `categorias`: 5
    * `proveedores`: 5
@@ -231,7 +231,7 @@ export function computeOfficialTracksProgress(
    * `inventario`: 19
    * `facturas`: 13
    * `pagos`: 11 (con columna `metodo_pago`)
-3. **Reconciliación en Especificación Pedagógica ([`docs/CURRICULUM_SPEC.md`](file:///c:/Desarrollo/Qurio/docs/CURRICULUM_SPEC.md)):**
+3. **Reconciliación en Especificación Pedagógica ([`docs/CURRICULUM_SPEC.md`](../CURRICULUM_SPEC.md)):**
    La fila del reto #27 fue actualizada para describir la conciliación real entre `facturas` y `pagos` (`folio_fiscal`, `metodo_pago`, `monto`, `fecha_pago`), erradicando `metodos_pago`.
 
 ---
@@ -245,7 +245,7 @@ El flujo de vistas se apoyaba exclusivamente en `const [currentPath, setCurrentP
 * Usar los botones de navegación Atrás y Adelante del navegador.
 * Gestionar limpiamente tokens de verificación o recuperación de Supabase Auth.
 
-#### 2.4.2 Implementación de Enrutamiento con HTML5 History API ([`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx))
+#### 2.4.2 Implementación de Enrutamiento con HTML5 History API ([`App.tsx`](../../apps/web/src/App.tsx))
 Se implementó una solución sin agregar dependencias externas pesadas, basada en la API estándar del navegador:
 1. **Mapeo Bidireccional de Rutas:**
    * `pathToUrl`: traduce `AppPath` y parámetros (`exerciseId`, `trackSlug`) a rutas amigables (`/`, `/tracks`, `/tracks/:slug`, `/exercises/:id`, `/playground`, `/profile`, `/achievements`, `/auth/confirm`, `/reset-password`, `/404`).
@@ -280,13 +280,13 @@ Se implementó una solución sin agregar dependencias externas pesadas, basada e
 #### Matriz Detallada de Pruebas del Backend:
 | Archivo de Prueba | Casos | Aspecto Evaluado | Resultado |
 | :--- | :---: | :--- | :---: |
-| [`test_schema_consistency.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_schema_consistency.py) | 3 | Valida que `ecommerce_seed.sql` contenga las 10 tablas físicas, que `pagos` y `metodo_pago` sean las fuentes canónicas, que `metodos_pago` no exista en docs ni specs, y que `ExerciseSpecPanel.tsx` exponga las 10 tablas. | ✅ PASÓ |
-| [`test_integration.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_integration.py) | 13 | Healthcheck, ejecución en Playground con timeout y límites, bloqueo AST de inyecciones, catálogo sin `solution_query`, rechazo a invitados fuera de trial con HTTP 401 (`test_guest_trial_limit_enforced`), y acreditación de XP a autenticados (`test_submit_exercise_star_challenge_left_join_authenticated`). | ✅ PASÓ |
-| [`test_evaluator.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_evaluator.py) | 14 | Capa 1 (tolerancia numérica decimal, comparación de multiconjuntos, orden estricto vs desordenado, tratamiento de nulos) y Capa 2 (AST pedagógico). | ✅ PASÓ |
-| [`test_security.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_security.py) | 11 | Bloqueo estricto de sentencias DDL/DML destructivas (`DROP`, `DELETE`, `UPDATE`, `ALTER`, `GRANT`, `COPY`), inyecciones multicomando y CTEs de mutación con SQLGlot. | ✅ PASÓ |
-| [`test_auth.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_auth.py) | 8 | Verificación criptográfica JWT ES256, rotación de claves JWKS mockeadas, validación de audiencia (`authenticated`) y expiración. | ✅ PASÓ |
-| [`test_rate_limit.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_rate_limit.py) | 4 | Límites de tasa diferenciados (20/min para invitados por IP, 120/min para autenticados por User ID) y semáforo de concurrencia máxima. | ✅ PASÓ |
-| [`test_supabase_migration.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_supabase_migration.py) | 16 | Verificación de esquemas Supabase (`01_schema.sql`, `02_seed_curriculum.sql`, `03_security_hardening.sql`), roles `anon` y `authenticated`, políticas RLS, función RPC `record_verified_attempt` y auditoría de rollback. | ✅ PASÓ |
+| [`test_schema_consistency.py`](../../apps/api/tests/test_schema_consistency.py) | 3 | Valida que `ecommerce_seed.sql` contenga las 10 tablas físicas, que `pagos` y `metodo_pago` sean las fuentes canónicas, que `metodos_pago` no exista en docs ni specs, y que `ExerciseSpecPanel.tsx` exponga las 10 tablas. | ✅ PASÓ |
+| [`test_integration.py`](../../apps/api/tests/test_integration.py) | 13 | Healthcheck, ejecución en Playground con timeout y límites, bloqueo AST de inyecciones, catálogo sin `solution_query`, rechazo a invitados fuera de trial con HTTP 401 (`test_guest_trial_limit_enforced`), y acreditación de XP a autenticados (`test_submit_exercise_star_challenge_left_join_authenticated`). | ✅ PASÓ |
+| [`test_evaluator.py`](../../apps/api/tests/test_evaluator.py) | 14 | Capa 1 (tolerancia numérica decimal, comparación de multiconjuntos, orden estricto vs desordenado, tratamiento de nulos) y Capa 2 (AST pedagógico). | ✅ PASÓ |
+| [`test_security.py`](../../apps/api/tests/test_security.py) | 11 | Bloqueo estricto de sentencias DDL/DML destructivas (`DROP`, `DELETE`, `UPDATE`, `ALTER`, `GRANT`, `COPY`), inyecciones multicomando y CTEs de mutación con SQLGlot. | ✅ PASÓ |
+| [`test_auth.py`](../../apps/api/tests/test_auth.py) | 8 | Verificación criptográfica JWT ES256, rotación de claves JWKS mockeadas, validación de audiencia (`authenticated`) y expiración. | ✅ PASÓ |
+| [`test_rate_limit.py`](../../apps/api/tests/test_rate_limit.py) | 4 | Límites de tasa diferenciados (20/min para invitados por IP, 120/min para autenticados por User ID) y semáforo de concurrencia máxima. | ✅ PASÓ |
+| [`test_supabase_migration.py`](../../apps/api/tests/test_supabase_migration.py) | 16 | Verificación de esquemas Supabase (`01_schema.sql`, `02_seed_curriculum.sql`, `03_security_hardening.sql`), roles `anon` y `authenticated`, políticas RLS, función RPC `record_verified_attempt` y auditoría de rollback. | ✅ PASÓ |
 
 ---
 
