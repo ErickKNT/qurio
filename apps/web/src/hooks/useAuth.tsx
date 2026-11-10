@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { UserProfile } from '@/types';
 import { persistence } from '@/lib/persistence';
+import { api } from '@/lib/api';
 
 export interface AuthContextType {
   session: Session | null;
@@ -144,6 +145,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
         if (newSession?.user) {
           await fetchProfile(newSession.user.id, newSession.user.user_metadata);
+          if (event === 'SIGNED_IN') {
+            persistence.syncGuestProgress(newSession.user.id, (exId, sql, hints) =>
+              api.submitSolution(exId, sql, hints)
+            ).then((res) => {
+              if (res.syncedCount > 0) {
+                fetchProfile(newSession.user.id, newSession.user.user_metadata);
+              }
+            });
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         setProfile(null);

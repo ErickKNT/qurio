@@ -6,7 +6,7 @@ from app.core.auth import AuthenticatedUser, get_optional_current_user
 from app.core.rate_limit import check_rate_limit, concurrency_semaphore
 from app.core.supabase import record_verified_progress
 from app.modules.curriculum.repository import exercise_repository
-from app.modules.curriculum.seed_data import ExerciseDetail
+from app.modules.curriculum.seed_data import ExerciseDetail, ExercisePublicDTO
 from app.modules.runner.evaluator import evaluate_solution
 from app.modules.runner.schemas import (
     EvaluationResponse,
@@ -69,26 +69,36 @@ async def execute_playground_query(
     return result
 
 
+GUEST_TRIAL_EXERCISE_IDS = {
+    "e0000000-0000-0000-0000-000000000001",
+    "e0000000-0000-0000-0000-000000000002",
+    "e0000000-0000-0000-0000-000000000003",
+    "ex-m01-01",
+    "ex-m01-02",
+    "ex-m01-03",
+}
+
+
 @router.get(
     "/exercises",
-    response_model=List[ExerciseDetail],
+    response_model=List[ExercisePublicDTO],
     tags=["Ejercicios"],
     summary="Listar ejercicios disponibles",
 )
 async def list_exercises():
-    """Obtiene el catálogo de ejercicios activos."""
-    return await exercise_repository.list_all()
+    """Obtiene el catálogo de ejercicios activos protegidos sin solution_query."""
+    return await exercise_repository.list_public()
 
 
 @router.get(
     "/exercises/{exercise_id}",
-    response_model=ExerciseDetail,
+    response_model=ExercisePublicDTO,
     tags=["Ejercicios"],
     summary="Obtener detalle de un ejercicio",
 )
 async def get_exercise(exercise_id: str):
-    """Devuelve la consigna, pistas y código inicial de un reto."""
-    exercise = await exercise_repository.get_by_id(exercise_id)
+    """Devuelve la consigna, pistas y código inicial de un reto sin solution_query."""
+    exercise = await exercise_repository.get_public_by_id(exercise_id)
     if not exercise:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -112,15 +122,23 @@ async def submit_exercise_solution(
     """
     Evalúa semánticamente la consulta del estudiante:
     1. Aplica Rate Limiting diferenciado y guardia de concurrencia.
-    2. Ejecuta la consulta del estudiante en el sandbox Docker.
-    3. Ejecuta la solución de referencia oficial.
-    4. Compara columnas, cardinalidad, nulos, tolerancia numérica y multiconjuntos/orden.
-    5. Si el usuario está autenticado y aprueba, el backend certifica el intento vía Supabase RPC con idempotencia.
+    2. En modo invitado, comprueba el límite de 3 ejercicios de prueba.
+    3. Ejecuta la consulta del estudiante en el sandbox Docker.
+    4. Ejecuta la solución de referencia oficial (oculta para el cliente).
+    5. Compara columnas, cardinalidad, nulos, tolerancia numérica y multiconjuntos/orden.
+    6. Si el usuario está autenticado y aprueba, el backend certifica el intento vía Supabase RPC con idempotencia.
     """
     # 1. Rate Limiting diferenciado
     await check_rate_limit(http_request, user)
 
-    exercise = await exercise_repository.get_by_id(exercise_id)
+    # 2. Control estricto de límite de prueba para invitados (3 ejercicios)
+    if user.is_guest and exercise_id not in GUEST_TRIAL_EXERCISE_IDS:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="REGISTRATION_REQUIRED_AFTER_TRIAL: Debes crear una cuenta o iniciar sesión para continuar practicando después de los 3 ejercicios de prueba.",
+        )
+
+    exercise = await exercise_repository.get_internal_for_evaluation(exercise_id)
     if not exercise:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

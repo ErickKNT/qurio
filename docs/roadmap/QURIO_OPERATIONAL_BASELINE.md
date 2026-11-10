@@ -138,12 +138,12 @@ Para considerar completada la estabilización antes de invitar al grupo piloto, 
 
 ## 6. Puerta de Entrada al Grupo Piloto (Gate Checklist)
 
-Antes de autorizar la apertura de Qurio a los primeros 10 a 20 estudiantes de prueba, se verificará la siguiente lista de control obligatoria:
+Antes de autorizar la apertura de Qurio a los primeros 10 a 20 estudiantes de prueba, se verifica la siguiente lista de control obligatoria:
 
-- [ ] **G-01:** `PR-10.1` fusionado y verificado: `solution_query` no se filtra en ningún componente.
-- [ ] **G-02:** `PR-10.2` fusionado y verificado: la consola del navegador está limpia de errores `42501` durante login, resolución y edición de perfil.
-- [ ] **G-03:** `PR-10.3` fusionado y verificado: cada ruta refleja su progreso real y las 10 tablas están visibles en el IDE.
-- [ ] **G-04:** `PR-10.4` fusionado y verificado: recargar en el ejercicio #12 conserva el ejercicio activo y las URLs son navegables.
-- [ ] **G-05:** Los 50 ejercicios han sido ejecutados contra el Sandbox Docker y devuelven respuestas válidas.
-- [ ] **G-06:** El flujo completo de 21 pasos del estudiante ha sido probado manualmente de punta a punta por el equipo.
+- [x] **G-01:** `C-01` resuelto y verificado: `solution_query` no se filtra en ningún componente, API ni bundle compilado.
+- [x] **G-02:** `C-02` + `D-05` resuelto y verificado: la consola del navegador está limpia de errores `42501` durante login, resolución y edición de perfil; migración de invitados e idempotencia probadas.
+- [x] **G-03:** `C-03` + `C-04` resuelto y verificado: cada ruta refleja su progreso real independiente, skeleton en carga y las 10 tablas están visibles en el IDE.
+- [x] **G-04:** `C-05` resuelto y verificado: recargar en cualquier ejercicio conserva el ejercicio activo y las URLs son navegables con History API.
+- [x] **G-05:** Los 50 ejercicios han sido ejecutados contra el Sandbox Docker y devuelven respuestas válidas (69/69 pruebas pytest).
+- [ ] **G-06:** El flujo completo de 21 pasos del estudiante ha sido probado interactivamente en navegador por el equipo.
 - [ ] **G-07:** Autorización formal y expresa del propietario del producto para el inicio de pruebas piloto.

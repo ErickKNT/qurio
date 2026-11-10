@@ -53,23 +53,47 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
     }
   }, [isCompleted, exercise.id, exercise.is_completed]);
 
-  // Esquema de tablas del dataset relacional para consulta rápida
+  // Esquema de tablas del dataset relacional para consulta rápida (10 tablas canónicas)
   const schemaTables = [
     {
       name: 'clientes',
-      columns: ['cliente_id (PK, INT)', 'nombre (VARCHAR)', 'apellido (VARCHAR)', 'email (VARCHAR)', 'ciudad (VARCHAR)', 'pais (VARCHAR)'],
-    },
-    {
-      name: 'pedidos',
-      columns: ['pedido_id (PK, INT)', 'cliente_id (FK, INT)', 'fecha_pedido (DATE)', 'estado_pedido (VARCHAR)', 'total (NUMERIC)'],
-    },
-    {
-      name: 'productos',
-      columns: ['producto_id (PK, INT)', 'nombre_producto (VARCHAR)', 'categoria_id (FK)', 'precio (NUMERIC)', 'stock (INT)'],
+      columns: ['cliente_id (PK, INT)', 'nombre (VARCHAR)', 'apellido (VARCHAR)', 'email (VARCHAR)', 'ciudad (VARCHAR)', 'pais (VARCHAR)', 'fecha_registro (DATE)'],
     },
     {
       name: 'categorias',
       columns: ['categoria_id (PK, INT)', 'nombre_categoria (VARCHAR)', 'descripcion (TEXT)'],
+    },
+    {
+      name: 'proveedores',
+      columns: ['proveedor_id (PK, INT)', 'nombre_proveedor (VARCHAR)', 'pais (VARCHAR)', 'telefono (VARCHAR)'],
+    },
+    {
+      name: 'productos',
+      columns: ['producto_id (PK, INT)', 'categoria_id (FK)', 'proveedor_id (FK)', 'nombre_producto (VARCHAR)', 'precio (NUMERIC)', 'stock (INT)'],
+    },
+    {
+      name: 'pedidos',
+      columns: ['pedido_id (PK, INT)', 'cliente_id (FK)', 'fecha_pedido (DATE)', 'estado_pedido (VARCHAR)', 'total (NUMERIC)'],
+    },
+    {
+      name: 'detalle_pedidos',
+      columns: ['detalle_id (PK, INT)', 'pedido_id (FK)', 'producto_id (FK)', 'cantidad (INT)', 'precio_unitario (NUMERIC)'],
+    },
+    {
+      name: 'almacenes',
+      columns: ['almacen_id (PK, INT)', 'nombre_almacen (VARCHAR)', 'ciudad (VARCHAR)', 'capacidad_m2 (INT)'],
+    },
+    {
+      name: 'inventario',
+      columns: ['almacen_id (PK, FK)', 'producto_id (PK, FK)', 'cantidad_disponible (INT)', 'ultima_actualizacion (TIMESTAMP)'],
+    },
+    {
+      name: 'facturas',
+      columns: ['factura_id (PK, INT)', 'pedido_id (FK)', 'fecha_emision (DATE)', 'monto_total (NUMERIC)', 'estado_factura (VARCHAR)'],
+    },
+    {
+      name: 'pagos',
+      columns: ['pago_id (PK, INT)', 'factura_id (FK)', 'metodo_pago (VARCHAR)', 'monto (NUMERIC)', 'fecha_pago (DATE)', 'estado_pago (VARCHAR)'],
     },
   ];
 

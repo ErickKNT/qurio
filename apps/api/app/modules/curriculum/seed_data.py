@@ -15,6 +15,22 @@ class SampleTableData(BaseModel):
     rows: List[List[Any]]
 
 
+class ExercisePublicDTO(BaseModel):
+    id: str
+    module_id: str
+    title: str
+    prompt: str
+    initial_code: str
+    xp_reward: int
+    difficulty: str
+    check_order: bool
+    sort_order: int
+    hints: List[str] = []
+    concept: Optional[ExerciseConcept] = None
+    objectives: Optional[List[str]] = None
+    sample_tables: Optional[List[SampleTableData]] = None
+
+
 class ExerciseDetail(BaseModel):
     id: str
     module_id: str
@@ -30,6 +46,23 @@ class ExerciseDetail(BaseModel):
     concept: Optional[ExerciseConcept] = None
     objectives: Optional[List[str]] = None
     sample_tables: Optional[List[SampleTableData]] = None
+
+    def to_public_dto(self) -> ExercisePublicDTO:
+        return ExercisePublicDTO(
+            id=self.id,
+            module_id=self.module_id,
+            title=self.title,
+            prompt=self.prompt,
+            initial_code=self.initial_code,
+            xp_reward=self.xp_reward,
+            difficulty=self.difficulty,
+            check_order=self.check_order,
+            sort_order=self.sort_order,
+            hints=self.hints,
+            concept=self.concept,
+            objectives=self.objectives,
+            sample_tables=self.sample_tables,
+        )
 
 
 # Tablas de muestra compartidas para previsualización pedagógica

@@ -9,6 +9,7 @@ export interface TracksViewProps {
   tracks: Track[];
   exercises: Exercise[];
   onSelectExercise: (exercise: Exercise) => void;
+  isLoading?: boolean;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
   tracks,
   exercises,
   onSelectExercise,
+  isLoading = false,
 }) => {
   const [selectedTrackId, setSelectedTrackId] = useState<string>(tracks[0]?.id || 'sql-foundations');
 
@@ -55,6 +57,11 @@ export const TracksView: React.FC<TracksViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+          {isLoading && (
+            <Badge variant="cyan" dot className="animate-pulse">
+              Sincronizando progreso...
+            </Badge>
+          )}
           <Badge variant="mono">
             {tracks.length} Rutas
           </Badge>

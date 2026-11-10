@@ -13,9 +13,14 @@ from app.modules.runner.service import sandbox_runner
 @pytest.fixture(scope="session", autouse=True)
 async def init_sandbox_pool():
     """Inicializa y cierra el pool de asyncpg una sola vez para toda la sesión de pruebas."""
-    await sandbox_runner.initialize()
+    try:
+        await sandbox_runner.initialize()
+    except Exception:
+        # Permite que pruebas unitarias que no usan BD sigan corriendo si la BD no está accesible en el entorno
+        pass
     yield
-    await sandbox_runner.close()
+    if sandbox_runner.pool:
+        await sandbox_runner.close()
 
 
 @pytest.fixture(scope="session")

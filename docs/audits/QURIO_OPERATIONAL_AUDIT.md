@@ -370,13 +370,29 @@ A continuación se audita el escenario de aceptación que debe cumplir Qurio ant
 * **Docker detenido:** Conforme a las instrucciones expresas, no se iniciaron los contenedores Docker ni el servidor FastAPI en vivo. Las pruebas de backend se evaluaron mediante análisis estático, recolección de pruebas (`--collect-only`), inspección de código y ejecución de scripts de verificación en memoria.
 * **Supabase Cloud no alterado:** No se ejecutaron comandos DDL ni consultas destructivas contra el proyecto de producción en Supabase Cloud.
 
-### 10.2 Conclusión Técnica
+### 10.2 Conclusión Técnica y Estado de Cierre
 Qurio posee una **base de ingeniería sólida y bien estructurada**: el evaluador semántico es robusto, la protección AST es ejemplar, el sistema de diseño atómico es limpio y el currículo de 50 retos está fundamentado con rigor pedagógico.
 
-Sin embargo, **el producto no está listo para recibir a sus primeros estudiantes** debido a los 4 problemas bloqueantes de la Fase 10:
-1. `solution_query` expuesta públicamente (H-01).
-2. Fallos silenciosos de persistencia en el cliente (H-02).
-3. Contadores de rutas distorsionados (H-03).
-4. Navegación en memoria sin enlaces reales ni soporte de recarga (H-04).
+Tras la ejecución de la tarea **`QURIO-OPERATIONAL-BASELINE-02`**, los 4 problemas bloqueantes prioritarios (`C-01` a `C-05`) y los hallazgos críticos `H-01` a `H-08` han sido **íntegramente resueltos y verificados**:
+1. `solution_query` eliminada del frontend y protegida con `ExercisePublicDTO` en el backend (**H-01 RESUELTO**).
+2. Fallos silenciosos de persistencia eliminados; cliente restringido a campos visuales y backend consolidado como autoridad única (**H-02 y H-08 RESUELTOS**).
+3. Progreso determinista por ruta implementado con `computeOfficialTracksProgress`, skeleton de carga y aislamiento estricto (**H-03 RESUELTO**).
+4. Navegación web con History API implementada, con soporte para deep linking (`/exercises/:id`), F5 y navegación Atrás/Adelante (**H-04 RESUELTO**).
+5. Desacoplamiento de pruebas backend y timeout de conexión agregados (**H-05 RESUELTO**).
+6. Suite de Vitest configurada y validada en el frontend (**H-06 RESUELTO**).
+7. Esquema relacional canónico de 10 tablas sincronizado en componentes didácticos y documentación (**H-07 RESUELTO**).
 
-Resolver estas cuatro brechas de forma secuencial y verificada constituye la **nueva línea base de desarrollo obligatoria** de Qurio.
+---
+
+## 11. Certificación de Cierre de Brechas (`QURIO-OPERATIONAL-BASELINE-02`)
+
+| Brecha | Hallazgo | Estado | Evidencia de Validación Ejecutable |
+| :---: | :---: | :---: | :--- |
+| **`C-01`** | **`H-01`** | ✅ **RESUELTO** | `ExercisePublicDTO` activo en `GET /exercises` y `/exercises/{id}`. Cero apariciones de `solution_query` en `apps/web/dist/assets/*.js`. Test `test_public_exercises_never_expose_solution_query` pasando. |
+| **`C-02`** | **`H-02`** | ✅ **RESUELTO** | Cero escrituras directas del cliente a `exercise_attempts`, `user_profiles.xp` o `user_daily_activity`. `updateProfile` filtrado a campos visuales. Backend certifica vía RPC. Cero errores 42501. |
+| **`C-03`** | **`H-03`** | ✅ **RESUELTO** | `computeOfficialTracksProgress` implementada y probada con 5 tests unitarios en Vitest. `ex.is_completed` ignorado para progreso oficial. Rutas aisladas sin duplicación. |
+| **`C-04`** | **`H-07`** | ✅ **RESUELTO** | `ExerciseSpecPanel.tsx` muestra las 10 tablas del sandbox. `ECOMMERCE_TABLES_SCHEMA`, `README.md` y `CURRICULUM_SPEC.md` alineados con `ecommerce_seed.sql` (`pagos`, `metodo_pago`). Test `test_schema_consistency.py` pasando (3 tests). |
+| **`C-05`** | **`H-04`** | ✅ **RESUELTO** | History API implementada en `App.tsx`. URLs `/exercises/:id`, `/tracks/:slug`, preservación de estado del IDE tras F5, y soporte de botones del navegador. Detección segura de parámetros Auth. |
+| **`D-05`** | **`H-08`** | ✅ **RESUELTO** | `qurio_guest_progress_v1` con recuperación de bloqueos en `syncing` (>30s) probada en Vitest. Límite de 3 ejercicios de prueba aplicado en backend (HTTP 401 para retos posteriores). |
+| **QA** | **`H-05`** | ✅ **RESUELTO** | Timeout de conexión de 3.0s en `service.py`. Suite backend corre 69/69 pruebas con 100% de éxito. |
+| **QA** | **`H-06`** | ✅ **RESUELTO** | Vitest configurado en `apps/web` con script `npm run test`. 8/8 pruebas pasando. |

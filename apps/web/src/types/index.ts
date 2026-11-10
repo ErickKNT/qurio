@@ -64,7 +64,6 @@ export interface Exercise {
   title: string;
   prompt: string;
   initial_code: string;
-  solution_query?: string;
   xp_reward: number;
   difficulty: Difficulty;
   check_order: boolean;
@@ -97,7 +96,9 @@ export interface Track {
   sort_order: number;
   modules?: Module[];
   total_exercises?: number;
-  completed_exercises?: number;
+  completed_exercises?: number | null;
+  progress_percent?: number | null;
+  is_progress_loading?: boolean;
 }
 
 export interface UserProfile {

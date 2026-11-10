@@ -265,16 +265,16 @@ El sandbox PostgreSQL contiene una base de datos relacional realista de comercio
 
 | Tabla | Registros | Descripción y Contenido |
 | :--- | :---: | :--- |
-| **`clientes`** | 15 | Identificadores, nombres, emails, ciudades y fechas de registro de clientes. |
-| **`categorias`** | 5 | Categorías de catálogo (Electrónica, Hogar, Calzado, Ropa, Deportes). |
-| **`proveedores`** | 6 | Empresas proveedoras, países de origen y correos de contacto. |
-| **`productos`** | 20 | Catálogo con precios unitarios, IDs de categoría y proveedor, y descripciones. |
-| **`pedidos`** | 30 | Órdenes de compra con estados (`completado`, `pendiente`, `enviado`, `cancelado`), montos y fechas. |
-| **`detalle_pedidos`** | 45 | Líneas de pedido que vinculan pedidos y productos con cantidades y precios históricos. |
-| **`facturas`** | 30 | Comprobantes fiscales con subtotales, impuestos (IVA 16%), totales y fechas de emisión. |
-| **`metodos_pago`** | 5 | Métodos soportados (`Tarjeta de Crédito`, `Transferencia`, `PayPal`, `Efectivo`, `Cripto`). |
-| **`almacenes`** | 4 | Ubicaciones físicas de distribución (Madrid Norte, Barcelona Puerto, Valencia Centro, Sevilla Sur). |
-| **`inventario`** | 25 | Existencias físicas por producto y almacén, con puntos de reorden y stock mínimo. |
+| **`clientes`** | 15 | Identificadores, nombres, emails, ciudades, países y fechas de registro de clientes. |
+| **`categorias`** | 5 | Categorías de catálogo (Laptops, Monitores, Periféricos, Almacenamiento, Mobiliario). |
+| **`proveedores`** | 5 | Empresas proveedoras internacionales, países de origen y teléfonos de contacto. |
+| **`productos`** | 15 | Catálogo con precios unitarios, IDs de categoría y proveedor, y existencias. |
+| **`pedidos`** | 15 | Órdenes de compra con estados (`completado`, `pendiente`, `cancelado`, `procesando`), montos y fechas. |
+| **`detalle_pedidos`** | 24 | Líneas de pedido que vinculan pedidos y productos con cantidades y precios históricos. |
+| **`facturas`** | 13 | Comprobantes fiscales con montos totales, estados (`pagada`, `pendiente`, `anulada`) y fechas de emisión. |
+| **`pagos`** | 11 | Registros de transacciones vinculadas a facturas, con método de pago (`tarjeta_credito`, `transferencia`, `paypal`), montos, fechas y estados. |
+| **`almacenes`** | 3 | Ubicaciones físicas de distribución (Madrid, Bilbao, Valencia) con capacidad en m². |
+| **`inventario`** | 19 | Existencias físicas por producto y almacén con control de stock y actualización temporal. |
 
 ---
 

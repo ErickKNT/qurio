@@ -1,6 +1,9 @@
 import pytest
 from httpx import AsyncClient
 
+from app.main import app
+from app.core.auth import AuthenticatedUser, get_optional_current_user
+
 
 @pytest.mark.asyncio
 async def test_health_endpoint(client: AsyncClient):
@@ -103,19 +106,54 @@ async def test_submit_exercise_partial_or_wrong_columns(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_submit_exercise_star_challenge_left_join(client: AsyncClient):
-    # Reto Estrella: Clientes inactivos sin compras
+async def test_guest_trial_limit_enforced(client: AsyncClient):
+    """Verifica que un invitado no pueda evaluar retos fuera del trial de 3 ejercicios."""
+    exercise_id = "e0000000-0000-0000-0000-000000000006"
+    payload = {
+        "query": "SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id WHERE p.pedido_id IS NULL;",
+        "hints_revealed": 0,
+    }
+    response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+    assert response.status_code == 401
+    assert "REGISTRATION_REQUIRED_AFTER_TRIAL" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_submit_exercise_star_challenge_left_join_authenticated(client: AsyncClient):
+    # Reto Estrella evaluado con usuario autenticado
     exercise_id = "e0000000-0000-0000-0000-000000000006"
     payload = {
         "query": "SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id WHERE p.pedido_id IS NULL;",
         "hints_revealed": 1  # Usó 1 pista -> penalización
     }
-    response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "PASSED"
-    # Base 50 XP con 1 pista (-15%) -> 42 XP
-    assert data["xp_awarded"] == 42
+    app.dependency_overrides[get_optional_current_user] = lambda: AuthenticatedUser(
+        id="usr_auth_test_123", email="student@qurio.dev", role="authenticated", is_guest=False
+    )
+    try:
+        response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "PASSED"
+        # Base 50 XP con 1 pista (-15%) -> 42 XP
+        assert data["xp_awarded"] == 42
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_public_exercises_never_expose_solution_query(client: AsyncClient):
+    """Comprueba que los endpoints públicos de catálogo y detalle jamás expongan solution_query."""
+    res = await client.get("/api/v1/exercises")
+    assert res.status_code == 200
+    exercises = res.json()
+    assert len(exercises) > 0
+    for ex in exercises:
+        assert "solution_query" not in ex
+
+    res_single = await client.get(f"/api/v1/exercises/{exercises[0]['id']}")
+    assert res_single.status_code == 200
+    single_ex = res_single.json()
+    assert "solution_query" not in single_ex
 
 
 @pytest.mark.asyncio

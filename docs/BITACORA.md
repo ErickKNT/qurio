@@ -6,15 +6,15 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Auditoría Operativa y Definición de la Nueva Línea Base (`QURIO-OPERATIONAL-BASELINE-01`) — Concluida**  
-* **Próxima Fase:** **Ejecución de Fase 10 — Estabilización Técnica (`PR-10.1` a `PR-10.4`, Brechas `C-01` a `C-05`, pendiente de autorización del propietario)**  
-* **Rama Git Activa:** `docs/operational-baseline-v1`  
-* **Estado Operativo Real de Infraestructura (Verificación Forense):**
-  * Contenedor Docker `qurio-postgres-sandbox`: **Detenido** (demonio de Docker apagado a solicitud expresa del usuario; verificado en puerto `5433` cuando se encuentra activo).
-  * API FastAPI: **Detenido** en entorno local (código fuente y dependencias verificados; suite de **64 pruebas automatizadas** en `tests/`).
-  * Frontend React 18 + Vite: **Detenido** en entorno local (Build de producción `dist/` 100% verificado mediante `tsc && vite build` en 6.29s).
-  * Proyecto Supabase Cloud: Esquemas DDL `01_schema.sql`, catálogo semilla `02_seed_curriculum.sql` y hardening de seguridad `03_security_hardening.sql` desplegados en producción.
-  * Documentación Rectoral: *Blueprint v1.2*, *Plan de Estabilización v1.2*, *Auditoría Operativa v1.0* ([`docs/audits/QURIO_OPERATIONAL_AUDIT.md`](audits/QURIO_OPERATIONAL_AUDIT.md)) y *Línea Base Operativa v1.0* ([`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](roadmap/QURIO_OPERATIONAL_BASELINE.md)).
+* **Fase Actual:** **Cierre de Auditoría Operativa, Validación Ejecutable y Consolidación de la Línea Base (`QURIO-OPERATIONAL-BASELINE-02`) — Concluida**  
+* **Próxima Fase:** **Apertura y Acompañamiento del Grupo Piloto de Estudiantes (10 a 20 usuarios reales)**  
+* **Rama Git Activa:** `feat/phase-10-stabilization`  
+* **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
+  * Contenedor Docker `qurio-postgres-sandbox`: **Detenido y apagado** tras completar exitosamente las suites de pruebas (`docker compose down`).
+  * API FastAPI: **100% Verificado** — Suite de **69 pruebas automatizadas pasando limpiamente** en `apps/api/tests/` (incluyendo validación semántica, seguridad AST, permisos RLS de Supabase, protección de soluciones, límites de prueba de invitados y consistencia de esquemas). Conexión decoupled con timeout de 3.0s.
+  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` compilado con **0 errores TypeScript** (`tsc && vite build`), **cero apariciones** de `solution_query` en bundles, y suite de **8 pruebas automatizadas en Vitest** (`npm run test`) validando cálculo de progreso, aislamiento de rutas, recuperación de sincronizaciones interrumpidas y protección de perfil.
+  * Persistencia y Seguridad: Cero escrituras directas del cliente a tablas protegidas (`exercise_attempts`, `user_profiles.xp/level`, `user_daily_activity`); persistencia certificada vía RPC backend; enrutamiento web real con History API (`/exercises/:id`, `/tracks/:slug`, preservación en F5 y soporte Atrás/Adelante).
+  * Documentación Rectoral: *Blueprint v1.2*, *Plan de Estabilización v1.2*, *Auditoría Operativa v1.1* ([`docs/audits/QURIO_OPERATIONAL_AUDIT.md`](audits/QURIO_OPERATIONAL_AUDIT.md)) y *Línea Base Operativa v1.1* ([`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](roadmap/QURIO_OPERATIONAL_BASELINE.md)).
 
 ---
 
@@ -31,11 +31,11 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **6** | **Autenticidad, Calidad & Despliegue** | ✅ Concluida | `feat/authenticity-and-polish` | 404 temática SQL, favicon SVG propio, metadatos OG, adaptabilidad móvil y transparencia de contacto. |
 | **+** | **Temas (Claro/Oscuro) & README** | ✅ Concluida | `feat/theme-support-and-readme` | Tokens Tailwind CSS dinámicos, toggle sol/luna, temas Monaco reactivos y README.md exhaustivo. |
 | **7** | **Expansión Curricular (3 Rutas)** | ✅ Concluida | `feat/curriculum-expansion-3-tracks` | 18 ejercicios completos, didáctica SQLBolt, checklist de sub-objetivos interactiva. |
-| **9** | **Hardening de Seguridad & AST** | ✅ Concluida | `main` (vía `security/phase-9-hardening`) | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress en Supabase Cloud (Suite de 64 pruebas en backend). |
+| **9** | **Hardening de Seguridad & AST** | ✅ Concluida | `main` (vía `security/phase-9-hardening`) | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress en Supabase Cloud. |
 | **8/9+** | **Expansión Curricular Piramidal (50 Retos)** | ✅ Concluida | `main` (vía `feat/curriculum-expansion-50-exercises`) | Pirámide completa de 50 retos fundamentados en ISO/IEC 9075:2016 y PostgreSQL 16, 12 módulos, 10 tablas de muestra, 100% verificado en sandbox. |
 | **10 (Doc)** | **Blueprint v1.2 & Plan de Estabilización v1.2** | ✅ Concluida | `docs/product-business-blueprint-v1` | `QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` v1.2 y `PHASE_10_STABILIZATION_PLAN.md` v1.2 sincronizados. |
 | **10 (Base)** | **Auditoría Operativa y Línea Base de Desarrollo** | ✅ Concluida | `docs/operational-baseline-v1` | `QURIO_OPERATIONAL_AUDIT.md` (diagnóstico forense) y `QURIO_OPERATIONAL_BASELINE.md` (prioridades de grupo piloto). |
-| **10 (Ejec)** | **Estabilización Técnica (`PR-10.1` a `PR-10.4`)** | 📋 Planificada | `fix/c01-protect-solution-query` (pendiente) | Corrección secuencial de brechas prioritarias `C-01` a `C-05` antes de abrir a usuarios piloto. |
+| **10 (Ejec)** | **Estabilización Técnica Integral (Bloques A, B, C, D)** | ✅ Concluida | `feat/phase-10-stabilization` | Resolución de brechas `C-01` a `C-05`, suites de pruebas 100% exitosas (69 backend / 8 frontend), build limpio y sandbox apagado. |
 
 ---
 
@@ -668,6 +668,37 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   2. [`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](file:///c:/Desarrollo/Qurio/docs/roadmap/QURIO_OPERATIONAL_BASELINE.md) (**Nueva Línea Base Operativa v1.0**).
 * **Estado de Código e Infraestructura:** **Cero modificaciones en código de aplicación (`apps/web`, `apps/api`), cero cambios en esquemas SQL (`database/`), cero cambios en Supabase Cloud. No se inició `PR-10.1`.**
 
+
+### [2026-11-10] — Entrada 24: Cierre de Auditoría Operativa, Validación Ejecutable y Consolidación de la Línea Base (`QURIO-OPERATIONAL-BASELINE-02`)
+* **Rama:** `feat/phase-10-stabilization` (ramificada desde `docs/operational-baseline-v1`).
+* **Objetivo:** Ejecutar la resolución integral de las 5 brechas prioritarias de la auditoría operativa (`C-01` a `C-05`) organizadas en 4 bloques funcionales coherentes, validar mediante pruebas automatizadas locales en backend y frontend, verificar el empaquetado de producción y consolidar la nueva línea base técnica para el grupo piloto.
+* **Entregables por Bloque Funcional:**
+  1. **Bloque A — Seguridad Curricular (`C-01`):**
+     * **Backend:** Implementación de `ExercisePublicDTO` en `seed_data.py` (omitiendo `solution_query`) y método `to_public_dto()`. `ExerciseRepository` expone `list_public()` y `get_public_by_id()` retornando DTOs públicos, mientras que `get_internal_for_evaluation()` reserva el acceso a `solution_query` exclusivamente para el evaluador interno.
+     * **Frontend:** Eliminación de `solution_query` en la interfaz `Exercise` (`types/index.ts`) y purga completa de las 50 soluciones en `FALLBACK_EXERCISES` de `api.ts`.
+     * **Verificación:** `npm run build` genera un bundle en `dist/assets/*.js` con **cero apariciones** de `solution_query`. Pruebas en FastAPI (`test_public_exercises_never_expose_solution_query`) certifican que ni el catálogo ni el detalle exponen soluciones.
+  2. **Bloque B — Persistencia y Experiencia de Usuario Autenticado e Invitado (`C-02` + `D-05`):**
+     * **Frontend (`persistence.ts`):** Eliminación total de llamadas directas a `.from('exercise_attempts').insert`, `.from('user_profiles').update({ xp, level })` y `.from('user_daily_activity').update`.
+     * **Restricción de Perfil:** `persistence.updateProfile` restringido estrictamente a campos visuales (`display_name`, `avatar_url`, `username`), impidiendo errores `42501`.
+     * **Límite de Prueba de Invitado:** En backend (`router.py`), usuarios sin sesión (`user.is_guest`) son rechazados con HTTP 401 `REGISTRATION_REQUIRED_AFTER_TRIAL` si intentan evaluar retos fuera de los 3 de prueba del M01.
+     * **Almacén Temporal de Invitados (`qurio_guest_progress_v1`):** Protocolo de migración idempotente (`syncGuestProgress`) con recuperación de bloqueos stale en `syncing` (>30s) y descarte de duplicados ya existentes en la nube.
+     * **Aislamiento de Progreso:** `getCompletedExerciseIds` para usuarios autenticados lee exclusivamente de Supabase Cloud, sin mezclar datos de `localStorage`.
+  3. **Bloque C — Integridad del Currículo y Progreso (`C-03` + `C-04`):**
+     * **Funciones Puras (`progress.ts`):** Implementación de `computeOfficialTracksProgress` (calcula avance por ruta cruzando módulos con `authoritativeCompletedIds`) y `computeGuestTrialTracksProgress` (aislado para prueba).
+     * **Tratamiento de `isLoading`:** Cuando `isLoading` es true, devuelve `completed_exercises: null`, `progress_percent: null` e `is_progress_loading: true`, renderizando un badge pulsante y skeleton shimmer en `TrackCard.tsx` para evitar parpadeos en 0%.
+     * **Aislamiento de Rutas:** Se erradicó el bug que sumaba progreso a todas las rutas. Completar retos en Ruta 1 solo incrementa Ruta 1.
+     * **Esquema Relacional Canónico:** `ExerciseSpecPanel.tsx` actualizado para mostrar las **10 tablas completas** del sandbox relacional. `ECOMMERCE_TABLES_SCHEMA` (`api.ts`) y `README.md` alineados con los conteos reales de filas de `ecommerce_seed.sql` y tabla `pagos` con columna `metodo_pago`. `docs/CURRICULUM_SPEC.md` alineado en reto #27.
+  4. **Bloque D — Navegación y Autenticación (`C-05`):**
+     * **Enrutamiento Web Real con History API:** URLs navegables y limpias (`/`, `/tracks`, `/tracks/:slug`, `/exercises/:id`, `/playground`, `/achievements`, `/profile`, `/auth/confirm`, `/reset-password`).
+     * **Preservación en F5:** Recargar el navegador dentro de un reto conserva el ejercicio activo y el estado del IDE mediante deep linking y sincronización con `exercises`.
+     * **Soporte de Navegación:** Botones Atrás y Adelante sincronizados con listener `popstate`.
+     * **Detección Auth Segura:** Detección de parámetros PKCE `code`, `token_hash`, `type=recovery` y `type=signup` en search y hash, con limpieza de URL mediante `replaceState`.
+* **Resultados de la Validación Automatizada:**
+  * **Backend Pytest:** **69/69 pruebas pasando en 44.20s** (100% éxito), incluyendo 13 pruebas de integración, 3 pruebas unitarias de consistencia de esquemas (`test_schema_consistency.py`) y 53 pruebas de seguridad/migración/evaluador. Conexión de pool desacoplada con timeout de 3.0s.
+  * **Frontend Vitest:** **8/8 pruebas pasando en 848ms** en `apps/web` (`progress.test.ts` y `persistence.test.ts`), verificando no-inflación por `is_completed`, estados `isLoading`, aislamiento entre rutas, recuperación ante interrupciones de 30s e idempotencia de migración.
+  * **Frontend Build:** Empaquetado de producción `tsc && vite build` completado en 5.47s con **0 errores TypeScript** y **0 fugas** de `solution_query`.
+  * **Infraestructura:** Contenedores de prueba de Docker apagados limpiamente (`docker compose down`).
+* **Estado de la Línea Base:** La línea base operativa de Qurio queda **100% estabilizada, verificada y lista para la apertura del grupo piloto de estudiantes**.
 
 ---
 

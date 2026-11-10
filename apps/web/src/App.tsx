@@ -34,6 +34,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { persistence } from '@/lib/persistence';
+import { computeOfficialTracksProgress, computeGuestTrialTracksProgress } from '@/lib/progress';
 import {
   api,
   FALLBACK_EXERCISES,
@@ -65,10 +66,14 @@ export type AppPath =
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<AppPath>('dashboard');
+  const [pendingExerciseId, setPendingExerciseId] = useState<string | null>(null);
+  const [authoritativeCompletedIds, setAuthoritativeCompletedIds] = useState<Set<string>>(new Set());
+  const [isProgressLoading, setIsProgressLoading] = useState(true);
+
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile, updateProfile, isCloudAuth, isAuthenticated, signOut } = useAuth();
+  const { profile, isCloudAuth, isAuthenticated, signOut, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
@@ -99,11 +104,125 @@ export const App: React.FC = () => {
 
   const activeExercise = exercises[currentExerciseIndex] || FALLBACK_EXERCISES[0];
 
+  // Helper de conversión de AppPath a URL amigable
+  const pathToUrl = useCallback((path: AppPath, params?: { exerciseId?: string; trackSlug?: string }) => {
+    switch (path) {
+      case 'dashboard':
+        return '/';
+      case 'tracks':
+        return params?.trackSlug ? `/tracks/${params.trackSlug}` : '/tracks';
+      case 'playground':
+        return '/playground';
+      case 'achievements':
+        return '/achievements';
+      case 'profile':
+        return '/profile';
+      case 'exercise':
+        return params?.exerciseId ? `/exercises/${params.exerciseId}` : '/exercises';
+      case 'auth-confirm':
+        return '/auth/confirm';
+      case 'reset-password':
+        return '/reset-password';
+      case 'not-found':
+        return '/404';
+      default:
+        return '/';
+    }
+  }, []);
+
+  // Parser de URL a AppPath y parámetros
+  const parseLocation = useCallback((pathname: string): { path: AppPath; exerciseId?: string; trackSlug?: string } => {
+    const clean = pathname.replace(/\/+$/, '') || '/';
+    if (clean === '/' || clean === '') return { path: 'dashboard' };
+    if (clean === '/tracks') return { path: 'tracks' };
+    if (clean.startsWith('/tracks/')) {
+      const slug = clean.replace('/tracks/', '');
+      return { path: 'tracks', trackSlug: slug };
+    }
+    if (clean === '/playground') return { path: 'playground' };
+    if (clean === '/achievements') return { path: 'achievements' };
+    if (clean === '/profile') return { path: 'profile' };
+    if (clean === '/exercises' || clean === '/exercise') return { path: 'exercise' };
+    if (clean.startsWith('/exercises/')) {
+      const id = clean.replace('/exercises/', '');
+      return { path: 'exercise', exerciseId: id };
+    }
+    if (clean === '/auth/confirm' || clean === '/auth-confirm') return { path: 'auth-confirm' };
+    if (clean === '/reset-password') return { path: 'reset-password' };
+    return { path: 'not-found' };
+  }, []);
+
+  // Navegación con History API
+  const navigate = useCallback(
+    (newPath: AppPath, params?: { exerciseId?: string; trackSlug?: string }, replace = false) => {
+      setCurrentPath(newPath);
+      const targetUrl = pathToUrl(newPath, params);
+      if (window.location.pathname !== targetUrl) {
+        if (replace) {
+          window.history.replaceState({ path: newPath, ...params }, '', targetUrl);
+        } else {
+          window.history.pushState({ path: newPath, ...params }, '', targetUrl);
+        }
+      }
+    },
+    [pathToUrl]
+  );
+
+  // Sincronización de enrutamiento web y detección de tokens de Supabase Auth
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const search = window.location.search;
+      const hash = window.location.hash;
+
+      // 1. Detección segura de parámetros Supabase Auth (PKCE code, token_hash, recuperación)
+      if (hash.includes('type=recovery') || search.includes('type=recovery') || hash.includes('reset-password')) {
+        setCurrentPath('reset-password');
+        return;
+      }
+      if (
+        hash.includes('type=signup') ||
+        hash.includes('auth-confirm') ||
+        hash.includes('type=email_change') ||
+        search.includes('type=signup') ||
+        search.includes('code=')
+      ) {
+        setCurrentPath('auth-confirm');
+        return;
+      }
+
+      // 2. Enrutamiento estándar con History API
+      const parsed = parseLocation(window.location.pathname);
+      setCurrentPath(parsed.path);
+
+      if (parsed.path === 'exercise' && parsed.exerciseId) {
+        const idx = exercises.findIndex((e) => e.id === parsed.exerciseId);
+        if (idx !== -1) {
+          setCurrentExerciseIndex(idx);
+          setSqlCode(exercises[idx].initial_code);
+        } else {
+          setPendingExerciseId(parsed.exerciseId);
+        }
+      }
+    };
+
+    handleLocationChange();
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, [exercises, parseLocation]);
+
   // Cargar ejercicios e historial al inicio
   useEffect(() => {
     api.getExercises().then((data) => {
       if (data && data.length > 0) {
         setExercises(data);
+        if (pendingExerciseId) {
+          const idx = data.findIndex((e) => e.id === pendingExerciseId);
+          if (idx !== -1) {
+            setCurrentExerciseIndex(idx);
+            setSqlCode(data[idx].initial_code);
+            setPendingExerciseId(null);
+          }
+        }
       }
     });
     api.getTracks().then((data) => {
@@ -112,49 +231,30 @@ export const App: React.FC = () => {
       }
     });
     setQueryHistory(api.getQueryHistory());
-  }, []);
+  }, [pendingExerciseId]);
 
-  // Sincronizar ejercicios superados desde Supabase Cloud o persistencia local
+  // Sincronizar ejercicios superados y computar progreso oficial vs invitado
   useEffect(() => {
+    setIsProgressLoading(true);
     persistence.getCompletedExerciseIds(profile?.id).then((completedIds) => {
-      if (completedIds.length > 0) {
-        const completedSet = new Set(completedIds);
-        setExercises((prev) =>
-          prev.map((ex) => (completedSet.has(ex.id) ? { ...ex, is_completed: true } : ex))
-        );
+      const completedSet = new Set(completedIds);
+      setAuthoritativeCompletedIds(completedSet);
 
-        setTracks((prev) =>
-          prev.map((tr) => ({
-            ...tr,
-            completed_exercises: completedIds.length,
-          }))
-        );
+      setExercises((prev) =>
+        prev.map((ex) => ({ ...ex, is_completed: completedSet.has(ex.id) }))
+      );
+
+      const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
+      if (isAuth) {
+        const computed = computeOfficialTracksProgress(tracks, exercises, completedSet, false);
+        setTracks(computed);
+      } else {
+        const computed = computeGuestTrialTracksProgress(tracks, exercises, completedSet);
+        setTracks(computed);
       }
+      setIsProgressLoading(false);
     });
-  }, [profile?.id]);
-
-  // Detección de redirecciones de autenticación Supabase (email confirmation o password recovery)
-  useEffect(() => {
-    const checkAuthRoute = () => {
-      const hash = window.location.hash;
-      const search = window.location.search;
-
-      if (hash.includes('type=recovery') || hash.includes('reset-password')) {
-        setCurrentPath('reset-password');
-      } else if (
-        hash.includes('type=signup') ||
-        hash.includes('auth-confirm') ||
-        hash.includes('type=email_change') ||
-        search.includes('type=signup')
-      ) {
-        setCurrentPath('auth-confirm');
-      }
-    };
-
-    checkAuthRoute();
-    window.addEventListener('hashchange', checkAuthRoute);
-    return () => window.removeEventListener('hashchange', checkAuthRoute);
-  }, []);
+  }, [profile?.id, exercises.length]);
 
   // Actualización dinámica del título de la pestaña (Anti-AI Slop Regla 1.1)
   useEffect(() => {
@@ -185,6 +285,7 @@ export const App: React.FC = () => {
       setExecutionStatus('IDLE');
       setResultError(undefined);
       setResultDiff(undefined);
+      navigate('exercise', { exerciseId: ex.id }, true);
     }
   };
 
@@ -197,7 +298,7 @@ export const App: React.FC = () => {
       setCurrentExerciseIndex(0);
       setSqlCode(ex.initial_code);
     }
-    setCurrentPath('exercise');
+    navigate('exercise', { exerciseId: ex.id });
   };
 
   // Desbloquear siguiente pista
@@ -233,7 +334,7 @@ export const App: React.FC = () => {
         setResultRows(evalResponse.rows);
         setAwardedXp(evalResponse.xp_awarded);
 
-        // Persistir intento exitoso (Supabase Cloud + LocalStorage)
+        // Persistir intento (para invitado guarda en qurio_guest_progress_v1; para autenticado el backend ya certificó vía RPC)
         await persistence.recordAttempt({
           userId: profile?.id,
           exerciseId: activeExercise.id,
@@ -244,26 +345,31 @@ export const App: React.FC = () => {
           xpAwarded: evalResponse.xp_awarded,
         });
 
-        // Actualizar perfil local y XP
-        const nextXp = (profile?.total_xp || 0) + evalResponse.xp_awarded;
-        const nextLevel = Math.max(1, Math.floor(nextXp / 500) + 1);
-        await updateProfile({
-          total_xp: nextXp,
-          current_level: nextLevel,
-        });
-
         // Marcar ejercicio como completado en el estado
         setExercises((prev) =>
           prev.map((ex) => (ex.id === activeExercise.id ? { ...ex, is_completed: true } : ex))
         );
 
-        // Actualizar contador en tracks
-        setTracks((prev) =>
-          prev.map((tr) => ({
-            ...tr,
-            completed_exercises: Math.min(tr.total_exercises || 0, (tr.completed_exercises || 0) + 1),
-          }))
-        );
+        // Actualizar progreso por ruta de forma aislada y estricta
+        const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
+        if (isAuth) {
+          setAuthoritativeCompletedIds((prev) => {
+            const next = new Set(prev);
+            next.add(activeExercise.id);
+            setTracks((currentTracks) =>
+              computeOfficialTracksProgress(currentTracks, exercises, next, false)
+            );
+            return next;
+          });
+          refreshProfile();
+        } else {
+          persistence.getCompletedExerciseIds().then((ids) => {
+            const guestSet = new Set(ids);
+            setTracks((currentTracks) =>
+              computeGuestTrialTracksProgress(currentTracks, exercises, guestSet)
+            );
+          });
+        }
 
         // Guardar en historial
         api.saveQueryHistory({
@@ -316,7 +422,7 @@ export const App: React.FC = () => {
     } finally {
       setIsExecuting(false);
     }
-  }, [activeExercise, sqlCode, hintsUnlocked, profile, updateProfile]);
+  }, [activeExercise, sqlCode, hintsUnlocked, profile, exercises, isAuthenticated, refreshProfile]);
 
   // Avanzar al siguiente reto
   const handleNextExercise = () => {
@@ -349,7 +455,7 @@ export const App: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
-                  onClick={() => setCurrentPath('tracks')}
+                  onClick={() => navigate('tracks')}
                 >
                   Rutas
                 </Button>
@@ -520,7 +626,7 @@ export const App: React.FC = () => {
     <>
       <DashboardLayout
         currentPath={currentPath}
-        onNavigate={(path) => setCurrentPath(path as AppPath)}
+        onNavigate={(path) => navigate(path as AppPath)}
         title={getHeaderTitle()}
         onOpenAuth={() => setAuthModalOpen(true)}
       >
@@ -530,6 +636,7 @@ export const App: React.FC = () => {
             tracks={tracks}
             exercises={exercises}
             onSelectExercise={handleOpenExerciseFromCatalog}
+            isLoading={isProgressLoading}
           />
         )}
 
@@ -551,7 +658,7 @@ export const App: React.FC = () => {
           <UserProfileView
             profile={profile}
             history={queryHistory}
-            onOpenPlayground={() => setCurrentPath('playground')}
+            onOpenPlayground={() => navigate('playground')}
             onOpenAuth={() => setAuthModalOpen(true)}
             isCloudAuth={isCloudAuth}
           />
@@ -561,14 +668,14 @@ export const App: React.FC = () => {
       {currentPath === 'not-found' && (
         <NotFoundView
           missingPath="v_reporte_anual"
-          onNavigate={(path) => setCurrentPath(path as AppPath)}
+          onNavigate={(path) => navigate(path as AppPath)}
         />
       )}
 
       {/* VISTA F: CONFIRMACIÓN DE CUENTA SUPABASE (EMAIL VERIFICATION) */}
       {currentPath === 'auth-confirm' && (
         <AuthConfirmView
-          onNavigate={(path) => setCurrentPath(path as AppPath)}
+          onNavigate={(path) => navigate(path as AppPath)}
           userEmail={profile?.username ? `${profile.username}@qurio.dev` : undefined}
         />
       )}
@@ -576,7 +683,7 @@ export const App: React.FC = () => {
       {/* VISTA G: RESTABLECER CONTRASEÑA */}
       {currentPath === 'reset-password' && (
         <ResetPasswordView
-          onNavigate={(path) => setCurrentPath(path as AppPath)}
+          onNavigate={(path) => navigate(path as AppPath)}
         />
       )}
 
@@ -620,7 +727,7 @@ export const App: React.FC = () => {
                   leftIcon={<Play className="w-4 h-4 fill-white" />}
                   onClick={() => {
                     handleSelectExercise(0);
-                    setCurrentPath('exercise');
+                    navigate('exercise', { exerciseId: exercises[0]?.id });
                   }}
                   className="shadow-glow-primary hover:shadow-primary"
                 >
@@ -661,9 +768,9 @@ export const App: React.FC = () => {
               accent="cyan"
             />
             <MetricTile
-              label="Tasa de Éxito"
-              value="94.2%"
-              subValue="Evaluación semántica"
+              label="Retos Superados"
+              value={`${authoritativeCompletedIds.size} / ${exercises.length}`}
+              subValue="Progreso oficial verificado"
               icon={<CheckCircle2 className="w-4 h-4" />}
               accent="emerald"
               className="col-span-2 sm:col-span-1"
