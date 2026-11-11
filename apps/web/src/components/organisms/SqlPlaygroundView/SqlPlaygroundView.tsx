@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Terminal, Database, Sparkles, Table as TableIcon, ShieldCheck, Clock } from 'lucide-react';
 import { TableSchemaInfo, ExecutionResult } from '@/types';
 import { MonacoEditorPanel } from '@/components/organisms/MonacoEditorPanel/MonacoEditorPanel';
@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 
 export interface SqlPlaygroundViewProps {
   tables: TableSchemaInfo[];
+  initialQuery?: string;
   className?: string;
 }
 
@@ -38,10 +39,18 @@ const STARTER_QUERIES = [
 
 export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
   tables,
+  initialQuery,
 }) => {
   const [query, setQuery] = useState<string>(
+    initialQuery ||
     '-- SQL Playground — Qurio\n-- Escribe cualquier consulta libre contra el schema public de Ecommerce_Production_DB\nSELECT cliente_id, nombre, apellido, email, ciudad\nFROM clientes\nLIMIT 10;'
   );
+
+  useEffect(() => {
+    if (initialQuery) {
+      setQuery(initialQuery);
+    }
+  }, [initialQuery]);
   const [sidebarTab, setSidebarTab] = useState<'tables' | 'templates'>('tables');
   const [filterTable, setFilterTable] = useState('');
   const [isExecuting, setIsExecuting] = useState(false);

@@ -1,7 +1,7 @@
 -- ==============================================================================
 -- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 11.2 / 11.3)
--- Versión: 6.2 (Privacidad Estricta de Perfiles de Usuario: Lectura Exclusiva auth.uid() = id,
---          Revocación Total de Acceso a anon, Idempotencia Desacoplada y Blindaje CLS/RLS)
+-- Versión: 6.3 (Cálculo Autoritativo de Rachas, Persistencia Diaria de Actividad,
+--          Privacidad Estricta de Perfiles de Usuario, Idempotencia Desacoplada y Blindaje CLS/RLS)
 -- NOTA: Este archivo es para revisión y autorización previa del usuario.
 -- NO se ejecuta automáticamente en producción sin aprobación explícita.
 -- ==============================================================================
@@ -254,6 +254,12 @@ AS $$
 DECLARE
     v_current_xp INT := 0;
     v_current_level INT := 1;
+    v_current_streak INT := 0;
+    v_max_streak INT := 0;
+    v_new_streak INT := 0;
+    v_new_max_streak INT := 0;
+    v_last_activity_date DATE;
+    v_already_active_today BOOLEAN := FALSE;
     v_module_id UUID;
     v_base_xp INT := 0;
     v_penalty_rate NUMERIC;
@@ -302,7 +308,8 @@ BEGIN
     -- B. Bloqueo Transaccional Concurrente y Existencia del Usuario
     -- Serializa cualquier solicitud concurrente del mismo usuario mediante FOR UPDATE.
     -- -------------------------------------------------------------------------
-    SELECT xp, level INTO v_current_xp, v_current_level
+    SELECT xp, level, COALESCE(current_streak_days, 0), COALESCE(max_streak_days, 0)
+    INTO v_current_xp, v_current_level, v_current_streak, v_max_streak
     FROM public.user_profiles
     WHERE id = p_user_id
     FOR UPDATE;
@@ -406,23 +413,74 @@ BEGIN
     );
 
     -- -------------------------------------------------------------------------
-    -- F. Actualización Atómica de Perfil y Progreso de Módulos
+    -- F. Actualización Atómica de Perfil, Racha, Actividad Diaria y Progreso de Módulos
     -- -------------------------------------------------------------------------
     IF p_status = 'PASSED' THEN
-        -- 1. Actualizar XP y Nivel en user_profiles (solo si v_effective_xp > 0)
+        -- 1. Actualizar actividad diaria (public.user_daily_activity)
+        SELECT EXISTS (
+            SELECT 1 FROM public.user_daily_activity
+            WHERE user_id = p_user_id
+              AND activity_date = CURRENT_DATE
+        ) INTO v_already_active_today;
+
+        INSERT INTO public.user_daily_activity (
+            user_id,
+            activity_date,
+            exercises_solved,
+            xp_earned
+        ) VALUES (
+            p_user_id,
+            CURRENT_DATE,
+            1,
+            v_effective_xp
+        )
+        ON CONFLICT (user_id, activity_date)
+        DO UPDATE SET
+            exercises_solved = public.user_daily_activity.exercises_solved + 1,
+            xp_earned = public.user_daily_activity.xp_earned + v_effective_xp;
+
+        -- 2. Calcular racha diaria (streaks)
+        IF v_already_active_today THEN
+            -- Si ya practicó hoy antes de este reto, la racha ya fue contabilizada hoy
+            v_new_streak := GREATEST(1, v_current_streak);
+        ELSE
+            -- Primera práctica del día de hoy: verificar última fecha previa a hoy
+            SELECT pg_catalog.max(activity_date) INTO v_last_activity_date
+            FROM public.user_daily_activity
+            WHERE user_id = p_user_id
+              AND activity_date < CURRENT_DATE;
+
+            IF v_last_activity_date IS NULL THEN
+                -- Primer día de práctica histórico
+                v_new_streak := 1;
+            ELSIF v_last_activity_date = CURRENT_DATE - 1 THEN
+                -- Racha consecutiva: practicó ayer
+                v_new_streak := v_current_streak + 1;
+            ELSE
+                -- Racha interrumpida: más de 1 día de inactividad
+                v_new_streak := 1;
+            END IF;
+        END IF;
+
+        v_new_max_streak := GREATEST(v_max_streak, v_new_streak);
+
+        -- 3. Actualizar XP, Nivel y Rachas en user_profiles
         UPDATE public.user_profiles
         SET xp = xp + v_effective_xp,
             level = 1 + pg_catalog.floor((xp + v_effective_xp) / 500)::INT,
+            current_streak_days = v_new_streak,
+            max_streak_days = v_new_max_streak,
             updated_at = pg_catalog.timezone('utc'::pg_catalog.text, pg_catalog.now())
         WHERE id = p_user_id
-        RETURNING xp, level INTO v_new_xp, v_new_level;
+        RETURNING xp, level, current_streak_days, max_streak_days
+        INTO v_new_xp, v_new_level, v_new_streak, v_new_max_streak;
 
-        -- 2. Calcular total de ejercicios del módulo actual
+        -- 4. Calcular total de ejercicios del módulo actual
         SELECT pg_catalog.count(*) INTO v_total_module_exercises
         FROM public.exercises
         WHERE module_id = v_module_id;
 
-        -- 3. Calcular ejercicios distintos aprobados por este usuario en el módulo
+        -- 5. Calcular ejercicios distintos aprobados por este usuario en el módulo
         SELECT pg_catalog.count(DISTINCT a.exercise_id) INTO v_completed_count
         FROM public.exercise_attempts a
         JOIN public.exercises ex ON a.exercise_id = ex.id
@@ -432,7 +490,7 @@ BEGIN
 
         v_is_module_completed := (v_completed_count >= v_total_module_exercises AND v_total_module_exercises > 0);
 
-        -- 4. Actualizar progreso del módulo con valores auditados reales
+        -- 6. Actualizar progreso del módulo con valores auditados reales
         INSERT INTO public.user_progress (
             user_id,
             module_id,
@@ -457,6 +515,8 @@ BEGIN
         -- ---------------------------------------------------------------------
         v_new_xp := v_current_xp;
         v_new_level := v_current_level;
+        v_new_streak := v_current_streak;
+        v_new_max_streak := v_max_streak;
 
         SELECT p.exercises_completed_count, p.is_completed
         INTO v_completed_count, v_is_module_completed
@@ -479,6 +539,8 @@ BEGIN
         'xp_awarded', v_effective_xp,
         'total_xp', COALESCE(v_new_xp, 0),
         'level', COALESCE(v_new_level, 1),
+        'current_streak_days', COALESCE(v_new_streak, 0),
+        'max_streak_days', COALESCE(v_new_max_streak, 0),
         'module_completed', v_is_module_completed,
         'exercises_completed_count', v_completed_count
     );

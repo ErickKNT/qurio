@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { UserProfile, EvaluationStatus } from '@/types';
+import { UserProfile, EvaluationStatus, QueryHistoryItem } from '@/types';
 
 export const GUEST_PROGRESS_STORAGE_KEY = 'qurio_guest_progress_v1';
 export const LOCAL_PROFILE_STORAGE_KEY = 'qurio_user_profile';
@@ -370,6 +370,99 @@ export const persistence = {
       localStorage.removeItem(LOCAL_PROFILE_STORAGE_KEY);
     } catch (e) {
       console.warn('Error al limpiar perfil local:', e);
+    }
+  },
+
+  /**
+   * Obtiene la actividad diaria registrada de los últimos 30 días para el usuario.
+   */
+  async getUserDailyActivity(userId: string): Promise<{ activity_date: string; exercises_solved: number; xp_earned: number }[]> {
+    if (!userId || userId.startsWith('demo-') || !isSupabaseConfigured) {
+      return [];
+    }
+
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
+
+      const { data, error } = await supabase
+        .from('user_daily_activity')
+        .select('activity_date, exercises_solved, xp_earned')
+        .eq('user_id', userId)
+        .gte('activity_date', startDateStr)
+        .order('activity_date', { ascending: true });
+
+      if (error) {
+        console.warn('Error al consultar user_daily_activity:', error.message);
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      console.warn('Error de red al consultar user_daily_activity:', err);
+      return [];
+    }
+  },
+
+  /**
+   * Obtiene el historial real de consultas evaluadas del usuario desde Supabase.
+   */
+  async getUserAttemptsHistory(userId: string, limit = 20): Promise<QueryHistoryItem[]> {
+    if (!userId || userId.startsWith('demo-') || !isSupabaseConfigured) {
+      return [];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('exercise_attempts')
+        .select('id, submitted_sql, status, execution_time_ms, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.warn('Error al consultar exercise_attempts en Supabase:', error.message);
+        return [];
+      }
+
+      return (data || []).map((row) => ({
+        id: row.id,
+        query: row.submitted_sql,
+        executed_at: row.created_at,
+        status: row.status === 'PASSED' ? ('SUCCESS' as const) : ('ERROR' as const),
+        execution_time_ms: row.execution_time_ms || 0,
+        row_count: 0,
+      }));
+    } catch (err) {
+      console.warn('Error al obtener historial de intentos de Supabase:', err);
+      return [];
+    }
+  },
+
+  /**
+   * Obtiene el total histórico de consultas evaluadas registradas para el usuario.
+   */
+  async getUserTotalAttemptsCount(userId: string): Promise<number> {
+    if (!userId || userId.startsWith('demo-') || !isSupabaseConfigured) {
+      return 0;
+    }
+
+    try {
+      const { count, error } = await supabase
+        .from('exercise_attempts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+      if (error) {
+        console.warn('Error al contar intentos en Supabase:', error.message);
+        return 0;
+      }
+
+      return count ?? 0;
+    } catch (err) {
+      console.warn('Error al consultar conteo de intentos:', err);
+      return 0;
     }
   },
 };

@@ -1,6 +1,6 @@
 export type Difficulty = 'Principiante' | 'Intermedio' | 'Avanzado';
 
-export type EvaluationStatus = 'PASSED' | 'FAILED' | 'ERROR';
+export type EvaluationStatus = 'PASSED' | 'FAILED' | 'ERROR' | 'AUTH_REQUIRED';
 
 export interface ColumnInfo {
   name: string;

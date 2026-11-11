@@ -46,7 +46,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     <aside
       className={cn(
         'fixed left-0 top-0 h-screen z-50 flex flex-col justify-between transition-all duration-300',
-        'bg-surface-dim border-r border-border-subtle/60 select-none',
+        'bg-surface-dim border-r border-border-subtle/60 select-none overflow-x-hidden',
         isCollapsed ? 'w-20' : 'w-64',
         className
       )}
@@ -61,23 +61,23 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               : 'p-4 flex items-center justify-between'
           )}
         >
-          <div className={cn('flex items-center min-w-0', isCollapsed ? 'justify-center' : 'gap-3')}>
+          <div className={cn('flex items-center min-w-0', isCollapsed ? 'justify-center w-full' : 'gap-3.5')}>
             {/* Isotipo Oficial SVG de Qurio */}
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 via-cyan-accent/10 to-emerald/15 border border-primary/25 flex items-center justify-center shrink-0 shadow-sm transition-transform hover:scale-105">
-              <svg className="w-6.5 h-6.5" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 via-cyan-accent/15 to-emerald/20 border border-primary/30 flex items-center justify-center shrink-0 shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-glow-primary">
+              <svg className="w-7 h-7 shrink-0" width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <ellipse cx="16" cy="9.5" rx="7.5" ry="3" fill="#7bd0ff" fillOpacity="0.25" stroke="#7bd0ff" strokeWidth="1.5" />
                 <path d="M8.5 9.5V16C8.5 17.65 11.85 19 16 19C20.15 19 23.5 17.65 23.5 16V9.5" stroke="#8083ff" strokeWidth="1.5" strokeLinecap="round" />
                 <path d="M8.5 16V22.5C8.5 24.15 11.85 25.5 16 25.5C20.15 25.5 23.5 24.15 23.5 22.5V16" stroke="#7bd0ff" strokeWidth="1.5" strokeLinecap="round" />
-                <circle cx="16" cy="16" r="1.5" fill="#22C55E" />
+                <circle cx="16" cy="16" r="1.75" fill="#22C55E" />
               </svg>
             </div>
 
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="font-sans font-bold text-lg tracking-tight text-content-primary leading-none">
+                <span className="font-sans font-bold text-xl tracking-tight text-content-primary leading-none">
                   Qurio
                 </span>
-                <span className="mt-1 text-[10px] font-mono flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald/10 text-emerald-600 dark:text-emerald border border-emerald/25 w-fit font-medium">
+                <span className="mt-1.5 text-[10px] font-mono flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald/10 text-emerald-600 dark:text-emerald border border-emerald/25 w-fit font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0 animate-pulse" />
                   pg:16 sandbox
                 </span>

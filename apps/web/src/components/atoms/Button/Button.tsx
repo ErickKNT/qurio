@@ -27,7 +27,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-150 select-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] outline-none';
+      'inline-flex items-center justify-center whitespace-nowrap shrink-0 font-medium transition-all duration-150 select-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] outline-none';
 
     const sizeStyles = {
       sm: 'text-xs h-8 px-3 rounded-md gap-1.5',
@@ -75,7 +75,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <span className="shrink-0">{leftIcon}</span>
         ) : null}
 
-        <span>{children}</span>
+        <span className="whitespace-nowrap shrink-0">{children}</span>
 
         {rightIcon && !isLoading && <span className="shrink-0">{rightIcon}</span>}
 
