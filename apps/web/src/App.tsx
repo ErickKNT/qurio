@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Terminal,
   Zap,
@@ -14,11 +14,12 @@ import {
   Moon,
   LogIn,
   LogOut,
+  BookOpen,
 } from 'lucide-react';
 import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
-import { MetricTile, FormField } from '@/components/molecules';
-import { AuthModal } from '@/components/molecules/AuthModal/AuthModal';
+import { MetricTile, FormField, StreakPill, GuestTrialCompleteModal } from '@/components/molecules';
+import { AuthModal, AuthMode } from '@/components/molecules/AuthModal/AuthModal';
 import {
   MonacoEditorPanel,
   DataGridResults,
@@ -63,6 +64,7 @@ import {
   FALLBACK_TRACKS,
   ECOMMERCE_TABLES_SCHEMA,
   ACHIEVEMENTS_CATALOG,
+  evaluateUserAchievements,
 } from '@/lib/api';
 import {
   Exercise,
@@ -71,7 +73,6 @@ import {
   ColumnInfo,
   Track,
   TableSchemaInfo,
-  Achievement,
   QueryHistoryItem,
   AppPath,
 } from '@/types';
@@ -88,12 +89,27 @@ export const App: React.FC = () => {
   const { profile, user, isCloudAuth, isAuthenticated, signOut, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthMode>('signin');
+  const [guestTrialModalOpen, setGuestTrialModalOpen] = useState(false);
+
+  // Identificadores oficiales de los 3 retos de prueba en Módulo 1 para invitados
+  const GUEST_TRIAL_EXERCISE_IDS = useMemo(
+    () =>
+      new Set([
+        'e0000000-0000-0000-0000-000000000001',
+        'e0000000-0000-0000-0000-000000000008',
+        'e0000000-0000-0000-0000-000000000019',
+      ]),
+    []
+  );
 
   // Estados del Currículum, Tablas y Gamificación
   const [tracks, setTracks] = useState<Track[]>(FALLBACK_TRACKS);
   const [tables] = useState<TableSchemaInfo[]>(ECOMMERCE_TABLES_SCHEMA);
-  const [achievements] = useState<Achievement[]>(ACHIEVEMENTS_CATALOG);
   const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([]);
+  const [dailyActivity, setDailyActivity] = useState<{ activity_date: string; exercises_solved: number; xp_earned: number }[]>([]);
+  const [totalAttemptsCount, setTotalAttemptsCount] = useState<number>(0);
+  const [playgroundInitialQuery, setPlaygroundInitialQuery] = useState<string | undefined>(undefined);
 
   // Estados del Ejercicio Activo y del IDE
   const [exercises, setExercises] = useState<Exercise[]>(FALLBACK_EXERCISES);
@@ -208,7 +224,7 @@ export const App: React.FC = () => {
     setQueryHistory(api.getQueryHistory());
   }, [pendingExerciseId]);
 
-  // Sincronizar ejercicios superados y computar progreso oficial vs invitado
+  // Sincronizar ejercicios superados, actividad diaria y consultas evaluadas
   useEffect(() => {
     setIsProgressLoading(true);
     persistence.getCompletedExerciseIds(profile?.id).then((completedIds) => {
@@ -220,16 +236,115 @@ export const App: React.FC = () => {
       );
 
       const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
-      if (isAuth) {
+      if (isAuth && profile?.id) {
         const computed = computeOfficialTracksProgress(tracks, exercises, completedSet, false);
         setTracks(computed);
+
+        // Carga de métricas reales del estudiante autenticado
+        persistence.getUserDailyActivity(profile.id).then((act) => {
+          setDailyActivity(act);
+        });
+        persistence.getUserTotalAttemptsCount(profile.id).then((cnt) => {
+          setTotalAttemptsCount(cnt);
+        });
+        persistence.getUserAttemptsHistory(profile.id).then((hist) => {
+          if (hist && hist.length > 0) {
+            setQueryHistory(hist);
+          }
+        });
       } else {
         const computed = computeGuestTrialTracksProgress(tracks, exercises, completedSet);
         setTracks(computed);
+        setDailyActivity([]);
+        setTotalAttemptsCount(api.getQueryHistory().length);
       }
       setIsProgressLoading(false);
     });
   }, [profile?.id, exercises.length]);
+
+  // Reto Recomendado Dinámico (Anti-Hardcode)
+  const recommendedExercise = useMemo(() => {
+    if (!exercises || exercises.length === 0) return FALLBACK_EXERCISES[0];
+    const firstPending = exercises.find((ex) => !authoritativeCompletedIds.has(ex.id));
+    return firstPending || exercises[exercises.length - 1] || FALLBACK_EXERCISES[0];
+  }, [exercises, authoritativeCompletedIds]);
+
+  // Metadatos de la Ruta y Reto Activo para el Hero Banner del Dashboard (Opción 1)
+  const activeLearningData = useMemo(() => {
+    if (!exercises || exercises.length === 0) {
+      return {
+        activeTrack: tracks[0],
+        activeModule: tracks[0]?.modules?.[0],
+        nextExercise: FALLBACK_EXERCISES[0],
+        exerciseNumberInTrack: 1,
+        trackTotal: 22,
+        trackCompleted: 0,
+        trackPercent: 0,
+        moduleRemaining: 4,
+        isAllCompleted: false,
+      };
+    }
+
+    // 1. Identificar el siguiente ejercicio pendiente (o el último si completó todos)
+    const nextExercise = exercises.find((ex) => !authoritativeCompletedIds.has(ex.id));
+    const isAllCompleted = !nextExercise && authoritativeCompletedIds.size > 0;
+    const targetExercise = nextExercise || exercises[exercises.length - 1];
+
+    // 2. Determinar la ruta activa a la que pertenece targetExercise
+    const activeTrack =
+      tracks.find((t) => t.modules?.some((m) => m.id === targetExercise.module_id)) || tracks[0];
+
+    // 3. Determinar el módulo activo
+    const activeModule = activeTrack?.modules?.find((m) => m.id === targetExercise.module_id);
+
+    // 4. Calcular métricas dentro de la ruta activa
+    const trackExercises = exercises.filter((e) =>
+      activeTrack?.modules?.some((m) => m.id === e.module_id)
+    );
+    const trackCompleted = trackExercises.filter((e) =>
+      authoritativeCompletedIds.has(e.id)
+    ).length;
+    const trackTotal = trackExercises.length || activeTrack?.total_exercises || 1;
+    const trackPercent = Math.min(100, Math.round((trackCompleted / trackTotal) * 100));
+
+    // 5. Número del ejercicio dentro de la ruta (1-based)
+    const exerciseIndexInTrack = trackExercises.findIndex((e) => e.id === targetExercise.id);
+    const exerciseNumberInTrack = exerciseIndexInTrack >= 0 ? exerciseIndexInTrack + 1 : 1;
+
+    // 6. Restantes en el módulo actual
+    const moduleExercises = exercises.filter((e) => e.module_id === activeModule?.id);
+    const moduleCompleted = moduleExercises.filter((e) =>
+      authoritativeCompletedIds.has(e.id)
+    ).length;
+    const moduleRemaining = Math.max(0, moduleExercises.length - moduleCompleted);
+
+    return {
+      activeTrack,
+      activeModule,
+      nextExercise: targetExercise,
+      exerciseNumberInTrack,
+      trackTotal,
+      trackCompleted,
+      trackPercent,
+      moduleRemaining,
+      isAllCompleted,
+    };
+  }, [exercises, tracks, authoritativeCompletedIds]);
+
+  // Evaluación Dinámica y Reactiva de Medallas / Logros
+  const evaluatedAchievements = useMemo(() => {
+    const minLatency = queryHistory.length > 0
+      ? Math.min(...queryHistory.map((h) => h.execution_time_ms || 999))
+      : undefined;
+
+    return evaluateUserAchievements(
+      ACHIEVEMENTS_CATALOG,
+      profile,
+      authoritativeCompletedIds,
+      isAuthenticated ? totalAttemptsCount : queryHistory.length,
+      minLatency
+    );
+  }, [profile, authoritativeCompletedIds, totalAttemptsCount, queryHistory, isAuthenticated]);
 
   // Actualización dinámica del título de la pestaña (Anti-AI Slop Regla 1.1)
   useEffect(() => {
@@ -293,6 +408,15 @@ export const App: React.FC = () => {
   const handleExecuteSolution = useCallback(async () => {
     if (!sqlCode.trim()) return;
 
+    const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
+
+    // Modo Invitado: si intenta ejecutar un reto fuera de los 3 de prueba, abrir modal de registro sin error
+    if (!isAuth && !GUEST_TRIAL_EXERCISE_IDS.has(activeExercise.id)) {
+      setExecutionStatus('IDLE');
+      setGuestTrialModalOpen(true);
+      return;
+    }
+
     setIsExecuting(true);
     setExecutionStatus('LOADING');
     setResultError(undefined);
@@ -304,6 +428,13 @@ export const App: React.FC = () => {
         sqlCode,
         hintsUnlocked
       );
+
+      // Si el backend requiere autenticación tras la prueba, abrir modal preventivo sin pintar error
+      if (evalResponse.status === 'AUTH_REQUIRED') {
+        setExecutionStatus('IDLE');
+        setGuestTrialModalOpen(true);
+        return;
+      }
 
       setExecutionTime(evalResponse.execution_time_ms);
 
@@ -334,7 +465,6 @@ export const App: React.FC = () => {
         );
 
         // Actualizar progreso por ruta de forma aislada y estricta
-        const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
         if (isAuth) {
           setAuthoritativeCompletedIds((prev) => {
             const next = new Set(prev);
@@ -345,12 +475,27 @@ export const App: React.FC = () => {
             return next;
           });
           refreshProfile();
+          if (profile?.id) {
+            persistence.getUserDailyActivity(profile.id).then(setDailyActivity);
+            persistence.getUserTotalAttemptsCount(profile.id).then(setTotalAttemptsCount);
+            persistence.getUserAttemptsHistory(profile.id).then((hist) => {
+              if (hist && hist.length > 0) setQueryHistory(hist);
+            });
+          }
         } else {
           persistence.getCompletedExerciseIds().then((ids) => {
             const guestSet = new Set(ids);
+            guestSet.add(activeExercise.id);
             setTracks((currentTracks) =>
               computeGuestTrialTracksProgress(currentTracks, exercises, guestSet)
             );
+            // Comprobar si el invitado completó los 3 retos del trial para celebrar su avance
+            const trialPassedCount = Array.from(guestSet).filter((id) =>
+              GUEST_TRIAL_EXERCISE_IDS.has(id)
+            ).length;
+            if (trialPassedCount >= 3) {
+              setGuestTrialModalOpen(true);
+            }
           });
         }
 
@@ -410,6 +555,12 @@ export const App: React.FC = () => {
   // Avanzar al siguiente reto
   const handleNextExercise = () => {
     const nextIndex = (currentExerciseIndex + 1) % exercises.length;
+    const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
+    const nextExercise = exercises[nextIndex];
+    if (!isAuth && nextExercise && !GUEST_TRIAL_EXERCISE_IDS.has(nextExercise.id)) {
+      setGuestTrialModalOpen(true);
+      return;
+    }
     handleSelectExercise(nextIndex);
   };
 
@@ -478,6 +629,15 @@ export const App: React.FC = () => {
                   <span>Sandbox Online</span>
                 </div>
 
+                {/* Contador de Racha Activa del Estudiante */}
+                {isAuthenticated && (
+                  <StreakPill
+                    days={profile?.current_streak_days ?? 0}
+                    isActive={(profile?.current_streak_days ?? 0) > 0}
+                    className="py-1 px-2.5 text-xs"
+                  />
+                )}
+
                 <button
                   type="button"
                   onClick={toggleTheme}
@@ -504,18 +664,21 @@ export const App: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setAuthModalOpen(true)}
-                      className="flex items-center gap-1.5 text-xs font-mono text-content-primary hover:text-cyan-accent transition-colors"
+                      className="flex items-center gap-2 text-xs font-mono text-content-primary hover:text-cyan-accent transition-colors"
                       title="Mi Cuenta Supabase"
                     >
                       <div className="relative">
                         <img
                           src={profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'user'}`}
                           alt={`Avatar de ${profile?.username || 'Usuario'}`}
-                          className="w-5 h-5 rounded-full object-cover border border-emerald/50"
+                          className="w-6 h-6 rounded-full object-cover border border-emerald/50"
                         />
                         <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald" />
                       </div>
-                      <span className="hidden md:inline font-bold">{profile?.username || 'Usuario'}</span>
+                      <div className="hidden md:flex flex-col text-left leading-tight">
+                        <span className="font-bold text-[11px] truncate max-w-[110px]">{profile?.username || 'Usuario'}</span>
+                        <span className="text-[10px] text-amber-streak font-mono font-medium">{profile?.total_xp ?? 0} XP</span>
+                      </div>
                     </button>
                     <button
                       type="button"
@@ -585,10 +748,29 @@ export const App: React.FC = () => {
           }
         />
 
+        {/* Modal de Prueba de Invitado Superada */}
+        <GuestTrialCompleteModal
+          isOpen={guestTrialModalOpen}
+          onClose={() => setGuestTrialModalOpen(false)}
+          onOpenSignUp={() => {
+            setGuestTrialModalOpen(false);
+            setAuthModalInitialMode('signup');
+            setAuthModalOpen(true);
+          }}
+          onOpenSignIn={() => {
+            setGuestTrialModalOpen(false);
+            setAuthModalInitialMode('signin');
+            setAuthModalOpen(true);
+          }}
+          solvedCount={3}
+          earnedXp={100}
+        />
+
         {/* Modal de Autenticación Supabase */}
         <AuthModal
           isOpen={authModalOpen}
           onClose={() => setAuthModalOpen(false)}
+          initialMode={authModalInitialMode}
         />
       </>
     );
@@ -642,7 +824,7 @@ export const App: React.FC = () => {
         {/* VISTA B: SQL PLAYGROUND LIBRE */}
         {currentPath === 'playground' && (
           <React.Suspense fallback={<ViewLoadingFallback />}>
-            <SqlPlaygroundView tables={tables} />
+            <SqlPlaygroundView tables={tables} initialQuery={playgroundInitialQuery} />
           </React.Suspense>
         )}
 
@@ -650,8 +832,9 @@ export const App: React.FC = () => {
         {currentPath === 'achievements' && (
           <React.Suspense fallback={<ViewLoadingFallback />}>
             <AchievementsView
-              achievements={achievements}
-              totalXp={profile?.total_xp || 480}
+              achievements={evaluatedAchievements}
+              totalXp={profile?.total_xp ?? 0}
+              level={profile?.current_level ?? 1}
             />
           </React.Suspense>
         )}
@@ -662,7 +845,15 @@ export const App: React.FC = () => {
             <UserProfileView
               profile={profile}
               history={queryHistory}
-              onOpenPlayground={() => navigate('playground')}
+              completedCount={authoritativeCompletedIds.size}
+              totalExercises={exercises.length}
+              dailyActivity={dailyActivity}
+              onOpenPlayground={(query?: string) => {
+                if (query) {
+                  setPlaygroundInitialQuery(query);
+                }
+                navigate('playground');
+              }}
               onOpenAuth={() => setAuthModalOpen(true)}
               isCloudAuth={isCloudAuth}
             />
@@ -706,77 +897,178 @@ export const App: React.FC = () => {
             <div className="absolute -right-16 -top-20 w-80 h-80 rounded-full bg-primary/[0.07] dark:bg-primary/[0.12] blur-3xl pointer-events-none" />
             <div className="absolute right-72 -bottom-20 w-64 h-64 rounded-full bg-cyan-accent/[0.05] dark:bg-cyan-accent/[0.08] blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="flex flex-col gap-2.5 max-w-xl xl:max-w-2xl">
-                {isAuthenticated ? (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald-600 dark:text-emerald font-medium">
+            {isAuthenticated ? (
+              /* ESTADO AUTENTICADO: CENTRO DE AVANCE CONTINUO (OPCIÓN 1) */
+              <div className="relative z-10 flex flex-col gap-5">
+                {/* Fila Superior: Píldora de Ruta/Módulo y Latencia del Sandbox */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald/10 border border-emerald/25 text-[11px] font-mono text-emerald font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                    <span>Ruta Activa • SQL Foundations</span>
+                    <span>Ruta Activa • {activeLearningData.activeTrack?.title || 'SQL Foundations'}</span>
+                    {activeLearningData.activeModule && (
+                      <>
+                        <span className="text-content-muted">•</span>
+                        <span className="text-content-secondary font-normal">
+                          Módulo {activeLearningData.activeModule.sort_order}: {activeLearningData.activeModule.title}
+                        </span>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald-600 dark:text-emerald font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                    <span>MODO INVITADO • PRUEBA ACTIVA (3 RETOS GRATUITOS)</span>
+
+                  <div className="flex items-center gap-2 font-mono text-xs text-content-muted">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
+                    <span>PostgreSQL 16 Sandbox • 3.6ms (pg_stat_ready)</span>
                   </div>
-                )}
-
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
-                  {isAuthenticated ? (
-                    <>
-                      ¡Hola, {profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Estudiante'}!{' '}
-                      <span className="text-content-secondary font-normal">¿Listo para compilar hoy?</span>
-                    </>
-                  ) : (
-                    <>
-                      ¡Bienvenido a Qurio!{' '}
-                      <span className="text-content-secondary font-normal">Aprende SQL pensando en queries.</span>
-                    </>
-                  )}
-                </h1>
-
-                <p className="text-xs text-content-secondary leading-relaxed">
-                  {isAuthenticated
-                    ? 'Sandbox PostgreSQL aislado en Docker activo. Resuelve ejercicios relacionales con evaluación semántica instantánea.'
-                    : 'Estás conectado a un motor PostgreSQL 16 real en Docker. Resuelve hasta 3 retos prácticos de SQL Foundations con evaluación semántica de inmediato, sin necesidad de crear cuenta.'}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 shrink-0">
-                <div className="flex flex-col items-start sm:items-end pr-2 font-mono shrink-0 whitespace-nowrap">
-                  <span className="text-[10px] text-content-muted uppercase tracking-wider">Latencia Sandbox</span>
-                  <span className="text-xs text-content-secondary font-semibold flex items-center gap-1.5 whitespace-nowrap">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> 3.6ms (pg_stat_ready)
-                  </span>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
+                {/* Saludo y Reto Pendiente */}
+                <div className="flex flex-col gap-2">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
+                    ¡Hola de nuevo, {profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Estudiante'}!{' '}
+                    <span className="text-content-secondary font-normal">Tu siguiente reto te espera:</span>
+                  </h1>
+
+                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                    <span className="text-base sm:text-lg font-bold font-mono text-cyan-accent">
+                      Reto #{activeLearningData.exerciseNumberInTrack}:
+                    </span>
+                    <span className="text-base sm:text-lg font-bold text-content-primary font-sans">
+                      {activeLearningData.nextExercise?.title}
+                    </span>
+                    <Badge variant="amber" size="sm" className="font-mono">
+                      +{activeLearningData.nextExercise?.xp_reward || 35} XP
+                    </Badge>
+                    <Badge variant="mono" size="sm">
+                      {activeLearningData.nextExercise?.difficulty || 'Principiante'}
+                    </Badge>
+                  </div>
+
+                  <p className="text-xs text-content-secondary leading-relaxed max-w-3xl line-clamp-2">
+                    {activeLearningData.nextExercise?.prompt}
+                  </p>
+                </div>
+
+                {/* Barra de Progreso Dinámica de la Ruta */}
+                <div className="flex flex-col gap-2 pt-1 max-w-3xl">
+                  <div className="flex items-center justify-between text-xs font-mono">
+                    <span className="text-content-secondary flex items-center gap-1.5">
+                      <BookOpen className="w-3.5 h-3.5 text-cyan-accent" />
+                      <span>
+                        Progreso en {activeLearningData.activeTrack?.title}:{' '}
+                        <strong className="text-content-primary">
+                          {activeLearningData.trackCompleted} de {activeLearningData.trackTotal} retos superados
+                        </strong>
+                      </span>
+                    </span>
+                    <span className="text-emerald font-bold font-mono">
+                      {activeLearningData.trackPercent}%
+                    </span>
+                  </div>
+
+                  <div className="w-full h-2 rounded-full bg-surface-dim overflow-hidden border border-border-subtle/50 relative">
+                    <div
+                      className="h-full bg-gradient-to-r from-cyan-accent via-primary to-emerald transition-all duration-500 rounded-full shadow-[0_0_12px_rgba(56,189,248,0.4)]"
+                      style={{ width: `${Math.max(activeLearningData.trackPercent, 2)}%` }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] font-mono text-content-muted">
+                    <span>
+                      {activeLearningData.isAllCompleted
+                        ? '🎉 ¡Has completado todos los ejercicios del currículum oficial!'
+                        : activeLearningData.moduleRemaining === 1
+                        ? '🔥 ¡Último reto para culminar este módulo!'
+                        : `Faltan ${activeLearningData.moduleRemaining} retos para culminar este módulo.`}
+                    </span>
+                    <span>
+                      Global: {authoritativeCompletedIds.size} / {exercises.length} ({Math.round((authoritativeCompletedIds.size / (exercises.length || 1)) * 100)}%)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Botones de Acción */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
                   <Button
                     variant="primary"
                     size="md"
                     kbdShortcut="⌘↵"
                     leftIcon={<Play className="w-4 h-4 fill-white shrink-0" />}
                     onClick={() => {
-                      handleSelectExercise(0);
-                      navigate('exercise', { exerciseId: exercises[0]?.id });
+                      if (activeLearningData.nextExercise) {
+                        const targetIdx = exercises.findIndex((e) => e.id === activeLearningData.nextExercise.id);
+                        handleSelectExercise(targetIdx >= 0 ? targetIdx : 0);
+                        navigate('exercise', { exerciseId: activeLearningData.nextExercise.id });
+                      }
                     }}
-                    className="shadow-glow-primary hover:shadow-primary px-4.5"
+                    className="shadow-glow-primary hover:shadow-primary px-5 shrink-0 whitespace-nowrap text-xs sm:text-sm font-semibold"
                   >
-                    {isAuthenticated ? 'Continuar Reto Activo' : 'Comenzar Reto 1'}
+                    Continuar Reto #{activeLearningData.exerciseNumberInTrack}
                   </Button>
 
-                  {!isAuthenticated && (
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => navigate('tracks')}
+                    className="px-4 shrink-0 whitespace-nowrap text-xs hover:border-cyan-accent/50"
+                  >
+                    Ver Syllabus Completo
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* ESTADO INVITADO: BIENVENIDA Y PRUEBA INICIAL */
+              <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div className="flex flex-col gap-2.5 max-w-xl xl:max-w-2xl">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
+                    <span>MODO INVITADO • PRUEBA ACTIVA (3 RETOS GRATUITOS)</span>
+                  </div>
+
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
+                    ¡Bienvenido a Qurio! <span className="text-content-secondary font-normal">Aprende SQL pensando en queries.</span>
+                  </h1>
+
+                  <p className="text-xs text-content-secondary leading-relaxed">
+                    Estás conectado a un motor PostgreSQL 16 real en Docker. Resuelve hasta 3 retos prácticos de SQL Foundations con evaluación semántica de inmediato, sin necesidad de crear cuenta.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6 shrink-0">
+                  <div className="flex flex-col items-start sm:items-end pr-2 font-mono shrink-0 whitespace-nowrap">
+                    <span className="text-[10px] text-content-muted uppercase tracking-wider">Latencia Sandbox</span>
+                    <span className="text-xs text-content-secondary font-semibold flex items-center gap-1.5 whitespace-nowrap">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> 3.6ms (pg_stat_ready)
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      kbdShortcut="⌘↵"
+                      leftIcon={<Play className="w-4 h-4 fill-white shrink-0" />}
+                      onClick={() => {
+                        const targetIdx = exercises.findIndex((e) => e.id === recommendedExercise?.id);
+                        handleSelectExercise(targetIdx >= 0 ? targetIdx : 0);
+                        navigate('exercise', { exerciseId: recommendedExercise?.id });
+                      }}
+                      className="shadow-glow-primary hover:shadow-primary px-5 shrink-0 whitespace-nowrap"
+                    >
+                      Comenzar Reto 1
+                    </Button>
+
                     <Button
                       variant="outline"
                       size="md"
                       onClick={() => setAuthModalOpen(true)}
-                      className="px-4"
+                      className="px-4 shrink-0 whitespace-nowrap"
                     >
                       Iniciar Sesión
                     </Button>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </section>
 
           {/* Bento Grid de Métricas */}
@@ -804,8 +1096,8 @@ export const App: React.FC = () => {
             />
             <MetricTile
               label="Consultas Evaluadas"
-              value={`${queryHistory.length}`}
-              subValue="En sesión local"
+              value={`${isAuthenticated ? totalAttemptsCount : queryHistory.length}`}
+              subValue={isAuthenticated ? 'Total histórico evaluado' : 'En sesión local'}
               icon={<Terminal className="w-4 h-4" />}
               accent="cyan"
             />
@@ -848,19 +1140,21 @@ export const App: React.FC = () => {
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <Badge variant="cyan" size="sm">Reto Recomendado</Badge>
-                    <span className="text-xs font-mono text-content-muted">Módulo 6 • Intermedio</span>
+                    <span className="text-xs font-mono text-content-muted">
+                      {recommendedExercise?.difficulty || 'Principiante'}
+                    </span>
                   </div>
 
                   <h3 className="text-lg font-bold text-content-primary">
-                    {exercises[3]?.title || 'Clientes sin Compras Registradas (LEFT JOIN & IS NULL)'}
+                    {recommendedExercise?.title || 'Reto SQL'}
                   </h3>
 
                   <p className="text-xs text-content-secondary leading-relaxed">
-                    {exercises[3]?.prompt || 'El equipo de marketing necesita reactivar a usuarios registrados que nunca han realizado un pedido en la plataforma.'}
+                    {recommendedExercise?.prompt || 'Consulta la base de datos relacional con SQL.'}
                   </p>
 
                   <div className="mt-2 p-3 rounded-lg bg-surface-dim/80 border border-border-subtle/50 border-l-2 border-l-cyan-accent font-mono text-xs text-content-secondary flex items-center justify-between">
-                    <code>SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c...</code>
+                    <code className="truncate max-w-md">{recommendedExercise?.initial_code || 'SELECT ...'}</code>
                     <KbdShortcut keys={['⌘', '↵']} />
                   </div>
                 </div>
@@ -868,7 +1162,7 @@ export const App: React.FC = () => {
                 <div className="mt-6 pt-4 border-t border-border-subtle/40 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-mono text-amber-streak font-medium bg-amber-streak/10 px-2.5 py-1 rounded-md border border-amber-streak/20">
                     <Zap className="w-3.5 h-3.5 fill-amber-streak" />
-                    <span>Recompensa: +{exercises[3]?.xp_reward || 50} XP</span>
+                    <span>Recompensa: +{recommendedExercise?.xp_reward || 50} XP</span>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -884,8 +1178,9 @@ export const App: React.FC = () => {
                       variant="primary"
                       size="sm"
                       onClick={() => {
-                        handleSelectExercise(3 < exercises.length ? 3 : 0);
-                        setCurrentPath('exercise');
+                        const targetIdx = exercises.findIndex((e) => e.id === recommendedExercise?.id);
+                        handleSelectExercise(targetIdx >= 0 ? targetIdx : 0);
+                        navigate('exercise', { exerciseId: recommendedExercise?.id });
                       }}
                       className="shadow-sm hover:shadow-primary"
                     >
@@ -1016,10 +1311,29 @@ export const App: React.FC = () => {
       )}
     </DashboardLayout>
 
+    {/* Modal de Prueba de Invitado Superada */}
+    <GuestTrialCompleteModal
+      isOpen={guestTrialModalOpen}
+      onClose={() => setGuestTrialModalOpen(false)}
+      onOpenSignUp={() => {
+        setGuestTrialModalOpen(false);
+        setAuthModalInitialMode('signup');
+        setAuthModalOpen(true);
+      }}
+      onOpenSignIn={() => {
+        setGuestTrialModalOpen(false);
+        setAuthModalInitialMode('signin');
+        setAuthModalOpen(true);
+      }}
+      solvedCount={3}
+      earnedXp={100}
+    />
+
     {/* Modal de Autenticación Supabase (Login / Registro / JWT) */}
     <AuthModal
       isOpen={authModalOpen}
       onClose={() => setAuthModalOpen(false)}
+      initialMode={authModalInitialMode}
     />
   </>
   );

@@ -1117,3 +1117,196 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Compilación de producción Vite:** 2,171 módulos transformados limpiamente (0 errores) en 8.00s.
      * **Vitest frontend:** 17/17 pruebas pasadas en 968ms.
      * **HMR:** Sincronizado en tiempo real en `http://localhost:5173/`.
+
+
+---
+
+### Entrada 36: Sincronización Integral de Métricas Auténticas: Racha Diaria, Actividad de 30 Días, Reto Inteligente y Desbloqueo Reactivo de Logros
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Eliminar todos los valores *mock*, fallbacks ficticios (`|| 2`, `|| 5`, `|| 480`) y datos cableados en la plataforma, convirtiendo el 100% de los contadores, gráficos de cadencia, retos recomendados y medallas en métricas autoritativas y dinámicas para usuarios registrados.
+* **Actividades y Logros Clave:**
+  1. **Motor Autoritativo de Racha y Actividad Diaria (`03_security_hardening.sql` v6.3):**
+     * Se actualizó la función RPC `record_verified_attempt` para registrar atómicamente cada intento aprobado en `public.user_daily_activity (user_id, activity_date, exercises_solved, xp_earned)`.
+     * Se implementó el cálculo matemático de rachas consecutivas: evalúa `MAX(activity_date) < CURRENT_DATE`. Si la última práctica fue ayer (`CURRENT_DATE - 1`), la racha se incrementa en 1; si ya practicó hoy, se preserva; si hubo más de 1 día de inactividad, se reinicia a 1.
+     * Actualiza atómicamente `current_streak_days` y `max_streak_days = GREATEST(max_streak_days, current_streak_days)` en `public.user_profiles`.
+  2. **Servicios de Persistencia en Frontend (`persistence.ts`):**
+     * `getUserDailyActivity(userId)`: Consulta las actividades reales de los últimos 30 días calendario en `user_daily_activity`.
+     * `getUserAttemptsHistory(userId, limit)`: Recupera los intentos reales registrados en `exercise_attempts` en la nube.
+     * `getUserTotalAttemptsCount(userId)`: Obtiene el conteo exacto de consultas evaluadas por el usuario.
+  3. **Dashboard 100% Funcional y Reto Recomendado Dinámico (`App.tsx`):**
+     * En el Bento Grid: Se reemplazaron contadores volátiles por métricas auditadas (`Nivel ${profile.current_level}`, `${profile.total_xp} XP`, `${profile.current_streak_days} días`, y total histórico de consultas evaluadas).
+     * El Reto Estrella Recomendado ya no apunta al ejercicio fijo `exercises[3]`; ahora calcula reactivamente el primer ejercicio pendiente del estudiante (`authoritativeCompletedIds`), guiando el aprendizaje progresivo paso a paso.
+  4. **Perfil Auténtico y Cadencia de Práctica (`UserProfileView.tsx`):**
+     * Eliminación de valores mock (`|| 2`, `|| 5`, `12 / 50`). Muestra retos completados reales sobre el total, racha actual y récord del perfil.
+     * El Heatmap de 30 días mapea los últimos 30 días calendario reales cruzados con `user_daily_activity`, reflejando la intensidad y días exactos en que el estudiante practicó.
+  5. **Evaluador Reactivo de Medallas (`AchievementsView.tsx` & `api.ts`):**
+     * Se implementó `evaluateUserAchievements`: las medallas ya no tienen fechas predefinidas ni desbloqueos falsos; se evalúan en tiempo real frente a los retos resueltos, rachas de 3 y 7 días, y tiempo de ejecución.
+  6. **Verificación y Pruebas:**
+     * **Vitest frontend:** 21/21 pruebas unitarias pasadas limpiamente en 936ms (incluyendo `achievements.test.ts`).
+     * **Compilación de producción Vite:** 2,171 módulos transformados limpiamente (0 errores) en 6.42s.
+     * **Pytest backend:** 37 pruebas unitarias de seguridad y evaluación pasando en <0.2s.
+     * **Recarga en Caliente (HMR):** Sincronizada automáticamente en `http://localhost:5173/`.
+
+
+---
+
+### Entrada 37: Resolución de Conectividad Service Role en Docker y Adición de Racha/XP en Workspace
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver el desacoplamiento de certificación de XP oficial en el contenedor Docker de FastAPI y agregar el contador de racha y progreso de XP visible en la vista del Workspace de ejercicios.
+* **Actividades y Logros Clave:**
+  1. **Diagnóstico de XP no Acreditado (70 XP en Dashboard):**
+     * **Causa raíz:** Al inspeccionar los logs del contenedor `qurio-api` en Docker, se identificó la advertencia: `[WARNING] app.core.supabase: SUPABASE_SERVICE_ROLE_KEY no configurado en backend. Activando modo contingencia (0 XP oficial persistido)`.
+     * El archivo `docker-compose.yml` no cargaba `env_file: ./apps/api/.env`, por lo que el contenedor no recibía las credenciales administrativas de Supabase. El backend evaluaba correctamente el SQL en el Sandbox pero entraba en modo de contingencia, no ejecutaba la RPC en Supabase y el perfil del usuario permanecía con sus 70 XP previos en la nube.
+     * **Solución:** Se añadió `env_file: - ./apps/api/.env` al servicio `api` en `docker-compose.yml` y se recreó el contenedor (`docker compose up -d api`). Al iniciar, `qurio-api` cargó exitosamente las credenciales de Supabase eliminando la contingencia.
+  2. **Contador de Racha y XP en el Workspace de Ejercicios (`App.tsx`):**
+     * Se integró la molécula `StreakPill` en la barra superior de `WorkspaceLayout`, mostrando la llama ámbar activa y los días de racha consecutivos certificados del usuario.
+     * Se añadió un indicador de XP en vivo (`total_xp ?? 0 XP`) junto al avatar del estudiante en la cabecera del editor, permitiendo ver el incremento del progreso sin salir del ejercicio.
+  3. **Verificación y Pruebas:**
+     * **Compilación Vite:** 2,171 módulos transformados limpiamente en 5.70s.
+     * **Vitest frontend:** 21/21 pruebas unitarias pasando.
+     * **Graphify:** Grafo de conocimiento actualizado (2090 nodos, 3331 aristas).
+
+
+---
+
+### Entrada 38: Restauración de Metadatos Pedagógicos (Guía Didáctica de Conceptos y Checklist de Objetivos)
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver la ausencia de la guía didáctica explicativa (`concept`) y del checklist interactivo de objetivos (`objectives`) en el panel lateral de especificación del ejercicio (`ExerciseSpecPanel`).
+* **Actividades y Logros Clave:**
+  1. **Diagnóstico de Causa Raíz:**
+     * Al consultar la lista o detalle de ejercicios desde FastAPI (`/api/v1/exercises`), el repositorio `ExerciseRepository` consultaba Supabase Cloud vía REST. Como la tabla relacional `public.exercises` solo almacena las columnas canónicas de la base de datos (`id`, `title`, `prompt`, `initial_code`, `solution_query`, `xp_reward`, etc.), los campos pedagógicos `concept`, `objectives`, `sample_tables` y `hints` no venían en la respuesta de Supabase y se instanciaban como `None`.
+     * El frontend recibía estos objetos sin metadatos y reemplazaba el catálogo con la respuesta incompleta, haciendo que la tarjeta didáctica y el checklist no se renderizaran.
+  2. **Resolución y Fusión de Metadatos Didácticos (Backend & Frontend):**
+     * **En Backend (`repository.py`):** Se modificó `get_internal_for_evaluation` y `list_all` para que, tras consultar Supabase, combine e inyecte automáticamente los metadatos enriquecidos de `self._cache` (`concept`, `objectives`, `sample_tables`, `hints`) a cada DTO público.
+     * **En Frontend (`api.ts`):** En `getExercises()` y `getExercise()`, se garantizó la fusión defensiva con `FALLBACK_EXERCISES`, asegurando que el contenido pedagógico completo nunca se degrade ni desaparezca ante ninguna respuesta parcial de red.
+  3. **Verificación y Estado:**
+     * Verificación HTTP directa contra `http://localhost:8000/api/v1/exercises`: confirmación de `Has concept: True` y `Has objectives: True` (3 objetivos).
+     * Compilación de producción Vite: 2,171 módulos transformados limpiamente en 5.91s.
+     * Vitest: 21/21 pruebas unitarias pasando.
+
+---
+
+### Entrada 39: Sincronización Autoritativa del Currículum Completo (12 Módulos, 50 Ejercicios y 112 Pistas en Supabase Cloud) e Historial Interactivo
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Sincronizar el catálogo completo de 50 ejercicios, 12 módulos y 112 pistas en Supabase Cloud resolviendo el desfasaje del syllabus (que solo mostraba 17/18 retos), habilitar las funciones interactivas del historial de consultas en el perfil (copiado y carga en Playground), y garantizar la coherencia pedagógica de extremo a extremo.
+* **Actividades y Logros Clave:**
+  1. **Diagnóstico del Desfase Curricular (Syllabus con 17/18 Ejercicios):**
+     * **Causa raíz:** En la fase temprana del proyecto, la base de datos de producción en Supabase Cloud se había inicializado únicamente con un lote inicial de 18 ejercicios y 11 módulos preliminares. Al solicitar los ejercicios el backend (`/api/v1/exercises`), consultaba Supabase y devolvía únicamente esos 18 ejercicios, por lo que la vista del Syllabus contabilizaba 8 en *SQL Foundations*, 5 en *Relational SQL* y 5 en *Advanced Queries*.
+     * Adicionalmente, el esquema de módulos previo tenía desalineado el Módulo 8 (ubicado antes erróneamente en `advanced-queries`), lo que causaba violaciones de clave foránea al intentar insertar los 50 ejercicios que contemplan el Módulo 8 como `relational-sql` (*Operaciones de Conjunto y Joins Especiales*).
+  2. **Migración y Sincronización Integral en Supabase Cloud (`sync_supabase_curriculum.py`):**
+     * Se desvincularon los ejercicios temporales sin intentos de Track 3 para permitir la reorganización estructural de la tabla `public.modules`.
+     * Se reestructuraron y validaron los 12 módulos oficiales exactos:
+       * Módulos 1 a 4: *SQL Foundations* (`a000...001` a `a000...004`).
+       * Módulos 5 a 8: *Relational SQL* (`b000...005` a `b000...008`).
+       * Módulos 9 a 12: *Advanced Queries* (`c000...009` a `c000...012`).
+     * Se sincronizaron en lotes transaccionales los **50 ejercicios oficiales** completos con sus consignas, soluciones SQL y recompensas de XP.
+     * Se sincronizaron las **112 pistas progresivas** (`exercise_hints`) con control de unicidad (`on_conflict=exercise_id,hint_order`).
+  3. **Historial de Consultas Interactivo en el Perfil (`UserProfileView.tsx` & `SqlPlaygroundView.tsx`):**
+     * **Botón de Copiado de Código:** Permite copiar la consulta SQL al portapapeles con feedback visual en verde esmeralda ("Copiado").
+     * **Acción "Abrir en Playground":** Pasa la consulta seleccionada al estado global de la aplicación (`playgroundInitialQuery`), navega a la vista de SQL Playground e inyecta la consulta directamente en Monaco Editor para su ejecución o modificación libre.
+     * **Acordeón Desplegable:** Permite expandir cualquier fila para visualizar la consulta completa formateada en un bloque de código tipográfico en `JetBrains Mono`.
+  4. **Blindaje Defensivo de Metadatos Didácticos (`repository.py`):**
+     * Se reforzó la fusión en `ExerciseRepository` (`list_all` y `get_internal_for_evaluation`) para asegurar que si un atributo pedagógico (`concept`, `objectives`, `sample_tables`, `hints`) viniese ausente o `None` desde la nube, se inyecte irrevocablemente desde el catálogo enriquecido en memoria.
+  5. **Verificación y Pruebas:**
+     * **Verificación REST Supabase Cloud:** 12 módulos confirmados, 50 ejercicios confirmados.
+     * **Verificación FastAPI (`/exercises`):** 50 ejercicios retornados con `concept: True` y checklist de objetivos intacto.
+     * **Syllabus Web (`http://localhost:5173/`):**
+       * *SQL Foundations*: 22 ejercicios (M1: 4, M2: 6, M3: 4, M4: 8).
+       * *Relational SQL*: 18 ejercicios (M5: 5, M6: 5, M7: 4, M8: 4).
+       * *Advanced Queries*: 10 ejercicios (M9: 3, M10: 2, M11: 2, M12: 3).
+       * Total: **50 ejercicios** sincronizados y accesibles.
+     * **Vitest Frontend:** 21/21 pruebas unitarias pasando limpiamente en 1.03s.
+     * **Build de Producción Vite:** 2,171 módulos transformados limpiamente en 5.77s (0 errores).
+     * **Grafo de Conocimiento (Graphify):** 2,097 nodos y 3,398 aristas actualizados en `graphify-out/`.
+
+---
+
+### Entrada 40: Experiencia de Onboarding de Invitados (Modal de Celebración & Conversión) y Alineación del Trial
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver el bloqueo del modo invitado en el segundo ejercicio, eliminar el mensaje de error de base de datos sustituyéndolo por un flujo de conversión amigable, implementar el componente `GuestTrialCompleteModal` al superar los 3 retos iniciales de prueba y consolidar las acciones interactivas del historial de consultas (copiado y carga en Playground).
+* **Actividades y Logros Clave:**
+  1. **Alineación de Retos de Prueba en Backend (`router.py`):**
+     * **Causa raíz:** `GUEST_TRIAL_EXERCISE_IDS` contenía cableados los IDs `...0001`, `...0002`, `...0003`. En el currículum ordenado por `sort_order`, el Reto 2 es `e...0008` (*Cálculo de Precios con IVA*) y el Reto 3 es `e...0019` (*Concatenación de Nombre Completo*). Por ende, el backend rechazaba el Reto 2 como si estuviese fuera del trial.
+     * **Solución:** Se sincronizó `GUEST_TRIAL_EXERCISE_IDS` con los 3 ejercicios reales del Módulo 1 (`e...0001`, `e...0008`, `e...0019`), permitiendo a cualquier invitado completar la secuencia pedagógica inicial.
+  2. **Supresión del Error Rojo de Base de Datos (`api.ts` & `App.tsx`):**
+     * En `api.submitSolution`, si el backend responde con `HTTP 401 (REGISTRATION_REQUIRED_AFTER_TRIAL)`, ya no se captura como fallo de ejecución (`status: 'ERROR'`).
+     * Se emite el estado semántico `status: 'AUTH_REQUIRED'`, el cual intercepta el flujo en `App.tsx` y despliega limpiamente el modal de registro sin pintar alertas rojas de fallo en la cuadrícula de resultados.
+  3. **Molécula `GuestTrialCompleteModal` (`GuestTrialCompleteModal.tsx`):**
+     * Creado bajo Atomic Design Pragmático con tokens de *Terminal Glow Minimal*:
+       * Micro-tiles con recuento de retos superados (3/3) y XP ganado (+100 XP resguardado localmente).
+       * Mensaje de propuesta de valor destacando la transferencia automática de XP a Supabase Cloud al registrarse.
+       * Botón CTA prioritario `"Crear Cuenta Gratuita"` (abre `AuthModal` en modo `signup`) y enlace secundario `"Iniciar Sesión"`.
+  4. **Activación Reactiva en `App.tsx`:**
+     * Se despliega automáticamente al resolver con éxito el 3er reto del trial.
+     * Se despliega al pulsar *"Siguiente Reto"* tras finalizar la prueba.
+     * Se activa preventivamente si el invitado intenta ejecutar un reto del currículum completo (Reto 4 en adelante).
+  5. **Verificación y Pruebas:**
+     * **Vitest Frontend:** 21/21 pruebas unitarias pasando en 956ms.
+     * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 5.68s (0 errores).
+     * **Pytest Backend:** 20 pruebas unitarias en 0.09s y 19 pruebas de integración en 9.40s pasando al 100%.
+     * **Grafo de Conocimiento (Graphify):** 2,101 nodos y 3,418 aristas actualizados.
+
+---
+
+### Entrada 41: Centro de Avance Continuo en Dashboard — Módulo Hero Unificado "Continuar tu Ruta" (Opción 1)
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Implementar la Opción 1 en el Dashboard principal para usuarios autenticados, transformando el banner superior en un centro de comando dinámico que presenta la ruta activa, el número y nombre del reto pendiente por concluir, barra de progreso interactiva con porcentaje y acción directa de reanudación.
+* **Actividades y Logros Clave:**
+  1. **Motor Reactivo de Posición Curricular (`activeLearningData` en `App.tsx`):**
+     * Determina automáticamente la ruta activa (`activeTrack`) a partir del primer reto pendiente del usuario (`authoritativeCompletedIds`).
+     * Calcula dinámicamente el módulo activo (`activeModule`), el número secuencial del reto dentro de la ruta (`Reto #3 de 22`), el total de retos completados en dicha ruta (`trackCompleted`), el total de la ruta (`trackTotal`) y el porcentaje de avance (`trackPercent`).
+     * Identifica los retos restantes para culminar el módulo actual (`moduleRemaining`), ofreciendo micro-metas pedagógicas claras.
+  2. **Banner Hero Unificado para Usuarios Autenticados:**
+     * **Píldora de Contexto:** `Ruta Activa • SQL Foundations • Módulo 1: SELECT & Proyecciones de Datos` con indicador pulsante esmeralda y latencia del PostgreSQL 16 Sandbox.
+     * **Siguiente Desafío en Foco:** Título destacado en tipografía `JetBrains Mono`: `Reto #3: Concatenación de Nombre Completo` con insignias de XP (`+35 XP`) y dificultad (`Principiante`), acompañado por el resumen de la consigna de negocio.
+     * **Barra de Progreso Viva:** Barra gráfica con resplandor cian/esmeralda (`shadow-[0_0_12px_rgba(56,189,248,0.4)]`), porcentaje numérico en tiempo real (`14%`) y texto de apoyo: `3 de 22 retos superados`.
+     * **Micro-meta y Métricas Globales:** Notificación contextual de avance en módulo (`Faltan 2 retos para culminar este módulo`) junto al avance global del currículum (`3 / 50 — 6%`).
+     * **Acciones Directas:**
+       * Botón primario: `"Continuar Reto #3"` con atajo de teclado (`⌘↵`) que navega directamente a la URL canónica del reto pendiente sin fricciones intermedias.
+       * Botón secundario: `"Ver Syllabus Completo"` para inspeccionar la malla curricular.
+  3. **Verificación y Pruebas:**
+     * **Vitest Frontend:** 21/21 pruebas unitarias pasando al 100% en 1.09s.
+     * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 5.61s (0 errores).
+     * **Grafo de Conocimiento (Graphify):** 2,102 nodos y 3,421 aristas actualizados.
+
+
+---
+
+### Entrada 42: Certificación de Coherencia Curricular (50 Retos) y Restauración Definitiva de Guía y Objetivos
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Auditar, certificar y documentar la resolución integral de las dos anomalías visuales reportadas:
+  1. *Ausencia de Guía Didáctica y Checklist de Objetivos en "Catálogo Básico de Productos":* Diagnóstico y verificación del enriquecimiento pedagógico tras el reinicio del contenedor `qurio-api`.
+  2. *Recuento de Ejercicios en el Syllabus (3/8, 0/5, 0/4):* Diagnóstico del desfasaje del build previo (17 retos) frente a la sincronización oficial de 50 retos en Supabase Cloud y el frontend.
+* **Actividades y Logros Clave:**
+  1. **Diagnóstico y Solución de la Guía Didáctica (Captura 1):**
+     * **Causa raíz:** Las tablas en Supabase Cloud (`public.exercises`) almacenan únicamente las columnas relacionales estándar (`id`, `title`, `prompt`, `solution_query`, etc.), sin las columnas `concept` ni `objectives`. Aunque el enriquecimiento en memoria se había programado en `repository.py`, el contenedor Docker `qurio-api` se encontraba activo desde hacía más de 2 horas sin `--reload`, devolviendo objetos con `concept=None` y `objectives=None`. Además, la versión anterior de `api.ts` reemplazaba el catálogo local con la respuesta cruda de red sin fusionar los metadatos.
+     * **Acción ejecutada:** Se aplicó la fusión defensiva bidireccional tanto en backend (`ExerciseRepository.list_all` y `get_internal_for_evaluation`) como en frontend (`api.getExercises` y `api.getExercise`). Se reinició el contenedor Docker (`docker restart qurio-api`).
+     * **Verificación:** Invocación a `http://localhost:8000/api/v1/exercises`: los 50 ejercicios devuelven `concept` (`summary`, `syntax`, `key_points`, `execution_order_note`) y el checklist interactivo de `objectives` al 100%.
+  2. **Diagnóstico y Solución del Conteo Curricular (Captura 2):**
+     * **Causa raíz:** En la captura previa, el navegador del usuario mostraba la versión anterior de la malla curricular con 17 ejercicios (8 en *SQL Foundations*, 5 en *Relational SQL*, 4 en *Advanced Queries*).
+     * **Acción ejecutada:** Tras la ejecución del script de sincronización en Supabase Cloud (`sync_supabase_curriculum.py`) y la actualización de `FALLBACK_TRACKS`, la distribución oficial es:
+       * *Ruta 1 (SQL Foundations):* 22 ejercicios (M1: 4, M2: 6, M3: 4, M4: 8).
+       * *Ruta 2 (Relational SQL):* 18 ejercicios (M5: 5, M6: 5, M7: 4, M8: 4).
+       * *Ruta 3 (Advanced Queries):* 10 ejercicios (M9: 3, M10: 2, M11: 2, M12: 3).
+       * **Total exacto:** 50 ejercicios (3/22 completados = 14% para `erickbonillamx@gmail.com`).
+  3. **Pruebas de Integridad Automatizadas (`progress.test.ts`):**
+     * Se añadió una suite de verificación de consistencia que comprueba que los 50 ejercicios posean `concept` no nulo, lista de `objectives` no vacía y que las rutas totalicen matemáticamente 50 ejercicios (22 + 18 + 10).
+  4. **Verificación y Estado:**
+     * **Vitest Frontend:** 22/22 pruebas unitarias pasando al 100% en 0.79s.
+     * **Pytest Backend:** 82/82 pruebas de seguridad, integración y evaluación pasando al 100% en 64.15s.
+     * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 5.70s (0 errores).
+     * **Grafo de Conocimiento (Graphify):** Sincronizado (2,103 nodos, 3,425 aristas).
