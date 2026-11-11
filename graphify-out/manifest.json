@@ -132,8 +132,8 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794356231.73754,
-    "seen": 1794356443.1386964,
+    "mtime": 1794356511.2562945,
+    "seen": 1794356797.179073,
     "ast_hash": "3d1972be8223086bbe298e837055f526",
     "semantic_hash": ""
   },
@@ -144,8 +144,8 @@
     "semantic_hash": "346a13d5e4e54dd28b349eab78ce2a67"
   },
   "apps/web/src/components/atoms/Button/Button.tsx": {
-    "mtime": 1794356211.4312365,
-    "seen": 1794356443.1390917,
+    "mtime": 1794356511.3669226,
+    "seen": 1794356797.1794107,
     "ast_hash": "02c0f62814921a1622635d561c03cdde",
     "semantic_hash": ""
   },
@@ -294,10 +294,10 @@
     "semantic_hash": "f95a8f5211b38cfb3da8065b20407f09"
   },
   "apps/web/src/components/organisms/SidebarNav/SidebarNav.tsx": {
-    "mtime": 1794252131.4799664,
-    "seen": 1794252886.8074286,
-    "ast_hash": "3bcb9f1f1e2d5ced8fa74d24718b1aef",
-    "semantic_hash": "3bcb9f1f1e2d5ced8fa74d24718b1aef"
+    "mtime": 1794356686.2785347,
+    "seen": 1794356797.1877298,
+    "ast_hash": "ac72c39f7bbab13ff266a0962cfcf037",
+    "semantic_hash": ""
   },
   "apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx": {
     "mtime": 1794246865.3923082,
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794356421.7791872,
-    "seen": 1794356443.1719356,
-    "ast_hash": "ca1156059be6510ef58d6a0a43358600",
+    "mtime": 1794356736.948279,
+    "seen": 1794356797.2159848,
+    "ast_hash": "347beabcccb0357881068a3142aaacfe",
     "semantic_hash": ""
   },
   "docs/PRD.md": {

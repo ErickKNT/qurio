@@ -1094,3 +1094,26 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Vitest frontend:** 17/17 pruebas pasadas en 950ms.
      * **Pytest backend:** Suites unitarias ejecutadas con éxito (0.05s).
      * **HMR Activo:** Los cambios se sincronizaron en caliente en el navegador en `http://localhost:5173/`.
+
+
+---
+
+### Entrada 35: Optimización de Identidad de Marca y Adaptación Responsiva del Sidebar Colapsable
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver el dimensionamiento del isotipo y logotipo de la plataforma ("se ve muy pequeño") y corregir el recorte visual del logo al colapsar la barra lateral (`SidebarNav`).
+* **Actividades y Logros Clave:**
+  1. **Rediseño y Jerarquía del Isotipo y Nombre de Marca:**
+     * Se aumentó el contenedor del isotipo SVG de `w-8 h-8` a `w-10 h-10` (40px) y el vector SVG de `w-5 h-5` a `w-6.5 h-6.5`, otorgando nitidez y presencia a las capas cilíndricas del modelo relacional y al núcleo verde esmeralda activo.
+     * Se jerarquizó la tipografía del nombre "Qurio" de `text-sm font-bold` a `text-lg font-bold tracking-tight text-content-primary leading-none`.
+     * Se optimizó la píldora indicadora `pg:16 sandbox` a `text-[10px] font-mono px-2 py-0.5` con micro-animación pulsante.
+  2. **Resolución del Recorte al Colapsar (`isCollapsed`):**
+     * **Causa raíz:** En la barra colapsada (ancho de 80px), el contenedor del encabezado aplicaba `p-4 flex items-center justify-between` con `overflow-hidden`. El espacio resultante (48px) no permitía alojar en una sola fila el isotipo (32px) y el botón de colapso/expansión (24px), cortando el borde derecho del logo.
+     * **Solución arquitectónica:** Al estar colapsada (`isCollapsed: true`), el encabezado cambia dinámicamente a disposición en columna centrada (`py-3.5 px-2 flex flex-col items-center gap-2.5`). El isotipo queda perfectamente centrado en los 80px del sidebar y el botón de alternancia (`ChevronRight`) se ubica verticalmente debajo, eliminando todo desbordamiento o recorte.
+  3. **Optimización de Ítems de Navegación en Estado Colapsado:**
+     * En estado colapsado, los botones de navegación pasan de `w-full gap-3` a cuadrículas cuadradas ergonómicas `w-10 h-10 mx-auto justify-center rounded-lg` con iconos escalados a `w-5 h-5`, mejorando la accesibilidad táctil y visual.
+  4. **Verificación y Estado:**
+     * **Compilación de producción Vite:** 2,171 módulos transformados limpiamente (0 errores) en 8.00s.
+     * **Vitest frontend:** 17/17 pruebas pasadas en 968ms.
+     * **HMR:** Sincronizado en tiempo real en `http://localhost:5173/`.
