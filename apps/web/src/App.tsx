@@ -706,8 +706,8 @@ export const App: React.FC = () => {
             <div className="absolute -right-16 -top-20 w-80 h-80 rounded-full bg-primary/[0.07] dark:bg-primary/[0.12] blur-3xl pointer-events-none" />
             <div className="absolute right-72 -bottom-20 w-64 h-64 rounded-full bg-cyan-accent/[0.05] dark:bg-cyan-accent/[0.08] blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex flex-col gap-2.5 max-w-2xl">
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex flex-col gap-2.5 max-w-xl xl:max-w-2xl">
                 {isAuthenticated ? (
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald-600 dark:text-emerald font-medium">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
@@ -741,25 +741,25 @@ export const App: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="flex flex-col items-start sm:items-end pr-2 font-mono">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 shrink-0">
+                <div className="flex flex-col items-start sm:items-end pr-2 font-mono shrink-0 whitespace-nowrap">
                   <span className="text-[10px] text-content-muted uppercase tracking-wider">Latencia Sandbox</span>
-                  <span className="text-xs text-content-secondary font-semibold flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald" /> 3.6ms (pg_stat_ready)
+                  <span className="text-xs text-content-secondary font-semibold flex items-center gap-1.5 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> 3.6ms (pg_stat_ready)
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 shrink-0">
                   <Button
                     variant="primary"
                     size="md"
                     kbdShortcut="⌘↵"
-                    leftIcon={<Play className="w-4 h-4 fill-white" />}
+                    leftIcon={<Play className="w-4 h-4 fill-white shrink-0" />}
                     onClick={() => {
                       handleSelectExercise(0);
                       navigate('exercise', { exerciseId: exercises[0]?.id });
                     }}
-                    className="shadow-glow-primary hover:shadow-primary"
+                    className="shadow-glow-primary hover:shadow-primary px-4.5"
                   >
                     {isAuthenticated ? 'Continuar Reto Activo' : 'Comenzar Reto 1'}
                   </Button>
@@ -769,6 +769,7 @@ export const App: React.FC = () => {
                       variant="outline"
                       size="md"
                       onClick={() => setAuthModalOpen(true)}
+                      className="px-4"
                     >
                       Iniciar Sesión
                     </Button>

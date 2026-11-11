@@ -132,9 +132,9 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794355960.1991224,
-    "seen": 1794356036.0108237,
-    "ast_hash": "f77cdf5ad08d85bed64c545e7bc034f4",
+    "mtime": 1794356231.73754,
+    "seen": 1794356443.1386964,
+    "ast_hash": "3d1972be8223086bbe298e837055f526",
     "semantic_hash": ""
   },
   "apps/web/src/components/atoms/Badge/Badge.tsx": {
@@ -144,10 +144,10 @@
     "semantic_hash": "346a13d5e4e54dd28b349eab78ce2a67"
   },
   "apps/web/src/components/atoms/Button/Button.tsx": {
-    "mtime": 1794118016.673558,
-    "seen": 1794252886.807393,
-    "ast_hash": "6c02ab4da813e749f109aab66a552cfe",
-    "semantic_hash": "6c02ab4da813e749f109aab66a552cfe"
+    "mtime": 1794356211.4312365,
+    "seen": 1794356443.1390917,
+    "ast_hash": "02c0f62814921a1622635d561c03cdde",
+    "semantic_hash": ""
   },
   "apps/web/src/components/atoms/KbdShortcut/KbdShortcut.tsx": {
     "mtime": 1794118016.6750648,
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794356014.385298,
-    "seen": 1794356036.0455112,
-    "ast_hash": "20bb1bed453e12b3b47bd754ae76dbe5",
+    "mtime": 1794356421.7791872,
+    "seen": 1794356443.1719356,
+    "ast_hash": "ca1156059be6510ef58d6a0a43358600",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1035,6 +1035,12 @@
     "mtime": 1794355317.3548822,
     "seen": 1794356036.047988,
     "ast_hash": "c1d510d6d37ea8b248423da4424fd5f8",
+    "semantic_hash": ""
+  },
+  ".vscode/settings.json": {
+    "mtime": 1794356189.6382537,
+    "seen": 1794356443.123472,
+    "ast_hash": "c9eb6fb0a1c9a5c82a4c3d730103a1ac",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

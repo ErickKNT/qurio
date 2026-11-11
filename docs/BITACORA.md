@@ -1071,3 +1071,26 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * Vitest: **17/17 pruebas pasadas** (959ms).
      * Build de producción: **2,171 módulos transformados limpiamente (0 errores)** en 5.61s.
      * Servidor de desarrollo con recarga en caliente (HMR) activo en `http://localhost:5173/`.
+
+
+---
+
+### Entrada 34: Configuración de Entorno VS Code para Pylance y Corrección de Ergonomía Visual en Botones del Hero Banner
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver el diagnóstico de Pylance `reportMissingImports: "fastapi"` en `apps/api/app/modules/runner/router.py` y solucionar el defecto de empaquetamiento y salto de línea ("amontonamiento") en los botones del Hero Banner de invitados.
+* **Actividades y Logros Clave:**
+  1. **Configuración de Entorno VS Code / Pylance (`.vscode/settings.json`):**
+     * **Causa raíz:** El workspace raíz de VS Code es `c:\Desarrollo\Qurio`, mientras que el entorno virtual de Python está aislado en `apps/api/.venv/`. Al no existir configuración de workspace, Pylance usaba el intérprete global y no resolvía dependencias como `fastapi`, `pydantic`, `sqlglot` o `asyncpg`.
+     * **Solución:** Se creó `.vscode/settings.json` configurando `python.defaultInterpreterPath` hacia `${workspaceFolder}/apps/api/.venv/Scripts/python.exe` y añadiendo `${workspaceFolder}/apps/api` a `python.analysis.extraPaths` y `python.autoComplete.extraPaths`.
+     * Se verificó compatibilidad con `.gitignore`, el cual ya permitía explícitamente `!.vscode/settings.json`.
+  2. **Refactorización de Layout y Ergonomía de Botones (Atomic Design):**
+     * **Causa raíz:** En `apps/web/src/components/atoms/Button/Button.tsx`, la clase base carecía de `whitespace-nowrap`, permitiendo que el navegador dividiera el texto del botón en múltiples líneas ("Comenzar\nReto 1" e "Iniciar\nSesión") cuando el contenedor lateral reducía su espacio horizontal disponible.
+     * **Solución en Átomo `Button`:** Se añadió `whitespace-nowrap` a `baseStyles` y `shrink-0` al contenedor de atajo de teclado `<kbd>`, garantizando que ningún botón rompa su texto ni deforme su geometría.
+     * **Ajuste en `App.tsx`:** Se aplicó `shrink-0` y `whitespace-nowrap` al bloque de telemetría de latencia (`Latencia Sandbox: 3.6ms (pg_stat_ready)`), se aumentó el espaciado entre botones (`gap-3`) y se ajustó el breakpoint de disposición lateral a `lg:flex-row` con `shrink-0`, otorgando holgura completa en pantallas medianas y de escritorio.
+  3. **Verificación y Pruebas:**
+     * **Compilación de producción Vite:** 2,171 módulos transformados limpiamente (0 errores) en 6.14s.
+     * **Vitest frontend:** 17/17 pruebas pasadas en 950ms.
+     * **Pytest backend:** Suites unitarias ejecutadas con éxito (0.05s).
+     * **HMR Activo:** Los cambios se sincronizaron en caliente en el navegador en `http://localhost:5173/`.
