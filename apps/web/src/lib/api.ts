@@ -7,6 +7,7 @@ import {
   TableSchemaInfo,
   QueryHistoryItem,
   SampleTableData,
+  UserProfile,
 } from '@/types';
 import { supabase } from '@/lib/supabase';
 
@@ -62,7 +63,20 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE_URL}/exercises`);
       if (!res.ok) throw new ApiError('No se pudo cargar la lista de ejercicios', res.status);
-      return await res.json();
+      const apiExercises: Exercise[] = await res.json();
+      // Enriquecer con metadatos pedagógicos del catálogo local (concept, objectives, sample_tables)
+      return apiExercises.map((apiEx) => {
+        const fallback = FALLBACK_EXERCISES.find((f) => f.id === apiEx.id);
+        if (!fallback) return apiEx;
+        return {
+          ...fallback,
+          ...apiEx,
+          concept: apiEx.concept || fallback.concept,
+          objectives: (apiEx.objectives && apiEx.objectives.length > 0) ? apiEx.objectives : fallback.objectives,
+          sample_tables: (apiEx.sample_tables && apiEx.sample_tables.length > 0) ? apiEx.sample_tables : fallback.sample_tables,
+          hints: (apiEx.hints && apiEx.hints.length > 0) ? apiEx.hints : fallback.hints,
+        };
+      });
     } catch (err: any) {
       console.warn('Usando catálogo fallback local:', err.message);
       return FALLBACK_EXERCISES;
@@ -76,7 +90,17 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE_URL}/exercises/${exerciseId}`);
       if (!res.ok) throw new ApiError(`Ejercicio ${exerciseId} no encontrado`, res.status);
-      return await res.json();
+      const apiEx: Exercise = await res.json();
+      const fallback = FALLBACK_EXERCISES.find((f) => f.id === exerciseId);
+      if (!fallback) return apiEx;
+      return {
+        ...fallback,
+        ...apiEx,
+        concept: apiEx.concept || fallback.concept,
+        objectives: (apiEx.objectives && apiEx.objectives.length > 0) ? apiEx.objectives : fallback.objectives,
+        sample_tables: (apiEx.sample_tables && apiEx.sample_tables.length > 0) ? apiEx.sample_tables : fallback.sample_tables,
+        hints: (apiEx.hints && apiEx.hints.length > 0) ? apiEx.hints : fallback.hints,
+      };
     } catch (err: any) {
       const fallback = FALLBACK_EXERCISES.find((e) => e.id === exerciseId);
       if (fallback) return fallback;
@@ -175,6 +199,17 @@ export const api = {
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        if (res.status === 401 && errorData.detail?.includes('REGISTRATION_REQUIRED_AFTER_TRIAL')) {
+          return {
+            status: 'AUTH_REQUIRED',
+            execution_time_ms: 0,
+            xp_awarded: 0,
+            columns: [],
+            rows: [],
+            message: 'Has completado los 3 retos de prueba. Crea tu cuenta para continuar practicando.',
+            error: errorData.detail,
+          };
+        }
         throw new ApiError(errorData.detail || 'Error al evaluar solución', res.status);
       }
       return await res.json();
@@ -2118,10 +2153,10 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     icon: 'Terminal',
     category: 'progreso',
     xp_reward: 50,
-    unlocked_at: '2026-11-08T18:24:00Z',
-    progress: 100,
+    unlocked_at: null,
+    progress: 0,
     required_threshold: 1,
-    current_value: 1,
+    current_value: 0,
     unit: 'query',
   },
   {
@@ -2131,10 +2166,10 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     icon: 'GitBranch',
     category: 'habilidad',
     xp_reward: 75,
-    unlocked_at: '2026-11-08T19:15:00Z',
-    progress: 100,
+    unlocked_at: null,
+    progress: 0,
     required_threshold: 1,
-    current_value: 1,
+    current_value: 0,
     unit: 'ejercicio',
   },
   {
@@ -2145,7 +2180,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     category: 'habilidad',
     xp_reward: 100,
     unlocked_at: null,
-    progress: 60,
+    progress: 0,
     required_threshold: 1,
     current_value: 0,
     unit: 'ejercicio',
@@ -2158,9 +2193,9 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     category: 'constancia',
     xp_reward: 100,
     unlocked_at: null,
-    progress: 66,
+    progress: 0,
     required_threshold: 3,
-    current_value: 2,
+    current_value: 0,
     unit: 'días',
   },
   {
@@ -2171,9 +2206,9 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     category: 'constancia',
     xp_reward: 250,
     unlocked_at: null,
-    progress: 28,
+    progress: 0,
     required_threshold: 7,
-    current_value: 2,
+    current_value: 0,
     unit: 'días',
   },
   {
@@ -2183,10 +2218,10 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     icon: 'Zap',
     category: 'habilidad',
     xp_reward: 120,
-    unlocked_at: '2026-11-09T09:30:00Z',
-    progress: 100,
+    unlocked_at: null,
+    progress: 0,
     required_threshold: 1,
-    current_value: 1,
+    current_value: 0,
     unit: 'query',
   },
   {
@@ -2210,12 +2245,99 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     category: 'progreso',
     xp_reward: 500,
     unlocked_at: null,
-    progress: 24,
+    progress: 0,
     required_threshold: 50,
-    current_value: 12,
+    current_value: 0,
     unit: 'ejercicios',
   },
 ];
+
+/**
+ * Evalúa reactiva y autoritativamente las medallas del usuario en base a sus métricas reales.
+ */
+export function evaluateUserAchievements(
+  catalog: Achievement[],
+  userProfile: UserProfile | null,
+  completedExerciseIds: Set<string>,
+  totalAttemptsCount: number,
+  bestExecutionTimeMs?: number
+): Achievement[] {
+  const completedCount = completedExerciseIds.size;
+  const maxStreak = userProfile?.max_streak_days ?? 0;
+
+  return catalog.map((ach) => {
+    let currentValue = 0;
+    let unlocked = false;
+
+    switch (ach.id) {
+      case 'first-query':
+        currentValue = Math.min(1, Math.max(totalAttemptsCount, completedCount));
+        unlocked = currentValue >= ach.required_threshold;
+        break;
+
+      case 'join-apprentice':
+        unlocked = Array.from(completedExerciseIds).some(
+          (id) => id.includes('m05') || id.includes('join')
+        );
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'null-detective':
+        unlocked = Array.from(completedExerciseIds).some(
+          (id) => id.includes('m06') || id.includes('null')
+        );
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'streak-3':
+        currentValue = maxStreak;
+        unlocked = maxStreak >= 3;
+        break;
+
+      case 'streak-7':
+        currentValue = maxStreak;
+        unlocked = maxStreak >= 7;
+        break;
+
+      case 'speed-runner':
+        unlocked =
+          completedCount > 0 &&
+          bestExecutionTimeMs !== undefined &&
+          bestExecutionTimeMs > 0 &&
+          bestExecutionTimeMs <= 5.0;
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'window-wizard':
+        unlocked = Array.from(completedExerciseIds).some(
+          (id) => id.includes('m09') || id.includes('m10') || id.includes('window')
+        );
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'master-sql':
+        currentValue = completedCount;
+        unlocked = completedCount >= ach.required_threshold;
+        break;
+
+      default:
+        currentValue = ach.current_value;
+        unlocked = !!ach.unlocked_at;
+    }
+
+    const progress = Math.min(
+      100,
+      Math.max(0, Math.round((currentValue / (ach.required_threshold || 1)) * 100))
+    );
+
+    return {
+      ...ach,
+      current_value: currentValue,
+      progress,
+      unlocked_at: unlocked ? (ach.unlocked_at || new Date().toISOString()) : null,
+    };
+  });
+}
 
 export const DEFAULT_QUERY_HISTORY: QueryHistoryItem[] = [
   {

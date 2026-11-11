@@ -70,9 +70,10 @@ async def execute_playground_query(
 
 
 GUEST_TRIAL_EXERCISE_IDS = {
-    "e0000000-0000-0000-0000-000000000001",
-    "e0000000-0000-0000-0000-000000000002",
-    "e0000000-0000-0000-0000-000000000003",
+    # Retos 1, 2 y 3 oficiales del Módulo 1 (sort_order 1, 2, 3)
+    "e0000000-0000-0000-0000-000000000001",  # Catálogo Básico de Productos (Reto 1, +30 XP)
+    "e0000000-0000-0000-0000-000000000008",  # Cálculo de Precios con IVA (Reto 2, +35 XP)
+    "e0000000-0000-0000-0000-000000000019",  # Concatenación de Nombre Completo (Reto 3, +35 XP)
     "ex-m01-01",
     "ex-m01-02",
     "ex-m01-03",

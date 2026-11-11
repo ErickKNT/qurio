@@ -33,6 +33,16 @@ class ExerciseRepository:
                         data = resp.json()
                         if data and len(data) > 0:
                             item = data[0]
+                            cached = self._cache.get(item.get("id"))
+                            if cached:
+                                if not item.get("concept"):
+                                    item["concept"] = cached.concept
+                                if not item.get("objectives"):
+                                    item["objectives"] = cached.objectives
+                                if not item.get("sample_tables"):
+                                    item["sample_tables"] = cached.sample_tables
+                                if not item.get("hints"):
+                                    item["hints"] = cached.hints
                             return ExerciseDetail(**item)
             except Exception as e:
                 logger.warning(f"No se pudo consultar Supabase para el ejercicio {exercise_id}: {e}. Usando catálogo local.")
@@ -77,11 +87,22 @@ class ExerciseRepository:
                     if resp.status_code == 200:
                         data = resp.json()
                         if data:
-                            return [ExerciseDetail(**item) for item in data]
+                            results = []
+                            for item in data:
+                                cached = self._cache.get(item.get("id"))
+                                if cached:
+                                    if not item.get("concept"):
+                                        item["concept"] = cached.concept
+                                    if not item.get("objectives"):
+                                        item["objectives"] = cached.objectives
+                                    if not item.get("sample_tables"):
+                                        item["sample_tables"] = cached.sample_tables
+                                    if not item.get("hints"):
+                                        item["hints"] = cached.hints
+                                results.append(ExerciseDetail(**item))
+                            return results
             except Exception as e:
                 logger.warning(f"No se pudo listar ejercicios desde Supabase: {e}. Usando catálogo local.")
-
-        return list(self._cache.values())
 
         return list(self._cache.values())
 
