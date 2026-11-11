@@ -132,9 +132,9 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794347661.629007,
-    "seen": 1794349581.3041966,
-    "ast_hash": "8921e4112de6cc8d5eaf9ba54ea7d1ed",
+    "mtime": 1794355960.1991224,
+    "seen": 1794356036.0108237,
+    "ast_hash": "f77cdf5ad08d85bed64c545e7bc034f4",
     "semantic_hash": ""
   },
   "apps/web/src/components/atoms/Badge/Badge.tsx": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794355221.5736406,
-    "seen": 1794355238.1981165,
-    "ast_hash": "3af61c4b7af946a8322a3cd7f8bae77f",
+    "mtime": 1794356014.385298,
+    "seen": 1794356036.0455112,
+    "ast_hash": "20bb1bed453e12b3b47bd754ae76dbe5",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1032,8 +1032,8 @@
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md": {
-    "mtime": 1794355203.4416625,
-    "seen": 1794355238.200463,
+    "mtime": 1794355317.3548822,
+    "seen": 1794356036.047988,
     "ast_hash": "c1d510d6d37ea8b248423da4424fd5f8",
     "semantic_hash": ""
   },

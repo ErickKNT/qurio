@@ -85,7 +85,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile, isCloudAuth, isAuthenticated, signOut, refreshProfile } = useAuth();
+  const { profile, user, isCloudAuth, isAuthenticated, signOut, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
@@ -707,19 +707,37 @@ export const App: React.FC = () => {
             <div className="absolute right-72 -bottom-20 w-64 h-64 rounded-full bg-cyan-accent/[0.05] dark:bg-cyan-accent/[0.08] blur-3xl pointer-events-none" />
 
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex flex-col gap-2 max-w-2xl">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald-600 dark:text-emerald font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                  <span>Ruta Activa • SQL Foundations</span>
-                </div>
+              <div className="flex flex-col gap-2.5 max-w-2xl">
+                {isAuthenticated ? (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald-600 dark:text-emerald font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
+                    <span>Ruta Activa • SQL Foundations</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald-600 dark:text-emerald font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
+                    <span>MODO INVITADO • PRUEBA ACTIVA (3 RETOS GRATUITOS)</span>
+                  </div>
+                )}
 
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
-                  ¡Hola, {profile?.username || 'Erick'}!{' '}
-                  <span className="text-content-secondary font-normal">¿Listo para compilar hoy?</span>
+                  {isAuthenticated ? (
+                    <>
+                      ¡Hola, {profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Estudiante'}!{' '}
+                      <span className="text-content-secondary font-normal">¿Listo para compilar hoy?</span>
+                    </>
+                  ) : (
+                    <>
+                      ¡Bienvenido a Qurio!{' '}
+                      <span className="text-content-secondary font-normal">Aprende SQL pensando en queries.</span>
+                    </>
+                  )}
                 </h1>
 
                 <p className="text-xs text-content-secondary leading-relaxed">
-                  Sandbox PostgreSQL aislado en Docker activo. Resuelve ejercicios relacionales con evaluación semántica instantánea.
+                  {isAuthenticated
+                    ? 'Sandbox PostgreSQL aislado en Docker activo. Resuelve ejercicios relacionales con evaluación semántica instantánea.'
+                    : 'Estás conectado a un motor PostgreSQL 16 real en Docker. Resuelve hasta 3 retos prácticos de SQL Foundations con evaluación semántica de inmediato, sin necesidad de crear cuenta.'}
                 </p>
               </div>
 
@@ -731,19 +749,31 @@ export const App: React.FC = () => {
                   </span>
                 </div>
 
-                <Button
-                  variant="primary"
-                  size="md"
-                  kbdShortcut="⌘↵"
-                  leftIcon={<Play className="w-4 h-4 fill-white" />}
-                  onClick={() => {
-                    handleSelectExercise(0);
-                    navigate('exercise', { exerciseId: exercises[0]?.id });
-                  }}
-                  className="shadow-glow-primary hover:shadow-primary"
-                >
-                  Continuar Reto Activo
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    kbdShortcut="⌘↵"
+                    leftIcon={<Play className="w-4 h-4 fill-white" />}
+                    onClick={() => {
+                      handleSelectExercise(0);
+                      navigate('exercise', { exerciseId: exercises[0]?.id });
+                    }}
+                    className="shadow-glow-primary hover:shadow-primary"
+                  >
+                    {isAuthenticated ? 'Continuar Reto Activo' : 'Comenzar Reto 1'}
+                  </Button>
+
+                  {!isAuthenticated && (
+                    <Button
+                      variant="outline"
+                      size="md"
+                      onClick={() => setAuthModalOpen(true)}
+                    >
+                      Iniciar Sesión
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </section>
@@ -752,36 +782,40 @@ export const App: React.FC = () => {
           <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
             <MetricTile
               label="Rango Actual"
-              value="Nivel 2"
-              subValue="Junior Query Builder"
+              value={isAuthenticated ? `Nivel ${profile?.current_level || 1}` : 'Invitado'}
+              subValue={isAuthenticated ? 'Estudiante Oficial' : 'Modo Explorador'}
               icon={<Award className="w-4 h-4" />}
               accent="purple"
             />
             <MetricTile
               label="XP Acumulado"
-              value={`${profile?.total_xp || 480} XP`}
-              subValue="Meta: 1,000 XP"
+              value={isAuthenticated ? `${profile?.total_xp ?? 0} XP` : '0 XP'}
+              subValue={isAuthenticated ? 'Progreso certificado' : 'Crea tu cuenta para acumular'}
               icon={<Zap className="w-4 h-4" />}
               accent="indigo"
             />
             <MetricTile
               label="Racha Activa"
-              value={`${profile?.current_streak_days || 2} días`}
-              subValue="Récord: 5 días"
+              value={isAuthenticated ? `${profile?.current_streak_days ?? 0} días` : '0 días'}
+              subValue={isAuthenticated ? `Récord: ${profile?.max_streak_days ?? 0} días` : 'Disponible con cuenta'}
               icon={<Flame className="w-4 h-4" />}
               accent="amber"
             />
             <MetricTile
-              label="Queries Evaluados"
-              value="142"
-              subValue="+18 en sesión"
+              label="Consultas Evaluadas"
+              value={`${queryHistory.length}`}
+              subValue="En sesión local"
               icon={<Terminal className="w-4 h-4" />}
               accent="cyan"
             />
             <MetricTile
-              label="Retos Superados"
-              value={`${authoritativeCompletedIds.size} / ${exercises.length}`}
-              subValue="Progreso oficial verificado"
+              label={isAuthenticated ? 'Retos Superados' : 'Retos de Prueba'}
+              value={
+                isAuthenticated
+                  ? `${authoritativeCompletedIds.size} / ${exercises.length}`
+                  : `${Math.min(authoritativeCompletedIds.size, 3)} / 3`
+              }
+              subValue={isAuthenticated ? 'Progreso oficial verificado' : 'Prueba libre sin registro'}
               icon={<CheckCircle2 className="w-4 h-4" />}
               accent="emerald"
               className="col-span-2 sm:col-span-1"

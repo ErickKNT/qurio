@@ -1044,3 +1044,30 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * [`database/supabase/03_security_hardening.sql`](../database/supabase/03_security_hardening.sql) (Versión canónica v6.2)
   * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (Versión definitiva v4.2)
   * [`apps/api/tests/test_supabase_migration.py`](../apps/api/tests/test_supabase_migration.py) (Suite ampliada a 16 pruebas)
+
+---
+
+### Entrada 33: Onboarding Dinámico de Invitados, Corrección de Logout y Aplicación en Supabase Cloud
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Implementar la experiencia de bienvenida para usuarios no registrados en el Dashboard, corregir la persistencia del nombre en el logout y registrar la aplicación efectiva del hardening v6.2 en Supabase Cloud.
+* **Actividades y Logros Clave:**
+  1. **Corrección del Fallback en Cierre de Sesión:**
+     * Se eliminó el string estático `'Erick'` en `apps/web/src/App.tsx#L717`.
+     * Para usuarios autenticados: saludo dinámico con `profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Estudiante'`.
+  2. **Hero Banner Dinámico de Invitados (Alternativa A Implementada):**
+     * Al navegar como invitado o tras cerrar sesión, el Hero Banner superior se transforma de manera inmediata y sin fricciones:
+       * **Badge:** `● MODO INVITADO • PRUEBA ACTIVA (3 RETOS GRATUITOS)` en verde esmeralda con `animate-pulse`.
+       * **Título:** `¡Bienvenido a Qurio! Aprende SQL pensando en queries.`
+       * **Descripción:** Información transparente sobre la conexión al motor PostgreSQL 16 real en Docker y los 3 retos interactivos sin registro.
+       * **Acciones:** Botón primario `Comenzar Reto 1 ⌘↵` y botón secundario `Iniciar Sesión`.
+     * **Métricas Bento Adaptadas a Invitado:** Indican de forma auténtica `Invitado (Modo Explorador)`, `0 XP Oficial`, `0 días` y `X / 3 Retos de Prueba`, eliminando números mock ficticios.
+  3. **Hito de Infraestructura: Aplicación Exitosa de Hardening en Supabase Cloud:**
+     * El usuario confirmó la ejecución directa de `database/supabase/03_security_hardening.sql` (v6.2) en el SQL Editor de Supabase Cloud (`bfvgqxfzftumwrleacof`).
+     * Con esta aplicación administrativa, las medidas de RLS, CLS, revocación de escrituras de clientes, blindaje de `solution_query`, revocación de secuencias y la RPC autoritativa de XP v6.2 se encuentran plenamente operativas en producción en la nube.
+     * La restricción operativa externa queda formalmente resuelta.
+  4. **Validación de Frontend:**
+     * Vitest: **17/17 pruebas pasadas** (959ms).
+     * Build de producción: **2,171 módulos transformados limpiamente (0 errores)** en 5.61s.
+     * Servidor de desarrollo con recarga en caliente (HMR) activo en `http://localhost:5173/`.
