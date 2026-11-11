@@ -1004,3 +1004,43 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (Versión definitiva v4.1)
   * [`database/supabase/03_security_hardening.sql`](../database/supabase/03_security_hardening.sql) (Versión canónica v6.1)
   * [`docs/audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md`](audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md) (Informe canónico de certificación y congelamiento)
+
+---
+
+### Entrada 32: Corrección Puntual de Privacidad en Perfiles de Usuario (`user_profiles`)
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver la exposición pública innecesaria de la tabla `public.user_profiles`, eliminando la política permisiva `Public Read Profiles` (`USING (true)`) y la concesión indiscriminada de `SELECT` al rol `anon`, restringiendo la lectura exclusivamente al propio perfil del usuario autenticado (`auth.uid() = id`) y blindando todas las columnas sensibles contra modificación indebida.
+* **Actividades y Logros Clave:**
+  1. **Auditoría de Consumidores y Superficie Social:**
+     * Se inspeccionó exhaustivamente el frontend React y backend FastAPI confirmando que Qurio **no cuenta ni requiere actualmente tablas de clasificación (rankings), directorios de estudiantes ni perfiles públicos de otros usuarios**.
+     * Por directriz estricta de diseño mínimo, **no se crearon vistas públicas innecesarias**, manteniendo la superficie de ataque al mínimo absoluto.
+  2. **Endurecimiento RLS y CLS en `user_profiles` (`03_security_hardening.sql` v6.2 y `rollback_security_hardening.sql` v4.2):**
+     * Eliminación de la política `Public Read Profiles`.
+     * Creación de la política de aislamiento estricto `User Read Own Profile` con `USING (auth.uid() = id)`.
+     * Revocación total de `SELECT` a `anon`: `anon` no dispone de ningún privilegio en `user_profiles`.
+     * `authenticated` dispone de `GRANT SELECT ON TABLE public.user_profiles TO authenticated;`, filtrado obligatoriamente por la política RLS `auth.uid() = id`.
+     * Mantenimiento de la política `User Update Own Profile` con `USING (auth.uid() = id)`.
+     * Mantenimiento de permisos de actualización restringidos por columna (CLS): `authenticated` únicamente puede modificar `display_name`, `avatar_url`, `bio` y `updated_at`. Modificaciones sobre `xp`, `level`, `current_streak_days`, `max_streak_days`, `username` o `id` son denegadas inmediatamente por PostgreSQL (`InsufficientPrivilegeError`).
+  3. **Certificación Automatizada en PostgreSQL Real (`test_supabase_migration.py`):**
+     * Incorporada la prueba integral `test_user_profiles_privacy_strict_rls_and_cls`:
+       * `anon` intentando `SELECT` falla con `InsufficientPrivilegeError`.
+       * Usuario A consultando su propio perfil obtiene 1 fila con sus datos correctos.
+       * Usuario A consultando el perfil de usuario B (`WHERE id = user_B`) obtiene 0 filas (filtrado por RLS).
+       * Usuario A ejecutando `SELECT * FROM user_profiles` obtiene únicamente su propia fila (1 tupla), nunca tuplas ajenas.
+       * Usuario A intentando actualizar a usuario B afecta 0 filas (`UPDATE 0`).
+       * Usuario A actualizando sus campos visuales propios afecta 1 fila exitosamente (`UPDATE 1`).
+       * Usuario A intentando actualizar `xp`, `level`, `current_streak_days`, `max_streak_days`, `username` o `id` falla con `InsufficientPrivilegeError`.
+       * `pg_policies` confirma la inexistencia de `Public Read Profiles` y la vigencia de `User Read Own Profile`.
+       * Catálogos educativos (`learning_paths`, `modules`, `lessons`, `exercises`, etc.) verificados plenamente accesibles sin regresiones.
+  4. **Baterías Consolidadas:**
+     * Pytest backend: **82/82 pruebas pasadas** (64.46s).
+     * Vitest frontend: **17/17 pruebas pasadas** (873ms).
+     * Compilación de producción Vite: **2,171 módulos transformados limpiamente (0 errores)** en 5.63s.
+     * E2E en Navegador Real Google Chrome: **19/19 flujos pasados** (22.80s).
+     * Auditoría npm: **0 vulnerabilidades**.
+* **Entregables:**
+  * [`database/supabase/03_security_hardening.sql`](../database/supabase/03_security_hardening.sql) (Versión canónica v6.2)
+  * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (Versión definitiva v4.2)
+  * [`apps/api/tests/test_supabase_migration.py`](../apps/api/tests/test_supabase_migration.py) (Suite ampliada a 16 pruebas)

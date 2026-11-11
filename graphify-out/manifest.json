@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794354333.4028268,
-    "seen": 1794354351.2908914,
-    "ast_hash": "01d3552988ff7b189a8f57236f34cad3",
+    "mtime": 1794355221.5736406,
+    "seen": 1794355238.1981165,
+    "ast_hash": "3af61c4b7af946a8322a3cd7f8bae77f",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -870,9 +870,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_supabase_migration.py": {
-    "mtime": 1794353700.3018203,
-    "seen": 1794354351.2559478,
-    "ast_hash": "aaa0c7067e68848f46cbd66ec016d583",
+    "mtime": 1794354924.4243224,
+    "seen": 1794355238.1653864,
+    "ast_hash": "d7c8ebb01e003cb6ccef2db4fba5bbac",
     "semantic_hash": ""
   },
   "docs/security/SECURITY_AUDIT.md": {
@@ -1032,9 +1032,9 @@
     "semantic_hash": ""
   },
   "docs/audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md": {
-    "mtime": 1794354307.0427437,
-    "seen": 1794354351.2933643,
-    "ast_hash": "05c888e3b5ee5413606f617e97798cb5",
+    "mtime": 1794355203.4416625,
+    "seen": 1794355238.200463,
+    "ast_hash": "c1d510d6d37ea8b248423da4424fd5f8",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

@@ -1,8 +1,8 @@
 -- ==============================================================================
 -- Qurio: Procedimiento de Reversión y Desactivación Segura de RPC (Fase 11.3)
 -- Archivo: database/supabase/rollback_security_hardening.sql
--- Versión: 4.1 (Desactivación Segura de RPC record_verified_attempt,
---          Conservación Estricta de Hardening CLS/RLS y Blindaje Total de Secuencias)
+-- Versión: 4.2 (Desactivación Segura de RPC record_verified_attempt, Privacidad Estricta
+--          en user_profiles con auth.uid() = id, Revocación de SELECT a anon, Hardening CLS/RLS)
 -- ==============================================================================
 -- DIRECTRICES DE CONTINUIDAD OPERATIVA Y SEGURIDAD:
 -- 1. Este procedimiento es una DESACTIVACIÓN SEGURA DE LA RPC, NO una reversión
@@ -60,6 +60,9 @@ ALTER TABLE public.user_daily_activity ENABLE ROW LEVEL SECURITY;
 -- 4. POLÍTICAS RLS DEFENSIVAS
 -- ==============================================================================
 DROP POLICY IF EXISTS "User Insert Own Attempts" ON public.exercise_attempts;
+DROP POLICY IF EXISTS "Public Read Profiles" ON public.user_profiles;
+DROP POLICY IF EXISTS "User Read Own Profile" ON public.user_profiles;
+CREATE POLICY "User Read Own Profile" ON public.user_profiles FOR SELECT USING (auth.uid() = id);
 
 -- ==============================================================================
 -- 5. BLINDAJE ESTRICTO DE public.user_profiles Y PURGA DE RESIDUOS
@@ -84,8 +87,8 @@ REVOKE INSERT (
     current_streak_days, max_streak_days, created_at, updated_at
 ) ON TABLE public.user_profiles FROM authenticated;
 
--- Concesiones controladas mínimas
-GRANT SELECT ON TABLE public.user_profiles TO authenticated, anon;
+-- Concesiones controladas mínimas (Privacidad: SELECT exclusivo para authenticated auditado por RLS)
+GRANT SELECT ON TABLE public.user_profiles TO authenticated;
 GRANT UPDATE (display_name, avatar_url, bio, updated_at)
     ON TABLE public.user_profiles TO authenticated;
 GRANT ALL ON TABLE public.user_profiles TO service_role;

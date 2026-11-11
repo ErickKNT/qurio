@@ -1,7 +1,7 @@
 -- ==============================================================================
--- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 11.2)
--- Versión: 6.1 (Certificación Definitiva de Seguridad, Idempotencia Desacoplada de XP,
---          Consistencia Estricta de Recompensa y Blindaje Integral RLS/CLS)
+-- Qurio: Script de Hardening de Seguridad y Autoridad Central de Progreso (Fase 11.2 / 11.3)
+-- Versión: 6.2 (Privacidad Estricta de Perfiles de Usuario: Lectura Exclusiva auth.uid() = id,
+--          Revocación Total de Acceso a anon, Idempotencia Desacoplada y Blindaje CLS/RLS)
 -- NOTA: Este archivo es para revisión y autorización previa del usuario.
 -- NO se ejecuta automáticamente en producción sin aprobación explícita.
 -- ==============================================================================
@@ -99,9 +99,10 @@ CREATE POLICY "Public Read Hints" ON public.exercise_hints FOR SELECT USING (tru
 DROP POLICY IF EXISTS "Public Read Achievements" ON public.achievements;
 CREATE POLICY "Public Read Achievements" ON public.achievements FOR SELECT USING (true);
 
--- B. Perfiles de usuario
+-- B. Perfiles de usuario (Privacidad Estricta: Cada usuario consulta y actualiza exclusivamente su propio perfil)
 DROP POLICY IF EXISTS "Public Read Profiles" ON public.user_profiles;
-CREATE POLICY "Public Read Profiles" ON public.user_profiles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "User Read Own Profile" ON public.user_profiles;
+CREATE POLICY "User Read Own Profile" ON public.user_profiles FOR SELECT USING (auth.uid() = id);
 
 DROP POLICY IF EXISTS "User Update Own Profile" ON public.user_profiles;
 CREATE POLICY "User Update Own Profile" ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
@@ -135,7 +136,7 @@ REVOKE UPDATE (id, username, level, xp, current_streak_days, max_streak_days, cr
 REVOKE INSERT (id, username, display_name, avatar_url, bio, level, xp, current_streak_days, max_streak_days, created_at, updated_at)
     ON TABLE public.user_profiles FROM authenticated, anon, PUBLIC;
 
-GRANT SELECT ON TABLE public.user_profiles TO authenticated, anon;
+GRANT SELECT ON TABLE public.user_profiles TO authenticated;
 GRANT UPDATE (display_name, avatar_url, bio, updated_at)
     ON public.user_profiles TO authenticated;
 GRANT ALL ON TABLE public.user_profiles TO service_role;

@@ -46,7 +46,7 @@ La siguiente matriz documenta el estado riguroso de privilegios efectivos en el 
 
 | Objeto en Schema `public` | Tipo | Rol `anon` | Rol `authenticated` | Rol `service_role` | Pseudo-rol `PUBLIC` | Estado RLS |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `user_profiles` | Tabla | `SELECT` | `SELECT`<br>`UPDATE` *(solo `display_name`, `avatar_url`, `bio`, `updated_at`)* | `ALL` | **Cero privilegios** | HABILITADO |
+| `user_profiles` | Tabla | **Cero privilegios** (`REVOKE ALL`) | `SELECT` *(solo propio perfil `auth.uid() = id`)*<br>`UPDATE` *(solo `display_name`, `avatar_url`, `bio`, `updated_at`)* | `ALL` | **Cero privilegios** | HABILITADO |
 | `exercises` | Tabla | `SELECT` *(todas excepto `solution_query`)* | `SELECT` *(todas excepto `solution_query`)* | `ALL` | **Cero privilegios** | HABILITADO |
 | `exercise_attempts` | Tabla | **Cero privilegios** | `SELECT` *(solo lectura personal auditada por RLS)* | `ALL` | **Cero privilegios** | HABILITADO |
 | `user_progress` | Tabla | **Cero privilegios** | `SELECT` *(solo lectura personal auditada por RLS)* | `ALL` | **Cero privilegios** | HABILITADO |

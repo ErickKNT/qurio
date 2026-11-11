@@ -161,6 +161,12 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
     assert await db_conn.fetchval(
         "SELECT has_table_privilege('anon', 'public.user_profiles', 'UPDATE');"
     ) is False
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('anon', 'public.user_profiles', 'SELECT');"
+    ) is False, "anon NO debe tener SELECT sobre public.user_profiles (privacidad estricta)"
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.user_profiles', 'SELECT');"
+    ) is True, "authenticated debe tener SELECT sobre public.user_profiles (filtrado por RLS auth.uid() = id)"
 
     # --------------------------------------------------------------------------
     # B. Privilegios de Columna (CLS) sobre public.user_profiles
@@ -270,6 +276,12 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
     # --------------------------------------------------------------------------
     # D. Intentos Reales de Ejecución Bloqueados (Inspección Defensiva en Transacción)
     # --------------------------------------------------------------------------
+    # 0. Intento de SELECT en user_profiles por anon (Privacidad Estricta)
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE anon;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("SELECT * FROM public.user_profiles;")
+
     # 1. Intento de INSERT directo por authenticated
     async with db_conn.transaction():
         await db_conn.execute("SET LOCAL ROLE authenticated;")
@@ -1160,3 +1172,170 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
             assert await db_conn.fetchval(
                 f"SELECT has_sequence_privilege('service_role', 'public.{seq_name}', 'USAGE');"
             ) is True
+
+        # 13. Privacidad en user_profiles tras rollback: anon sin SELECT y RLS estricto auth.uid() = id
+        assert await db_conn.fetchval(
+            "SELECT has_table_privilege('anon', 'public.user_profiles', 'SELECT');"
+        ) is False, "anon NO debe tener SELECT sobre user_profiles tras el rollback"
+        assert await db_conn.fetchval(
+            "SELECT has_table_privilege('authenticated', 'public.user_profiles', 'SELECT');"
+        ) is True, "authenticated debe conservar SELECT sobre user_profiles filtrado por RLS"
+
+        public_read_exists = await db_conn.fetchval("""
+            SELECT EXISTS (
+                SELECT 1 FROM pg_policies
+                WHERE schemaname = 'public'
+                  AND tablename = 'user_profiles'
+                  AND policyname = 'Public Read Profiles'
+            );
+        """)
+        assert public_read_exists is False, "Public Read Profiles NO debe existir tras rollback"
+
+        user_read_own_exists = await db_conn.fetchval("""
+            SELECT EXISTS (
+                SELECT 1 FROM pg_policies
+                WHERE schemaname = 'public'
+                  AND tablename = 'user_profiles'
+                  AND policyname = 'User Read Own Profile'
+            );
+        """)
+        assert user_read_own_exists is True, "User Read Own Profile DEBE existir tras rollback"
+
+
+# ==============================================================================
+# 9. PRUEBA DE PRIVACIDAD ESTRICTA EN PERFILES DE USUARIO (FASE 11.3 CORRECCIÓN)
+# ==============================================================================
+
+@pytest.mark.asyncio
+async def test_user_profiles_privacy_strict_rls_and_cls(db_conn, create_test_user):
+    """
+    Certificación de Privacidad en user_profiles (Fase 11.3 - Corrección Puntual):
+    1. anon NO tiene SELECT en user_profiles (bloqueado con InsufficientPrivilegeError).
+    2. authenticated usuario A solo puede leer su propio perfil (1 fila).
+    3. authenticated usuario A NO puede leer el perfil de usuario B (0 filas por RLS).
+    4. authenticated usuario A consultando SELECT * solo recibe su fila (1 fila de 2 en la tabla).
+    5. authenticated usuario A intentando modificar el perfil de usuario B afecta 0 filas (RLS).
+    6. authenticated usuario A puede modificar sus campos visuales (display_name, avatar_url, bio, updated_at).
+    7. authenticated usuario A NO puede modificar xp, level, rachas, username ni id (CLS bloquea).
+    8. authenticated usuario A NO puede hacer INSERT ni DELETE en user_profiles.
+    9. Políticas RLS: 'Public Read Profiles' eliminada; 'User Read Own Profile' activa.
+    10. Catálogos educativos permanecen legibles para anon y authenticated sin regresiones.
+    """
+    user_a = await create_test_user("student_alice")
+    user_b = await create_test_user("student_bob")
+
+    # Inicializar bio para comprobar persistencia
+    await db_conn.execute("UPDATE public.user_profiles SET bio = 'Bio inicial Alice' WHERE id = $1::UUID;", user_a)
+    await db_conn.execute("UPDATE public.user_profiles SET bio = 'Bio inicial Bob' WHERE id = $1::UUID;", user_b)
+
+    # 1. Consulta como anon denegada a nivel de tabla
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE anon;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("SELECT * FROM public.user_profiles;")
+
+    # 2. Consulta como authenticated usuario A: solo ve su propio perfil
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        await db_conn.execute(f"SET LOCAL request.jwt.claim.sub = '{user_a}';")
+
+        # A. Consulta de su propio perfil por ID
+        own_row = await db_conn.fetchrow(
+            "SELECT id, username, display_name, xp, level FROM public.user_profiles WHERE id = $1::UUID;",
+            user_a
+        )
+        assert own_row is not None
+        assert str(own_row["id"]) == user_a
+        assert own_row["username"] == "student_alice"
+
+        # B. Consulta del perfil de usuario B por ID -> RLS retorna 0 filas
+        other_row = await db_conn.fetchrow(
+            "SELECT id, username, display_name, xp, level FROM public.user_profiles WHERE id = $1::UUID;",
+            user_b
+        )
+        assert other_row is None, "RLS debe ocultar completamente el perfil de otro usuario (0 filas)"
+
+        # C. Consulta general SELECT * -> Solo devuelve su propia fila
+        all_rows = await db_conn.fetch("SELECT id, username FROM public.user_profiles;")
+        assert len(all_rows) == 1, "authenticated solo debe ver su propia tupla en consultas abiertas"
+        assert str(all_rows[0]["id"]) == user_a
+
+        # 3. Intento de modificar el perfil de usuario B -> RLS impide afectar filas (0 rows updated)
+        res_update_other = await db_conn.execute(
+            "UPDATE public.user_profiles SET display_name = 'Hacked Bob' WHERE id = $1::UUID;",
+            user_b
+        )
+        assert res_update_other == "UPDATE 0", "RLS debe impedir modificar filas ajenas"
+
+        # 4. Modificación de campos visuales autorizados propios -> Permitido
+        res_update_own = await db_conn.execute(
+            """
+            UPDATE public.user_profiles
+            SET display_name = 'Alice Renombrada',
+                avatar_url = 'https://example.com/alice.png',
+                bio = 'Nueva bio de Alice',
+                updated_at = NOW()
+            WHERE id = $1::UUID;
+            """,
+            user_a
+        )
+        assert res_update_own == "UPDATE 1", "authenticated debe poder actualizar sus campos visuales propios"
+
+        # 5. Modificación de campos protegidos propios -> Bloqueado por CLS (InsufficientPrivilegeError)
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET xp = 50000 WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET level = 10 WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET current_streak_days = 99 WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET max_streak_days = 99 WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET username = 'super_alice' WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET id = $1::UUID WHERE id = $1::UUID;", user_b)
+
+        # 6. Intentos de INSERT o DELETE por authenticated -> Bloqueados por privilegios de tabla
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute(
+                    "INSERT INTO public.user_profiles (id, username) VALUES ($1::UUID, 'new_user');",
+                    str(uuid.uuid4())
+                )
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("DELETE FROM public.user_profiles WHERE id = $1::UUID;", user_a)
+
+    # 7. Verificación del estado en pg_policies
+    policies = await db_conn.fetch("""
+        SELECT policyname, permissive, cmd, qual
+        FROM pg_policies
+        WHERE schemaname = 'public' AND tablename = 'user_profiles';
+    """)
+    policy_names = [p["policyname"] for p in policies]
+    assert "Public Read Profiles" not in policy_names, "Public Read Profiles NO debe existir en pg_policies"
+    assert "User Read Own Profile" in policy_names, "User Read Own Profile DEBE existir en pg_policies"
+    assert "User Update Own Profile" in policy_names, "User Update Own Profile DEBE existir en pg_policies"
+
+    # 8. Verificación de catálogo educativo: accesible sin regresiones para anon y authenticated
+    for tbl in ["learning_paths", "modules", "lessons", "exercise_hints", "achievements"]:
+        assert await db_conn.fetchval(f"SELECT has_table_privilege('anon', 'public.{tbl}', 'SELECT');") is True
+        assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'SELECT');") is True
+
+    # exercises accesible en columnas públicas (excluyendo solution_query)
+    assert await db_conn.fetchval("SELECT has_column_privilege('anon', 'public.exercises', 'title', 'SELECT');") is True
+    assert await db_conn.fetchval("SELECT has_column_privilege('anon', 'public.exercises', 'solution_query', 'SELECT');") is False
+    assert await db_conn.fetchval("SELECT has_column_privilege('authenticated', 'public.exercises', 'title', 'SELECT');") is True
+    assert await db_conn.fetchval("SELECT has_column_privilege('authenticated', 'public.exercises', 'solution_query', 'SELECT');") is False
