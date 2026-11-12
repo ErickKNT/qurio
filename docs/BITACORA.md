@@ -1310,3 +1310,27 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Pytest Backend:** 82/82 pruebas de seguridad, integración y evaluación pasando al 100% en 64.15s.
      * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 5.70s (0 errores).
      * **Grafo de Conocimiento (Graphify):** Sincronizado (2,103 nodos, 3,425 aristas).
+
+
+---
+
+### Entrada 43: Humanización Pedagógica del Currículum (Paso A — Reescritura Empática de Retos Iniciales)
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Transformar el lenguaje técnico y formal de los primeros 5 ejercicios del currículum (incluyendo los 3 retos del Trial de Invitados) sustituyendo la jerga de ingeniería y burocracia corporativa por consignas empáticas, intuitivas y orientadas a la acción, reduciendo el riesgo de abandono en principiantes.
+* **Actividades y Logros Clave:**
+  1. **Reescritura Pedagógica de los Retos 1 al 5 (`seed_data.py` y `api.ts`):**
+     * **Reto 1 (SELECT):** Se cambió *"proyectar relación en el buffer"* por la metáfora de seleccionar columnas visibles como en una hoja de cálculo.
+     * **Reto 2 (Cálculos & Alias):** Se transformó *"expresiones aritméticas y artefactos de punto flotante"* en cuentas matemáticas al vuelo con alias claros (`precio_con_iva`).
+     * **Reto 3 (Concatenación):** Se reemplazó *"operador de tubería doble y tipo VARCHAR"* por la explicación intuitiva de unir texto con `||`.
+     * **Reto 4 (DISTINCT):** Se reformuló como el *"filtro quitaduplicados"* de ciudades de clientes.
+     * **Reto 5 (WHERE):** Se presentó como la regla o condición que pide a la base de datos solo las filas que cumplen un criterio.
+  2. **Precedencia Defensiva del Prompt Enriquecido:**
+     * En `ExerciseRepository` (`repository.py`) y en `api.ts`, se configuró la precedencia de `prompt` para que la redacción pedagógica local prevalezca inmediatamente en la UI sin depender de sincronizaciones remotas a Supabase.
+  3. **Alineación de Semilla SQL (`02_seed_curriculum.sql`):**
+     * Sincronizados los prompts de los ejercicios 1, 8, 19, 20 y 2 en el script oficial de semillas de PostgreSQL.
+  4. **Verificación y Pruebas:**
+     * **Vitest Frontend:** 22/22 pruebas unitarias pasando al 100% en 1.05s.
+     * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 6.47s (0 errores).
+     * **Pytest Backend:** 40/40 pruebas unitarias pasando al 100% en 0.16s.

@@ -48,15 +48,15 @@
     "semantic_hash": "81051bcc2cf1bedf378224b0a93e2877"
   },
   "apps/api/app/modules/curriculum/repository.py": {
-    "mtime": 1794429894.407274,
-    "seen": 1794430880.0620952,
-    "ast_hash": "58ecce6e3699519eef97d4734597e9e4",
+    "mtime": 1794502562.1613286,
+    "seen": 1794502693.9089055,
+    "ast_hash": "d747dc0aa4fc5f34f5315d35a80a26db",
     "semantic_hash": ""
   },
   "apps/api/app/modules/curriculum/seed_data.py": {
-    "mtime": 1794334951.1736498,
-    "seen": 1794336289.6612947,
-    "ast_hash": "f1e47f58f7b90df8477714966c843bcf",
+    "mtime": 1794502400.663767,
+    "seen": 1794502693.908911,
+    "ast_hash": "76d2b483408acd4f713711d9632a70d6",
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/__init__.py": {
@@ -132,8 +132,8 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794435571.9547915,
-    "seen": 1794435617.9156623,
+    "mtime": 1794437540.1083,
+    "seen": 1794502693.921745,
     "ast_hash": "a002fc74553d320967781f1ec7996be6",
     "semantic_hash": ""
   },
@@ -360,9 +360,9 @@
     "semantic_hash": "501dbefce3bdfe944cecf55933c7a6ee"
   },
   "apps/web/src/lib/api.ts": {
-    "mtime": 1794430610.7553034,
-    "seen": 1794430880.0831003,
-    "ast_hash": "9cb43921631e64da8987cdfdba9de08b",
+    "mtime": 1794502589.3245919,
+    "seen": 1794502693.963169,
+    "ast_hash": "989f35586334744532f086d8891d4343",
     "semantic_hash": ""
   },
   "apps/web/src/lib/persistence.ts": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794435637.1717036,
-    "seen": 1794437451.2254796,
-    "ast_hash": "e98a5da5b9161484174cf0859d164af3",
+    "mtime": 1794502664.3202302,
+    "seen": 1794502694.0175128,
+    "ast_hash": "06cbedf52ccdb72d09ea403287e88d01",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "apps/api/sync_supabase_curriculum.py": {
-    "mtime": 1794429529.65144,
-    "seen": 1794429813.0839279,
-    "ast_hash": "2575869cebaa4f29a2c09c2998497ee2",
+    "mtime": 1794438099.943561,
+    "seen": 1794502693.9125407,
+    "ast_hash": "2935e9bfb964b315eabe6dc3f97ad612",
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/GuestTrialCompleteModal/GuestTrialCompleteModal.tsx": {

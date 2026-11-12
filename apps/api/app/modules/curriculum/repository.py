@@ -35,6 +35,8 @@ class ExerciseRepository:
                             item = data[0]
                             cached = self._cache.get(item.get("id"))
                             if cached:
+                                if cached.prompt:
+                                    item["prompt"] = cached.prompt
                                 if not item.get("concept"):
                                     item["concept"] = cached.concept
                                 if not item.get("objectives"):
@@ -91,6 +93,8 @@ class ExerciseRepository:
                             for item in data:
                                 cached = self._cache.get(item.get("id"))
                                 if cached:
+                                    if cached.prompt:
+                                        item["prompt"] = cached.prompt
                                     if not item.get("concept"):
                                         item["concept"] = cached.concept
                                     if not item.get("objectives"):

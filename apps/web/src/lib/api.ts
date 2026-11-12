@@ -64,13 +64,14 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/exercises`);
       if (!res.ok) throw new ApiError('No se pudo cargar la lista de ejercicios', res.status);
       const apiExercises: Exercise[] = await res.json();
-      // Enriquecer con metadatos pedagógicos del catálogo local (concept, objectives, sample_tables)
+      // Enriquecer con metadatos pedagógicos del catálogo local (concept, objectives, sample_tables, prompt actualizado)
       return apiExercises.map((apiEx) => {
         const fallback = FALLBACK_EXERCISES.find((f) => f.id === apiEx.id);
         if (!fallback) return apiEx;
         return {
           ...fallback,
           ...apiEx,
+          prompt: fallback.prompt || apiEx.prompt,
           concept: apiEx.concept || fallback.concept,
           objectives: (apiEx.objectives && apiEx.objectives.length > 0) ? apiEx.objectives : fallback.objectives,
           sample_tables: (apiEx.sample_tables && apiEx.sample_tables.length > 0) ? apiEx.sample_tables : fallback.sample_tables,
@@ -96,6 +97,7 @@ export const api = {
       return {
         ...fallback,
         ...apiEx,
+        prompt: fallback.prompt || apiEx.prompt,
         concept: apiEx.concept || fallback.concept,
         objectives: (apiEx.objectives && apiEx.objectives.length > 0) ? apiEx.objectives : fallback.objectives,
         sample_tables: (apiEx.sample_tables && apiEx.sample_tables.length > 0) ? apiEx.sample_tables : fallback.sample_tables,
@@ -342,29 +344,29 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     id: 'e0000000-0000-0000-0000-000000000001',
     module_id: 'a0000000-0000-0000-0000-000000000001',
     title: "Catálogo Básico de Productos",
-    prompt: "El departamento de ventas necesita listar los nombres de los productos junto con su precio de venta unitario. Escribe una consulta que obtenga únicamente las columnas nombre_producto y precio de la tabla productos.",
+    prompt: "Imagina que necesitas armar un catálogo sencillo para la tienda. Muestra únicamente el nombre de cada producto (nombre_producto) y su precio (precio) desde la tabla productos.",
     initial_code: "-- Escribe tu consulta aquí\nSELECT ",
     xp_reward: 30,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 1,
     hints: [
-      "Usa la sentencia SELECT seguida de las columnas solicitadas separadas por coma.",
-      "La cláusula FROM indica la tabla productos.",
+      "Usa la sentencia SELECT seguida de las columnas solicitadas separadas por coma: nombre_producto, precio",
+      "La cláusula FROM indica la tabla: FROM productos;",
     ],
     concept: {
-      summary: "La sentencia SELECT es la instrucción fundamental en SQL para recuperar datos de una base de datos relacional. Te permite proyectar únicamente las columnas necesarias.",
+      summary: "Con SELECT eliges exactamente qué columnas quieres ver de una tabla, como si seleccionaras qué columnas mantener a la vista en una hoja de cálculo.",
       syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla;",
       key_points: [
-        "SELECT especifica qué atributos deseas proyectar en el conjunto final.",
-        "FROM indica la entidad o tabla de origen donde residen los datos.",
-        "En PostgreSQL las columnas y tablas no distinguen mayúsculas salvo que lleven comillas dobles.",
+        "SELECT va seguido de las columnas que quieres mostrar, separadas por coma (,).",
+        "FROM indica en qué tabla están guardados esos datos (en este caso, productos).",
+        "Al final de cada instrucción en SQL se coloca un punto y coma (;).",
       ],
-      execution_order_note: "⚡ Orden de procesamiento interno: FROM se ejecuta antes que SELECT para cargar primero la relación en el buffer.",
+      execution_order_note: "💡 ¿Cómo lo lee la base de datos? Primero busca la tabla con FROM y luego extrae solo las columnas que pediste en SELECT.",
     },
     objectives: [
-      "1. Identificar la tabla de origen: 'productos'.",
-      "2. Proyectar exactamente las columnas 'nombre_producto' y 'precio'.",
+      "1. Indicar de qué tabla leer con FROM productos.",
+      "2. Elegir las columnas 'nombre_producto' y 'precio'.",
       "3. Finalizar la instrucción con punto y coma (;).",
     ],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
@@ -373,7 +375,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     id: 'e0000000-0000-0000-0000-000000000008',
     module_id: 'a0000000-0000-0000-0000-000000000001',
     title: "Cálculo de Precios con IVA",
-    prompt: "El área contable requiere proyectar el precio final de cada producto aplicando el 21% de IVA (multiplicando el precio por 1.21). Escribe una consulta que devuelva el nombre_producto, el precio original y el precio calculado redondeado a 2 decimales bajo el alias precio_con_iva.",
+    prompt: "Calcula el precio final con impuestos para cada producto. Muestra el nombre_producto, el precio original y calcula el precio con el 21% de IVA (multiplicando precio * 1.21) redondeado a 2 decimales, llamando a esa nueva columna precio_con_iva.",
     initial_code: "-- Proyecta columnas y calcula el precio con IVA\nSELECT ",
     xp_reward: 35,
     difficulty: 'Principiante',
@@ -381,17 +383,17 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     sort_order: 2,
     hints: [
       "Puedes realizar operaciones matemáticas directamente en SELECT, ej: precio * 1.21",
-      "Usa ROUND(expresion, 2) AS precio_con_iva para limitar a 2 decimales y asignar el alias.",
+      "Usa ROUND(precio * 1.21, 2) AS precio_con_iva para limitar a 2 decimales y asignar el alias.",
     ],
     concept: {
-      summary: "En SQL las expresiones aritméticas (+, -, *, /) se evalúan en la cláusula SELECT para derivar métricas en tiempo de consulta. La palabra clave AS asigna un nombre limpio y legible al atributo calculado.",
+      summary: "En SQL puedes hacer operaciones matemáticas directamente en tu consulta (+, -, *, /) y usar AS para ponerle un nombre claro al resultado.",
       syntax: "SELECT columna, ROUND(columna * factor, 2) AS nuevo_nombre\nFROM nombre_tabla;",
       key_points: [
-        "Las operaciones aritméticas respetan la precedencia estándar de las matemáticas.",
-        "ROUND(valor, decimales) ajusta la precisión numérica para evitar artefactos de punto flotante.",
-        "Los alias de columna renombran los campos en la proyección final sin modificar la tabla física.",
+        "Puedes calcular directamente en el SELECT: precio * 1.21.",
+        "ROUND(cuenta, 2) deja el número con 2 decimales limpios.",
+        "AS precio_con_iva le da un título descriptivo a tu nueva columna calculada.",
       ],
-      execution_order_note: "⚡ Las expresiones aritméticas se calculan en la fase de proyección SELECT una vez leídas las filas.",
+      execution_order_note: "💡 El cálculo se hace al vuelo en la consulta; no altera los valores originales guardados en la tabla.",
     },
     objectives: [
       "1. Proyectar 'nombre_producto' y 'precio'.",
@@ -404,24 +406,25 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     id: 'e0000000-0000-0000-0000-000000000019',
     module_id: 'a0000000-0000-0000-0000-000000000001',
     title: "Concatenación de Nombre Completo",
-    prompt: "El departamento de soporte requiere un directorio de clientes con su nombre completo unificado y su correo electrónico. Escribe una consulta que combine las columnas nombre y apellido separadas por un espacio bajo el alias cliente_completo, junto con la columna email de la tabla clientes.",
+    prompt: "Prepara un directorio para el equipo de atención al cliente. Une el nombre y el apellido de cada cliente separados por un espacio, nómbralo cliente_completo, y muestra también su email desde la tabla clientes.",
     initial_code: "-- Concatena nombre y apellido con un espacio\nSELECT ",
     xp_reward: 35,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 3,
     hints: [
-      "Usa el operador de concatenación de cadenas de texto en SQL: '||'.",
+      "Usa el operador de combinación de textos en SQL: '||'.",
       "Para insertar un espacio en medio escribe: nombre || ' ' || apellido AS cliente_completo.",
     ],
     concept: {
-      summary: "El operador de tubería doble '||' permite concatenar cadenas de caracteres en SQL estándar y PostgreSQL. La cláusula AS renombra la columna resultante en la proyección.",
+      summary: "En SQL, el símbolo '||' sirve para pegar o combinar textos (como juntar el primer nombre y el apellido en una sola columna).",
       syntax: "SELECT columna1 || ' ' || columna2 AS nombre_completo\nFROM tabla;",
       key_points: [
-        "El operador || une valores de texto o columnas de tipo VARCHAR/TEXT.",
-        "Si un término es NULL, la concatenación en SQL estándar resulta en NULL (a menos que uses CONCAT).",
+        "Para unir texto y dejar un espacio en medio usa: nombre || ' ' || apellido.",
+        "Los textos fijos en SQL siempre van entre comillas simples: ' '.",
+        "Usa AS cliente_completo para bautizar la nueva columna resultante.",
       ],
-      execution_order_note: "⚡ La concatenación se evalúa fila por fila en la fase de proyección SELECT.",
+      execution_order_note: "💡 En SQL estándar, '||' une textos fila por fila sin modificar los datos de origen.",
     },
     objectives: [
       "1. Identificar la tabla de origen 'clientes'.",
@@ -434,7 +437,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     id: 'e0000000-0000-0000-0000-000000000020',
     module_id: 'a0000000-0000-0000-0000-000000000001',
     title: "Catálogo de Ciudades Únicas (DISTINCT)",
-    prompt: "El equipo de logística necesita conocer todas las ciudades únicas donde residen clientes para planificar nuevas rutas de entrega. Escribe una consulta que obtenga la lista de ciudades sin repeticiones de la tabla clientes, bajo la columna ciudad.",
+    prompt: "Logística necesita saber en qué ciudades tenemos clientes sin que los nombres se repitan. Obtén la lista de ciudades únicas (ciudad) de la tabla clientes.",
     initial_code: "-- Obtén valores únicos de ciudad\nSELECT ",
     xp_reward: 35,
     difficulty: 'Principiante',
@@ -445,13 +448,13 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Escribe: SELECT DISTINCT ciudad FROM clientes;",
     ],
     concept: {
-      summary: "La cláusula DISTINCT elimina filas duplicadas del conjunto de resultados devuelto por la consulta relacional, garantizando unicidad en la proyección.",
+      summary: "DISTINCT es el filtro quitaduplicados de SQL: se asegura de que cada valor aparezca solo una vez en tu lista final.",
       syntax: "SELECT DISTINCT columna\nFROM nombre_tabla;",
       key_points: [
-        "DISTINCT opera sobre todas las columnas de la lista de selección en conjunto.",
-        "Internamente suele ejecutar una ordenación o un hash en memoria para descartar repetidos.",
+        "DISTINCT se escribe justo después de SELECT: SELECT DISTINCT ciudad FROM clientes;.",
+        "Si varios clientes viven en Madrid, con DISTINCT 'Madrid' aparecerá solo una vez.",
       ],
-      execution_order_note: "⚡ DISTINCT se procesa casi al final del pipeline lógico, justo antes de ORDER BY y LIMIT.",
+      execution_order_note: "💡 La base de datos agrupa y descarta las copias repetidas antes de mostrar el resultado final.",
     },
     objectives: [
       "1. Usar la palabra clave DISTINCT tras SELECT.",
@@ -463,7 +466,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     id: 'e0000000-0000-0000-0000-000000000002',
     module_id: 'a0000000-0000-0000-0000-000000000002',
     title: "Productos Premium (> 500€)",
-    prompt: "Para una campaña exclusiva, marketing solicita todos los productos cuyo precio supere los 500 euros. Devuelve el nombre del producto, el precio y el stock actual para aquellos productos con precio estrictamente mayor a 500.",
+    prompt: "El equipo de marketing prepara una campaña especial de productos exclusivos. Muestra el nombre_producto, el precio y el stock de aquellos productos cuyo precio sea mayor a 500€.",
     initial_code: "-- Filtra los productos de alto valor\nSELECT ",
     xp_reward: 35,
     difficulty: 'Principiante',
@@ -471,16 +474,17 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     sort_order: 5,
     hints: [
       "Agrega una cláusula WHERE después de FROM productos.",
-      "Utiliza el operador de comparación mayor que (>).",
+      "Utiliza el operador de comparación mayor que (>): WHERE precio > 500;",
     ],
     concept: {
-      summary: "La cláusula WHERE restringe los resultados evaluando una condición booleana fila por fila. Solo las filas donde la expresión resulte TRUE son devueltas.",
+      summary: "WHERE es la condición o filtro de SQL: le pide a la base de datos que solo te entregue las filas que cumplan con una regla específica.",
       syntax: "SELECT col1, col2, col3\nFROM tabla\nWHERE condicion_comparacion;",
       key_points: [
-        "Operadores estándar: >, <, >=, <=, =, <> (o !=).",
-        "WHERE evalúa tuplas individuales antes de cualquier agregación o agrupamiento.",
+        "WHERE se coloca después de FROM tabla.",
+        "Usa operadores de comparación habituales: > (mayor), < (menor), = (igual), >= (mayor o igual).",
+        "Para este reto la condición es: WHERE precio > 500;",
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM → WHERE → SELECT. El filtro se evalúa ANTES de proyectar las columnas.",
+      execution_order_note: "💡 La base de datos revisa cada fila con WHERE y descarta de inmediato las que no cumplen la regla, ahorrando memoria y tiempo.",
     },
     objectives: [
       "1. Seleccionar 'nombre_producto', 'precio' y 'stock' de 'productos'.",
