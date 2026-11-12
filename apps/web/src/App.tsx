@@ -410,8 +410,12 @@ export const App: React.FC = () => {
       setSqlCode(draft !== null ? draft : ex.initial_code);
       setHintsUnlocked(0);
       setExecutionStatus('IDLE');
+      setRowCount(0);
+      setResultColumns([]);
+      setResultRows([]);
       setResultError(undefined);
       setResultDiff(undefined);
+      setResultMessage(undefined);
       navigate('exercise', { exerciseId: ex.id }, true);
     }
   };
@@ -425,9 +429,14 @@ export const App: React.FC = () => {
       setCurrentExerciseIndex(0);
       const draft = persistence.getExerciseDraft(ex.id);
       setSqlCode(draft !== null ? draft : ex.initial_code);
+      setHintsUnlocked(0);
       setExecutionStatus('IDLE');
+      setRowCount(0);
+      setResultColumns([]);
+      setResultRows([]);
       setResultError(undefined);
       setResultDiff(undefined);
+      setResultMessage(undefined);
     }
     navigate('exercise', { exerciseId: ex.id });
   };

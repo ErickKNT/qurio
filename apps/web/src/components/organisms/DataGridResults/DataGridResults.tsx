@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Terminal,
   Clock,
@@ -54,6 +54,15 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'table' | 'diff'>('table');
 
+  // Si no hay discrepancia (diff es undefined) o el resultado fue exitoso, la pestaña debe resolverse a 'table'
+  const effectiveTab = !diff || status === 'SUCCESS' ? 'table' : activeTab;
+
+  useEffect(() => {
+    if (!diff || status === 'SUCCESS') {
+      setActiveTab('table');
+    }
+  }, [diff, status]);
+
   // Normalizar columnas a objetos { name, type }
   const normalizedColumns = columns.map((c) => {
     if (typeof c === 'string') {
@@ -73,7 +82,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
             onClick={() => setActiveTab('table')}
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-medium transition-colors',
-              activeTab === 'table'
+              effectiveTab === 'table'
                 ? 'bg-surface-card text-content-primary border border-border-subtle shadow-sm'
                 : 'text-content-muted hover:text-content-primary hover:bg-surface-card/50'
             )}
@@ -94,7 +103,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
               onClick={() => setActiveTab('diff')}
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-medium transition-colors',
-                activeTab === 'diff'
+                effectiveTab === 'diff'
                   ? 'bg-amber-streak/15 text-amber-streak border border-amber-streak/30 shadow-sm'
                   : 'text-amber-streak/80 hover:text-amber-streak hover:bg-surface-card/50'
               )}
@@ -244,7 +253,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
         )}
 
         {/* PESTAÑA DIFF (COMPARATIVA SEMÁNTICA) */}
-        {activeTab === 'diff' && diff && (
+        {effectiveTab === 'diff' && diff && (
           <div className="p-4 m-4 rounded-xl bg-surface-card border border-amber-streak/40 flex flex-col gap-3 animate-fadeIn font-mono">
             <div className="flex items-center gap-2 text-amber-streak text-xs font-bold uppercase tracking-wider">
               <HelpCircle className="w-4 h-4 shrink-0" />
@@ -310,7 +319,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
         )}
 
         {/* PESTAÑA TABLA: RENDERIZADO TABULAR COMPLETO DE FILAS Y COLUMNAS */}
-        {activeTab === 'table' && (status === 'SUCCESS' || status === 'FAILED') && (
+        {effectiveTab === 'table' && (status === 'SUCCESS' || status === 'FAILED') && (
           <div>
             {/* Aviso de discrepancia sutil cuando está en modo tabla con fallo */}
             {status === 'FAILED' && diff && (
