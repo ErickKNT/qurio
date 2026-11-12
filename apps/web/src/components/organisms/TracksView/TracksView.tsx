@@ -8,6 +8,7 @@ import { Button, Badge } from '@/components/atoms';
 export interface TracksViewProps {
   tracks: Track[];
   exercises: Exercise[];
+  completedExerciseIds?: Set<string>;
   onSelectExercise: (exercise: Exercise) => void;
   isLoading?: boolean;
   className?: string;
@@ -16,12 +17,18 @@ export interface TracksViewProps {
 export const TracksView: React.FC<TracksViewProps> = ({
   tracks,
   exercises,
+  completedExerciseIds,
   onSelectExercise,
   isLoading = false,
 }) => {
   const [selectedTrackId, setSelectedTrackId] = useState<string>(tracks[0]?.id || 'sql-foundations');
 
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId) || tracks[0];
+
+  const isExerciseDone = (e: Exercise) => {
+    if (completedExerciseIds) return completedExerciseIds.has(e.id);
+    return Boolean(e.is_completed);
+  };
 
   // Helper to get exercises belonging to a module
   const getExercisesForModule = (moduleId: string) => {
@@ -30,9 +37,10 @@ export const TracksView: React.FC<TracksViewProps> = ({
 
   const handleStartTrackFirstAvailable = (track: Track) => {
     setSelectedTrackId(track.id);
-    const firstUnfinished = exercises.find(
-      (e) => !e.is_completed && track.modules?.some((m) => m.id === e.module_id)
-    ) || exercises.find((e) => track.modules?.some((m) => m.id === e.module_id));
+    const firstUnfinished =
+      exercises.find(
+        (e) => !isExerciseDone(e) && track.modules?.some((m) => m.id === e.module_id)
+      ) || exercises.find((e) => track.modules?.some((m) => m.id === e.module_id));
 
     if (firstUnfinished) {
       onSelectExercise(firstUnfinished);
@@ -111,10 +119,10 @@ export const TracksView: React.FC<TracksViewProps> = ({
               <Button
                 variant="primary"
                 onClick={() => handleStartTrackFirstAvailable(selectedTrack)}
-                className="text-xs"
+                leftIcon={<Play className="w-3.5 h-3.5 fill-current shrink-0" />}
+                className="text-xs whitespace-nowrap shrink-0"
               >
-                <Play className="w-3.5 h-3.5 mr-1.5 fill-current" />
-                <span>Continuar Ruta</span>
+                Continuar Ruta
               </Button>
             </div>
           </div>
@@ -134,6 +142,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
                     module={mod}
                     moduleIndex={idx}
                     exercises={moduleExercises}
+                    completedExerciseIds={completedExerciseIds}
                     onSelectExercise={onSelectExercise}
                     defaultOpen={idx === 0}
                   />

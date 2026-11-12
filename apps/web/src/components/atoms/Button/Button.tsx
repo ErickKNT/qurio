@@ -27,7 +27,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center whitespace-nowrap shrink-0 font-medium transition-all duration-150 select-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] outline-none';
+      'inline-flex flex-row items-center justify-center whitespace-nowrap shrink-0 font-medium transition-all duration-150 select-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] outline-none';
 
     const sizeStyles = {
       sm: 'text-xs h-8 px-3 rounded-md gap-1.5',
@@ -72,12 +72,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             />
           </svg>
         ) : leftIcon ? (
-          <span className="shrink-0">{leftIcon}</span>
+          <span className="inline-flex items-center shrink-0">{leftIcon}</span>
         ) : null}
 
-        <span className="whitespace-nowrap shrink-0">{children}</span>
+        <span className="inline-flex items-center whitespace-nowrap shrink-0">{children}</span>
 
-        {rightIcon && !isLoading && <span className="shrink-0">{rightIcon}</span>}
+        {rightIcon && !isLoading && <span className="inline-flex items-center shrink-0">{rightIcon}</span>}
 
         {kbdShortcut && (
           <kbd className="ml-1.5 px-1.5 py-0.5 text-[11px] font-mono font-medium rounded bg-black/30 border border-white/10 text-white/80 shrink-0">

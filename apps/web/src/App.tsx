@@ -214,7 +214,15 @@ export const App: React.FC = () => {
   useEffect(() => {
     api.getExercises().then((data) => {
       if (data && data.length > 0) {
-        setExercises(data);
+        setExercises((prev) =>
+          data.map((ex) => {
+            const prevEx = prev.find((p) => p.id === ex.id);
+            return {
+              ...ex,
+              is_completed: authoritativeCompletedIds.has(ex.id) || Boolean(prevEx?.is_completed),
+            };
+          })
+        );
         if (pendingExerciseId) {
           const idx = data.findIndex((e) => e.id === pendingExerciseId);
           if (idx !== -1) {
@@ -274,6 +282,21 @@ export const App: React.FC = () => {
       setIsProgressLoading(false);
     });
   }, [profile?.id, exercises.length]);
+
+  // Recomputar progreso por ruta de forma reactiva y consistente cuando cambian los retos o completados
+  useEffect(() => {
+    if (!exercises || exercises.length === 0) return;
+    const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
+    if (isAuth && profile?.id) {
+      setTracks((currentTracks) =>
+        computeOfficialTracksProgress(currentTracks, exercises, authoritativeCompletedIds, false)
+      );
+    } else {
+      setTracks((currentTracks) =>
+        computeGuestTrialTracksProgress(currentTracks, exercises, authoritativeCompletedIds)
+      );
+    }
+  }, [authoritativeCompletedIds, exercises.length, profile?.id]);
 
   // Reto Recomendado Dinámico (Anti-Hardcode)
   const recommendedExercise = useMemo(() => {
@@ -906,6 +929,7 @@ export const App: React.FC = () => {
           <TracksView
             tracks={tracks}
             exercises={exercises}
+            completedExerciseIds={authoritativeCompletedIds}
             onSelectExercise={handleOpenExerciseFromCatalog}
             isLoading={isProgressLoading}
           />
