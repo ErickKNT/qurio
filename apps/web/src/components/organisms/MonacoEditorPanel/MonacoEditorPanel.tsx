@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import Editor, { OnMount } from '@monaco-editor/react';
 import { Play, RotateCcw, Wand2, Terminal } from 'lucide-react';
+import { format as formatSql } from 'sql-formatter';
 import { Button } from '@/components/atoms/Button/Button';
 import { useTheme } from '@/hooks/useTheme';
 import { registerSqlCompletionProvider } from './sqlCompleter';
@@ -94,9 +95,15 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
     // 3. Registrar motor de autocompletado inteligente SQL (Keywords, Tablas, Columnas y Alias)
     registerSqlCompletionProvider(monaco);
 
-    // 4. Vincular atajo de teclado: Cmd/Ctrl + Enter -> onExecute
+    // 4. Vincular atajos de teclado:
+    // Cmd/Ctrl + Enter -> onExecute
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       onExecute();
+    });
+
+    // Shift + Alt + F -> handleFormatSql (Atajo estándar de formateo en VS Code / Monaco)
+    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF, () => {
+      handleFormatSql();
     });
 
     // 5. Exponer helper seguro para automatización y pruebas de navegador
@@ -116,27 +123,24 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
     }
   }, [isDark]);
 
-  // Formateador rápido de palabras clave SQL
+  // Formateador jerárquico profesional de SQL con PostgreSQL Style Guide
   const handleFormatSql = () => {
     if (!editorRef.current) return;
     const currentVal = editorRef.current.getValue();
+    if (!currentVal || !currentVal.trim()) return;
 
-    const sqlKeywords = [
-      'select', 'from', 'where', 'and', 'or', 'join', 'left join', 'right join',
-      'inner join', 'full join', 'cross join', 'on', 'group by', 'having',
-      'order by', 'asc', 'desc', 'limit', 'offset', 'as', 'distinct', 'in',
-      'not in', 'between', 'is null', 'is not null', 'like', 'ilike', 'case',
-      'when', 'then', 'else', 'end', 'union', 'union all', 'with', 'count',
-      'sum', 'avg', 'min', 'max', 'row_number', 'over', 'partition by'
-    ];
-
-    let formatted = currentVal;
-    sqlKeywords.forEach((kw) => {
-      const regex = new RegExp(`\\b${kw}\\b`, 'gi');
-      formatted = formatted.replace(regex, kw.toUpperCase());
-    });
-
-    onChange(formatted);
+    try {
+      const formatted = formatSql(currentVal, {
+        language: 'postgresql',
+        keywordCase: 'upper',
+        tabWidth: 2,
+        linesBetweenQueries: 2,
+      });
+      editorRef.current.setValue(formatted);
+      onChange(formatted);
+    } catch (err) {
+      console.warn('No se pudo formatear la consulta SQL:', err);
+    }
   };
 
   return (
@@ -166,7 +170,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
           <button
             onClick={handleFormatSql}
             className="p-1.5 rounded text-content-muted hover:text-cyan-accent hover:bg-surface-card transition-colors text-xs flex items-center gap-1"
-            title="Formatear palabras clave en mayúsculas"
+            title="Formatear consulta SQL con jerarquía e indentación (Shift + Alt + F)"
           >
             <Wand2 className="w-3.5 h-3.5" />
             <span className="hidden sm:inline text-[11px]">Formatear</span>

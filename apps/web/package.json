@@ -17,6 +17,7 @@
     "lucide-react": "^1.16.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "sql-formatter": "^15.9.0",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
