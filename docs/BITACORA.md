@@ -1398,3 +1398,32 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Backend:** 69/69 pruebas unitarias y de integración pasando al 100% en pytest (`test_auth.py`, `test_rate_limit.py`, `test_evaluator.py`, `test_schema_consistency.py`, `test_security.py`, `test_integration.py`).
      * **Frontend:** 22/22 pruebas unitarias pasando al 100% en vitest.
      * **Build de Producción:** 2,173 módulos transformados sin errores en 5.42 segundos.
+
+---
+
+### Entrada 46: Fase 3 — Saneamiento Anti-Spoilers en Conceptos Didácticos, Desactivación de Ligaduras Tipográficas y Formateador Jerárquico SQL
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/pedagogical-refinement-and-solution-reveal`
+* **Objetivo:** 
+  1. Reemplazar todos los spoilers de código y soluciones presentes en la sección "Concepto Clave & Sintaxis" (31 de los 50 ejercicios contenían la solución exacta) por plantillas sintácticas abstractas y puntos clave conceptuales.
+  2. Desactivar ligaduras tipográficas en fuentes monoespaciadas para que operadores como `>=`, `<=`, `!=` y `<>` se muestren exactamente como se escriben en el teclado físico sin morphing a caracteres matemáticos confusos (`⩾`, `⩽`, `≠`).
+  3. Implementar formateador jerárquico profesional de SQL (`sql-formatter`) configurado bajo la guía de estilo de PostgreSQL, con atajo de teclado estándar `Shift + Alt + F`.
+  4. Corregir desincronización de pestañas en `DataGridResults` donde la tabla de resultados quedaba en blanco tras resolver exitosamente un ejercicio que previamente tuvo discrepancia semántica.
+* **Actividades y Logros Clave:**
+  1. **Saneamiento Anti-Spoilers de los 50 Retos:**
+     * Se auditaron y reescribieron los 50 bloques `ExerciseConcept` en `apps/api/app/modules/curriculum/seed_data.py` y `apps/web/src/lib/api.ts`.
+     * Las cajas de sintaxis ahora utilizan marcadores de posición genéricos (`columna_1`, `columna_2`, `nombre_tabla`, `condicion_1`, `valor_umbral`), eliminando nombres de tablas o columnas del reto.
+     * Los puntos clave explican la semántica del operador y el comportamiento del motor, eliminando instrucciones directas de respuesta (ej. `"Escribe: WHERE stock <= 15 OR stock >= 75;"`).
+  2. **Eliminación de Confusión Tipográfica en Operadores:**
+     * En `apps/web/src/index.css` y `apps/web/src/lib/format.tsx` se forzó `font-variant-ligatures: none !important; font-feature-settings: "liga" 0, "calt" 0 !important;` en `code`, `pre`, `kbd`, `samp` y `.font-mono`.
+     * En `MonacoEditorPanel.tsx` se configuró `fontLigatures: false`.
+     * Los operadores `>=` (mayor o igual), `<=` (menor o igual), `!=` / `<>` (distinto de) se muestran siempre con caracteres ASCII reales correspondientes al teclado.
+  3. **Formateador Jerárquico SQL con Atajo `Shift + Alt + F`:**
+     * Integrado `sql-formatter` con dialecto `postgresql`, palabras clave en mayúsculas, saltos de línea por cláusula raíz e indentación a 2 espacios.
+  4. **Corrección de Renderizado en `DataGridResults`:**
+     * Implementada directiva `effectiveTab` y `useEffect` sincronizador que fuerzan la pestaña `'table'` de inmediato cuando el resultado es exitoso (`status === 'SUCCESS'`) o cuando no existe discrepancia (`!diff`).
+  5. **Verificación y Suites:**
+     * **Backend:** 85/85 pruebas pasando al 100% en pytest (64.37s).
+     * **Frontend:** 22/22 pruebas unitarias pasando al 100% en Vitest.
+     * **Build de Producción:** 2,265 módulos transformados sin errores en 6.05s.
