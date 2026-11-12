@@ -132,9 +132,9 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794509283.4395037,
-    "seen": 1794510664.9535332,
-    "ast_hash": "96d73728518d3cfb667b0fb97e62406d",
+    "mtime": 1794524921.740942,
+    "seen": 1794525008.6043391,
+    "ast_hash": "5e587a7f1f6de4152cf62e46269478e6",
     "semantic_hash": ""
   },
   "apps/web/src/components/atoms/Badge/Badge.tsx": {
@@ -258,9 +258,9 @@
     "semantic_hash": "ae0bce5f8e6edef42116b7bd6cc4f0ba"
   },
   "apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx": {
-    "mtime": 1794509388.3313794,
-    "seen": 1794510664.961422,
-    "ast_hash": "487ac5ad3a9a9bed57656947d0fbb741",
+    "mtime": 1794524957.8395164,
+    "seen": 1794525008.6120472,
+    "ast_hash": "6aad408b31bd521040dfbef89055cd6c",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx": {
@@ -288,10 +288,10 @@
     "semantic_hash": "009f6efdb29b79da3e8602809ef4d635"
   },
   "apps/web/src/components/organisms/ResetPasswordView/ResetPasswordView.tsx": {
-    "mtime": 1794250540.8465054,
-    "seen": 1794252886.8074272,
-    "ast_hash": "f95a8f5211b38cfb3da8065b20407f09",
-    "semantic_hash": "f95a8f5211b38cfb3da8065b20407f09"
+    "mtime": 1794515205.1951737,
+    "seen": 1794525008.6133475,
+    "ast_hash": "f7bcba446a39135c996b849b5fd0efee",
+    "semantic_hash": ""
   },
   "apps/web/src/components/organisms/SidebarNav/SidebarNav.tsx": {
     "mtime": 1794426627.169071,
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx": {
-    "mtime": 1794429882.719526,
-    "seen": 1794430880.077895,
-    "ast_hash": "4b28e61213d80cbcb1ccd1fcbbf1b190",
+    "mtime": 1794524957.965304,
+    "seen": 1794525008.6136613,
+    "ast_hash": "98f5fca9b51f417ba6dcff549d074936",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/TopHeader/TopHeader.tsx": {
@@ -336,10 +336,10 @@
     "semantic_hash": "0995ee27a6038ecf3e7fee0c81a22e2c"
   },
   "apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx": {
-    "mtime": 1794118016.6986268,
-    "seen": 1794252886.8074384,
-    "ast_hash": "e0d2664e59c9a70476efcf21e8f62fda",
-    "semantic_hash": "e0d2664e59c9a70476efcf21e8f62fda"
+    "mtime": 1794524958.1326008,
+    "seen": 1794525008.615259,
+    "ast_hash": "4dea2b9dbd6b1b20063f81a773d9ab48",
+    "semantic_hash": ""
   },
   "apps/web/src/components/templates/index.ts": {
     "mtime": 1794118016.7001362,
@@ -348,9 +348,9 @@
     "semantic_hash": "69ac3b764f496f4afd22e38b507d078b"
   },
   "apps/web/src/hooks/useAuth.tsx": {
-    "mtime": 1794335571.8197274,
-    "seen": 1794336289.6789534,
-    "ast_hash": "d5b64fc06be7de584990eb4030df16a1",
+    "mtime": 1794515205.3494258,
+    "seen": 1794525008.615568,
+    "ast_hash": "2568c287fd72b877c978e9cb41b75c06",
     "semantic_hash": ""
   },
   "apps/web/src/hooks/useTheme.tsx": {
@@ -372,10 +372,10 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/supabase.ts": {
-    "mtime": 1794251470.8218799,
-    "seen": 1794252886.8074467,
-    "ast_hash": "2687b99244bffbe068632384292c63a2",
-    "semantic_hash": "2687b99244bffbe068632384292c63a2"
+    "mtime": 1794515106.3433974,
+    "seen": 1794525008.6183734,
+    "ast_hash": "78b8929ea04005510796fc9e1722b2fd",
+    "semantic_hash": ""
   },
   "apps/web/src/lib/utils.ts": {
     "mtime": 1794247831.2854717,
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794510608.493639,
-    "seen": 1794510664.986149,
-    "ast_hash": "9a4778bf9694803bfd5d10325cecd1e7",
+    "mtime": 1794524990.9617712,
+    "seen": 1794525008.6357293,
+    "ast_hash": "bc041df78232ebb6d2300966b5887013",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1080,9 +1080,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/format.tsx": {
-    "mtime": 1794510060.1005573,
-    "seen": 1794510664.96701,
+    "mtime": 1794510717.4428885,
+    "seen": 1794525008.6174579,
     "ast_hash": "6e0f81c6b99bc391eaad3bbf51fa76b7",
+    "semantic_hash": ""
+  },
+  "apps/web/src/lib/__tests__/supabase.test.ts": {
+    "mtime": 1794515165.5786843,
+    "seen": 1794525008.61713,
+    "ast_hash": "fca587d42a199d4fd5c0bc1aeca25e65",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

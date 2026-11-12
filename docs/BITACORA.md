@@ -1427,3 +1427,27 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Backend:** 85/85 pruebas pasando al 100% en pytest (64.37s).
      * **Frontend:** 22/22 pruebas unitarias pasando al 100% en Vitest.
      * **Build de Producción:** 2,265 módulos transformados sin errores en 6.05s.
+
+---
+
+### Entrada 47: Corrección de Recuperación de Contraseña (`Auth session missing!`) y Ergonomía del DataGrid
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/pedagogical-refinement-and-solution-reveal`
+* **Objetivo:**
+  1. Resolver el error `Auth session missing!` durante el flujo de recuperación de contraseña de Supabase Auth provocado por doble `#` en `redirectTo`.
+  2. Mejorar la amplitud y ergonomía del `DataGridResults` en la vista de resolución de ejercicios mediante divisor arrastrable y botón de expansión.
+* **Actividades y Logros Clave:**
+  1. **Corrección del Flujo de Recuperación y Confirmación de Supabase Auth:**
+     * En `apps/web/src/hooks/useAuth.tsx`, corregido `redirectTo` de `/#reset-password` a `/reset-password` y `emailRedirectTo` de `/#auth-confirm` a `/auth/confirm`, evitando URLs malformadas con doble fragmento (`/#reset-password#access_token=...`) que impedían la detección de sesión en `@supabase/auth-js`.
+     * Añadido manejo explícito del evento `PASSWORD_RECOVERY`, verificación de `token_hash` vía `supabase.auth.verifyOtp`, y validación previa de sesión en `updatePassword` con mensajes descriptivos en español.
+     * En `apps/web/src/lib/supabase.ts`, agregada normalización previa a `createClient(...)` (`extractNormalizedCallbackPathAndHash`) para rescatar callbacks legacy con doble `#` y capturar errores de URL (`otp_expired`, `access_denied`).
+     * En `apps/web/src/components/organisms/ResetPasswordView/ResetPasswordView.tsx` y `apps/web/src/App.tsx`, priorizada la ruta `/reset-password` antes de `code=`, añadido estado de validación durante la carga de sesión y tarjeta diagnóstica con botón **Solicitar Nuevo Enlace** cuando no hay sesión activa.
+     * Añadidas 4 pruebas unitarias en `apps/web/src/lib/__tests__/supabase.test.ts`.
+  2. **Ergonomía y Amplitud del `DataGridResults`:**
+     * En `apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx`, elevada la altura inicial del panel de resultados a `48%`, añadido divisor horizontal arrastrable persistido en `localStorage` (`qurio_workspace_results_pct`, rango `28%`–`78%`, doble clic para restablecer) y modo expandido (`76%`).
+     * En `apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx`, integrado botón **Expandir / Restaurar** en escritorio y refinada la compactación del banner superior para mostrar más filas visibles.
+     * Conectado `isResultsExpanded` en `apps/web/src/App.tsx` y `apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx`.
+  3. **Verificación:**
+     * **Frontend Vitest:** 5 archivos de prueba, 26/26 tests aprobados.
+     * **Build de Producción (`tsc && vite build`):** 2,265 módulos transformados, 0 errores en `5.84s`.

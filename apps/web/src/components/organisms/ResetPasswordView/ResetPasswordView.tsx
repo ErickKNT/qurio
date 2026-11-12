@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
-import { KeyRound, Lock, Eye, EyeOff, AlertOctagon, CheckCircle2, ArrowRight } from 'lucide-react';
+import { KeyRound, Lock, Eye, EyeOff, AlertOctagon, CheckCircle2, ArrowRight, RefreshCw } from 'lucide-react';
 import { FormField } from '@/components/molecules/FormField/FormField';
 import { Button } from '@/components/atoms/Button/Button';
 import { Badge } from '@/components/atoms/Badge/Badge';
 import { useAuth } from '@/hooks/useAuth';
+import { getInitialAuthCallbackError, isSupabaseConfigured } from '@/lib/supabase';
 
 export interface ResetPasswordViewProps {
   onNavigate: (path: string) => void;
+  onRequestNewLink?: () => void;
 }
 
-export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ onNavigate }) => {
+export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
+  onNavigate,
+  onRequestNewLink,
+}) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +23,21 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ onNavigate
   const [formError, setFormError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const { updatePassword } = useAuth();
+  const { updatePassword, session, loading, error: authError } = useAuth();
+  const callbackError = getInitialAuthCallbackError();
+
+  const missingSessionMessage = React.useMemo(() => {
+    if (callbackError?.errorCode === 'otp_expired') {
+      return 'El enlace de recuperación ha expirado o ya fue utilizado. Solicita un nuevo correo de recuperación para continuar.';
+    }
+    if (callbackError?.errorDescription) {
+      return `El enlace de recuperación no es válido (${callbackError.errorDescription}). Solicita uno nuevo para continuar.`;
+    }
+    if (authError) {
+      return `No se pudo validar tu sesión de recuperación (${authError}). Solicita un nuevo enlace para continuar.`;
+    }
+    return 'No se detectó una sesión de recuperación activa. Abre el enlace directamente desde tu correo o solicita un nuevo enlace de recuperación.';
+  }, [callbackError, authError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +119,49 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ onNavigate
             >
               Continuar al Dashboard
             </Button>
+          </div>
+        ) : isSupabaseConfigured && loading ? (
+          <div className="flex flex-col items-center text-center gap-3 py-6 animate-fadeIn">
+            <div className="w-7 h-7 border-2 border-cyan-accent border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-mono text-content-secondary">
+              Validando token de recuperación en Supabase Cloud...
+            </p>
+          </div>
+        ) : isSupabaseConfigured && !session ? (
+          <div className="flex flex-col gap-4 py-2 animate-fadeIn">
+            <div
+              role="alert"
+              className="p-3.5 rounded-xl bg-error/10 border border-error/30 text-error flex items-start gap-2.5 text-xs font-mono"
+            >
+              <AlertOctagon className="w-4 h-4 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{missingSessionMessage}</span>
+            </div>
+
+            <div className="flex flex-col gap-2.5 pt-1">
+              {onRequestNewLink && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="md"
+                  onClick={onRequestNewLink}
+                  leftIcon={<RefreshCw className="w-4 h-4" />}
+                  className="w-full shadow-glow-primary"
+                >
+                  Solicitar Nuevo Enlace
+                </Button>
+              )}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                onClick={() => onNavigate('dashboard')}
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+                className="w-full"
+              >
+                Volver al Dashboard
+              </Button>
+            </div>
           </div>
         ) : (
           /* Formulario de Cambio de Contraseña */

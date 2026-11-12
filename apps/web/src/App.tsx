@@ -93,7 +93,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile, user, isCloudAuth, isAuthenticated, signOut, refreshProfile } = useAuth();
+  const { profile, user, isCloudAuth, isAuthenticated, isPasswordRecovery, clearPasswordRecovery, signOut, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthMode>('signin');
@@ -124,6 +124,7 @@ export const App: React.FC = () => {
   const [sqlCode, setSqlCode] = useState(FALLBACK_EXERCISES[0].initial_code);
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [isResultsExpanded, setIsResultsExpanded] = useState(false);
 
   // Estados de Resultados
   const [executionStatus, setExecutionStatus] = useState<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR' | 'FAILED'>('IDLE');
@@ -148,6 +149,9 @@ export const App: React.FC = () => {
   // Navegación con History API
   const navigate = useCallback(
     (newPath: AppPath, params?: { exerciseId?: string; trackSlug?: string }, replace = false) => {
+      if (newPath !== 'reset-password') {
+        clearPasswordRecovery();
+      }
       setCurrentPath(newPath);
       const targetUrl = pathToUrl(newPath, params);
       if (window.location.pathname !== targetUrl) {
@@ -158,21 +162,36 @@ export const App: React.FC = () => {
         }
       }
     },
-    []
+    [clearPasswordRecovery]
   );
+
+  // Redirección automática al detector del evento PASSWORD_RECOVERY de Supabase Auth
+  useEffect(() => {
+    if (isPasswordRecovery && currentPath !== 'reset-password') {
+      navigate('reset-password', undefined, true);
+    }
+  }, [isPasswordRecovery, currentPath, navigate]);
 
   // Sincronización de enrutamiento web y detección de tokens de Supabase Auth
   useEffect(() => {
     const handleLocationChange = () => {
       const search = window.location.search;
       const hash = window.location.hash;
+      const parsed = parseLocation(window.location.pathname);
 
       // 1. Detección segura de parámetros Supabase Auth (PKCE code, token_hash, recuperación)
-      if (hash.includes('type=recovery') || search.includes('type=recovery') || hash.includes('reset-password')) {
+      if (
+        isPasswordRecovery ||
+        parsed.path === 'reset-password' ||
+        hash.includes('type=recovery') ||
+        search.includes('type=recovery') ||
+        hash.includes('reset-password')
+      ) {
         setCurrentPath('reset-password');
         return;
       }
       if (
+        parsed.path === 'auth-confirm' ||
         hash.includes('type=signup') ||
         hash.includes('auth-confirm') ||
         hash.includes('type=email_change') ||
@@ -184,7 +203,6 @@ export const App: React.FC = () => {
       }
 
       // 2. Enrutamiento estándar con History API
-      const parsed = parseLocation(window.location.pathname);
       setCurrentPath(parsed.path);
 
       if (parsed.path === 'exercise' && parsed.exerciseId) {
@@ -208,7 +226,7 @@ export const App: React.FC = () => {
     handleLocationChange();
     window.addEventListener('popstate', handleLocationChange);
     return () => window.removeEventListener('popstate', handleLocationChange);
-  }, [exercises]);
+  }, [exercises, isPasswordRecovery]);
 
   // Cargar ejercicios e historial al inicio
   useEffect(() => {
@@ -694,6 +712,8 @@ export const App: React.FC = () => {
     return (
       <>
         <WorkspaceLayout
+          isResultsExpanded={isResultsExpanded}
+          onToggleResultsExpanded={setIsResultsExpanded}
           headerBar={
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
@@ -843,6 +863,8 @@ export const App: React.FC = () => {
               failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
               isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
               onOpenRevealModal={() => setIsRevealModalOpen(true)}
+              isExpanded={isResultsExpanded}
+              onToggleExpand={() => setIsResultsExpanded((prev) => !prev)}
             />
           }
           statusBar={
@@ -1008,6 +1030,11 @@ export const App: React.FC = () => {
           <React.Suspense fallback={<ViewLoadingFallback />}>
             <ResetPasswordView
               onNavigate={(path) => navigate(path as AppPath)}
+              onRequestNewLink={() => {
+                navigate('dashboard');
+                setAuthModalInitialMode('forgot');
+                setAuthModalOpen(true);
+              }}
             />
           </React.Suspense>
         )}

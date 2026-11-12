@@ -11,6 +11,8 @@ import {
   GitCompare,
   Unlock,
   Lock,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { ColumnInfo, DiffResult } from '@/types';
 import { Badge } from '@/components/atoms/Badge/Badge';
@@ -32,6 +34,8 @@ export interface DataGridResultsProps {
   failedAttemptsCount?: number;
   isSolutionRevealed?: boolean;
   onOpenRevealModal?: () => void;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
   className?: string;
 }
 
@@ -50,6 +54,8 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
   failedAttemptsCount = 0,
   isSolutionRevealed = false,
   onOpenRevealModal,
+  isExpanded = false,
+  onToggleExpand,
   className,
 }) => {
   const [activeTab, setActiveTab] = useState<'table' | 'diff'>('table');
@@ -74,7 +80,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
   return (
     <div className={cn('flex flex-col h-full w-full bg-surface select-none overflow-hidden', className)}>
       {/* 1. BARRA SUPERIOR DE HERRAMIENTAS Y PESTAÑAS */}
-      <div className="h-10 px-4 bg-surface-dim border-b border-border-subtle flex items-center justify-between shrink-0 font-mono text-xs">
+      <div className="h-9 px-4 bg-surface-dim border-b border-border-subtle flex items-center justify-between shrink-0 font-mono text-xs">
         <div className="flex items-center gap-2">
           {/* Pestaña: Tabla de Datos Devueltos */}
           <button
@@ -146,12 +152,34 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
               ERROR DE EJECUCIÓN
             </Badge>
           )}
+
+          {onToggleExpand && (
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              title={isExpanded ? 'Restaurar tamaño del panel' : 'Expandir tabla de resultados'}
+              aria-label={isExpanded ? 'Restaurar tamaño del panel' : 'Expandir tabla de resultados'}
+              className="hidden lg:inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border-subtle/70 bg-surface-card/60 text-content-muted hover:text-content-primary hover:border-primary/40 transition-colors"
+            >
+              {isExpanded ? (
+                <>
+                  <Minimize2 className="w-3 h-3" />
+                  <span>Restaurar</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3 h-3" />
+                  <span>Expandir</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
       {/* 2. BANNER DE RETO SUPERADO (SOLO EN MODO RETO/EJERCICIO, NUNCA EN PLAYGROUND) */}
       {status === 'SUCCESS' && !isPlayground && (
-        <div className="px-4 py-2.5 bg-emerald/10 border-b border-emerald/30 flex items-center justify-between shrink-0 animate-fadeIn">
+        <div className="px-4 py-1.5 bg-emerald/10 border-b border-emerald/30 flex items-center justify-between shrink-0 animate-fadeIn">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-full bg-emerald/20 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-4 h-4 text-emerald" />
@@ -347,7 +375,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
                   {normalizedColumns.map((col, idx) => (
                     <th
                       key={idx}
-                      className="py-2.5 px-3 text-content-primary font-semibold border-r border-border-subtle/50 last:border-r-0 whitespace-nowrap"
+                      className="py-2 px-3.5 text-content-primary font-semibold border-r border-border-subtle/50 last:border-r-0 whitespace-nowrap"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <span>{col.name}</span>
@@ -386,7 +414,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
                       {row.map((val, colIdx) => (
                         <td
                           key={colIdx}
-                          className="py-2 px-3 text-content-primary border-r border-border-subtle/30 last:border-r-0 whitespace-nowrap"
+                          className="py-2 px-3.5 text-content-primary border-r border-border-subtle/30 last:border-r-0 whitespace-nowrap"
                         >
                           {val === null ? (
                             <span className="inline-block px-1.5 py-0.2 rounded bg-surface-hover text-content-muted italic text-[10px]">
