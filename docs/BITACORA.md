@@ -1334,3 +1334,29 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Vitest Frontend:** 22/22 pruebas unitarias pasando al 100% en 1.05s.
      * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 6.47s (0 errores).
      * **Pytest Backend:** 40/40 pruebas unitarias pasando al 100% en 0.16s.
+
+
+---
+
+### Entrada 44: Fase 1 — Humanización Pedagógica Integral (50 Retos) y Objetivos Libres de Spoilers
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/pedagogical-refinement-and-solution-reveal`
+* **Objetivo:** Desplegar la reescritura pedagógica completa en los 50 ejercicios del currículum de Qurio (Rutas 1, 2 y 3) y depurar el checklist interactivo de objetivos para eliminar cualquier fragmento o spoiler de código SQL, transformándolos estrictamente en metas y criterios de éxito funcionales.
+* **Actividades y Logros Clave:**
+  1. **Creación de Rama de Características:**
+     * Creada y publicada en GitHub la rama `feat/pedagogical-refinement-and-solution-reveal`.
+  2. **Actualización de los 50 Ejercicios en Backend (`seed_data.py`):**
+     * Sustituida la jerga abstracta (tuplas, buffers, productos cartesianos) por consignas de negocio cotidianas y claras.
+     * Integrados conceptos intuitivos (analogías de hoja de cálculo, quitaduplicados, ausencias con `LEFT JOIN`, etc.) y notas de nivel 2 (*"Bajo el capó"*).
+  3. **Depuración Estricta de Objetivos (Anti-Spoilers):**
+     * Eliminadas todas las palabras clave SQL (`WHERE`, `SELECT`, `FROM`, `JOIN`, fórmulas numéricas explícitas) de los checklists interactivos.
+     * Los objetivos ahora evalúan el entendimiento del requerimiento (ej. *"Aislar a los clientes que no registran ninguna actividad de compra"* en vez de *"Filtrar con WHERE p.pedido_id IS NULL"*).
+  4. **Sincronización Total en Frontend y Base de Datos:**
+     * `apps/web/src/lib/api.ts`: Actualizados los 50 ejercicios en el catálogo `FALLBACK_EXERCISES`.
+     * `database/supabase/02_seed_curriculum.sql`: Sincronizadas las sentencias `INSERT` para que el catálogo de producción coincida exactamente.
+  5. **Verificación y Pruebas:**
+     * **Vitest Frontend:** 22/22 pruebas unitarias pasando al 100% en 1.00s.
+     * **Pytest Backend:** 40/40 pruebas unitarias pasando al 100% en 0.12s.
+     * **Build de Producción Vite:** 2,172 módulos transformados sin errores en 5.36s.
+     * **Grafo de Conocimiento (Graphify):** 2,180 nodos, 3,506 aristas y 155 comunidades actualizados.

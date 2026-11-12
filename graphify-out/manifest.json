@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/curriculum/seed_data.py": {
-    "mtime": 1794502400.663767,
-    "seen": 1794502693.908911,
-    "ast_hash": "76d2b483408acd4f713711d9632a70d6",
+    "mtime": 1794504092.1315525,
+    "seen": 1794504137.9822638,
+    "ast_hash": "24190e12ee12ac36b0d3215e7f425bd8",
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/__init__.py": {
@@ -360,9 +360,9 @@
     "semantic_hash": "501dbefce3bdfe944cecf55933c7a6ee"
   },
   "apps/web/src/lib/api.ts": {
-    "mtime": 1794502589.3245919,
-    "seen": 1794502693.963169,
-    "ast_hash": "989f35586334744532f086d8891d4343",
+    "mtime": 1794504092.1352134,
+    "seen": 1794504138.0019295,
+    "ast_hash": "7b6f611cdbeebcf2a6e264eda8aa3937",
     "semantic_hash": ""
   },
   "apps/web/src/lib/persistence.ts": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794502664.3202302,
-    "seen": 1794502694.0175128,
-    "ast_hash": "06cbedf52ccdb72d09ea403287e88d01",
+    "mtime": 1794502805.8682344,
+    "seen": 1794504138.0200214,
+    "ast_hash": "0464757be342e925268c21246739cd4e",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1059,6 +1059,12 @@
     "mtime": 1794430583.5605135,
     "seen": 1794430880.072454,
     "ast_hash": "ceecbbc2ed1467c9b71bb47c0bd1fbff",
+    "semantic_hash": ""
+  },
+  "docs/PROPUESTA_HUMANIZACION_CURRICULUM.md": {
+    "mtime": 1794504092.1276038,
+    "seen": 1794504138.0207274,
+    "ast_hash": "9a7d0cf9d49b89c94355bd941c4440f1",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {
