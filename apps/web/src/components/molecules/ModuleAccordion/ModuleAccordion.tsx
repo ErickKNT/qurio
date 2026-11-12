@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, CheckCircle2, Circle, ArrowRight } from 'luc
 import { Module, Exercise } from '@/types';
 import { Badge, Button } from '@/components/atoms';
 import { cn } from '@/lib/utils';
+import { formatInlineCode } from '@/lib/format';
 
 export interface ModuleAccordionProps {
   module: Module;
@@ -110,8 +111,8 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
                       <span className="text-xs font-medium text-content-primary group-hover:text-cyan-accent transition-colors">
                         {idx + 1}. {exercise.title}
                       </span>
-                      <span className="text-[11px] font-mono text-content-muted line-clamp-1">
-                        {exercise.prompt}
+                      <span className="text-[11px] font-sans text-content-muted line-clamp-1">
+                        {formatInlineCode(exercise.prompt)}
                       </span>
                     </div>
                   </div>

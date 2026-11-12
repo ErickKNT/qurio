@@ -19,6 +19,7 @@ import { Badge } from '@/components/atoms/Badge/Badge';
 import { Button } from '@/components/atoms/Button/Button';
 import { SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CLIENTES } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { formatInlineCode } from '@/lib/format';
 
 export interface ExerciseSpecPanelProps {
   exercise: Exercise;
@@ -269,7 +270,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 </div>
 
                 <p className="text-xs text-content-secondary leading-relaxed">
-                  {exercise.concept.summary}
+                  {formatInlineCode(exercise.concept.summary)}
                 </p>
 
                 {/* Bloque de Sintaxis */}
@@ -283,11 +284,11 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
 
                 {/* Puntos Clave */}
                 {exercise.concept.key_points && exercise.concept.key_points.length > 0 && (
-                  <ul className="flex flex-col gap-1 pt-1 border-t border-border-subtle/40 text-[11px] text-content-secondary font-mono">
+                  <ul className="flex flex-col gap-1.5 pt-1 border-t border-border-subtle/40 text-[11px] text-content-secondary font-sans">
                     {exercise.concept.key_points.map((pt, idx) => (
-                      <li key={idx} className="flex items-start gap-1.5 leading-snug">
-                        <span className="text-primary font-bold shrink-0">•</span>
-                        <span>{pt}</span>
+                      <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
+                        <span className="text-primary font-bold shrink-0 mt-0.5">•</span>
+                        <span>{formatInlineCode(pt)}</span>
                       </li>
                     ))}
                   </ul>
@@ -295,9 +296,9 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
 
                 {/* Nota de Orden de Ejecución */}
                 {exercise.concept.execution_order_note && (
-                  <div className="mt-1 p-2 rounded-lg bg-cyan-accent/10 border border-cyan-accent/25 text-[11px] font-mono text-cyan-600 dark:text-cyan-accent leading-relaxed flex items-center gap-2">
+                  <div className="mt-1 p-2 rounded-lg bg-cyan-accent/10 border border-cyan-accent/25 text-[11px] text-cyan-600 dark:text-cyan-accent leading-relaxed flex items-center gap-2">
                     <Layers className="w-3.5 h-3.5 shrink-0 text-cyan-accent" />
-                    <span>{exercise.concept.execution_order_note}</span>
+                    <span>{formatInlineCode(exercise.concept.execution_order_note)}</span>
                   </div>
                 )}
               </div>
@@ -310,7 +311,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 Consigna del Negocio
               </span>
               <div className="text-xs text-content-secondary leading-relaxed bg-surface/50 p-3 rounded-xl border border-border-subtle/60 shadow-sm">
-                <p>{exercise.prompt}</p>
+                <p>{formatInlineCode(exercise.prompt)}</p>
 
                 {/* Botón rápido para inspeccionar la tabla en la pestaña muestra */}
                 <div className="mt-3 pt-2.5 border-t border-border-subtle/40 flex items-center justify-between text-[11px] font-mono text-content-muted">
@@ -554,7 +555,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                   <span className="font-mono text-[10px] text-amber-streak font-semibold">
                     Pista #{index + 1}:
                   </span>
-                  <p className="leading-relaxed">{hint}</p>
+                  <p className="leading-relaxed">{formatInlineCode(hint)}</p>
                 </div>
               ))}
 
@@ -665,8 +666,10 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
             <div className="p-3 rounded-lg bg-surface-card border border-amber-streak/30 text-xs text-content-secondary leading-relaxed">
               <span className="font-semibold text-content-primary">💡 Explicación de la solución:</span>
               <p className="mt-1 font-sans">
-                {exercise.concept?.summary ||
-                  'Esta consulta resuelve los requerimientos del reto aplicando las cláusulas estándar en PostgreSQL.'}
+                {formatInlineCode(
+                  exercise.concept?.summary ||
+                    'Esta consulta resuelve los requerimientos del reto aplicando las cláusulas estándar en PostgreSQL.'
+                )}
               </p>
             </div>
 
