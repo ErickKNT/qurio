@@ -200,6 +200,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
           onMount={handleEditorDidMount}
           options={{
             fontFamily: '"JetBrains Mono", Menlo, Monaco, Consolas, monospace',
+            fontLigatures: false,
             fontSize: 13,
             lineHeight: 22,
             minimap: { enabled: false },

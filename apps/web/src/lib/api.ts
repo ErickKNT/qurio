@@ -390,9 +390,9 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla;",
       key_points: [
         "`SELECT` va seguido de las columnas que quieres mostrar, separadas por coma `,`.",
-        "`FROM` indica en qué tabla están guardados esos datos (en este caso, `productos`).",
-        "Al final de cada instrucción en SQL se coloca un punto y coma `;`."
-],
+        "`FROM` indica el nombre de la tabla de donde se obtendrán los datos.",
+        "Toda instrucción en SQL finaliza con un punto y coma `;`."
+      ],
       execution_order_note: "💡 ¿Cómo lo lee la base de datos? Primero busca la tabla con `FROM` y luego extrae solo las columnas que pediste en `SELECT`.",
     },
     objectives: [
@@ -417,13 +417,13 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Usa ROUND(precio * 1.21, 2) AS precio_con_iva para limitar a 2 decimales y asignar el alias."
 ],
     concept: {
-      summary: "En SQL puedes hacer operaciones matemáticas directamente en tu consulta (+, -, *, /) y usar `AS` para ponerle un nombre claro al resultado.",
-      syntax: "SELECT columna, ROUND(columna * factor, 2) AS nuevo_nombre\nFROM nombre_tabla;",
+      summary: "En SQL puedes realizar cálculos aritméticos directamente en la cláusula `SELECT` (+, -, *, /) y renombrar el resultado con `AS`.",
+      syntax: "SELECT columna,\n       ROUND(columna * factor, 2) AS nuevo_nombre\nFROM nombre_tabla;",
       key_points: [
-        "Puedes calcular directamente en el `SELECT`: `precio * 1.21`.",
-        "`ROUND(cuenta, 2)` deja el número con 2 decimales limpios.",
-        "`AS precio_con_iva` le da un título descriptivo a tu nueva columna calculada."
-],
+        "Puedes operar con columnas numéricas directamente en el `SELECT`: `columna * multiplicador` o `col_a + col_b`.",
+        "`ROUND(expresion, N)` redondea el número resultante a `N` decimales de precisión.",
+        "`AS alias_deseado` asigna un encabezado limpio y descriptivo a la columna calculada en la cuadrícula final."
+      ],
       execution_order_note: "💡 El cálculo se hace al vuelo en la consulta; no altera los valores originales guardados en la tabla.",
     },
     objectives: [
@@ -448,14 +448,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Para insertar un espacio en medio escribe: nombre || ' ' || apellido AS cliente_completo."
 ],
     concept: {
-      summary: "En SQL, el símbolo `||` sirve para pegar o combinar textos (como juntar el primer nombre y el apellido en una sola columna).",
-      syntax: "SELECT columna1 || ' ' || columna2 AS nombre_completo\nFROM tabla;",
+      summary: "El operador de concatenación `||` permite unir dos o más valores de texto en una sola columna combinada.",
+      syntax: "SELECT columna_a || ' ' || columna_b AS texto_completo\nFROM nombre_tabla;",
       key_points: [
-        "Para unir texto y dejar un espacio en medio usa: `nombre || ' ' || apellido`.",
-        "Los textos fijos en SQL siempre van entre comillas simples: `' '`.",
-        "Usa `AS cliente_completo` para bautizar la nueva columna resultante."
-],
-      execution_order_note: "💡 En SQL estándar, `||` une textos fila por fila sin modificar los datos de origen.",
+        "Para intercalar un espacio entre dos textos, se encadenan tres elementos con `||`: `col1 || ' ' || col2`.",
+        "En SQL, las cadenas de texto literales siempre deben encerrarse entre comillas simples: `' '`.",
+        "Usa `AS nombre_columna` para darle un nombre representativo a la columna resultante."
+      ],
+      execution_order_note: "💡 Si cualquiera de los dos lados concatenados fuera `NULL`, el resultado total de `||` sería `NULL`.",
     },
     objectives: [
       "1. Obtener los registros de la tabla de clientes.",
@@ -479,13 +479,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Escribe: SELECT DISTINCT ciudad FROM clientes;"
 ],
     concept: {
-      summary: "`DISTINCT` es el filtro quitaduplicados de SQL: se asegura de que cada valor aparezca solo una vez en tu lista final.",
+      summary: "`DISTINCT` filtra y elimina filas duplicadas, devolviendo únicamente valores únicos en el resultado.",
       syntax: "SELECT DISTINCT columna\nFROM nombre_tabla;",
       key_points: [
-        "`DISTINCT` se escribe justo después de `SELECT`: `SELECT DISTINCT ciudad FROM clientes;`.",
-        "Si varios clientes viven en Madrid, con `DISTINCT` 'Madrid' aparecerá solo una vez."
-],
-      execution_order_note: "💡 La base de datos agrupa y descarta las copias repetidas antes de mostrar el resultado final.",
+        "`DISTINCT` se escribe inmediatamente después de la palabra clave `SELECT`.",
+        "Si un valor se repite en cientos de registros, `DISTINCT` colapsa los duplicados en una única aparición.",
+        "Se aplica sobre el conjunto de columnas proyectadas; si proyectas una columna, garantiza valores únicos de esa columna."
+      ],
+      execution_order_note: "💡 El motor primero reúne las filas y luego ejecuta una ordenación interna para descartar duplicados.",
     },
     objectives: [
       "1. Consultar la ubicación de residencia de los clientes.",
@@ -509,14 +510,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Utiliza el operador de comparación mayor que (>): WHERE precio > 500;"
 ],
     concept: {
-      summary: "`WHERE` es la condición o filtro de SQL: le pide a la base de datos que solo te entregue las filas que cumplan con una regla específica.",
-      syntax: "SELECT col1, col2, col3\nFROM tabla\nWHERE condicion_comparacion;",
+      summary: "`WHERE` es la cláusula de filtrado de SQL: instruye a la base de datos a retornar únicamente aquellas filas que cumplan una condición lógica.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna_numerica > valor_umbral;",
       key_points: [
-        "`WHERE` se coloca después de `FROM tabla`.",
-        "Usa operadores de comparación habituales: `>` (mayor), `<` (menor), `=` (igual), `>=` (mayor o igual).",
-        "Para este reto la condición es: `WHERE precio > 500;`."
-],
-      execution_order_note: "💡 La base de datos revisa cada fila con `WHERE` y descarta de inmediato las que no cumplen la regla, ahorrando memoria y tiempo.",
+        "`WHERE` se ubica después de `FROM nombre_tabla` y antes de cualquier ordenamiento.",
+        "Operadores numéricos de teclado: mayor que `>`, menor que `<`, igual `=`, mayor o igual `>=` y menor o igual `<=`.",
+        "Los operadores `>=` y `<=` se escriben combinando dos caracteres seguidos en el teclado sin espacios (`>` luego `=`, `<` luego `=`)."
+      ],
+      execution_order_note: "💡 El motor filtra con `WHERE` antes de armar las columnas del `SELECT` para no procesar datos innecesarios.",
     },
     objectives: [
       "1. Seleccionar la descripción, precio y existencias del inventario.",
@@ -540,13 +541,13 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Recuerda que BETWEEN siempre conecta el rango con la palabra AND."
 ],
     concept: {
-      summary: "`BETWEEN` te permite buscar valores dentro de un rango cerrado (entre un mínimo y un máximo). Es mucho más cómodo que escribir dos comparaciones separadas.",
-      syntax: "SELECT columna_1, columna_2\nFROM tabla\nWHERE columna BETWEEN valor_min AND valor_max;",
+      summary: "`BETWEEN` evalúa si un valor se encuentra dentro de un intervalo cerrado (entre un límite inferior y un límite superior).",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna BETWEEN limite_min AND limite_max;",
       key_points: [
-        "`BETWEEN min AND max` incluye ambos extremos del intervalo.",
-        "Escribir `precio BETWEEN 100 AND 800` equivale a `precio >= 100 AND precio <= 800`.",
-        "Sirve tanto para números como para fechas y letras."
-],
+        "`BETWEEN min AND max` es inclusivo: incluye tanto el límite inferior como el superior.",
+        "Escribir `col BETWEEN a AND b` equivale lógicamente a `col >= a AND col <= b`.",
+        "Funciona de manera óptima tanto con números como con fechas y cadenas alfanuméricas."
+      ],
       execution_order_note: "💡 El motor evalúa el rango directamente sobre los datos de la columna de forma optimizada.",
     },
     objectives: [
@@ -571,14 +572,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Escribe: WHERE email LIKE '%@email.com';"
 ],
     concept: {
-      summary: "`LIKE` te ayuda a buscar coincidencias por partes de un texto usando el comodín `%` (que significa 'cualquier texto que haya antes o después').",
-      syntax: "SELECT columnas\nFROM tabla\nWHERE columna LIKE 'patron%';",
+      summary: "`LIKE` busca coincidencias en cadenas de texto mediante caracteres comodín como `%` (cualquier secuencia de caracteres).",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna_texto LIKE '%terminacion';",
       key_points: [
-        "`%@email.com` significa: 'no importa lo que haya al inicio, mientras termine en @email.com'.",
-        "El texto a buscar siempre se escribe entre comillas simples: `'%'`.",
-        "Si quisieras buscar que empiece con algo, pondrías el comodín al final: `'Carlos%'`."
-],
-      execution_order_note: "💡 PostgreSQL examina el patrón texto por texto; el símbolo `%` actúa como un comodín flexible.",
+        "El comodín `%` representa cero, uno o múltiples caracteres arbitrarios.",
+        "`'%texto'` busca textos que terminen exactamente en esa palabra; `'texto%'` busca que comiencen con ella; y `'%texto%'` busca que la contenga en cualquier parte.",
+        "El patrón de búsqueda siempre debe encerrarse entre comillas simples: `'...%'`."
+      ],
+      execution_order_note: "💡 `LIKE` distingue mayúsculas de minúsculas. Si necesitas ignorar mayúsculas en PostgreSQL se usa `ILIKE`.",
     },
     objectives: [
       "1. Consultar los datos de contacto de los clientes registrados.",
@@ -602,14 +603,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "No olvides las comillas simples en cada ciudad dentro de la lista."
 ],
     concept: {
-      summary: "`IN` te permite revisar si un valor coincide con cualquiera de los elementos de una lista. Es la forma limpia y elegante de evitar escribir muchos `OR` seguidos.",
-      syntax: "SELECT columnas\nFROM tabla\nWHERE columna IN (val1, val2, val3);",
+      summary: "`IN` comprueba si el valor de una columna coincide con cualquiera de los elementos listados dentro de un conjunto cerrado.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna IN ('valor_1', 'valor_2', 'valor_3');",
       key_points: [
-        "Escribe la lista de opciones entre paréntesis y separada por comas: `IN ('Madrid', 'Barcelona', 'Valencia')`.",
-        "Equivale a decir: `ciudad = 'Madrid' OR ciudad = 'Barcelona' OR ciudad = 'Valencia'`.",
-        "Cada nombre de ciudad es un texto y va entre comillas simples."
-],
-      execution_order_note: "💡 En lugar de evaluar condición por condición, PostgreSQL busca eficientemente el valor dentro de la lista en memoria.",
+        "La lista de opciones válidas se delimita entre paréntesis `(...)` y cada elemento se separa por comas.",
+        "`col IN (a, b)` es la alternativa limpia y recomendada para evitar múltiples `OR` encadenados (`col = a OR col = b`).",
+        "Cada valor de texto dentro de la lista debe llevar sus propias comillas simples individuales: `'valor'`."
+      ],
+      execution_order_note: "💡 `IN` suele ejecutarse de forma mucho más rápida que múltiples `OR` gracias a la búsqueda por tabla hash en el motor.",
     },
     objectives: [
       "1. Consultar la lista de clientes y sus ciudades de residencia.",
@@ -633,14 +634,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Asegúrate de incluir los símbolos de igual (=) junto a < y >."
 ],
     concept: {
-      summary: "El operador `OR` te permite pedir resultados que cumplan al menos una de las dos condiciones que indiques.",
-      syntax: "SELECT columnas\nFROM tabla\nWHERE condicion1 OR condicion2;",
+      summary: "El operador lógico `OR` permite incluir una fila si satisface al menos una de las condiciones especificadas (o ambas).",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE condicion_1 OR condicion_2;",
       key_points: [
-        "Si la fila cumple la primera regla O la segunda regla (o ambas), aparecerá en el resultado.",
-        "Menor o igual se escribe `<=`, mayor o igual se escribe `>=`.",
-        "Escribe: `WHERE stock <= 15 OR stock >= 75;`."
-],
-      execution_order_note: "💡 Evaluación de cortocircuito: si la base de datos comprueba que la primera condición es verdadera, no pierde tiempo verificando la segunda.",
+        "`cond1 OR cond2` devolverá la fila si la condición 1 es verdadera, si la condición 2 es verdadera, o si ambas lo son.",
+        "Para operadores compuestos de teclado: menor o igual se escribe `<=` y mayor o igual se escribe `>=` (sin espacios entre los dos símbolos).",
+        "Puedes combinar rangos extremos uniendo dos predicados con `OR` en la cláusula `WHERE`."
+      ],
+      execution_order_note: "💡 En lógica booleana de SQL, `AND` tiene mayor precedencia que `OR`; si mezclas ambos operadores, usa paréntesis `()`.",
     },
     objectives: [
       "1. Consultar los artículos en los extremos de disponibilidad.",
@@ -664,13 +665,13 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Recuerda que 'pagada' va entre comillas simples."
 ],
     concept: {
-      summary: "Con `AND` exiges que dos reglas se cumplan al mismo tiempo. Para decir 'distinto de' en SQL, usamos el símbolo `<>` (o `!=`).",
-      syntax: "SELECT columnas\nFROM tabla\nWHERE cond1 AND cond2 <> 'valor';",
+      summary: "`AND` exige el cumplimiento simultáneo de dos reglas. Para evaluar desigualdad ('distinto de'), SQL utiliza `<>` o `!=`.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE condicion_1 AND columna_estado <> 'valor_excluido';",
       key_points: [
-        "`AND` exige que ambas condiciones sean verdaderas para que la fila aparezca.",
-        "`<> 'pagada'` excluye todas las facturas que ya estén liquidadas.",
-        "Monto de 400€ o más se escribe: `monto_total >= 400`."
-],
+        "`AND` requiere que ambas expresiones sean verdaderas para que el registro aparezca en el resultado.",
+        "En SQL, la desigualdad se expresa con `<>` (estándar ISO) o con `!=` (signo de admiración `!` seguido de `=`). Ambos son reconocidos por PostgreSQL.",
+        "Mayor o igual se escribe `>=` con los dos caracteres de teclado consecutivos (`>` y `=`)."
+      ],
       execution_order_note: "💡 PostgreSQL evalúa primero la condición que descarte más filas rápidamente para ahorrar trabajo.",
     },
     objectives: [
@@ -695,14 +696,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Escribe: ORDER BY apellido ASC;"
 ],
     concept: {
-      summary: "`ORDER BY` ordena los resultados de tu consulta por una o más columnas. Por defecto ordena de menor a mayor (A-Z o 1-9) con `ASC`.",
-      syntax: "SELECT col1, col2\nFROM tabla\nWHERE condicion\nORDER BY columna_orden [ASC | DESC];",
+      summary: "`ORDER BY` controla la ordenación de las filas devueltas, permitiendo clasificar de forma ascendente (`ASC`) o descendente (`DESC`).",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE condicion_filtro\nORDER BY columna_criterio [ASC | DESC];",
       key_points: [
-        "`ORDER BY columna ASC` ordena de menor a mayor (ascendente).",
-        "Para ordenar de mayor a menor (Z-A) se usa `DESC`.",
-        "La cláusula `ORDER BY` siempre va al final de la consulta (después de `FROM` y `WHERE`)."
-],
-      execution_order_note: "💡 La base de datos primero filtra las filas con `WHERE` y solo al final organiza las filas resultantes en el orden que pediste.",
+        "`ORDER BY col ASC` ordena de menor a mayor (A-Z o numérico creciente); es el modo por defecto si se omite.",
+        "`ORDER BY col DESC` ordena de mayor a menor (Z-A o numérico decreciente).",
+        "La cláusula `ORDER BY` se escribe al final de la consulta (después de `FROM` y `WHERE`)."
+      ],
+      execution_order_note: "💡 `ORDER BY` se ejecuta casi al final de todo el proceso de consulta, justo antes de enviar los datos al cliente.",
     },
     objectives: [
       "1. Acotar el conjunto de clientes al país solicitado.",
@@ -726,14 +727,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Agrega LIMIT 5 al final para quedarte solo con los primeros 5."
 ],
     concept: {
-      summary: "`LIMIT` le pone un tope al número de filas que te devuelve la consulta. Al combinar `ORDER BY` con `LIMIT`, creas rankings o listas de tipo 'Top N' en un segundo.",
-      syntax: "SELECT columna_1, columna_2\nFROM tabla\nORDER BY columna_criterio ASC\nLIMIT cantidad;",
+      summary: "`LIMIT` restringe la cantidad máxima de filas retornadas, permitiendo obtener los primeros `N` registros clasificados.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nORDER BY columna_criterio ASC\nLIMIT cantidad_filas;",
       key_points: [
-        "Para ver los que tienen menos stock, ordenamos con `ORDER BY stock ASC`.",
-        "`LIMIT 5` corta el resultado y solo te muestra las primeras 5 filas.",
-        "El orden es vital: primero ordenas, luego limitas."
-],
-      execution_order_note: "💡 Con `LIMIT`, la base de datos se detiene en cuanto encuentra las primeras N filas requeridas, sin procesar la tabla entera.",
+        "`LIMIT N` corta el conjunto de datos y entrega únicamente las primeras `N` filas.",
+        "El orden es determinante: primero se ordenan los datos con `ORDER BY` y luego `LIMIT` toma los primeros puestos del ranking.",
+        "Si buscas los menores valores, ordena con `ASC`; si buscas los mayores, ordena con `DESC`."
+      ],
+      execution_order_note: "💡 Usar `LIMIT` evita transferir gigabytes de datos cuando solo te interesan las muestras principales.",
     },
     objectives: [
       "1. Consultar los artículos de menor disponibilidad en almacén.",
@@ -757,13 +758,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Asegúrate de que categoria_id sea ASC y precio sea DESC."
 ],
     concept: {
-      summary: "Puedes ordenar por varias columnas a la vez separándolas por coma. La base de datos ordenará por la primera, y si hay empates, desempatará con la segunda.",
-      syntax: "SELECT columnas\nFROM tabla\nORDER BY col1 ASC, col2 DESC;",
+      summary: "Puedes ordenar por múltiples columnas separándolas por coma en el `ORDER BY`, estableciendo prioridades de desempate.",
+      syntax: "SELECT columna_1, columna_2, columna_3\nFROM nombre_tabla\nORDER BY columna_prioritaria ASC, columna_desempate DESC;",
       key_points: [
-        "Escribe las columnas en orden de prioridad: `ORDER BY col1 ASC, col2 DESC`.",
-        "Cada columna puede tener su propio sentido de orden (`ASC` o `DESC`)."
-],
-      execution_order_note: "💡 La base de datos agrupa mentalmente por la primera columna y luego aplica la segunda ordenación sobre cada subgrupo.",
+        "El motor ordena primero por la columna inicial; si existen valores idénticos (empates), recurre a la segunda columna para desempatar.",
+        "Cada columna en la lista puede tener su propia dirección independiente (`ASC` o `DESC`).",
+        "Separa cada criterio de ordenación mediante una coma `,`."
+      ],
+      execution_order_note: "💡 Los índices compuestos en la base de datos aceleran drásticamente los ordenamientos multi-columna.",
     },
     objectives: [
       "1. Consultar los artículos asociando su familia comercial y precio.",
@@ -787,14 +789,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "OFFSET 5 salta los primeros 5, y LIMIT 5 toma los 5 siguientes."
 ],
     concept: {
-      summary: "`OFFSET` te permite 'saltar' un número de filas antes de empezar a mostrar resultados. Junto con `LIMIT`, es la base de la paginación en cualquier web o app.",
-      syntax: "SELECT columnas\nFROM tabla\nORDER BY id ASC LIMIT N OFFSET M;",
+      summary: "`OFFSET` salta un número determinado de filas antes de empezar a devolver resultados, permitiendo implementar paginación junto a `LIMIT`.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nORDER BY columna_identificador ASC\nLIMIT tamano_pagina OFFSET filas_a_saltar;",
       key_points: [
-        "`LIMIT 5` indica cuántos registros mostrar por página.",
-        "`OFFSET 5` indica cuántos registros saltarse (en este caso, los 5 de la primera página).",
-        "Siempre debes usar `ORDER BY` al paginar para que los saltos sean consistentes y predecibles."
-],
-      execution_order_note: "💡 `OFFSET` cuenta las filas en el orden indicado y solo empieza a enviar datos al cliente cuando llega al número marcado.",
+        "`LIMIT` define el tamaño de la página (cuántas filas ver) y `OFFSET` define el salto (cuántas filas ignorar al inicio).",
+        "Para una paginación determinista y reproducible, siempre se debe incluir un `ORDER BY` con una clave única.",
+        "La fórmula clásica de salto es: `OFFSET (numero_pagina - 1) * tamano_pagina`."
+      ],
+      execution_order_note: "💡 Aunque `OFFSET` salte filas, el motor debe leerlas internamente; para millones de registros se recomienda paginación por cursor.",
     },
     objectives: [
       "1. Establecer el orden de visualización de los clientes.",
@@ -818,14 +820,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Usa HAVING COUNT(*) > 2 después de GROUP BY para quedarte solo con categorías con más de 2 productos."
 ],
     concept: {
-      summary: "`GROUP BY` agrupa filas que tienen el mismo valor en una columna, y `COUNT(*)` cuenta cuántas filas hay en cada grupo. Para filtrar sobre el total de un grupo, usamos `HAVING` en vez de `WHERE`.",
-      syntax: "SELECT categoria_id, COUNT(*) AS total_productos\nFROM productos\nGROUP BY categoria_id\nHAVING COUNT(*) > 2;",
+      summary: "`GROUP BY` agrupa filas que comparten el mismo valor en una o más columnas, permitiendo calcular agregaciones como `COUNT(*)` por cada grupo.",
+      syntax: "SELECT columna_grupo,\n       COUNT(*) AS total_registros\nFROM nombre_tabla\nGROUP BY columna_grupo;",
       key_points: [
-        "`GROUP BY categoria_id` junta los productos por su categoría.",
-        "`COUNT(*) AS total_productos` cuenta los productos de cada categoría.",
-        "`HAVING COUNT(*) > 2` filtra los grupos que superan el umbral (a diferencia de WHERE, HAVING filtra grupos, no filas individuales)."
-],
-      execution_order_note: "💡 La base de datos primero forma los grupos en memoria con `GROUP BY`, calcula la cuenta, y luego descarta los grupos que no cumplan `HAVING`.",
+        "`GROUP BY columna` condensa todas las filas que tienen el mismo valor en una sola fila representativa.",
+        "Toda columna en el `SELECT` que no esté dentro de una función de agregación (`COUNT`, `SUM`, etc.) debe estar presente en la cláusula `GROUP BY`.",
+        "`COUNT(*)` contabiliza el número total de filas pertenecientes a cada grupo formado."
+      ],
+      execution_order_note: "💡 `GROUP BY` se ejecuta inmediatamente después de `WHERE` y antes de evaluar las funciones del `SELECT`.",
     },
     objectives: [
       "1. Condensar los artículos agrupándolos por su familia comercial.",
@@ -849,15 +851,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "No necesitas GROUP BY porque quieres un solo resultado global."
 ],
     concept: {
-      summary: "Las funciones de resumen (`COUNT`, `SUM`, `AVG`) pueden usarse juntas para obtener métricas globales en una sola consulta sin necesidad de agrupar.",
-      syntax: "SELECT COUNT(*) AS total, SUM(monto) AS acumulado, ROUND(AVG(monto), 2) AS promedio\nFROM pedidos\nWHERE estado = 'completado';",
+      summary: "Las funciones de agregación (`COUNT`, `SUM`, `AVG`) condensan todo el conjunto de filas en una sola fila resumen de métricas clave.",
+      syntax: "SELECT COUNT(*) AS total_filas,\n       SUM(columna_monto) AS suma_total,\n       ROUND(AVG(columna_monto), 2) AS promedio\nFROM nombre_tabla\nWHERE condicion_filtro;",
       key_points: [
-        "`COUNT(*)` cuenta cuántos pedidos completados hubo.",
-        "`SUM(total)` suma el dinero de todas esas compras.",
-        "`ROUND(AVG(total), 2)` calcula el ticket promedio y lo redondea a 2 decimales.",
-        "El `WHERE estado_pedido = 'completado'` asegura que solo contemos ventas reales."
-],
-      execution_order_note: "💡 La base de datos recorre los pedidos completados acumulando la suma y el conteo en una sola pasada eficiente.",
+        "`COUNT(*)` cuenta el total de registros, `SUM(col)` acumula el total numérico y `AVG(col)` calcula la media aritmética.",
+        "Al aplicar filtros con `WHERE`, las funciones de agregación operan únicamente sobre las filas que cumplan la condición.",
+        "`ROUND(expresion, 2)` evita decimales flotantes interminables y garantiza precisión comercial."
+      ],
+      execution_order_note: "💡 Si no usas `GROUP BY`, las funciones de agregación reducen toda la tabla a una sola fila de resultados globales.",
     },
     objectives: [
       "1. Filtrar las transacciones considerando únicamente las compras exitosas.",
@@ -881,14 +882,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "No olvides agrupar al final: GROUP BY categoria_id;"
 ],
     concept: {
-      summary: "`MIN()` encuentra el valor más pequeño y `MAX()` encuentra el más grande dentro de cada grupo.",
-      syntax: "SELECT grupo, MIN(col), MAX(col)\nFROM tabla\nGROUP BY grupo;",
+      summary: "`MIN()` y `MAX()` obtienen el valor más bajo y el valor más alto de una columna dentro de cada grupo o en toda la tabla.",
+      syntax: "SELECT columna_grupo,\n       MIN(columna_valor) AS valor_minimo,\n       MAX(columna_valor) AS valor_maximo\nFROM nombre_tabla\nGROUP BY columna_grupo;",
       key_points: [
-        "`MIN(precio)` obtiene el artículo más barato de la categoría.",
-        "`MAX(precio)` obtiene el artículo más caro de la categoría.",
-        "Debes agrupar con `GROUP BY categoria_id` para que el cálculo se haga por cada categoría individual."
-],
-      execution_order_note: "💡 `GROUP BY` separa los productos por categoría y calcula los valores extremos de cada grupo antes de devolver la respuesta.",
+        "`MIN(col)` localiza el valor mínimo del grupo y `MAX(col)` el valor máximo.",
+        "`GROUP BY columna_grupo` permite obtener estos extremos de forma segmentada para cada grupo independiente.",
+        "Tanto `MIN` como `MAX` ignoran automáticamente valores nulos (`NULL`) en su cálculo."
+      ],
+      execution_order_note: "💡 En columnas indexadas, `MIN` y `MAX` son operaciones casi instantáneas (O(log N)).",
     },
     objectives: [
       "1. Agrupar el catálogo por familia comercial.",
@@ -912,14 +913,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Agrupa por pais y ordena por total_clientes DESC."
 ],
     concept: {
-      summary: "Combinar `GROUP BY` con `ORDER BY ... DESC` te permite descubrir de dónde viene la mayor parte de tus usuarios en forma de ranking.",
-      syntax: "SELECT pais, COUNT(*) AS total\nFROM tabla\nGROUP BY pais\nORDER BY total DESC;",
+      summary: "Combinar `GROUP BY`, `COUNT(*)` y `ORDER BY` permite crear tablas de distribución de frecuencias ordenadas por volumen.",
+      syntax: "SELECT columna_segmento,\n       COUNT(*) AS total_filas\nFROM nombre_tabla\nGROUP BY columna_segmento\nORDER BY total_filas DESC;",
       key_points: [
-        "`GROUP BY pais` junta a los clientes según su país de residencia.",
-        "`COUNT(*) AS total_clientes` cuenta cuántos clientes hay por país.",
-        "`ORDER BY total_clientes DESC` pone en la cima al país con más clientes."
-],
-      execution_order_note: "💡 Primero se agrupa por país, se realiza el conteo de filas, y finalmente se ordenan los grupos de mayor a menor.",
+        "El `GROUP BY` agrupa por el criterio demográfico o de categorización deseado.",
+        "Para ver los grupos más numerosos arriba de todo, ordena por el alias de la función de conteo con `DESC`.",
+        "El orden de ejecución del motor procesa primero `GROUP BY`, luego la proyección del `SELECT` y finalmente `ORDER BY`."
+      ],
+      execution_order_note: "💡 Puedes referenciar el alias de la columna agregada directamente en el `ORDER BY` final.",
     },
     objectives: [
       "1. Agrupar la base de usuarios por su país de origen.",
@@ -942,13 +943,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Escribe: SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id;"
 ],
     concept: {
-      summary: "`SUM(columna)` suma todos los números de esa columna para cada grupo que indiques en `GROUP BY`.",
-      syntax: "SELECT grupo, SUM(numerico) AS total\nFROM tabla\nGROUP BY grupo;",
+      summary: "`SUM()` suma todos los valores de una columna numérica dentro de cada grupo formado por `GROUP BY`.",
+      syntax: "SELECT columna_identificador,\n       SUM(columna_cantidad) AS total_acumulado\nFROM nombre_tabla\nGROUP BY columna_identificador;",
       key_points: [
-        "`SUM(stock) AS stock_total` suma las existencias de todos los productos del mismo proveedor.",
-        "`GROUP BY proveedor_id` asegura que tengamos una sola fila por cada fabricante."
-],
-      execution_order_note: "💡 La base de datos agrupa los productos por proveedor y va acumulando el stock de cada fila en un total sumatorio.",
+        "`SUM(col)` totaliza los valores cuantitativos de todas las filas agrupadas.",
+        "Debes incluir en el `GROUP BY` la clave o columna que identifica al grupo.",
+        "Si una fila contiene `NULL` en la columna sumada, `SUM` la ignora sin alterar el acumulado."
+      ],
+      execution_order_note: "💡 `SUM()` sobre columnas vacías o solo con nulos devuelve `NULL`, no 0. Para forzar cero se suele usar `COALESCE(SUM(col), 0)`.",
     },
     objectives: [
       "1. Agrupar el inventario en función del fabricante o distribuidor.",
@@ -972,13 +974,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Recuerda que no puedes usar WHERE con funciones como SUM o COUNT."
 ],
     concept: {
-      summary: "Recuerda la regla de oro: `WHERE` filtra filas antes de agrupar; `HAVING` filtra grupos después de hacer la suma o cálculo.",
-      syntax: "SELECT grupo, SUM(col)\nFROM tabla\nGROUP BY grupo\nHAVING SUM(col) > valor;",
+      summary: "`HAVING` es el filtro de los grupos: se aplica sobre los resultados calculados por funciones de agregación, donde `WHERE` no tiene alcance.",
+      syntax: "SELECT columna_grupo,\n       SUM(columna_metrica) AS acumulado\nFROM nombre_tabla\nGROUP BY columna_grupo\nHAVING SUM(columna_metrica) > valor_corte;",
       key_points: [
-        "Para filtrar sobre la suma (`SUM(stock) > 100`), se debe usar `HAVING` y nunca `WHERE`.",
-        "`HAVING` se coloca siempre después del `GROUP BY`."
-],
-      execution_order_note: "💡 El motor calcula la suma de inventario de cada proveedor y luego descarta a los que no alcancen las 100 unidades.",
+        "Regla de oro: `WHERE` filtra filas individuales *antes* de agrupar; `HAVING` filtra grupos *después* de agrupar.",
+        "En la cláusula `HAVING` se escriben directamente funciones agregadas como `SUM(...) > umbral` o `COUNT(...) >= N`.",
+        "La cláusula `HAVING` siempre se posiciona inmediatamente después de `GROUP BY`."
+      ],
+      execution_order_note: "💡 Nunca coloques funciones de agregación en el `WHERE`; el motor lanzará error de sintaxis.",
     },
     objectives: [
       "1. Calcular el inventario acumulado por cada fabricante.",
@@ -1002,14 +1005,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Redondea el promedio con ROUND(AVG(total), 2) en el SELECT."
 ],
     concept: {
-      summary: "`HAVING AVG(...) > valor` te permite encontrar clientes o entidades cuyo comportamiento promedio supere un estándar que tú definas.",
-      syntax: "SELECT cliente_id, ROUND(AVG(total), 2) AS avg_total\nFROM pedidos\nGROUP BY cliente_id\nHAVING AVG(total) > 500;",
+      summary: "`HAVING` con `AVG()` filtra aquellos grupos cuya media aritmética supera o no alcanza un determinado umbral de negocio.",
+      syntax: "SELECT columna_grupo,\n       ROUND(AVG(columna_monto), 2) AS promedio_grupo\nFROM nombre_tabla\nGROUP BY columna_grupo\nHAVING AVG(columna_monto) > umbral_promedio;",
       key_points: [
-        "`ROUND(AVG(total), 2) AS ticket_promedio` calcula la media de gasto por cliente.",
-        "`HAVING AVG(total) > 500` descarta a los clientes que gastan menos de 500€ en promedio.",
-        "Se agrupa por `cliente_id` en la tabla `pedidos`."
-],
-      execution_order_note: "💡 Para cada cliente se promedian sus pedidos y se verifica la condición de corte antes de proyectar.",
+        "`HAVING AVG(columna) > umbral` descarta grupos cuyo promedio no cumpla con la regla mínima.",
+        "Para operadores de teclado: mayor o igual se escribe `>=` y menor o igual se escribe `<=` (caracteres contiguos sin espacios).",
+        "`AVG` solo puede aplicarse a tipos de datos numéricos (enteros, decimales, flotantes)."
+      ],
+      execution_order_note: "💡 Puedes usar `ROUND()` en el `SELECT` para presentar la media limpia y mantener la comparación pura en el `HAVING`.",
     },
     objectives: [
       "1. Calcular el gasto medio por transacción de cada comprador.",
@@ -1033,15 +1036,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Agrupa por estado_pedido y ordena por monto_acumulado DESC."
 ],
     concept: {
-      summary: "Puedes combinar conteos (`COUNT`) y sumas de dinero (`SUM`) en una misma consulta para entender el estado de un negocio de un solo vistazo.",
-      syntax: "SELECT estado, COUNT(*), SUM(monto)\nFROM tabla\nGROUP BY estado\nORDER BY SUM(monto) DESC;",
+      summary: "Puedes calcular múltiples agregaciones simultáneas (`COUNT`, `SUM`, `AVG`) en un solo `GROUP BY` para construir dashboards analíticos.",
+      syntax: "SELECT columna_estado,\n       COUNT(*) AS total_operaciones,\n       SUM(columna_monto) AS monto_total\nFROM nombre_tabla\nGROUP BY columna_estado\nORDER BY monto_total DESC;",
       key_points: [
-        "`GROUP BY estado_pedido` agrupa en categorías como 'completado', 'pendiente', etc.",
-        "`COUNT(*)` te dice cuántos pedidos hay en ese estado.",
-        "`SUM(total)` te dice cuánto dinero representan esos pedidos.",
-        "`ORDER BY monto_acumulado DESC` ordena de mayor a menor recaudación."
-],
-      execution_order_note: "💡 La base de datos genera el resumen completo agrupado y lo ordena según la suma monetaria calculada.",
+        "Un solo `GROUP BY` puede alimentar tantas métricas agregadas en el `SELECT` como requiera el análisis.",
+        "Puedes ordenar la salida final por cualquiera de las métricas agregadas utilizando su alias o la función con `DESC`.",
+        "Asegúrate de que la columna categórica no agregada esté presente en la cláusula `GROUP BY`."
+      ],
+      execution_order_note: "💡 Cada estado diferente formará una fila con sus totales correspondientes calculados en un solo pase de datos.",
     },
     objectives: [
       "1. Agrupar el histórico de pedidos según su estado operativo.",
@@ -1065,14 +1067,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Indica las columnas deseadas en el SELECT."
 ],
     concept: {
-      summary: "`INNER JOIN` es el puente que une dos tablas diferentes basándose en un dato que comparten (como el ID del cliente). Solo muestra filas donde haya coincidencia en ambos lados.",
-      syntax: "SELECT p.pedido_id, c.nombre, c.apellido, p.total\nFROM pedidos p\nINNER JOIN clientes c ON p.cliente_id = c.cliente_id;",
+      summary: "`INNER JOIN` combina filas de dos tablas basándose en una condición de coincidencia común (`ON`), preservando solo los registros que existen en ambas.",
+      syntax: "SELECT t1.columna_a, t2.columna_b\nFROM tabla_1 t1\nINNER JOIN tabla_2 t2 ON t1.clave_foranea = t2.clave_primaria;",
       key_points: [
-        "`FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id` conecta las dos tablas.",
-        "Usar alias cortos (`p` y `c`) hace que tu código sea mucho más fácil y rápido de leer.",
-        "Si un pedido no tiene cliente, o un cliente no tiene pedidos, el `INNER JOIN` no lo mostrará."
-],
-      execution_order_note: "💡 La base de datos compara las claves comunes y arma una sola fila combinada en memoria por cada coincidencia.",
+        "La cláusula `ON` especifica la igualdad entre la clave primaria de una tabla y la clave foránea de la otra.",
+        "Los alias cortos de tabla (como `t1` y `t2`) simplifican la consulta y evitan ambigüedad al referenciar columnas homónimas.",
+        "Si un registro en una tabla no tiene correspondencia en la otra, `INNER JOIN` lo omite del resultado final."
+      ],
+      execution_order_note: "💡 Los optimizadores eligen algoritmos como Hash Join o Nested Loop según el tamaño de las tablas unidas.",
     },
     objectives: [
       "1. Conectar las transacciones con el directorio de usuarios mediante su clave compartida.",
@@ -1096,15 +1098,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena al final por total_gastado DESC."
 ],
     concept: {
-      summary: "Unir (`JOIN`) y luego agrupar (`GROUP BY`) es uno de los superpoderes más utilizados en SQL: cruzas datos de dos tablas y calculas un total por cada persona.",
-      syntax: "SELECT c.cliente_id, c.nombre, SUM(p.total) AS total_gastado\nFROM clientes c\nINNER JOIN pedidos p ON c.cliente_id = p.cliente_id\nGROUP BY c.cliente_id, c.nombre\nORDER BY total_gastado DESC;",
+      summary: "Combinar `INNER JOIN` con `GROUP BY` permite cruzar datos de transacciones con entidades maestras y agregar totales por entidad.",
+      syntax: "SELECT t1.id, t1.nombre_entidad,\n       SUM(t2.columna_monto) AS total_agregado\nFROM tabla_entidades t1\nINNER JOIN tabla_transacciones t2 ON t1.id = t2.entidad_id\nGROUP BY t1.id, t1.nombre_entidad\nORDER BY total_agregado DESC;",
       key_points: [
-        "Cruza `clientes` y `pedidos` mediante `cliente_id`.",
-        "Agrupa por los datos del cliente (`c.cliente_id, c.nombre, c.apellido`).",
-        "`SUM(p.total) AS total_gastado` suma todas las compras de cada cliente.",
-        "`ORDER BY total_gastado DESC` pone al mejor comprador arriba de todo."
-],
-      execution_order_note: "💡 El motor empareja primero los pedidos de cada cliente y después suma el dinero por cada grupo.",
+        "Primero se establece la unión relacional mediante `INNER JOIN ... ON ...`.",
+        "En el `GROUP BY` deben incluirse todas las columnas de la entidad maestra seleccionadas en el `SELECT` que no sean funciones agregadas.",
+        "`ORDER BY total_agregado DESC` clasifica de mayor a menor según el acumulado obtenido."
+      ],
+      execution_order_note: "💡 El motor primero ejecuta el cruce `JOIN`, filtra filas si hay `WHERE`, agrupa con `GROUP BY` y finalmente calcula el `SUM`.",
     },
     objectives: [
       "1. Cruzar las órdenes de compra con la información de los clientes.",
@@ -1128,14 +1129,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena con ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC."
 ],
     concept: {
-      summary: "En bases de datos relacionales, los nombres descriptivos se guardan en una tabla aparte para no repetir texto. Con `INNER JOIN` los traes a la vista fácilmente.",
-      syntax: "SELECT p.producto_id, p.nombre_producto, c.nombre_categoria, p.precio\nFROM productos p\nINNER JOIN categorias c ON p.categoria_id = c.categoria_id\nORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;",
+      summary: "`INNER JOIN` permite sustituir códigos numéricos de clasificación (IDs) por nombres descriptivos presentes en tablas maestras.",
+      syntax: "SELECT t1.id, t1.nombre_item, t2.nombre_clasificacion, t1.precio\nFROM tabla_items t1\nINNER JOIN tabla_clasificaciones t2 ON t1.clasificacion_id = t2.clasificacion_id\nORDER BY t2.nombre_clasificacion ASC, t1.nombre_item ASC;",
       key_points: [
-        "Une `productos p` con `categorias c` usando `ON p.categoria_id = c.categoria_id`.",
-        "Ahora puedes mostrar `c.nombre_categoria` en vez de un simple número.",
-        "`ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC` organiza la lista alfabéticamente."
-],
-      execution_order_note: "💡 PostgreSQL reemplaza la clave numérica buscando instantáneamente en el índice de categorías.",
+        "La condición `ON t1.id_relacional = t2.id_relacional` enlaza el detalle con su catálogo descriptivo.",
+        "Prefijar cada columna con su alias (`t1.columna`, `t2.columna`) evita errores de columna ambigua.",
+        "Puedes ordenar jerárquicamente por la descripción de la categoría y luego por el nombre del artículo."
+      ],
+      execution_order_note: "💡 Los índices de clave foránea aceleran el proceso de emparejamiento entre las tablas maestras y de detalle.",
     },
     objectives: [
       "1. Cruzar los artículos con la tabla maestra de familias comerciales.",
@@ -1159,14 +1160,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "No olvides asignar el alias pais_proveedor a la columna pais."
 ],
     concept: {
-      summary: "Conectar los artículos con las empresas que los fabrican te permite rastrear el origen de tu inventario en un instante.",
-      syntax: "SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor\nFROM productos pr\nINNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id\nORDER BY pr.nombre_producto ASC;",
+      summary: "Puedes aplicar filtros con `WHERE` sobre cualquiera de las tablas unidas en un `INNER JOIN` para refinar el resultado conjunto.",
+      syntax: "SELECT t1.columna_a, t2.columna_b\nFROM tabla_1 t1\nINNER JOIN tabla_2 t2 ON t1.fk_id = t2.pk_id\nWHERE t2.columna_filtro = 'criterio'\nORDER BY t1.columna_a ASC;",
       key_points: [
-        "Conecta `productos pr` con `proveedores pv` mediante `proveedor_id`.",
-        "Renombra la columna del país con `pv.pais AS pais_proveedor`.",
-        "`ORDER BY pr.nombre_producto ASC` organiza de la A a la Z."
-],
-      execution_order_note: "💡 Se cruzan los registros emparejando la clave del proveedor presente en la ficha de cada producto.",
+        "El `WHERE` se evalúa después de que el motor ha resuelto el `JOIN`, filtrando las filas ya combinadas.",
+        "Puedes filtrar por columnas de la tabla principal, de la tabla unida o de ambas a la vez.",
+        "Recuerda que los valores alfanuméricos en el `WHERE` van entre comillas simples: `'criterio'`."
+      ],
+      execution_order_note: "💡 El optimizador suele aplicar 'pushdown de predicados', filtrando las tablas antes del JOIN para reducir filas.",
     },
     objectives: [
       "1. Vincular los artículos del catálogo con su empresa suministradora.",
@@ -1190,14 +1191,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena con ORDER BY f.factura_id ASC."
 ],
     concept: {
-      summary: "Combinar `INNER JOIN` con un filtro `WHERE` te permite conciliar registros financieros descartando intentos fallidos o pendientes.",
-      syntax: "SELECT f.factura_id, f.monto_total, pg.metodo_pago, pg.fecha_pago\nFROM facturas f\nINNER JOIN pagos pg ON f.factura_id = pg.factura_id\nWHERE pg.estado_pago = 'aprobado'\nORDER BY f.factura_id ASC;",
+      summary: "Encadenar múltiples cláusulas `INNER JOIN` permite trazar relaciones a lo largo de tres o más tablas conectadas en cadena.",
+      syntax: "SELECT t1.id, t2.col_b, t3.col_c\nFROM tabla_1 t1\nINNER JOIN tabla_2 t2 ON t1.t2_id = t2.id\nINNER JOIN tabla_3 t3 ON t2.t3_id = t3.id\nWHERE t3.estado = 'aprobado';",
       key_points: [
-        "Une `facturas f` y `pagos pg` mediante `factura_id`.",
-        "`WHERE pg.estado_pago = 'aprobado'` descarta pagos rechazados o pendientes.",
-        "Ordena de menor a mayor con `ORDER BY f.factura_id ASC`."
-],
-      execution_order_note: "💡 Primero se emparejan las facturas con sus pagos y luego se filtran solo aquellos con estado aprobado.",
+        "Cada nuevo `INNER JOIN` requiere su propia cláusula `ON` que defina la llave de conexión con alguna tabla previa.",
+        "La consulta se ejecuta como una cadena relacional: `T1` conecta con `T2`, y `T2` a su vez conecta con `T3`.",
+        "Los filtros `WHERE` pueden evaluar condiciones sobre cualquiera de las tres tablas participantes."
+      ],
+      execution_order_note: "💡 El planificador de PostgreSQL reorganiza el orden de unión para procesar primero las tablas más pequeñas.",
     },
     objectives: [
       "1. Cruzar los comprobantes fiscales con sus comprobantes de pago bancarios.",
@@ -1221,14 +1222,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Filtra los que no tienen compra con WHERE p.pedido_id IS NULL;"
 ],
     concept: {
-      summary: "El `LEFT JOIN` conserva a todos los clientes (incluso los que no tienen compras). Cuando un cliente no ha comprado nada, el pedido queda vacío (`NULL`). Si filtras con `WHERE p.pedido_id IS NULL`, ¡encuentras a los inactivos!",
-      syntax: "SELECT c.cliente_id, c.nombre, c.apellido\nFROM clientes c\nLEFT JOIN pedidos p ON c.cliente_id = p.cliente_id\nWHERE p.pedido_id IS NULL;",
+      summary: "`LEFT JOIN` preserva todas las filas de la tabla izquierda; al combinarse con `WHERE clave_derecha IS NULL`, crea un patrón Anti-Join.",
+      syntax: "SELECT t1.id, t1.nombre\nFROM tabla_izquierda t1\nLEFT JOIN tabla_derecha t2 ON t1.id = t2.entidad_id\nWHERE t2.entidad_id IS NULL;",
       key_points: [
-        "`FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id` conserva a todos los clientes.",
-        "`WHERE p.pedido_id IS NULL` se queda únicamente con los clientes sin compras.",
-        "En SQL nunca se escribe `= NULL`; siempre se escribe `IS NULL`."
-],
-      execution_order_note: "💡 `LEFT JOIN` rellena con valores `NULL` a la derecha cuando no encuentra coincidencias, permitiendo aislar registros sin actividad.",
+        "`LEFT JOIN` incluye todos los registros de la tabla izquierda, rellenando con `NULL` las columnas de la derecha si no hay coincidencia.",
+        "El filtro `WHERE t2.clave IS NULL` descarta las filas que sí hicieron match, aislando exclusivamente a los registros sin actividad.",
+        "En SQL la comprobación de nulos se escribe siempre `IS NULL` (nunca `= NULL`)."
+      ],
+      execution_order_note: "💡 Esta técnica es más eficiente que subconsultas `NOT IN` cuando las tablas contienen valores nulos.",
     },
     objectives: [
       "1. Relacionar clientes y compras conservando a la totalidad de usuarios registrados.",
@@ -1251,13 +1252,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Escribe: FROM productos p LEFT JOIN detalle_pedidos dp ON p.producto_id = dp.producto_id WHERE dp.detalle_id IS NULL;"
 ],
     concept: {
-      summary: "La técnica de buscar ausencias con `LEFT JOIN ... WHERE campo IS NULL` es la forma más rápida y estándar en SQL de encontrar productos o elementos olvidados.",
-      syntax: "SELECT p.producto_id, p.nombre_producto\nFROM productos p\nLEFT JOIN detalle_pedidos dp ON p.producto_id = dp.producto_id\nWHERE dp.detalle_id IS NULL;",
+      summary: "El patrón Anti-Join (`LEFT JOIN ... WHERE ... IS NULL`) es fundamental para detectar inventario huérfano o elementos sin transacciones.",
+      syntax: "SELECT t1.id, t1.nombre\nFROM tabla_catalogo t1\nLEFT JOIN tabla_movimientos t2 ON t1.id = t2.item_id\nWHERE t2.item_id IS NULL\nORDER BY t1.id ASC;",
       key_points: [
-        "Cruza `productos p` con `detalle_pedidos dp` usando `LEFT JOIN` sobre `producto_id`.",
-        "Filtra con `WHERE dp.detalle_id IS NULL` para hallar los productos que nadie ha comprado jamás."
-],
-      execution_order_note: "💡 Los productos que nunca se incluyeron en un pedido tendrán `dp.detalle_id = NULL` en el resultado del `LEFT JOIN`.",
+        "La tabla del catálogo va a la izquierda (`FROM`) y la tabla transaccional va a la derecha (`LEFT JOIN`).",
+        "Si un artículo jamás fue vendido o movido, sus columnas asociadas en la tabla derecha tendrán valor `NULL`.",
+        "Utiliza `WHERE t2.clave_primaria IS NULL` para capturar únicamente los elementos sin registros en la tabla derecha."
+      ],
+      execution_order_note: "💡 Al elegir la columna a verificar en el `WHERE ... IS NULL`, opta siempre por la clave primaria de la tabla derecha.",
     },
     objectives: [
       "1. Cruzar el catálogo con las líneas de compra conservando todos los artículos.",
@@ -1281,14 +1283,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena al final con ORDER BY f.factura_id ASC."
 ],
     concept: {
-      summary: "Encontrar facturas sin pagos es fundamental para el control de cobros. `LEFT JOIN` mantiene todas las facturas y `WHERE p.pago_id IS NULL` localiza las que están impagadas.",
-      syntax: "SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total\nFROM facturas f\nLEFT JOIN pagos p ON f.factura_id = p.factura_id\nWHERE p.pago_id IS NULL\nORDER BY f.factura_id ASC;",
+      summary: "Localiza documentos o comprobantes maestros que no registran ningún pago asociado en la tabla de transacciones de pago.",
+      syntax: "SELECT t1.documento_id, t1.monto\nFROM tabla_documentos t1\nLEFT JOIN tabla_pagos t2 ON t1.documento_id = t2.documento_id\nWHERE t2.pago_id IS NULL;",
       key_points: [
-        "Une `facturas f` con `pagos p` mediante `factura_id` usando `LEFT JOIN`.",
-        "`WHERE p.pago_id IS NULL` descarta cualquier factura que ya haya recibido al menos un pago.",
-        "`ORDER BY f.factura_id ASC` presenta las facturas en orden numérico."
-],
-      execution_order_note: "💡 Las facturas sin cobros generarán una fila con `pago_id = NULL` que es capturada por el filtro `WHERE`.",
+        "Conecta el encabezado con el detalle mediante `LEFT JOIN ... ON t1.id = t2.fk_id`.",
+        "Aplica `IS NULL` sobre la clave primaria de la tabla de pagos para identificar comprobantes sin abonos.",
+        "El operador de desigualdad para exclusiones explícitas de estado es `<>` o `!=`."
+      ],
+      execution_order_note: "💡 PostgreSQL puede convertir internamente este patrón en un Hash Anti Join de alto rendimiento.",
     },
     objectives: [
       "1. Relacionar las facturas emitidas con la tabla de cobros.",
@@ -1312,14 +1314,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "En el WHERE usa: WHERE i.almacen_id IS NULL."
 ],
     concept: {
-      summary: "Puedes poner condiciones adicionales dentro del `ON` de un `LEFT JOIN`. Así le dices a SQL: 'búscame inventario pero SOLO del almacén 1', y luego filtras los que resulten nulos.",
-      syntax: "SELECT p.producto_id, p.nombre_producto\nFROM productos p\nLEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1\nWHERE i.almacen_id IS NULL\nORDER BY p.producto_id ASC;",
+      summary: "Puedes incorporar condiciones adicionales en la cláusula `ON` del `LEFT JOIN` antes de aplicar la exclusión de nulos en `WHERE`.",
+      syntax: "SELECT t1.id, t1.descripcion\nFROM tabla_items t1\nLEFT JOIN tabla_asignaciones t2\n  ON t1.id = t2.item_id AND t2.ubicacion_id = valor_especifico\nWHERE t2.item_id IS NULL;",
       key_points: [
-        "`LEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1` acota la búsqueda al almacén 1.",
-        "`WHERE i.almacen_id IS NULL` detecta los productos que no existen en ese almacén.",
-        "`ORDER BY p.producto_id ASC` los ordena de menor a mayor."
-],
-      execution_order_note: "💡 La condición en el `ON` restringe la búsqueda en la tabla derecha antes de cruzarla con la tabla de productos.",
+        "Colocar una condición en el `ON` del `LEFT JOIN` restringe el cruce a esa condición antes de generar los nulos.",
+        "El `WHERE ... IS NULL` posterior filtra a los elementos que no tuvieron coincidencia bajo esa regla específica.",
+        "Es una técnica eficiente para auditar ausencias en ubicaciones o estados determinados."
+      ],
+      execution_order_note: "💡 Las condiciones en `ON` afectan a qué filas se emparejan; las condiciones en `WHERE` descartan filas después de la unión.",
     },
     objectives: [
       "1. Vincular los productos con el inventario acotando la búsqueda a la instalación central.",
@@ -1343,15 +1345,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena con ORDER BY total_pedidos DESC, c.cliente_id ASC."
 ],
     concept: {
-      summary: "Un truco clave de SQL: `COUNT(*)` cuenta filas físicas (y a un cliente sin pedidos le contaría 1 por la fila de nulos), mientras que `COUNT(p.pedido_id)` ignora los nulos y devuelve un 0 exacto.",
-      syntax: "SELECT c.cliente_id, c.nombre, COUNT(p.pedido_id) AS total_pedidos\nFROM clientes c\nLEFT JOIN pedidos p ON c.cliente_id = p.cliente_id\nGROUP BY c.cliente_id, c.nombre\nORDER BY total_pedidos DESC;",
+      summary: "`LEFT JOIN` con `COUNT(columna_derecha)` permite contabilizar ocurrencias preservando en 0 a las entidades sin actividad.",
+      syntax: "SELECT t1.id, t1.nombre,\n       COUNT(t2.transaccion_id) AS total_ocurrencias\nFROM tabla_maestra t1\nLEFT JOIN tabla_movimientos t2 ON t1.id = t2.entidad_id\nGROUP BY t1.id, t1.nombre\nORDER BY total_ocurrencias DESC;",
       key_points: [
-        "Usa `LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id` para no perder a ningún cliente.",
-        "`COUNT(p.pedido_id) AS total_pedidos` cuenta solo pedidos reales y pone 0 si no hay ninguno.",
-        "`GROUP BY c.cliente_id, c.nombre, c.apellido` agrupa por cliente.",
-        "`ORDER BY total_pedidos DESC, c.cliente_id ASC` desempata en orden."
-],
-      execution_order_note: "💡 Al contar una columna específica de la tabla derecha (`p.pedido_id`), SQL descarta automáticamente las filas con `NULL`.",
+        "Cuidado con `COUNT`: `COUNT(*)` contaría 1 para los registros con nulos; debes usar `COUNT(t2.id)` para que los nulos sumen 0.",
+        "`LEFT JOIN` asegura que ninguna entidad de la tabla izquierda sea omitida, aunque tenga cero movimientos.",
+        "Agrupa por los campos de la tabla maestra incluidos en el `SELECT`."
+      ],
+      execution_order_note: "💡 `COUNT(columna)` ignora nulos automáticamente, garantizando que clientes o productos sin eventos tengan conteo 0.",
     },
     objectives: [
       "1. Conectar usuarios y pedidos garantizando que nadie quede fuera de la lista.",
@@ -1375,13 +1376,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Usa c.nombre AS cliente_nombre y aplica LIMIT 10 al final."
 ],
     concept: {
-      summary: "En bases de datos reales, la información está repartida en varias tablas especializadas. Conectar tablas en cascada con varios `INNER JOIN` te permite armar la historia completa de una venta.",
-      syntax: "SELECT p.pedido_id, c.nombre AS cliente_nombre, pr.nombre_producto, cat.nombre_categoria, dp.cantidad, dp.precio_unitario\nFROM pedidos p\nINNER JOIN clientes c ON p.cliente_id = c.cliente_id\nINNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id\nINNER JOIN productos pr ON dp.producto_id = pr.producto_id\nINNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id\nORDER BY p.pedido_id ASC, pr.nombre_producto ASC LIMIT 10;",
+      summary: "Las relaciones maestro-detalle complejas suelen requerir unir la cabecera, las líneas de detalle y los catálogos descriptivos.",
+      syntax: "SELECT c.id, d.linea_id, i.nombre, d.cantidad, d.precio_unitario\nFROM cabecera c\nINNER JOIN detalle d ON c.id = d.cabecera_id\nINNER JOIN catalogo i ON d.item_id = i.id\nORDER BY c.id ASC, d.linea_id ASC;",
       key_points: [
-        "Encadena cada tabla con su vecina usando su clave común (`pedidos` con `clientes`, `pedidos` con `detalle_pedidos`, `detalle_pedidos` con `productos`, `productos` con `categorias`).",
-        "`LIMIT 10` te muestra una muestra de las primeras 10 líneas de compra."
-],
-      execution_order_note: "💡 El motor va conectando cada tabla paso a paso como si fueran eslabones de una cadena.",
+        "La cabecera se une con las líneas de detalle (`cabecera_id`), y cada línea se une con su artículo (`item_id`).",
+        "Los alias de una letra (`c`, `d`, `i`) mantienen la consulta legible y compacta.",
+        "Puedes calcular valores de línea multiplicando columnas: `d.cantidad * d.precio_unitario`."
+      ],
+      execution_order_note: "💡 Cada línea de pedido generará una fila en el resultado; un pedido con 3 artículos devolverá 3 filas.",
     },
     objectives: [
       "1. Conectar en cadena las 5 entidades del circuito comercial.",
@@ -1405,15 +1407,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Agrupa por c.ciudad y cat.nombre_categoria."
 ],
     concept: {
-      summary: "Al cruzar varias tablas puedes combinar datos geográficos (ciudad) con datos de producto (categoría) y calcular totales de negocio muy potentes.",
-      syntax: "SELECT c.ciudad, cat.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido\nFROM clientes c\nINNER JOIN pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id\nINNER JOIN productos pr ON dp.producto_id = pr.producto_id\nINNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id\nGROUP BY c.ciudad, cat.nombre_categoria\nORDER BY c.ciudad ASC, monto_vendido DESC;",
+      summary: "Unir múltiples tablas antes de agrupar permite construir cubos multidimensionales de agregación geográfica y comercial.",
+      syntax: "SELECT t_geo.ciudad, t_cat.categoria,\n       SUM(t_mov.monto) AS volumen_total\nFROM transacciones t_mov\nINNER JOIN entidades t_ent ON t_mov.entidad_id = t_ent.id\nINNER JOIN clasificaciones t_cat ON t_mov.clasificacion_id = t_cat.id\nGROUP BY t_geo.ciudad, t_cat.categoria\nORDER BY volumen_total DESC;",
       key_points: [
-        "Multiplica cantidad por precio para cada artículo: `dp.cantidad * dp.precio_unitario`.",
-        "Suma el total con `SUM(...) AS monto_vendido`.",
-        "`GROUP BY c.ciudad, cat.nombre_categoria` agrupa por ambos criterios.",
-        "`ORDER BY c.ciudad ASC, monto_vendido DESC` organiza las ciudades y sus categorías estrella."
-],
-      execution_order_note: "💡 La base de datos calcula las ventas de cada fila y luego las acumula en la combinación de ciudad y categoría correspondiente.",
+        "El `GROUP BY` multidimensional agrupa por cada combinación única de ciudad y categoría.",
+        "Asegúrate de que todas las columnas no agregadas del `SELECT` figuren en el `GROUP BY`.",
+        "El cruce previo con `INNER JOIN` conecta la transacción con la entidad geográfica y el catálogo."
+      ],
+      execution_order_note: "💡 Si tienes N ciudades y M categorías activas, el resultado tendrá un máximo de N * M filas agrupadas.",
     },
     objectives: [
       "1. Cruzar clientes, compras y catálogo para enlazar territorio y producto.",
@@ -1437,14 +1438,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Renombra los montos con AS monto_factura y AS monto_pago."
 ],
     concept: {
-      summary: "Conectar pedidos, facturas y pagos te permite asegurar que cada orden comercial tenga su comprobante y su pago bancario registrado con exactitud.",
-      syntax: "SELECT p.pedido_id, p.cliente_id, f.monto_total AS monto_factura, pg.monto AS monto_pago, pg.metodo_pago\nFROM pedidos p\nINNER JOIN facturas f ON p.pedido_id = f.pedido_id\nINNER JOIN pagos pg ON f.factura_id = pg.factura_id\nORDER BY p.pedido_id ASC;",
+      summary: "La conciliación transaccional conecta el ciclo de vida comercial completo: orden de pedido, factura emitida y cobro acreditado.",
+      syntax: "SELECT p.id, f.numero_factura, pag.metodo_pago, pag.monto\nFROM ordenes p\nINNER JOIN facturas f ON p.id = f.orden_id\nINNER JOIN pagos pag ON f.id = pag.factura_id\nWHERE pag.estado = 'aprobado';",
       key_points: [
-        "Une `pedidos p` con `facturas f` mediante `pedido_id`.",
-        "Une `facturas f` con `pagos pg` mediante `factura_id`.",
-        "Usa los alias `monto_factura` y `monto_pago` para distinguir los importes claramente."
-],
-      execution_order_note: "💡 Se enlazan los tres eslabones comerciales: la orden original, el documento fiscal y la transacción financiera.",
+        "Encadena cada relación con su llave natural: la orden vincula a la factura, y la factura vincula al pago.",
+        "Filtra en el `WHERE` para restringir el análisis a transacciones con estado validado.",
+        "La proyección debe incluir los identificadores necesarios de cada etapa para garantizar trazabilidad."
+      ],
+      execution_order_note: "💡 `INNER JOIN` descarta pedidos que no tengan factura o facturas sin pago registrado.",
     },
     objectives: [
       "1. Enlazar los tres eslabones comerciales: pedido, comprobante fiscal y pago.",
@@ -1468,15 +1469,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Filtra con WHERE i.cantidad_disponible > 10."
 ],
     concept: {
-      summary: "La tabla `inventario` actúa como un puente entre productos y almacenes. Conectar las tres tablas te permite saber exactamente cuánto stock hay de cada artículo en cada ciudad.",
-      syntax: "SELECT pr.nombre_producto, a.nombre_almacen, a.ciudad, i.cantidad_disponible\nFROM productos pr\nINNER JOIN inventario i ON pr.producto_id = i.producto_id\nINNER JOIN almacenes a ON i.almacen_id = a.almacen_id\nWHERE i.cantidad_disponible > 10\nORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;",
+      summary: "Conectar tablas de existencias físicas, artículos y almacenes permite rastrear la distribución geográfica del stock.",
+      syntax: "SELECT a.nombre_almacen, p.nombre_item, inv.cantidad_stock\nFROM inventarios inv\nINNER JOIN almacenes a ON inv.almacen_id = a.id\nINNER JOIN productos p ON inv.producto_id = p.id\nWHERE inv.cantidad_stock > 0\nORDER BY a.nombre_almacen ASC, inv.cantidad_stock DESC;",
       key_points: [
-        "Conecta `productos` con `inventario` mediante `producto_id`.",
-        "Conecta `inventario` con `almacenes` mediante `almacen_id`.",
-        "`WHERE i.cantidad_disponible > 10` filtra existencias suficientes.",
-        "`ORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC` ordena con prolijidad."
-],
-      execution_order_note: "💡 Se resuelve la relación entre productos y ubicaciones mediante la tabla intermedia de existencias.",
+        "La tabla puente de inventario conecta las entidades de almacén y de producto.",
+        "Operadores numéricos de teclado: mayor que `>`, menor que `<`, mayor o igual `>=` y menor o igual `<=`.",
+        "El ordenamiento múltiple permite agrupar visualmente por instalación y jerarquizar por volumen de existencias."
+      ],
+      execution_order_note: "💡 Las claves foráneas compuestas garantizan que no existan registros duplicados para un mismo par producto-almacén.",
     },
     objectives: [
       "1. Conectar el catálogo con las instalaciones a través de la tabla de existencias.",
@@ -1500,14 +1500,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Coloca el ORDER BY al final de la instrucción."
 ],
     concept: {
-      summary: "`UNION` te permite 'apilar' verticalmente los resultados de dos consultas diferentes en una sola lista final, eliminando filas repetidas automáticamente.",
-      syntax: "SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes\nUNION\nSELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes\nORDER BY ciudad ASC, tipo_entidad ASC;",
+      summary: "`UNION` combina verticalmente los resultados de dos consultas `SELECT` independientes en una única lista de filas.",
+      syntax: "SELECT nombre, correo, 'Rol A' AS tipo_entidad FROM tabla_a\nUNION\nSELECT nombre, correo, 'Rol B' AS tipo_entidad FROM tabla_b\nORDER BY nombre ASC;",
       key_points: [
-        "Ambas consultas deben devolver la misma cantidad de columnas con tipos compatibles.",
-        "`UNION` junta los resultados de la consulta de clientes con los de la consulta de almacenes.",
-        "El `ORDER BY` se coloca una sola vez al final de todo el bloque."
-],
-      execution_order_note: "💡 PostgreSQL ejecuta las dos consultas por separado, fusiona los resultados y descarta duplicados antes de ordenar.",
+        "Ambas consultas deben tener exactamente la misma cantidad de columnas y en el mismo orden de tipos de datos.",
+        "`UNION` elimina duplicados automáticamente; si deseas conservar duplicados, utiliza `UNION ALL`.",
+        "La cláusula `ORDER BY` solo se escribe una vez al final de toda la sentencia compuesta."
+      ],
+      execution_order_note: "💡 `UNION` ejecuta un sort interno para deduplicar filas; `UNION ALL` es más rápido porque concatena directamente.",
     },
     objectives: [
       "1. Obtener la presencia geográfica tanto de clientes como de instalaciones.",
@@ -1530,14 +1530,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Escribe: SELECT ciudad FROM clientes EXCEPT SELECT ciudad FROM almacenes ORDER BY ciudad ASC;"
 ],
     concept: {
-      summary: "`EXCEPT` compara dos listas y te devuelve lo que está en la primera lista pero NO en la segunda (como una resta matemática de conjuntos).",
-      syntax: "SELECT ciudad FROM clientes\nEXCEPT\nSELECT ciudad FROM almacenes\nORDER BY ciudad ASC;",
+      summary: "`EXCEPT` (o `MINUS`) devuelve los registros de la primera consulta que no existen en el resultado de la segunda consulta.",
+      syntax: "SELECT columna_a FROM tabla_origen\nEXCEPT\nSELECT columna_b FROM tabla_exclusion\nORDER BY columna_a ASC;",
       key_points: [
-        "`SELECT ciudad FROM clientes` obtiene las ciudades con clientes.",
-        "`EXCEPT SELECT ciudad FROM almacenes` quita cualquier ciudad donde ya tengamos un almacén.",
-        "Es ideal para detectar zonas desatendidas o mercados potenciales."
-],
-      execution_order_note: "💡 El motor busca los elementos únicos del primer conjunto y elimina cualquiera que coincida con el segundo conjunto.",
+        "Resta el segundo conjunto al primero, eliminando cualquier valor presente en la segunda consulta.",
+        "Ambas consultas deben proyectar el mismo número de columnas y de tipos compatibles.",
+        "Es una alternativa limpia y matemática a los anti-joins basados en `NOT IN` o `IS NULL`."
+      ],
+      execution_order_note: "💡 `EXCEPT` elimina duplicados en el conjunto resultante por definición del estándar relacional.",
     },
     objectives: [
       "1. Obtener el conjunto de ciudades residenciales de los clientes.",
@@ -1561,13 +1561,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena por a.nombre_almacen ASC, c.nombre_categoria ASC."
 ],
     concept: {
-      summary: "`CROSS JOIN` combina cada fila de una tabla con todas las filas de la otra (producto cartesiano). Si tienes 3 almacenes y 5 categorías, te devolverá 15 combinaciones.",
-      syntax: "SELECT a.nombre_almacen, c.nombre_categoria\nFROM almacenes a\nCROSS JOIN categorias c\nORDER BY a.nombre_almacen ASC, c.nombre_categoria ASC;",
+      summary: "`CROSS JOIN` calcula el producto cartesiano: combina cada fila de la primera tabla con cada fila de la segunda tabla.",
+      syntax: "SELECT t1.nombre_a, t2.nombre_b\nFROM tabla_1 t1\nCROSS JOIN tabla_2 t2\nORDER BY t1.nombre_a ASC, t2.nombre_b ASC;",
       key_points: [
-        "A diferencia de otros JOINs, `CROSS JOIN` no lleva cláusula `ON` porque combina todos contra todos.",
-        "Es muy útil para crear matrices de cobertura, calendarios o combinaciones de prueba."
-],
-      execution_order_note: "💡 La base de datos multiplica las filas de la tabla A por las de la tabla B para generar la cuadrícula completa.",
+        "No utiliza cláusula `ON`: el resultado tendrá `M * N` filas (filas de tabla 1 multiplicadas por filas de tabla 2).",
+        "Es la herramienta clásica para generar matrices completas de cobertura, combinaciones o calendarios base.",
+        "Debe usarse con cautela sobre tablas grandes para evitar explosión volumétrica de filas."
+      ],
+      execution_order_note: "💡 No requiere índices al no haber condición de emparejamiento; simplemente genera todas las combinaciones posibles.",
     },
     objectives: [
       "1. Cruzar todas las instalaciones logísticas contra todas las familias comerciales.",
@@ -1591,14 +1592,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena con ORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC."
 ],
     concept: {
-      summary: "Un `SELF JOIN` consiste en unir una tabla consigo misma (usando dos alias distintos como `p1` y `p2`). El truco `p1.id < p2.id` evita comparar un producto consigo mismo y evita duplicar parejas como (A, B) y (B, A).",
-      syntax: "SELECT p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b\nFROM productos p1\nINNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id\nORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC;",
+      summary: "Un `SELF JOIN` une una tabla consigo misma usando alias diferenciados, permitiendo comparar o emparejar filas del mismo conjunto.",
+      syntax: "SELECT a.nombre AS item_1, b.nombre AS item_2, a.clasificacion_id\nFROM tabla a\nINNER JOIN tabla b\n  ON a.clasificacion_id = b.clasificacion_id AND a.id < b.id\nORDER BY a.id ASC, b.id ASC;",
       key_points: [
-        "`FROM productos p1 INNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id` busca productos de la misma familia.",
-        "`AND p1.producto_id < p2.producto_id` garantiza parejas únicas sin repeticiones espejo.",
-        "Renombra con `AS producto_a`, `AS producto_b`, `AS precio_a`, `AS precio_b`."
-],
-      execution_order_note: "💡 La base de datos trata la tabla como si fueran dos copias independientes en memoria para hacer las combinaciones.",
+        "Es obligatorio asignar alias distintos (ej. `a` y `b`) a cada instancia de la misma tabla.",
+        "La condición `a.id < b.id` es un patrón clave para evitar que un elemento se empareje consigo mismo (`a.id = b.id`) y descartar pares duplicados invertidos.",
+        "La igualdad en la clave de clasificación (`a.cat_id = b.cat_id`) garantiza que pertenezcan al mismo grupo."
+      ],
+      execution_order_note: "💡 `a.id < b.id` reduce el espacio de búsqueda a la mitad de combinaciones respecto a `a.id <> b.id`.",
     },
     objectives: [
       "1. Cruzar la tabla de artículos consigo misma para comparar productos hermanos.",
@@ -1622,14 +1623,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena al final con ORDER BY precio DESC."
 ],
     concept: {
-      summary: "Una subconsulta es una consulta dentro de otra. En lugar de calcular el promedio en un papel y escribirlo a mano, dejas que una pequeña subconsulta `(SELECT AVG(precio) FROM productos)` lo calcule automáticamente dentro de tu `WHERE`.",
-      syntax: "SELECT columna_1, columna_2\nFROM tabla\nWHERE columna > (SELECT AVG(columna) FROM tabla)\nORDER BY columna DESC;",
+      summary: "Una subconsulta escalar retorna un único valor (1 fila y 1 columna) que puede usarse como comparador dinámico en el `WHERE`.",
+      syntax: "SELECT columna_1, columna_precio\nFROM nombre_tabla\nWHERE columna_precio > (SELECT AVG(columna_precio) FROM nombre_tabla)\nORDER BY columna_precio DESC;",
       key_points: [
-        "La subconsulta va encerrada entre paréntesis: `WHERE precio > (SELECT AVG(precio) FROM productos)`.",
-        "Al devolver un solo número (escalar), puedes compararlo directamente con `>`.",
-        "`ORDER BY precio DESC` pone los más costosos primero."
-],
-      execution_order_note: "💡 PostgreSQL calcula el promedio global una sola vez y luego compara cada producto contra esa cifra.",
+        "La subconsulta se encierra obligatoriamente entre paréntesis `(...)`.",
+        "Al retornar un único valor escalar, puedes compararlo con operadores estándar como `>`, `<`, `=`, `>=` o `<=`.",
+        "Se evalúa primero la subconsulta interna y su valor resultante se inyecta como filtro en la consulta externa."
+      ],
+      execution_order_note: "💡 El motor calcula la subconsulta una sola vez al inicio y reutiliza la constante para evaluar cada fila de la tabla externa.",
     },
     objectives: [
       "1. Calcular dinámicamente el precio de referencia promedio del catálogo completo.",
@@ -1653,14 +1654,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena con ORDER BY cliente_id ASC."
 ],
     concept: {
-      summary: "Puedes usar `IN (SELECT ...)` para pedirle a una subconsulta la lista de IDs que cumplen una regla y usarla de filtro en tu consulta principal.",
-      syntax: "SELECT cliente_id, nombre, email\nFROM clientes\nWHERE cliente_id IN (\n    SELECT cliente_id FROM pedidos WHERE total >= 1000\n)\nORDER BY cliente_id ASC;",
+      summary: "Una subconsulta en la cláusula `IN` retorna una lista dinámica de IDs sobre la cual la consulta principal aplica el filtrado.",
+      syntax: "SELECT id, nombre, email\nFROM tabla_maestra\nWHERE id IN (\n    SELECT clave_foranea\n    FROM tabla_transaccional\n    WHERE monto > umbral_valor\n);",
       key_points: [
-        "`WHERE cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000)` encuentra a los clientes que tienen compras grandes.",
-        "La consulta externa obtiene los nombres limpios de la tabla de clientes.",
-        "`ORDER BY cliente_id ASC` los presenta en orden."
-],
-      execution_order_note: "💡 La subconsulta genera la lista de clientes con compras grandes y la consulta principal extrae sus datos personales.",
+        "La subconsulta interna debe proyectar exactamente una sola columna, coincidente con la columna evaluada en el `IN`.",
+        "Filtra en la consulta interna para generar únicamente el subconjunto de IDs de interés.",
+        "Es una alternativa declarativa a los joins cuando no necesitas proyectar columnas de la tabla transaccional."
+      ],
+      execution_order_note: "💡 PostgreSQL optimiza consultas `IN (SELECT ...)` convirtiéndolas internamente en un Semi-Join indexado.",
     },
     objectives: [
       "1. Obtener el conjunto de compradores con compras de gran volumen mediante una consulta interna.",
@@ -1684,14 +1685,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena con ORDER BY c.cliente_id ASC."
 ],
     concept: {
-      summary: "`EXISTS` comprueba si una subconsulta encuentra al menos una coincidencia. Es súper eficiente porque tan pronto como encuentra una sola fila que coincida, se detiene y da el visto bueno sin revisar las demás.",
-      syntax: "SELECT c.cliente_id, c.nombre\nFROM clientes c\nWHERE EXISTS (\n    SELECT 1 FROM pedidos p\n    WHERE p.cliente_id = c.cliente_id AND p.estado = 'completado'\n)\nORDER BY c.cliente_id ASC;",
+      summary: "`EXISTS` comprueba si una subconsulta correlacionada devuelve al menos una fila; en cuanto encuentra una coincidencia, detiene la búsqueda.",
+      syntax: "SELECT t1.id, t1.nombre\nFROM tabla_a t1\nWHERE EXISTS (\n    SELECT 1\n    FROM tabla_b t2\n    WHERE t2.a_id = t1.id AND t2.condicion = 'valor'\n);",
       key_points: [
-        "`WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado')`.",
-        "Se suele escribir `SELECT 1` dentro de `EXISTS` porque lo único que importa es si la fila existe o no.",
-        "Es una subconsulta conectada (correlacionada) con el cliente de la fila actual."
-],
-      execution_order_note: "💡 Cortocircuito: la base de datos deja de buscar en cuanto encuentra la primera compra completada de ese cliente.",
+        "Dentro del `SELECT` de `EXISTS` se acostumbra colocar `SELECT 1`, ya que al motor solo le interesa la existencia de filas, no sus valores.",
+        "La subconsulta está correlacionada: hace referencia a la clave de la fila actual de la consulta externa (`t2.a_id = t1.id`).",
+        "`NOT EXISTS` realiza la operación inversa, comprobando la no existencia de registros subordinados."
+      ],
+      execution_order_note: "💡 `EXISTS` se detiene tan pronto como encuentra la primera fila coincidente, siendo muy eficiente.",
     },
     objectives: [
       "1. Evaluar de forma conectada si existe al menos una compra confirmada por cliente.",
@@ -1715,14 +1716,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena al final por total DESC."
 ],
     concept: {
-      summary: "`CASE` es como el `SI` o `IF` de la programación: te permite evaluar condiciones fila por fila y asignar una categoría o texto según lo que se cumpla.",
-      syntax: "SELECT col1, col2,\n       CASE\n         WHEN valor >= lim1 THEN 'Cat A'\n         WHEN valor >= lim2 THEN 'Cat B'\n         ELSE 'Cat C'\n       END AS clasificacion\nFROM tabla;",
+      summary: "La estructura `CASE WHEN ... THEN ... ELSE ... END` implementa lógica condicional (if-else) para transformar o clasificar valores.",
+      syntax: "SELECT columna_id, columna_monto,\n       CASE\n         WHEN columna_monto >= lim_alto THEN 'Segmento A'\n         WHEN columna_monto >= lim_medio THEN 'Segmento B'\n         ELSE 'Segmento Base'\n       END AS nivel_clasificacion\nFROM nombre_tabla;",
       key_points: [
-        "La estructura siempre empieza con `CASE` y termina con `END AS nombre_columna`.",
-        "`WHEN condicion THEN 'resultado'` evalúa en orden; la primera regla que se cumpla gana.",
-        "`ELSE 'resultado'` cubre todo lo demás que no haya entrado en las reglas anteriores."
-],
-      execution_order_note: "💡 Para cada fila, PostgreSQL evalúa las condiciones de arriba a abajo y asigna la etiqueta correspondiente.",
+        "Se evalúa secuencialmente de arriba hacia abajo; la primera cláusula `WHEN` que resulte verdadera asigna el valor y sale del `CASE`.",
+        "El operador mayor o igual se escribe `>=` en el teclado con los símbolos `>` e `=` consecutivos.",
+        "La estructura siempre se abre con `CASE` y se cierra con `END` (generalmente acompañada de un alias con `AS`)."
+      ],
+      execution_order_note: "💡 Si ninguna regla `WHEN` coincide y no existe cláusula `ELSE`, el resultado asignado será `NULL`.",
     },
     objectives: [
       "1. Evaluar las reglas de cuantía económica para cada orden individual.",
@@ -1746,14 +1747,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena por categoria_id ASC, ranking_categoria ASC al final."
 ],
     concept: {
-      summary: "Las funciones de ventana calculan rankings o acumulados sin aplastar las filas. `PARTITION BY categoria_id` reinicia el contador #1, #2, #3 en cada categoría, y `DENSE_RANK()` no deja huecos si hay empates.",
-      syntax: "SELECT categoria_id, nombre_producto, precio,\n       DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria\nFROM productos\nORDER BY categoria_id ASC, ranking_categoria ASC;",
+      summary: "`DENSE_RANK()` numera filas en orden de clasificación sin dejar huecos en la secuencia numérica en caso de empates.",
+      syntax: "SELECT grupo_id, item_nombre, columna_metrica,\n       DENSE_RANK() OVER (PARTITION BY grupo_id ORDER BY columna_metrica DESC) AS posicion_ranking\nFROM nombre_tabla\nORDER BY grupo_id ASC, posicion_ranking ASC;",
       key_points: [
-        "`DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria`.",
-        "`PARTITION BY` actúa como un mini-agrupador para que cada categoría tenga su propio primer lugar.",
-        "A diferencia de GROUP BY, aquí no desaparecen las filas individuales de productos."
-],
-      execution_order_note: "💡 La base de datos organiza los productos por categoría en memoria y asigna los puestos antes de mostrar la tabla.",
+        "`PARTITION BY columna_grupo` reinicia la numeración ordinal del ranking para cada partición independiente.",
+        "`ORDER BY columna DESC` define el criterio de clasificación (del mayor al menor valor).",
+        "A diferencia de `GROUP BY`, las funciones de ventana preservan todas las filas individuales sin colapsarlas."
+      ],
+      execution_order_note: "💡 En empates, `DENSE_RANK()` asigna el mismo número y continúa inmediatamente con el siguiente (ej. 1, 2, 2, 3), a diferencia de `RANK()` (1, 2, 2, 4).",
     },
     objectives: [
       "1. Segmentar los artículos por familia comercial sin colapsar el listado.",
@@ -1777,14 +1778,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Haz lo mismo para pendientes y agrupa por cliente_id."
 ],
     concept: {
-      summary: "Poner un `CASE` dentro de una función `SUM()` es un truco maestro de SQL para transformar valores de filas en columnas separadas (técnica de pivoteo de datos).",
-      syntax: "SELECT cliente_id,\n       SUM(CASE WHEN estado = 'A' THEN monto ELSE 0 END) AS total_a,\n       SUM(CASE WHEN estado = 'B' THEN monto ELSE 0 END) AS total_b\nFROM pedidos\nGROUP BY cliente_id\nORDER BY cliente_id ASC;",
+      summary: "Combinar `SUM(CASE WHEN ... THEN monto ELSE 0 END)` permite transformar valores de filas en columnas métricas independientes (pivoteo).",
+      syntax: "SELECT entidad_id,\n       SUM(CASE WHEN estado = 'tipo_a' THEN monto ELSE 0 END) AS total_a,\n       SUM(CASE WHEN estado = 'tipo_b' THEN monto ELSE 0 END) AS total_b\nFROM nombre_tabla\nGROUP BY entidad_id\nORDER BY entidad_id ASC;",
       key_points: [
-        "`SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas` suma solo las ventas hechas.",
-        "`SUM(CASE WHEN estado_pedido = 'pendiente' THEN total ELSE 0 END) AS ventas_pendientes` suma lo pendiente.",
-        "`GROUP BY cliente_id` condensa los resultados por cada cliente individual."
-],
-      execution_order_note: "💡 Cada fila se evalúa por separado: si cumple la regla suma su monto, si no suma 0, produciendo dos columnas limpias.",
+        "El `CASE` evalúa el estado fila por fila; si coincide devuelve el monto, y si no, devuelve 0 para no alterar la suma.",
+        "Cada expresión agregada genera una columna horizontal diferenciada en el reporte.",
+        "El `GROUP BY entidad_id` agrupa las transacciones condensándolas por cada entidad."
+      ],
+      execution_order_note: "💡 Esta técnica es el estándar SQL portátil para pivotar datos sin depender de extensiones propietarias.",
     },
     objectives: [
       "1. Evaluar condicionalmente el monto transaccionado según el estado del pedido.",
@@ -1808,14 +1809,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena por facturacion DESC."
 ],
     concept: {
-      summary: "Una CTE (`WITH ... AS`) es como crear una pequeña tabla temporal con nombre dentro de tu consulta. Hace que las consultas largas sean súper limpias y fáciles de entender por pasos.",
-      syntax: "WITH nombre_cte AS (\n    SELECT clave, SUM(monto) AS total\n    FROM tabla\n    GROUP BY clave\n)\nSELECT clave, total\nFROM nombre_cte\nORDER BY total DESC;",
+      summary: "Una CTE (`WITH ... AS (...)`) define una tabla temporal con nombre dentro de la consulta, organizando análisis complejos por fases.",
+      syntax: "WITH cte_resumen AS (\n    SELECT columna_clave,\n           SUM(columna_monto) AS monto_total\n    FROM nombre_tabla\n    GROUP BY columna_clave\n)\nSELECT columna_clave, monto_total\nFROM cte_resumen\nORDER BY monto_total DESC;",
       key_points: [
-        "Empieza con `WITH nombre_temporal AS (SELECT ...)`.",
-        "Después de cerrar el paréntesis, escribes tu consulta principal llamando a esa tabla temporal como si fuera una tabla normal.",
-        "Ayuda a que cualquiera que lea tu código entienda la lógica paso a paso."
-],
-      execution_order_note: "💡 PostgreSQL calcula el bloque del `WITH` y deja el resultado listo en memoria para la consulta final.",
+        "Se declara al inicio con `WITH nombre_cte AS (...)` conteniendo una subconsulta completa entre paréntesis.",
+        "La consulta principal posterior puede consultar la CTE como si fuera una tabla física real del esquema.",
+        "Aumenta significativamente la legibilidad, mantenimiento y modularidad de consultas extensas."
+      ],
+      execution_order_note: "💡 En PostgreSQL moderno, las CTEs no recursivas se integran directamente en el optimizador sin penalización de rendimiento.",
     },
     objectives: [
       "1. Estructurar el cálculo de facturación por familia en una tabla temporal nombrada.",
@@ -1839,14 +1840,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "En la consulta final filtra WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC."
 ],
     concept: {
-      summary: "Puedes encadenar varias CTEs separándolas por coma bajo un solo `WITH`. Cada paso puede usar los resultados del paso anterior, creando un pipeline analítico limpio y ordenado.",
-      syntax: "WITH cte_1 AS (\n    SELECT ...\n),\ncte_2 AS (\n    SELECT ... FROM cte_1\n)\nSELECT ... FROM cte_1, cte_2 WHERE ...;",
+      summary: "Puedes encadenar múltiples CTEs separándolas por coma bajo una sola cláusula `WITH` para crear pipelines analíticos por etapas.",
+      syntax: "WITH etapa_1 AS (\n    SELECT entidad_id, SUM(monto) AS acumulado\n    FROM tabla_transacciones\n    GROUP BY entidad_id\n),\netapa_2 AS (\n    SELECT AVG(acumulado) AS umbral_medio\n    FROM etapa_1\n)\nSELECT e1.entidad_id, e1.acumulado\nFROM etapa_1 e1, etapa_2 e2\nWHERE e1.acumulado > e2.umbral_medio\nORDER BY e1.acumulado DESC;",
       key_points: [
-        "`WITH paso_1 AS (...), paso_2 AS (...)` encadena dos etapas de análisis.",
-        "El paso 2 calcula el promedio sobre los datos generados por el paso 1.",
-        "La consulta final filtra con `WHERE g.total_gastado > p.gasto_medio` y ordena."
-],
-      execution_order_note: "💡 Se genera un flujo de datos en dos etapas secuenciales antes de emitir la respuesta definitiva.",
+        "Las CTEs subsiguientes se separan por comas `,` sin repetir la palabra clave `WITH`.",
+        "Cada CTE puede hacer referencia a cualquiera de las CTEs definidas previamente en la secuencia.",
+        "La consulta final combina o filtra los resultados de las etapas anteriores mediante condiciones lógicas."
+      ],
+      execution_order_note: "💡 Estructurar consultas en pasos CTE permite depurar cada etapa de forma aislada antes de ensamblar la consulta final.",
     },
     objectives: [
       "1. Encadenar la primera etapa de acumulación de gasto por cliente.",
@@ -1869,14 +1870,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Escribe: ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking en tu lista de columnas."
 ],
     concept: {
-      summary: "`ROW_NUMBER() OVER (ORDER BY columna DESC)` numera cada fila con un 1, 2, 3... correlativo según el criterio que elijas, sin colapsar ninguna fila.",
-      syntax: "SELECT producto_id, nombre_producto, precio,\n       ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking\nFROM productos;",
+      summary: "`ROW_NUMBER()` numera correlativamente cada fila (1, 2, 3...) según el orden estricto indicado en su cláusula `OVER`.",
+      syntax: "SELECT columna_id, columna_nombre, columna_criterio,\n       ROW_NUMBER() OVER (ORDER BY columna_criterio DESC) AS posicion\nFROM nombre_tabla;",
       key_points: [
-        "Es la función de ventana más simple y directa para enumerar puestos.",
-        "`OVER (ORDER BY precio DESC)` indica en qué orden se reparten los números.",
-        "Conserva todas las filas de la tabla de productos."
-],
-      execution_order_note: "💡 Se ordenan las filas temporalmente y se les estampa un número secuencial de arriba a abajo.",
+        "`ROW_NUMBER()` garantiza una numeración secuencial estricta y única sin duplicar posiciones, incluso ante valores idénticos.",
+        "`OVER (ORDER BY columna DESC)` define la dirección y prioridad con la que se asignan los números de posición.",
+        "No reduce ni colapsa filas; conserva la totalidad de los registros de la tabla original."
+      ],
+      execution_order_note: "💡 Las funciones de ventana se ejecutan después de `WHERE`, `GROUP BY` y `HAVING`, sobre el conjunto ya filtrado.",
     },
     objectives: [
       "1. Enumerar correlativamente cada producto según su valor comercial.",
@@ -1900,14 +1901,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "Ordena al final por cliente_id ASC, fecha_pedido ASC."
 ],
     concept: {
-      summary: "`LAG()` te permite mirar la fila anterior sin tener que cruzar la tabla consigo misma. Es la herramienta favorita para calcular días transcurridos entre dos eventos.",
-      syntax: "SELECT pedido_id, cliente_id, fecha_pedido,\n       LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_anterior\nFROM pedidos\nORDER BY cliente_id ASC, fecha_pedido ASC;",
+      summary: "`LAG()` accede a los datos de una fila anterior dentro de la misma partición sin necesidad de recurrir a auto-uniones (`SELF JOIN`).",
+      syntax: "SELECT entidad_id, fecha_evento,\n       LAG(fecha_evento) OVER (PARTITION BY entidad_id ORDER BY fecha_evento ASC) AS fecha_evento_anterior\nFROM nombre_tabla\nORDER BY entidad_id ASC, fecha_evento ASC;",
       key_points: [
-        "`LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior`.",
-        "Para el primer pedido de cada cliente, como no hay compra anterior, devolverá `NULL` (lo cual es normal y correcto).",
-        "Permite estudiar la frecuencia de recompra de cada usuario de forma limpia."
-],
-      execution_order_note: "💡 PostgreSQL guarda el valor de la fila anterior en memoria mientras recorre la partición del cliente en orden cronológico.",
+        "`LAG(columna)` obtiene el valor de la fila inmediatamente precedente en el orden especificado.",
+        "`PARTITION BY entidad_id` reinicia la ventana para cada entidad, evitando mezclar fechas o eventos de diferentes sujetos.",
+        "Para el primer registro de cada partición, al no existir fila previa, `LAG()` retorna naturalmente `NULL`."
+      ],
+      execution_order_note: "💡 `LAG(columna, N, valor_default)` permite especificar cuántas filas mirar hacia atrás y qué valor devolver si es nulo.",
     },
     objectives: [
       "1. Dividir las transacciones por cliente ordenándolas en secuencia temporal.",
