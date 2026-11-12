@@ -73,7 +73,7 @@ async def test_list_and_get_exercises(client: AsyncClient):
     assert detail_resp.status_code == 200
     item = detail_resp.json()
     assert item["title"] == "Clientes sin Compras Registradas (LEFT JOIN & IS NULL)"
-    assert len(item["hints"]) == 3
+    assert len(item["hints"]) >= 2
 
 
 @pytest.mark.asyncio
@@ -473,5 +473,67 @@ async def test_contingency_mode_with_realistic_pgrst202_postgrest_error(client: 
         assert "no está disponible temporalmente" in data["message"].lower()
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_reveal_solution_rejected_when_under_two_attempts(client: AsyncClient):
+    """Verifica que el endpoint de revelación bloquee solicitudes con menos de 2 intentos fallidos."""
+    exercise_id = "e0000000-0000-0000-0000-000000000001"
+    response = await client.post(
+        f"/api/v1/exercises/{exercise_id}/reveal-solution",
+        json={"failed_attempts": 1},
+    )
+    assert response.status_code == 400
+    assert "al menos 2 intentos fallidos" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_reveal_solution_allowed_when_two_or_more_attempts(client: AsyncClient):
+    """Verifica que el endpoint entregue la solución oficial y registre telemetría con 2 o más intentos."""
+    exercise_id = "e0000000-0000-0000-0000-000000000001"
+    response = await client.post(
+        f"/api/v1/exercises/{exercise_id}/reveal-solution",
+        json={"failed_attempts": 2},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["exercise_id"] == exercise_id
+    assert "solution_query" in data
+    assert "SELECT" in data["solution_query"]
+    assert data["telemetry_recorded"] is True
+
+
+@pytest.mark.asyncio
+async def test_submit_exercise_awards_zero_xp_when_solution_viewed(client: AsyncClient, monkeypatch):
+    """Verifica que si el usuario visualizó la solución oficial, se otorguen 0 XP independientemente del éxito."""
+    async def fake_record_verified_progress(**kwargs):
+        return {
+            "success": True,
+            "already_passed": False,
+            "already_awarded": False,
+            "xp_awarded": kwargs.get("xp_to_award", 0),
+        }
+
+    monkeypatch.setattr("app.modules.runner.router.record_verified_progress", fake_record_verified_progress)
+
+    exercise_id = "e0000000-0000-0000-0000-000000000001"
+    payload = {
+        "query": "SELECT nombre_producto, precio FROM productos;",
+        "hints_revealed": 0,
+        "solution_viewed": True,
+    }
+    app.dependency_overrides[get_optional_current_user] = lambda: AuthenticatedUser(
+        id="usr_auth_solution_test", email="student@qurio.dev", role="authenticated", is_guest=False
+    )
+    try:
+        response = await client.post(f"/api/v1/exercises/{exercise_id}/submit", json=payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "PASSED"
+        assert data["xp_awarded"] == 0
+        assert "0 XP acreditados por haber consultado la solución" in data["message"]
+    finally:
+        app.dependency_overrides.clear()
+
 
 

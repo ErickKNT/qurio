@@ -11,6 +11,8 @@ import {
   Check,
   Code2,
   Layers,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { Exercise, SampleTableData } from '@/types';
 import { Badge } from '@/components/atoms/Badge/Badge';
@@ -23,22 +25,40 @@ export interface ExerciseSpecPanelProps {
   unlockedHintsCount: number;
   onUnlockHint: () => void;
   isCompleted?: boolean;
+  failedAttemptsCount?: number;
+  isSolutionRevealed?: boolean;
+  solutionQuery?: string | null;
+  onOpenRevealModal?: () => void;
+  onLoadSolutionIntoEditor?: (sql: string) => void;
   className?: string;
 }
 
-type SpecTab = 'guide' | 'sample' | 'schema' | 'hints';
+type SpecTab = 'guide' | 'sample' | 'schema' | 'hints' | 'solution';
 
 export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
   exercise,
   unlockedHintsCount,
   onUnlockHint,
   isCompleted,
+  failedAttemptsCount = 0,
+  isSolutionRevealed = false,
+  solutionQuery,
+  onOpenRevealModal,
+  onLoadSolutionIntoEditor,
   className,
 }) => {
   const [activeTab, setActiveTab] = useState<SpecTab>('guide');
   const [selectedTableIndex, setSelectedTableIndex] = useState(0);
   const [checkedObjectives, setCheckedObjectives] = useState<Record<number, boolean>>({});
   const [copiedCol, setCopiedCol] = useState<string | null>(null);
+  const [copiedSolution, setCopiedSolution] = useState(false);
+
+  // Cambiar a la pestaña de solución automáticamente si se acaba de desbloquear
+  useEffect(() => {
+    if (isSolutionRevealed && solutionQuery) {
+      setActiveTab('solution');
+    }
+  }, [isSolutionRevealed, solutionQuery]);
 
   // Sincronizar checklist automáticamente si el reto está completado o aprobado
   useEffect(() => {
@@ -194,6 +214,24 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
           <Database className="w-3.5 h-3.5" />
           <span>Esquema</span>
         </button>
+
+        {isSolutionRevealed && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('solution')}
+            className={cn(
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-t-lg transition-all border-b-2',
+              activeTab === 'solution'
+                ? 'text-amber-streak border-amber-streak bg-surface/80 font-semibold'
+                : 'text-amber-streak/70 border-transparent hover:text-amber-streak hover:bg-surface/30'
+            )}
+            title="Ver la solución oficial desbloqueada"
+          >
+            <Unlock className="w-3.5 h-3.5 text-amber-streak" />
+            <span>Solución</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-streak animate-pulse" />
+          </button>
+        )}
 
         {totalHints > 0 && (
           <button
@@ -535,6 +573,143 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                     Desbloquear Pista 1 (-15% XP)
                   </Button>
                 </div>
+              )}
+
+              {/* Sección de Solución Oficial (Bloqueada a 2 intentos fallidos) */}
+              <div className="pt-3 border-t border-border-subtle/40 flex flex-col gap-2">
+                {isSolutionRevealed ? (
+                  <div className="p-3.5 rounded-xl bg-surface-card border border-emerald/30 flex flex-col gap-2 shadow-sm">
+                    <div className="flex items-center justify-between text-xs font-mono font-semibold text-emerald">
+                      <span className="flex items-center gap-1.5">
+                        <Unlock className="w-3.5 h-3.5" />
+                        Solución Oficial Desbloqueada
+                      </span>
+                      <Badge variant="mono" size="sm">0 XP</Badge>
+                    </div>
+                    <p className="text-[11px] text-content-secondary leading-relaxed">
+                      La consulta oficial de referencia está disponible para su estudio en la pestaña dedicada.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActiveTab('solution')}
+                      className="text-xs border-emerald/40 text-emerald hover:bg-emerald/10 mt-1"
+                    >
+                      Ver Solución Oficial en Detalle
+                    </Button>
+                  </div>
+                ) : failedAttemptsCount < 2 ? (
+                  <div className="p-3.5 rounded-xl bg-surface-card/50 border border-border-subtle/60 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-xs font-mono text-content-muted">
+                      <span className="flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-content-muted" />
+                        Solución Oficial de Apoyo
+                      </span>
+                      <span className="text-[10px] font-mono">{failedAttemptsCount}/2 intentos fallidos</span>
+                    </div>
+                    <p className="text-[11px] text-content-muted leading-relaxed">
+                      Para afianzar tu razonamiento, la solución oficial se desbloquea tras acumular al menos 2 intentos fallidos en este ejercicio.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled
+                      className="text-xs opacity-50 cursor-not-allowed justify-start px-0 text-content-muted"
+                    >
+                      🔒 Ver Solución (Bloqueado • {failedAttemptsCount}/2 intentos)
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="p-3.5 rounded-xl bg-amber-streak/10 border border-amber-streak/30 flex flex-col gap-2 animate-fadeIn shadow-sm">
+                    <div className="flex items-center justify-between text-xs font-mono font-semibold text-amber-streak">
+                      <span className="flex items-center gap-1.5">
+                        <Unlock className="w-3.5 h-3.5" />
+                        ¿Atascado tras varios intentos?
+                      </span>
+                      <Badge variant="amber" size="sm">{failedAttemptsCount} intentos</Badge>
+                    </div>
+                    <p className="text-[11px] text-content-secondary leading-relaxed">
+                      Has alcanzado los 2 intentos fallidos requeridos. Si necesitas desbloquear la solución oficial, puedes hacerlo ahora (otorgará 0 XP).
+                    </p>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={onOpenRevealModal}
+                      leftIcon={<Unlock className="w-3.5 h-3.5" />}
+                      className="text-xs bg-amber-streak text-canvas font-bold hover:bg-amber-streak/90 border-transparent shadow-glow-amber mt-1"
+                    >
+                      Desbloquear Solución Oficial
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* PESTAÑA 5: SOLUCIÓN OFICIAL DESBLOQUEADA */}
+        {/* ==================================================================== */}
+        {activeTab === 'solution' && isSolutionRevealed && solutionQuery && (
+          <div className="flex flex-col gap-4 animate-fadeIn font-mono">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-streak flex items-center gap-1.5">
+                <Unlock className="w-3.5 h-3.5 text-amber-streak" />
+                Solución Oficial de Referencia
+              </span>
+              <Badge variant="amber" size="sm">
+                0 XP Acreditados
+              </Badge>
+            </div>
+
+            <div className="p-3 rounded-lg bg-surface-card border border-amber-streak/30 text-xs text-content-secondary leading-relaxed">
+              <span className="font-semibold text-content-primary">💡 Explicación de la solución:</span>
+              <p className="mt-1 font-sans">
+                {exercise.concept?.summary ||
+                  'Esta consulta resuelve los requerimientos del reto aplicando las cláusulas estándar en PostgreSQL.'}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between text-[11px] text-content-muted">
+                <span>Sentencia SQL Certificada:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(solutionQuery);
+                    setCopiedSolution(true);
+                    setTimeout(() => setCopiedSolution(false), 1500);
+                  }}
+                  className="hover:text-content-primary flex items-center gap-1 transition-colors"
+                >
+                  {copiedSolution ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald" />
+                      <span className="text-emerald">¡Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copiar SQL</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <pre className="p-3.5 rounded-xl bg-canvas border border-border-subtle text-xs text-cyan-accent overflow-x-auto whitespace-pre font-mono leading-relaxed shadow-inner">
+                {solutionQuery}
+              </pre>
+
+              {onLoadSolutionIntoEditor && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => onLoadSolutionIntoEditor(solutionQuery)}
+                  leftIcon={<Code2 className="w-3.5 h-3.5 text-cyan-accent" />}
+                  className="mt-2 text-xs border-cyan-accent/30 text-content-primary hover:border-cyan-accent hover:bg-cyan-accent/10"
+                >
+                  Cargar Consulta en el Editor y Ejecutar
+                </Button>
               )}
             </div>
           </div>

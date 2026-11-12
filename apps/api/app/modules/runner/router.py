@@ -14,6 +14,8 @@ from app.modules.runner.schemas import (
     ExecutionResult,
     ExerciseSubmitRequest,
     QueryExecuteRequest,
+    RevealSolutionRequest,
+    RevealSolutionResponse,
 )
 from app.modules.runner.service import sandbox_runner
 
@@ -109,6 +111,68 @@ async def get_exercise(exercise_id: str):
 
 
 @router.post(
+    "/exercises/{exercise_id}/reveal-solution",
+    response_model=RevealSolutionResponse,
+    tags=["Ejercicios"],
+    summary="Revelar la solución oficial tras al menos 2 intentos fallidos",
+)
+async def reveal_exercise_solution(
+    exercise_id: str,
+    request: RevealSolutionRequest,
+    http_request: Request,
+    user: AuthenticatedUser = Depends(get_optional_current_user),
+):
+    """
+    Revela la consulta de solución oficial de referencia bajo las siguientes reglas:
+    1. Aplica Rate Limiting.
+    2. Exige estrictamente que el usuario haya acumulado al menos 2 intentos fallidos (failed_attempts >= 2).
+    3. Registra telemetría para auditar cuellos de botella y oportunidades pedagógicas en el currículum.
+    """
+    await check_rate_limit(http_request, user)
+
+    if request.failed_attempts < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Se requieren al menos 2 intentos fallidos previos para poder desbloquear la solución oficial.",
+        )
+
+    exercise = await exercise_repository.get_internal_for_evaluation(exercise_id)
+    if not exercise:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ejercicio '{exercise_id}' no encontrado.",
+        )
+
+    logger.info(
+        f"[Telemetría] Solución revelada para '{exercise.title}' ({exercise_id}) por usuario "
+        f"{user.id if not user.is_guest else 'invitado'} tras {request.failed_attempts} intentos fallidos."
+    )
+
+    if not user.is_guest:
+        try:
+            await record_verified_progress(
+                user_id=user.id,
+                exercise_id=exercise_id,
+                submitted_sql="-- SOLUTION REVEALED",
+                status="FAILED",
+                execution_time_ms=0,
+                error_message="User revealed solution after failed attempts",
+                hints_used=0,
+                xp_to_award=0,
+            )
+        except Exception as e:
+            logger.warning(f"No se pudo registrar telemetría en Supabase: {e}")
+
+    return RevealSolutionResponse(
+        exercise_id=exercise.id,
+        solution_query=exercise.solution_query,
+        title=exercise.title,
+        explanation=exercise.concept.summary if exercise.concept else "Solución oficial de referencia de Qurio.",
+        telemetry_recorded=True,
+    )
+
+
+@router.post(
     "/exercises/{exercise_id}/submit",
     response_model=EvaluationResponse,
     tags=["Ejercicios"],
@@ -170,7 +234,22 @@ async def submit_exercise_solution(
 
     # 4. Autoridad central del backend para otorgar XP y registrar progreso
     if evaluation.status == EvaluationStatus.PASSED:
-        if user.is_guest:
+        if request.solution_viewed:
+            evaluation.xp_awarded = 0
+            evaluation.message = (
+                "¡Reto resuelto con la solución de apoyo! (0 XP acreditados por haber consultado la solución oficial)."
+            )
+            if not user.is_guest:
+                await record_verified_progress(
+                    user_id=user.id,
+                    exercise_id=exercise_id,
+                    submitted_sql=request.query,
+                    status="PASSED",
+                    execution_time_ms=int(evaluation.execution_time_ms),
+                    hints_used=request.hints_revealed,
+                    xp_to_award=0,
+                )
+        elif user.is_guest:
             # Modo invitado: no persiste en Supabase ni otorga XP oficial (D-05)
             evaluation.xp_awarded = 0
             evaluation.message = (

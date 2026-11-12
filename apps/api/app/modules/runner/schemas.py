@@ -31,6 +31,19 @@ class ExecutionResult(BaseModel):
 class ExerciseSubmitRequest(BaseModel):
     query: str = Field(..., min_length=1, description="Consulta SQL propuesta por el estudiante")
     hints_revealed: int = Field(default=0, ge=0, le=3, description="Número de pistas utilizadas")
+    solution_viewed: bool = Field(default=False, description="Indica si el usuario desbloqueó y visualizó la solución oficial")
+
+
+class RevealSolutionRequest(BaseModel):
+    failed_attempts: int = Field(..., ge=0, description="Número de intentos fallidos registrados por el usuario")
+
+
+class RevealSolutionResponse(BaseModel):
+    exercise_id: str
+    solution_query: str
+    title: str
+    explanation: Optional[str] = None
+    telemetry_recorded: bool = True
 
 
 class DiffResult(BaseModel):

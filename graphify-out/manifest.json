@@ -72,16 +72,16 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/router.py": {
-    "mtime": 1794432546.6831686,
-    "seen": 1794435617.910217,
-    "ast_hash": "00aab32635cfc74ad1fcbce3266fbe12",
+    "mtime": 1794505000.520441,
+    "seen": 1794505466.699869,
+    "ast_hash": "57e55b7c630c2241e9d07c104a84e7d5",
     "semantic_hash": ""
   },
   "apps/api/app/modules/runner/schemas.py": {
-    "mtime": 1794117480.9872065,
-    "seen": 1794252886.8073766,
-    "ast_hash": "d92216389fa53ef778082948a266398a",
-    "semantic_hash": "d92216389fa53ef778082948a266398a"
+    "mtime": 1794504358.8856716,
+    "seen": 1794505466.6998727,
+    "ast_hash": "894a382a1d7c8e4042fab37af8e28a72",
+    "semantic_hash": ""
   },
   "apps/api/app/modules/runner/security.py": {
     "mtime": 1794265802.0798433,
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/test_integration.py": {
-    "mtime": 1794353902.2954507,
-    "seen": 1794354351.254977,
-    "ast_hash": "c35adc686b76e6e49a0300d852b137a1",
+    "mtime": 1794505331.9425702,
+    "seen": 1794505466.7017047,
+    "ast_hash": "15b70a0f1c427b30a1ea14daa683dd90",
     "semantic_hash": ""
   },
   "apps/api/tests/test_security.py": {
@@ -132,9 +132,9 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794437540.1083,
-    "seen": 1794502693.921745,
-    "ast_hash": "a002fc74553d320967781f1ec7996be6",
+    "mtime": 1794505000.956396,
+    "seen": 1794505466.704394,
+    "ast_hash": "c1af53d2fc6d72df6002625c114a27c1",
     "semantic_hash": ""
   },
   "apps/web/src/components/atoms/Badge/Badge.tsx": {
@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/index.ts": {
-    "mtime": 1794430592.9146652,
-    "seen": 1794430880.0750237,
-    "ast_hash": "ca89031f3b67b9698bc0eac83160c474",
+    "mtime": 1794504648.3433597,
+    "seen": 1794505466.7100306,
+    "ast_hash": "48328290d70e46cea90c966b5cbceee2",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/AchievementsView/AchievementsView.tsx": {
@@ -258,15 +258,15 @@
     "semantic_hash": "ae0bce5f8e6edef42116b7bd6cc4f0ba"
   },
   "apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx": {
-    "mtime": 1794243389.875441,
-    "seen": 1794252886.80742,
-    "ast_hash": "6bab0966ee4126daddcff4d3d2ca5c35",
-    "semantic_hash": "6bab0966ee4126daddcff4d3d2ca5c35"
+    "mtime": 1794504776.415718,
+    "seen": 1794505466.7107131,
+    "ast_hash": "b9a7f1d42831010090bb3cc79b78987f",
+    "semantic_hash": ""
   },
   "apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx": {
-    "mtime": 1794336459.4555166,
-    "seen": 1794339135.9058986,
-    "ast_hash": "e02bd5359ea851cf18484cfc1f0a3982",
+    "mtime": 1794505002.0524514,
+    "seen": 1794505466.7107162,
+    "ast_hash": "a864aacdc04fe6e2ba230ab7f1a2bd27",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx": {
@@ -360,9 +360,9 @@
     "semantic_hash": "501dbefce3bdfe944cecf55933c7a6ee"
   },
   "apps/web/src/lib/api.ts": {
-    "mtime": 1794504092.1352134,
-    "seen": 1794504138.0019295,
-    "ast_hash": "7b6f611cdbeebcf2a6e264eda8aa3937",
+    "mtime": 1794505003.20791,
+    "seen": 1794505466.7166789,
+    "ast_hash": "85665da091d96bb2ddb1c68cc85d987a",
     "semantic_hash": ""
   },
   "apps/web/src/lib/persistence.ts": {
@@ -390,9 +390,9 @@
     "semantic_hash": "8a353b797c4d202550e3d273eb5f3d4b"
   },
   "apps/web/src/types/index.ts": {
-    "mtime": 1794432547.9833062,
-    "seen": 1794435617.9314432,
-    "ast_hash": "9b7dc0442cbb6a8ff6abeab8e303244b",
+    "mtime": 1794504586.859784,
+    "seen": 1794505466.7185707,
+    "ast_hash": "85717c6ec05edf3d391dfa02d6819bbb",
     "semantic_hash": ""
   },
   "apps/web/src/vite-env.d.ts": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794502805.8682344,
-    "seen": 1794504138.0200214,
-    "ast_hash": "0464757be342e925268c21246739cd4e",
+    "mtime": 1794505451.1926508,
+    "seen": 1794505466.734866,
+    "ast_hash": "fc466967ea7ffe1bb75fef8be7d249be",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1065,6 +1065,18 @@
     "mtime": 1794504092.1276038,
     "seen": 1794504138.0207274,
     "ast_hash": "9a7d0cf9d49b89c94355bd941c4440f1",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/molecules/RevealSolutionModal/RevealSolutionModal.tsx": {
+    "mtime": 1794504916.0034518,
+    "seen": 1794505466.7084148,
+    "ast_hash": "7f44ecfa1e56849297354dfaaee83042",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/molecules/RevealSolutionModal/index.ts": {
+    "mtime": 1794504634.094388,
+    "seen": 1794505466.708418,
+    "ast_hash": "cb0734ccf0a4e48d347948da4aa76c2e",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

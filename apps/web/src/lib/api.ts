@@ -1,6 +1,7 @@
 import {
   ExecutionResult,
   EvaluationResponse,
+  RevealSolutionResponse,
   Exercise,
   Track,
   Achievement,
@@ -190,14 +191,19 @@ export const api = {
   async submitSolution(
     exerciseId: string,
     query: string,
-    hintsRevealed = 0
+    hintsRevealed = 0,
+    solutionViewed = false
   ): Promise<EvaluationResponse> {
     try {
       const headers = await getAuthHeaders();
       const res = await fetch(`${API_BASE_URL}/exercises/${exerciseId}/submit`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ query, hints_revealed: hintsRevealed }),
+        body: JSON.stringify({
+          query,
+          hints_revealed: hintsRevealed,
+          solution_viewed: solutionViewed,
+        }),
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -226,6 +232,31 @@ export const api = {
         error: err.message,
       };
     }
+  },
+
+  /**
+   * Revela la consulta de solución oficial tras al menos 2 intentos fallidos.
+   */
+  async revealSolution(
+    exerciseId: string,
+    failedAttempts: number
+  ): Promise<RevealSolutionResponse> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE_URL}/exercises/${exerciseId}/reveal-solution`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ failed_attempts: failedAttempts }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new ApiError(
+        errorData.detail || 'No se pudo desbloquear la solución oficial del ejercicio',
+        res.status
+      );
+    }
+
+    return await res.json();
   },
 };
 

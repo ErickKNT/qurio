@@ -37,6 +37,14 @@ export interface EvaluationResponse {
   message: string;
 }
 
+export interface RevealSolutionResponse {
+  exercise_id: string;
+  solution_query: string;
+  title: string;
+  explanation?: string;
+  telemetry_recorded: boolean;
+}
+
 export interface ExerciseHint {
   id: string;
   exercise_id: string;

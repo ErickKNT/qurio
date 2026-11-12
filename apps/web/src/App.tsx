@@ -18,7 +18,13 @@ import {
 } from 'lucide-react';
 import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
-import { MetricTile, FormField, StreakPill, GuestTrialCompleteModal } from '@/components/molecules';
+import {
+  MetricTile,
+  FormField,
+  StreakPill,
+  GuestTrialCompleteModal,
+  RevealSolutionModal,
+} from '@/components/molecules';
 import { AuthModal, AuthMode } from '@/components/molecules/AuthModal/AuthModal';
 import {
   MonacoEditorPanel,
@@ -129,6 +135,12 @@ export const App: React.FC = () => {
   const [resultMessage, setResultMessage] = useState<string | undefined>();
 
   const [awardedXp, setAwardedXp] = useState(0);
+
+  // Estados de Apoyo Pedagógico y Revelación de Solución Oficial
+  const [failedAttemptsByExercise, setFailedAttemptsByExercise] = useState<Record<string, number>>({});
+  const [revealedSolutions, setRevealedSolutions] = useState<Record<string, string>>({});
+  const [isRevealModalOpen, setIsRevealModalOpen] = useState(false);
+  const [isRevealingSolution, setIsRevealingSolution] = useState(false);
 
   const activeExercise = exercises[currentExerciseIndex] || FALLBACK_EXERCISES[0];
 
@@ -404,6 +416,38 @@ export const App: React.FC = () => {
     }
   };
 
+  // Cargar la consulta de solución oficial revelada directamente en el editor Monaco
+  const handleLoadSolutionIntoEditor = useCallback(
+    (solutionSql: string) => {
+      setSqlCode(solutionSql);
+      if (activeExercise?.id) {
+        persistence.saveExerciseDraft(activeExercise.id, solutionSql, activeExercise.initial_code);
+      }
+    },
+    [activeExercise]
+  );
+
+  // Confirmar y solicitar al backend la solución oficial tras >= 2 intentos fallidos
+  const handleConfirmRevealSolution = useCallback(async () => {
+    const failedCount = failedAttemptsByExercise[activeExercise.id] || 0;
+    if (failedCount < 2) return;
+
+    setIsRevealingSolution(true);
+    try {
+      const resp = await api.revealSolution(activeExercise.id, failedCount);
+      setRevealedSolutions((prev) => ({
+        ...prev,
+        [activeExercise.id]: resp.solution_query,
+      }));
+      setIsRevealModalOpen(false);
+    } catch (err: any) {
+      setResultError(err.message || 'No se pudo obtener la solución oficial del ejercicio.');
+      setIsRevealModalOpen(false);
+    } finally {
+      setIsRevealingSolution(false);
+    }
+  }, [activeExercise, failedAttemptsByExercise]);
+
   // Ejecución / Evaluación Semántica End-to-End
   const handleExecuteSolution = useCallback(async () => {
     if (!sqlCode.trim()) return;
@@ -423,10 +467,12 @@ export const App: React.FC = () => {
     setResultDiff(undefined);
 
     try {
+      const isSolutionViewed = Boolean(revealedSolutions[activeExercise.id]);
       const evalResponse: EvaluationResponse = await api.submitSolution(
         activeExercise.id,
         sqlCode,
-        hintsUnlocked
+        hintsUnlocked,
+        isSolutionViewed
       );
 
       // Si el backend requiere autenticación tras la prueba, abrir modal preventivo sin pintar error
@@ -517,6 +563,12 @@ export const App: React.FC = () => {
         setResultDiff(evalResponse.diff);
         setResultMessage(evalResponse.message);
 
+        // Incrementar contador de intentos fallidos para desbloqueo pedagógico
+        setFailedAttemptsByExercise((prev) => ({
+          ...prev,
+          [activeExercise.id]: (prev[activeExercise.id] || 0) + 1,
+        }));
+
         // Registrar intento fallido en persistencia
         await persistence.recordAttempt({
           userId: profile?.id,
@@ -531,6 +583,12 @@ export const App: React.FC = () => {
       } else {
         setExecutionStatus('ERROR');
         setResultError(evalResponse.error || evalResponse.message);
+
+        // Incrementar contador de intentos fallidos para desbloqueo pedagógico
+        setFailedAttemptsByExercise((prev) => ({
+          ...prev,
+          [activeExercise.id]: (prev[activeExercise.id] || 0) + 1,
+        }));
 
         // Registrar intento con error en persistencia
         await persistence.recordAttempt({
@@ -547,10 +605,23 @@ export const App: React.FC = () => {
     } catch (err: any) {
       setExecutionStatus('ERROR');
       setResultError(err.message || 'Error de conexión con el evaluador semántico en FastAPI.');
+      setFailedAttemptsByExercise((prev) => ({
+        ...prev,
+        [activeExercise.id]: (prev[activeExercise.id] || 0) + 1,
+      }));
     } finally {
       setIsExecuting(false);
     }
-  }, [activeExercise, sqlCode, hintsUnlocked, profile, exercises, isAuthenticated, refreshProfile]);
+  }, [
+    activeExercise,
+    sqlCode,
+    hintsUnlocked,
+    profile,
+    exercises,
+    isAuthenticated,
+    refreshProfile,
+    revealedSolutions,
+  ]);
 
   // Avanzar al siguiente reto
   const handleNextExercise = () => {
@@ -699,6 +770,11 @@ export const App: React.FC = () => {
               unlockedHintsCount={hintsUnlocked}
               onUnlockHint={handleUnlockHint}
               isCompleted={activeExercise.is_completed || executionStatus === 'SUCCESS'}
+              failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
+              isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
+              solutionQuery={revealedSolutions[activeExercise.id] || null}
+              onOpenRevealModal={() => setIsRevealModalOpen(true)}
+              onLoadSolutionIntoEditor={handleLoadSolutionIntoEditor}
             />
           }
           editorContent={
@@ -731,6 +807,9 @@ export const App: React.FC = () => {
               message={resultMessage}
               xpAwarded={awardedXp}
               onNextExercise={handleNextExercise}
+              failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
+              isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
+              onOpenRevealModal={() => setIsRevealModalOpen(true)}
             />
           }
           statusBar={
@@ -746,6 +825,16 @@ export const App: React.FC = () => {
               </div>
             </div>
           }
+        />
+
+        {/* Modal de Revelación de Solución Oficial */}
+        <RevealSolutionModal
+          isOpen={isRevealModalOpen}
+          onClose={() => setIsRevealModalOpen(false)}
+          onConfirmReveal={handleConfirmRevealSolution}
+          exerciseTitle={activeExercise.title}
+          failedAttempts={failedAttemptsByExercise[activeExercise.id] || 0}
+          isLoading={isRevealingSolution}
         />
 
         {/* Modal de Prueba de Invitado Superada */}

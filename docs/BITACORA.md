@@ -1360,3 +1360,41 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Pytest Backend:** 40/40 pruebas unitarias pasando al 100% en 0.12s.
      * **Build de Producción Vite:** 2,172 módulos transformados sin errores en 5.36s.
      * **Grafo de Conocimiento (Graphify):** 2,180 nodos, 3,506 aristas y 155 comunidades actualizados.
+
+---
+
+### Entrada 45: Fase 2 — Botón "Ver Solución" Bloqueado a 2 Intentos Fallidos, Telemetría y Cero XP
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/pedagogical-refinement-and-solution-reveal`
+* **Objetivo:** Implementar la funcionalidad de desbloqueo asistido de la "Solución Oficial" condicionada estrictamente a la acumulación de al menos 2 intentos fallidos (`failed_attempts >= 2`), con registro de telemetría para auditar cuellos de botella del currículum y otorgamiento estricto de 0 XP oficial para proteger la integridad de la gamificación.
+* **Actividades y Logros Clave:**
+  1. **Backend Seguro y Endpoints en FastAPI (`router.py`, `schemas.py`):**
+     * Creados esquemas `RevealSolutionRequest` y `RevealSolutionResponse`.
+     * Creado endpoint `POST /api/v1/exercises/{exercise_id}/reveal-solution`:
+       * Valida `failed_attempts >= 2` (arroja HTTP 400 Bad Request si el usuario tiene menos de 2 fallos).
+       * Aplica Rate Limiting para evitar abusos.
+       * Obtiene de forma segura la consulta de solución oficial desde el catálogo interno (`solution_query`).
+       * Registra telemetría docente en logger y en Supabase para identificar qué ejercicios generan mayor dificultad.
+     * Actualizado `POST /api/v1/exercises/{exercise_id}/submit`:
+       * Campo `solution_viewed: bool = False`.
+       * Si `solution_viewed is True`, la evaluación otorga estrictamente `xp_awarded = 0` y notifica al usuario: *"¡Reto resuelto con la solución de apoyo! (0 XP acreditados por haber consultado la solución oficial)"*.
+  2. **Diseño Atómico en Frontend (`RevealSolutionModal`):**
+     * Creada la molécula `RevealSolutionModal` en `src/components/molecules/RevealSolutionModal/` bajo la estética *Terminal Glow Minimal* (fondo zinc-900, acentos ámbar, advertencias pedagógicas claras, 0 XP explícito y botón para cargar la solución).
+  3. **Integración en Componentes de Espacio de Trabajo:**
+     * **`ExerciseSpecPanel`:**
+       * Pestaña `Solución` visible tras desbloquear, con visor SQL monospace, botón "Copiar SQL" y botón "Cargar en el Editor".
+       * En la pestaña `Pistas`: renderizado condicional con estado bloqueado (`🔒 Ver Solución (Bloqueado • x/2 intentos)`) o activo (`🔓 Desbloquear Solución Oficial`).
+     * **`DataGridResults`:**
+       * Al ocurrir un error de sintaxis o discrepancia semántica (`FAILED` / `ERROR`), muestra un callout contextual notificando la disponibilidad de la solución oficial tras 2 intentos fallidos.
+     * **`App.tsx`:**
+       * Seguimiento de intentos fallidos por ejercicio (`failedAttemptsByExercise`).
+       * Almacenamiento seguro en memoria de soluciones consultadas (`revealedSolutions`).
+       * Envío de la bandera `solution_viewed` al evaluador y reemplazo del código en el editor Monaco con guardado de borrador automático.
+  4. **Diagnóstico y Resolución del Bloqueo en Pruebas:**
+     * Se identificó que las pruebas unitarias puras (`test_evaluator.py`, `test_schema_consistency.py`, `test_security.py`) se ejecutan en 0.12 segundos sin red, mientras que `test_integration.py` intentaba abrir sockets TCP de loopback hacia PostgreSQL Sandbox Docker (`127.0.0.1:5433`).
+     * Dentro del sandbox de terminal de Windows, el aislamiento de red bloquea los sockets TCP locales provocando esperas de timeout del SO. Al ejecutarse con acceso a socket/red, el conjunto completo de **69 pruebas de backend pasa de forma limpia en 9.49 segundos**.
+  5. **Verificación Integral:**
+     * **Backend:** 69/69 pruebas unitarias y de integración pasando al 100% en pytest (`test_auth.py`, `test_rate_limit.py`, `test_evaluator.py`, `test_schema_consistency.py`, `test_security.py`, `test_integration.py`).
+     * **Frontend:** 22/22 pruebas unitarias pasando al 100% en vitest.
+     * **Build de Producción:** 2,173 módulos transformados sin errores en 5.42 segundos.

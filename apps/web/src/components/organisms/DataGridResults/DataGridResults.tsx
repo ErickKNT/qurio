@@ -9,6 +9,8 @@ import {
   ArrowRight,
   Table as TableIcon,
   GitCompare,
+  Unlock,
+  Lock,
 } from 'lucide-react';
 import { ColumnInfo, DiffResult } from '@/types';
 import { Badge } from '@/components/atoms/Badge/Badge';
@@ -27,6 +29,9 @@ export interface DataGridResultsProps {
   xpAwarded?: number;
   onNextExercise?: () => void;
   isPlayground?: boolean;
+  failedAttemptsCount?: number;
+  isSolutionRevealed?: boolean;
+  onOpenRevealModal?: () => void;
   className?: string;
 }
 
@@ -42,6 +47,9 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
   xpAwarded,
   onNextExercise,
   isPlayground = false,
+  failedAttemptsCount = 0,
+  isSolutionRevealed = false,
+  onOpenRevealModal,
   className,
 }) => {
   const [activeTab, setActiveTab] = useState<'table' | 'diff'>('table');
@@ -203,6 +211,35 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
             <span className="text-[11px] text-content-muted">
               💡 Revisa la sintaxis de las palabras reservadas, comas y nombres exactos de las columnas en el esquema.
             </span>
+
+            {/* Asistente pedagógico tras intentos fallidos */}
+            {!isPlayground && !isSolutionRevealed && (
+              <div className="pt-2 border-t border-border-subtle/40 flex items-center justify-between text-xs mt-1">
+                {failedAttemptsCount >= 2 ? (
+                  <div className="flex items-center justify-between w-full gap-2 flex-wrap">
+                    <span className="text-[11px] text-amber-streak">
+                      Acumulaste {failedAttemptsCount} intentos fallidos. Ya tienes disponible la solución oficial.
+                    </span>
+                    {onOpenRevealModal && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={onOpenRevealModal}
+                        leftIcon={<Unlock className="w-3 h-3" />}
+                        className="text-[11px] bg-amber-streak text-canvas font-bold hover:bg-amber-streak/90 border-transparent shrink-0"
+                      >
+                        Ver Solución Oficial
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-[11px] text-content-muted flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-content-muted" />
+                    Intento {failedAttemptsCount}/2 fallido (solución disponible al 2° intento fallido).
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -222,6 +259,27 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
               <p className="text-[11px] text-content-secondary italic">
                 {message}
               </p>
+            )}
+
+            {/* Asistente pedagógico tras discrepancias reiteradas */}
+            {!isPlayground && !isSolutionRevealed && failedAttemptsCount >= 2 && onOpenRevealModal && (
+              <div className="p-2.5 rounded-lg bg-amber-streak/10 border border-amber-streak/30 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-amber-streak">
+                  <Unlock className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-sans">
+                    ¿Te resulta difícil ajustar la discrepancia? Puedes consultar la solución oficial para aprenderla (otorgará 0 XP).
+                  </span>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={onOpenRevealModal}
+                  leftIcon={<Unlock className="w-3 h-3" />}
+                  className="text-xs bg-amber-streak text-canvas font-bold hover:bg-amber-streak/90 border-transparent shrink-0"
+                >
+                  Ver Solución
+                </Button>
+              </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 text-xs">
