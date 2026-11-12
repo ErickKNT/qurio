@@ -1,18 +1,51 @@
-# Catálogo Pedagógico Completo: Propuesta de Humanización (50 Retos de Qurio)
+# Catálogo Pedagógico Refinado: Humanización y Botón 'Ver Solución'
 
-> [!IMPORTANT]
-> **Objetivo del Documento:** Presentar la propuesta de reescritura pedagógica y amigable para los 50 ejercicios curriculares de Qurio, transformando la jerga formal de ingeniería y burocracia empresarial en retos claros, empáticos y orientados a la acción cotidiana para proteger la retención de usuarios principiantes.
+> [!NOTE]
+> **Documento de Especificación y Propuesta Curricular:** Preparado en la rama `feat/pedagogical-refinement-and-solution-reveal` para revisión y aprobación previa.
 
 ---
 
-## 1. Los 4 Pilares del Tono Pedagógico de Qurio
+## 1. Nueva Funcionalidad: Botón 'Ver Solución' (Unlock a 2 Intentos Fallidos + Telemetría)
 
-1. **Propósito antes que mecánica:** Explicar para qué sirve en el mundo real antes de hablar de buffers, tuplas o índices.
-2. **Metáforas del día a día:** Comparar tablas con hojas de cálculo, `DISTINCT` con un quitaduplicados, y `LEFT JOIN` con buscar ausencias.
-3. **Dos niveles de lectura (Progressive Disclosure):**
-   * **Nivel 1 (A la vista):** Concepto claro, sintaxis limpia y checklist paso a paso.
-   * **Nivel 2 (Bajo el capó / Opcional):** Explicación de cómo lo procesa el motor interno de PostgreSQL para quien tenga curiosidad técnica.
-4. **Consignas directas (Regla de las dos frases):** Frase 1: Misión de negocio amigable. Frase 2: Columnas y tabla exacta.
+### 1.1 Justificación Pedagógica y Prevención de Abandono
+Cuando un estudiante se atasca durante más de 10 minutos en una consulta SQL, la frustración puede convertirse en abandono definitivo. Sin embargo, darle la respuesta de inmediato elimina el esfuerzo cognitivo. Para equilibrar ambos factores:
+* **Barrera de 2 intentos:** El botón permanece bloqueado hasta que el estudiante haya intentado al menos dos veces (`status: 'ERROR'` o `status: 'FAILED'`).
+* **Trade-off de Gamificación (0 XP):** Si el estudiante decide revelar la solución, el ejercicio se marca como 'Solución Consultada' y no otorga los puntos de experiencia (XP = 0), preservando la legitimidad del leaderboard y los logros.
+* **Telemetría para Mejora Continua:** Cada revelación se audita con el `exercise_id`, número de intentos previos y tiempo transcurrido, permitiendo identificar qué ejercicios son cuellos de botella para mejorar sus pistas o teoría.
+
+### 1.2 Flujo y Estados de Interfaz (UX)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bloqueado: Entra al reto (0 intentos)
+    Bloqueado --> Bloqueado: 1er intento fallido (1/2)
+    Bloqueado --> Desbloqueado: 2do intento fallido (2/2)
+    Desbloqueado --> ModalConfirmacion: Clic en 'Ver Solución'
+    ModalConfirmacion --> Desbloqueado: 'Seguir intentando'
+    ModalConfirmacion --> SolucionRevelada: 'Revelar solución (0 XP)'
+    SolucionRevelada --> EditorCargado: 'Cargar en el editor'
+```
+
+1. **Estado 🔒 Bloqueado:** Botón deshabilitado en tono tenue: `🔒 Ver Solución (0/2 intentos)` o `(1/2)`. Un tooltip explica: *'Ejecuta al menos 2 intentos para desbloquear la solución oficial si te quedas atascado'*.
+2. **Estado 🔓 Desbloqueado:** Se activa con acento ámbar/dorado: `🔓 Ver Solución Oficial`.
+3. **Modal de Confirmación:** Advierte con claridad: *'Ver la solución oficial te ayudará a destrabarte, pero este reto no otorgará XP (+0 XP). Te recomendamos revisar primero las pistas.'* Opciones: `[Seguir intentando]` (verde primario) o `[Revelar solución]` (ámbar secundario).
+4. **Panel de Solución:** Muestra el bloque de código SQL con explicación didáctica y botón `[Cargar en el editor]` para que el usuario pueda ejecutarla, examinar el resultado y aprender.
+
+### 1.3 Arquitectura Técnica de Implementación
+* **Backend (`/api/v1/exercises/{id}/reveal-solution`):**
+  * Endpoint POST seguro que valida que el usuario o sesión haya registrado al menos 2 intentos fallidos en ese ejercicio.
+  * Devuelve `{ solution_query: string, explanation: string }` de forma segura (sin exponer soluciones anticipadamente en el catálogo público).
+  * Registra en la base de datos `exercise_telemetry` el evento `solution_revealed`.
+* **Frontend (`ExerciseWorkspace` & `ExerciseSpecPanel`):**
+  * Mantiene el contador reactivo `failedAttemptsCount` por ejercicio.
+  * Si se consulta la solución, actualiza `solution_viewed: true` en el estado de progreso.
+
+---
+
+## 2. Rediseño de Objetivos (Checklist Libre de Spoilers)
+
+> [!IMPORTANT]
+> **Regla Estricta:** Los objetivos ahora representan **criterios de éxito y metas funcionales** (el *qué* debe lograr la consulta), sin contener jamás palabras clave de SQL, cláusulas explícitas (`WHERE ...`, `SELECT ...`, `FROM ...`) ni fórmulas matemáticas cableadas. Las pistas sintácticas residen exclusivamente en la pestaña de **Pistas**.
 
 ---
 
@@ -22,7 +55,7 @@
 
 ### Reto #1: Catálogo Básico de Productos
 * **ID:** `e0000000-0000-0000-0000-000000000001`
-* **Consulta Solución:** `SELECT nombre_producto, precio FROM productos;`
+* **Consulta Solución (Interna):** `SELECT nombre_producto, precio FROM productos;`
 
 ````carousel
 <!-- slide -->
@@ -44,17 +77,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 ¿Cómo lo lee la base de datos? Primero busca la tabla con `FROM` y luego extrae solo las columnas que pediste en `SELECT`.
 
-**Objetivos:**
-- 1. Indicar de qué tabla leer con `FROM productos`.
-- 2. Elegir las columnas `nombre_producto` y `precio`.
-- 3. Finalizar la instrucción con punto y coma `;`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Identificar la tabla de productos dentro del esquema.
+- 2. Seleccionar únicamente el nombre y el costo unitario de cada artículo.
+- 3. Ejecutar y verificar los registros devueltos en la cuadrícula.
 ````
 
 ---
 
 ### Reto #2: Cálculo de Precios con IVA
 * **ID:** `e0000000-0000-0000-0000-000000000008`
-* **Consulta Solución:** `SELECT nombre_producto, precio, ROUND(precio * 1.21, 2) AS precio_con_iva FROM productos;`
+* **Consulta Solución (Interna):** `SELECT nombre_producto, precio, ROUND(precio * 1.21, 2) AS precio_con_iva FROM productos;`
 
 ````carousel
 <!-- slide -->
@@ -76,17 +109,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 El cálculo se hace al vuelo en la consulta; no altera los valores originales guardados en la tabla.
 
-**Objetivos:**
-- 1. Proyectar `nombre_producto` y `precio`.
-- 2. Calcular `precio * 1.21` redondeado con `ROUND(..., 2)`.
-- 3. Asignar el alias `precio_con_iva`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Mostrar las columnas descriptivas y de precio base del artículo.
+- 2. Aplicar el cálculo de la tasa del 21% de impuesto con 2 decimales.
+- 3. Asignar un nombre claro y representativo a la columna calculada.
 ````
 
 ---
 
 ### Reto #3: Concatenación de Nombre Completo
 * **ID:** `e0000000-0000-0000-0000-000000000019`
-* **Consulta Solución:** `SELECT nombre || ' ' || apellido AS cliente_completo, email FROM clientes;`
+* **Consulta Solución (Interna):** `SELECT nombre || ' ' || apellido AS cliente_completo, email FROM clientes;`
 
 ````carousel
 <!-- slide -->
@@ -108,17 +141,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 En SQL estándar, `||` une textos fila por fila sin modificar los datos de origen.
 
-**Objetivos:**
-- 1. Identificar la tabla de origen `clientes`.
-- 2. Concatenar `nombre`, un espacio `' '` y `apellido` bajo el alias `cliente_completo`.
-- 3. Proyectar la columna `email`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Obtener los registros de la tabla de clientes.
+- 2. Combinar el nombre y el apellido en una sola columna con separación legible.
+- 3. Presentar la columna unificada junto con la dirección de correo electrónico.
 ````
 
 ---
 
 ### Reto #4: Catálogo de Ciudades Únicas (DISTINCT)
 * **ID:** `e0000000-0000-0000-0000-000000000020`
-* **Consulta Solución:** `SELECT DISTINCT ciudad FROM clientes;`
+* **Consulta Solución (Interna):** `SELECT DISTINCT ciudad FROM clientes;`
 
 ````carousel
 <!-- slide -->
@@ -139,9 +172,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos agrupa y descarta las copias repetidas antes de mostrar el resultado final.
 
-**Objetivos:**
-- 1. Usar la palabra clave `DISTINCT` tras `SELECT`.
-- 2. Proyectar la columna `ciudad` de la tabla `clientes`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Consultar la ubicación de residencia de los clientes.
+- 2. Filtrar el listado para suprimir todas las ciudades repetidas.
+- 3. Presentar una lista de ubicaciones geográficas únicas.
 ````
 
 ---
@@ -150,7 +184,7 @@
 
 ### Reto #5: Productos Premium (> 500€)
 * **ID:** `e0000000-0000-0000-0000-000000000002`
-* **Consulta Solución:** `SELECT nombre_producto, precio, stock FROM productos WHERE precio > 500;`
+* **Consulta Solución (Interna):** `SELECT nombre_producto, precio, stock FROM productos WHERE precio > 500;`
 
 ````carousel
 <!-- slide -->
@@ -172,17 +206,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos revisa cada fila con `WHERE` y descarta de inmediato las que no cumplen la regla, ahorrando memoria y tiempo.
 
-**Objetivos:**
-- 1. Seleccionar `nombre_producto`, `precio` y `stock` de `productos`.
-- 2. Añadir la cláusula `WHERE` con la condición `precio > 500`.
-- 3. Verificar que no se incluyan productos de 500€ exactos o menores.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Seleccionar la descripción, precio y existencias del inventario.
+- 2. Establecer una condición para aislar exclusivamente los artículos de alto valor.
+- 3. Asegurar que los productos que no alcancen el umbral queden excluidos.
 ````
 
 ---
 
 ### Reto #6: Productos en Rango Medio (BETWEEN)
 * **ID:** `e0000000-0000-0000-0000-000000000009`
-* **Consulta Solución:** `SELECT nombre_producto, precio FROM productos WHERE precio BETWEEN 100 AND 800;`
+* **Consulta Solución (Interna):** `SELECT nombre_producto, precio FROM productos WHERE precio BETWEEN 100 AND 800;`
 
 ````carousel
 <!-- slide -->
@@ -204,17 +238,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 El motor evalúa el rango directamente sobre los datos de la columna de forma optimizada.
 
-**Objetivos:**
-- 1. Consultar `nombre_producto` y `precio` de `productos`.
-- 2. Aplicar el filtro `WHERE precio BETWEEN 100 AND 800`.
-- 3. Confirmar que los productos de 100€ y 800€ queden incluidos.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Consultar el catálogo de artículos de gama media.
+- 2. Delimitar los resultados mediante un operador de rango continuo.
+- 3. Comprobar que los límites superior e inferior queden incluidos.
 ````
 
 ---
 
 ### Reto #7: Búsqueda por Patrón de Correo (LIKE)
 * **ID:** `e0000000-0000-0000-0000-000000000021`
-* **Consulta Solución:** `SELECT nombre, apellido, email FROM clientes WHERE email LIKE '%@email.com';`
+* **Consulta Solución (Interna):** `SELECT nombre, apellido, email FROM clientes WHERE email LIKE '%@email.com';`
 
 ````carousel
 <!-- slide -->
@@ -236,17 +270,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 PostgreSQL examina el patrón texto por texto; el símbolo `%` actúa como un comodín flexible.
 
-**Objetivos:**
-- 1. Elegir `nombre`, `apellido` y `email` de la tabla `clientes`.
-- 2. Aplicar el filtro con `WHERE email LIKE '%@email.com'`.
-- 3. Asegurarte de que el dominio esté entre comillas simples.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Consultar los datos de contacto de los clientes registrados.
+- 2. Aplicar un filtro de patrón para identificar la terminación del correo corporativo.
+- 3. Verificar que solo aparezcan cuentas con el dominio especificado.
 ````
 
 ---
 
 ### Reto #8: Filtro de Ciudades Específicas (IN)
 * **ID:** `e0000000-0000-0000-0000-000000000022`
-* **Consulta Solución:** `SELECT cliente_id, nombre, apellido, ciudad FROM clientes WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia');`
+* **Consulta Solución (Interna):** `SELECT cliente_id, nombre, apellido, ciudad FROM clientes WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia');`
 
 ````carousel
 <!-- slide -->
@@ -268,17 +302,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 En lugar de evaluar condición por condición, PostgreSQL busca eficientemente el valor dentro de la lista en memoria.
 
-**Objetivos:**
-- 1. Proyectar `cliente_id`, `nombre`, `apellido` y `ciudad` de `clientes`.
-- 2. Añadir `WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia')`.
-- 3. Verificar que solo aparezcan clientes de esas tres ciudades.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Consultar la lista de clientes y sus ciudades de residencia.
+- 2. Filtrar los usuarios pertenecientes al listado de centros urbanos clave.
+- 3. Resolver el filtro sin encadenar comparaciones individuales repetidas.
 ````
 
 ---
 
 ### Reto #9: Productos en Riesgo de Stock (OR)
 * **ID:** `e0000000-0000-0000-0000-000000000023`
-* **Consulta Solución:** `SELECT producto_id, nombre_producto, stock FROM productos WHERE stock <= 15 OR stock >= 75;`
+* **Consulta Solución (Interna):** `SELECT producto_id, nombre_producto, stock FROM productos WHERE stock <= 15 OR stock >= 75;`
 
 ````carousel
 <!-- slide -->
@@ -300,17 +334,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Evaluación de cortocircuito: si la base de datos comprueba que la primera condición es verdadera, no pierde tiempo verificando la segunda.
 
-**Objetivos:**
-- 1. Seleccionar `producto_id`, `nombre_producto` y `stock` de `productos`.
-- 2. Conectar las dos condiciones con `OR`.
-- 3. Usar los operadores `<=` y `>=` correctamente.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Consultar los artículos en los extremos de disponibilidad.
+- 2. Establecer una doble condición donde baste cumplir cualquiera de los dos extremos.
+- 3. Incluir productos en escasez crítica o con exceso de inventario.
 ````
 
 ---
 
 ### Reto #10: Facturas de Alto Valor No Pagadas (AND + NOT)
 * **ID:** `e0000000-0000-0000-0000-000000000024`
-* **Consulta Solución:** `SELECT factura_id, monto_total, estado_factura FROM facturas WHERE monto_total >= 400 AND estado_factura <> 'pagada';`
+* **Consulta Solución (Interna):** `SELECT factura_id, monto_total, estado_factura FROM facturas WHERE monto_total >= 400 AND estado_factura <> 'pagada';`
 
 ````carousel
 <!-- slide -->
@@ -332,10 +366,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 PostgreSQL evalúa primero la condición que descarte más filas rápidamente para ahorrar trabajo.
 
-**Objetivos:**
-- 1. Proyectar `factura_id`, `monto_total` y `estado_factura` de la tabla `facturas`.
-- 2. Usar `AND` para combinar el monto mínimo y el estado no pagado.
-- 3. Usar `<>` o `!=` para comprobar que sea distinto de `'pagada'`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Consultar la información contable de las facturas.
+- 2. Exigir simultáneamente un importe relevante y un estado pendiente de cobro.
+- 3. Excluir explícitamente los comprobantes que ya fueron liquidados.
 ````
 
 ---
@@ -344,7 +378,7 @@
 
 ### Reto #11: Clientes Españoles Ordenados por Apellido
 * **ID:** `e0000000-0000-0000-0000-000000000003`
-* **Consulta Solución:** `SELECT nombre, apellido, ciudad FROM clientes WHERE pais = 'España' ORDER BY apellido ASC;`
+* **Consulta Solución (Interna):** `SELECT nombre, apellido, ciudad FROM clientes WHERE pais = 'España' ORDER BY apellido ASC;`
 
 ````carousel
 <!-- slide -->
@@ -366,17 +400,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos primero filtra las filas con `WHERE` y solo al final organiza las filas resultantes en el orden que pediste.
 
-**Objetivos:**
-- 1. Filtrar los clientes con `WHERE pais = 'España'`.
-- 2. Proyectar las columnas `nombre`, `apellido` y `ciudad`.
-- 3. Añadir `ORDER BY apellido ASC` al final de la consulta.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Acotar el conjunto de clientes al país solicitado.
+- 2. Seleccionar los campos de identidad y residencia.
+- 3. Ordenar alfabéticamente el listado de la A a la Z por el apellido.
 ````
 
 ---
 
 ### Reto #12: Top 5 Productos Críticos por Stock
 * **ID:** `e0000000-0000-0000-0000-000000000010`
-* **Consulta Solución:** `SELECT nombre_producto, stock FROM productos ORDER BY stock ASC LIMIT 5;`
+* **Consulta Solución (Interna):** `SELECT nombre_producto, stock FROM productos ORDER BY stock ASC LIMIT 5;`
 
 ````carousel
 <!-- slide -->
@@ -398,17 +432,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Con `LIMIT`, la base de datos se detiene en cuanto encuentra las primeras N filas requeridas, sin procesar la tabla entera.
 
-**Objetivos:**
-- 1. Elegir `nombre_producto` y `stock` de la tabla `productos`.
-- 2. Ordenar de menor a mayor con `ORDER BY stock ASC`.
-- 3. Limitar el resultado a 5 filas con `LIMIT 5`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Consultar los artículos de menor disponibilidad en almacén.
+- 2. Clasificar el inventario de menor a mayor existencia.
+- 3. Acotar el resultado para mostrar exactamente los 5 artículos más urgentes.
 ````
 
 ---
 
 ### Reto #13: Ordenamiento Multi-Criterio
 * **ID:** `e0000000-0000-0000-0000-000000000025`
-* **Consulta Solución:** `SELECT producto_id, categoria_id, nombre_producto, precio FROM productos ORDER BY categoria_id ASC, precio DESC;`
+* **Consulta Solución (Interna):** `SELECT producto_id, categoria_id, nombre_producto, precio FROM productos ORDER BY categoria_id ASC, precio DESC;`
 
 ````carousel
 <!-- slide -->
@@ -429,17 +463,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos agrupa mentalmente por la primera columna y luego aplica la segunda ordenación sobre cada subgrupo.
 
-**Objetivos:**
-- 1. Proyectar `producto_id`, `categoria_id`, `nombre_producto` y `precio`.
-- 2. Ordenar primero por `categoria_id ASC`.
-- 3. Desempatar por `precio DESC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Consultar los artículos asociando su familia comercial y precio.
+- 2. Ordenar las categorías en sentido ascendente.
+- 3. Desempatar los artículos de una misma familia del más caro al más barato.
 ````
 
 ---
 
 ### Reto #14: Paginación de Clientes (OFFSET)
 * **ID:** `e0000000-0000-0000-0000-000000000026`
-* **Consulta Solución:** `SELECT cliente_id, nombre, email FROM clientes ORDER BY cliente_id ASC LIMIT 5 OFFSET 5;`
+* **Consulta Solución (Interna):** `SELECT cliente_id, nombre, email FROM clientes ORDER BY cliente_id ASC LIMIT 5 OFFSET 5;`
 
 ````carousel
 <!-- slide -->
@@ -461,10 +495,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 `OFFSET` cuenta las filas en el orden indicado y solo empieza a enviar datos al cliente cuando llega al número marcado.
 
-**Objetivos:**
-- 1. Proyectar `cliente_id`, `nombre` y `email` de `clientes`.
-- 2. Ordenar por `cliente_id ASC`.
-- 3. Añadir `LIMIT 5 OFFSET 5` para cargar exactamente la página 2.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Establecer el orden de visualización de los clientes.
+- 2. Omitir el bloque de registros correspondiente a la primera página.
+- 3. Acotar el lote devuelto al tamaño de página requerido.
 ````
 
 ---
@@ -473,7 +507,7 @@
 
 ### Reto #15: Conteo de Productos por Categoría
 * **ID:** `e0000000-0000-0000-0000-000000000004`
-* **Consulta Solución:** `SELECT categoria_id, COUNT(*) AS total_productos FROM productos GROUP BY categoria_id HAVING COUNT(*) > 2;`
+* **Consulta Solución (Interna):** `SELECT categoria_id, COUNT(*) AS total_productos FROM productos GROUP BY categoria_id HAVING COUNT(*) > 2;`
 
 ````carousel
 <!-- slide -->
@@ -495,17 +529,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos primero forma los grupos en memoria con `GROUP BY`, calcula la cuenta, y luego descarta los grupos que no cumplan `HAVING`.
 
-**Objetivos:**
-- 1. Proyectar `categoria_id` y `COUNT(*) AS total_productos`.
-- 2. Agrupar con `GROUP BY categoria_id`.
-- 3. Filtrar los grupos con `HAVING COUNT(*) > 2`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Condensar los artículos agrupándolos por su familia comercial.
+- 2. Contar el volumen total de productos asociados a cada familia.
+- 3. Descartar los grupos que no superen el volumen mínimo establecido.
 ````
 
 ---
 
 ### Reto #16: Métricas Globales de Ventas
 * **ID:** `e0000000-0000-0000-0000-000000000011`
-* **Consulta Solución:** `SELECT COUNT(*) AS total_pedidos, SUM(total) AS ingresos_totales, ROUND(AVG(total), 2) AS ticket_promedio FROM pedidos WHERE estado_pedido = 'completado';`
+* **Consulta Solución (Interna):** `SELECT COUNT(*) AS total_pedidos, SUM(total) AS ingresos_totales, ROUND(AVG(total), 2) AS ticket_promedio FROM pedidos WHERE estado_pedido = 'completado';`
 
 ````carousel
 <!-- slide -->
@@ -528,18 +562,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos recorre los pedidos completados acumulando la suma y el conteo en una sola pasada eficiente.
 
-**Objetivos:**
-- 1. Filtrar con `WHERE estado_pedido = 'completado'`.
-- 2. Calcular `COUNT(*) AS total_pedidos`.
-- 3. Calcular `SUM(total) AS ingresos_totales`.
-- 4. Calcular `ROUND(AVG(total), 2) AS ticket_promedio`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Filtrar las transacciones considerando únicamente las compras exitosas.
+- 2. Calcular simultáneamente el recuento, la suma total de ingresos y el promedio.
+- 3. Asegurar que los promedios monetarios tengan el formato decimal requerido.
 ````
 
 ---
 
 ### Reto #17: Rango de Precios por Categoría (MAX/MIN)
 * **ID:** `e0000000-0000-0000-0000-000000000027`
-* **Consulta Solución:** `SELECT categoria_id, MIN(precio) AS precio_minimo, MAX(precio) AS precio_maximo FROM productos GROUP BY categoria_id;`
+* **Consulta Solución (Interna):** `SELECT categoria_id, MIN(precio) AS precio_minimo, MAX(precio) AS precio_maximo FROM productos GROUP BY categoria_id;`
 
 ````carousel
 <!-- slide -->
@@ -561,17 +594,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 `GROUP BY` separa los productos por categoría y calcula los valores extremos de cada grupo antes de devolver la respuesta.
 
-**Objetivos:**
-- 1. Proyectar `categoria_id`.
-- 2. Calcular `MIN(precio) AS precio_minimo` y `MAX(precio) AS precio_maximo`.
-- 3. Agrupar por `categoria_id` con `GROUP BY`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Agrupar el catálogo por familia comercial.
+- 2. Detectar el artículo más económico de cada grupo.
+- 3. Detectar el artículo de mayor valor de cada grupo y nombrar las columnas.
 ````
 
 ---
 
 ### Reto #18: Distribución de Clientes por País
 * **ID:** `e0000000-0000-0000-0000-000000000028`
-* **Consulta Solución:** `SELECT pais, COUNT(*) AS total_clientes FROM clientes GROUP BY pais ORDER BY total_clientes DESC;`
+* **Consulta Solución (Interna):** `SELECT pais, COUNT(*) AS total_clientes FROM clientes GROUP BY pais ORDER BY total_clientes DESC;`
 
 ````carousel
 <!-- slide -->
@@ -593,17 +626,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Primero se agrupa por país, se realiza el conteo de filas, y finalmente se ordenan los grupos de mayor a menor.
 
-**Objetivos:**
-- 1. Proyectar `pais` y `COUNT(*) AS total_clientes`.
-- 2. Agrupar con `GROUP BY pais`.
-- 3. Ordenar el resultado final con `ORDER BY total_clientes DESC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Agrupar la base de usuarios por su país de origen.
+- 2. Contar el volumen de clientes registrados en cada territorio.
+- 3. Presentar los países en un ranking ordenado de mayor a menor presencia.
 ````
 
 ---
 
 ### Reto #19: Stock Total por Proveedor
 * **ID:** `e0000000-0000-0000-0000-000000000029`
-* **Consulta Solución:** `SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id;`
+* **Consulta Solución (Interna):** `SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id;`
 
 ````carousel
 <!-- slide -->
@@ -624,16 +657,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos agrupa los productos por proveedor y va acumulando el stock de cada fila en un total sumatorio.
 
-**Objetivos:**
-- 1. Proyectar `proveedor_id` y `SUM(stock) AS stock_total`.
-- 2. Agrupar por `proveedor_id` con `GROUP BY`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Agrupar el inventario en función del fabricante o distribuidor.
+- 2. Acumular las unidades totales en almacén provistas por cada entidad.
+- 3. Asignar un alias descriptivo al total acumulado.
 ````
 
 ---
 
 ### Reto #20: Proveedores de Alto Volumen (HAVING SUM)
 * **ID:** `e0000000-0000-0000-0000-000000000030`
-* **Consulta Solución:** `SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id HAVING SUM(stock) > 100;`
+* **Consulta Solución (Interna):** `SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id HAVING SUM(stock) > 100;`
 
 ````carousel
 <!-- slide -->
@@ -654,17 +688,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 El motor calcula la suma de inventario de cada proveedor y luego descarta a los que no alcancen las 100 unidades.
 
-**Objetivos:**
-- 1. Seleccionar `proveedor_id` y `SUM(stock) AS stock_total`.
-- 2. Agrupar por `proveedor_id`.
-- 3. Filtrar la suma con `HAVING SUM(stock) > 100`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Calcular el inventario acumulado por cada fabricante.
+- 2. Aplicar un filtro posterior a la agregación para evaluar el volumen conjunto.
+- 3. Conservar únicamente los proveedores estratégicos de gran volumen.
 ````
 
 ---
 
 ### Reto #21: Clientes con Ticket Promedio Alto (HAVING AVG)
 * **ID:** `e0000000-0000-0000-0000-000000000031`
-* **Consulta Solución:** `SELECT cliente_id, ROUND(AVG(total), 2) AS ticket_promedio FROM pedidos GROUP BY cliente_id HAVING AVG(total) > 500;`
+* **Consulta Solución (Interna):** `SELECT cliente_id, ROUND(AVG(total), 2) AS ticket_promedio FROM pedidos GROUP BY cliente_id HAVING AVG(total) > 500;`
 
 ````carousel
 <!-- slide -->
@@ -686,17 +720,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Para cada cliente se promedian sus pedidos y se verifica la condición de corte antes de proyectar.
 
-**Objetivos:**
-- 1. Proyectar `cliente_id` y `ROUND(AVG(total), 2) AS ticket_promedio` de `pedidos`.
-- 2. Agrupar con `GROUP BY cliente_id`.
-- 3. Filtrar con `HAVING AVG(total) > 500`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Calcular el gasto medio por transacción de cada comprador.
+- 2. Filtrar a los clientes cuyo promedio supere el umbral de alto poder adquisitivo.
+- 3. Asegurar el redondeo monetario adecuado en la columna final.
 ````
 
 ---
 
 ### Reto #22: Resumen de Pedidos por Estado
 * **ID:** `e0000000-0000-0000-0000-000000000032`
-* **Consulta Solución:** `SELECT estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado FROM pedidos GROUP BY estado_pedido ORDER BY monto_acumulado DESC;`
+* **Consulta Solución (Interna):** `SELECT estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado FROM pedidos GROUP BY estado_pedido ORDER BY monto_acumulado DESC;`
 
 ````carousel
 <!-- slide -->
@@ -719,10 +753,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos genera el resumen completo agrupado y lo ordena según la suma monetaria calculada.
 
-**Objetivos:**
-- 1. Proyectar `estado_pedido`, `COUNT(*) AS total_pedidos` y `SUM(total) AS monto_acumulado`.
-- 2. Agrupar por `estado_pedido`.
-- 3. Ordenar por `monto_acumulado DESC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Agrupar el histórico de pedidos según su estado operativo.
+- 2. Contar el número de operaciones y calcular el dinero asociado a cada estado.
+- 3. Ordenar el tablero de mayor a menor recaudación económica.
 ````
 
 ---
@@ -733,7 +767,7 @@
 
 ### Reto #23: Pedidos con Identidad del Cliente
 * **ID:** `e0000000-0000-0000-0000-000000000005`
-* **Consulta Solución:** `SELECT p.pedido_id, c.nombre, c.apellido, p.total FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id;`
+* **Consulta Solución (Interna):** `SELECT p.pedido_id, c.nombre, c.apellido, p.total FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id;`
 
 ````carousel
 <!-- slide -->
@@ -755,17 +789,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos compara las claves comunes y arma una sola fila combinada en memoria por cada coincidencia.
 
-**Objetivos:**
-- 1. Conectar `pedidos` y `clientes` mediante `INNER JOIN`.
-- 2. Establecer la condición de unión con `ON p.cliente_id = c.cliente_id`.
-- 3. Proyectar `pedido_id`, `nombre`, `apellido` y `total`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Conectar las transacciones con el directorio de usuarios mediante su clave compartida.
+- 2. Extraer los datos personales del comprador y el total de la orden.
+- 3. Verificar que solo aparezcan órdenes con compradores válidos.
 ````
 
 ---
 
 ### Reto #24: Gasto Acumulado por Cliente
 * **ID:** `e0000000-0000-0000-0000-000000000012`
-* **Consulta Solución:** `SELECT c.cliente_id, c.nombre, c.apellido, SUM(p.total) AS total_gastado FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_gastado DESC;`
+* **Consulta Solución (Interna):** `SELECT c.cliente_id, c.nombre, c.apellido, SUM(p.total) AS total_gastado FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_gastado DESC;`
 
 ````carousel
 <!-- slide -->
@@ -788,17 +822,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 El motor empareja primero los pedidos de cada cliente y después suma el dinero por cada grupo.
 
-**Objetivos:**
-- 1. Unir `clientes` y `pedidos` con `INNER JOIN`.
-- 2. Agrupar por `cliente_id`, `nombre` y `apellido`.
-- 3. Calcular `SUM(p.total) AS total_gastado` y ordenar descendente.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Cruzar las órdenes de compra con la información de los clientes.
+- 2. Acumular el monto total pagado por cada persona en su historial.
+- 3. Ordenar el resultado destacando a los clientes con mayor volumen de compras.
 ````
 
 ---
 
 ### Reto #25: Catálogo con Nombre de Categoría
 * **ID:** `e0000000-0000-0000-0000-000000000033`
-* **Consulta Solución:** `SELECT p.producto_id, p.nombre_producto, c.nombre_categoria, p.precio FROM productos p INNER JOIN categorias c ON p.categoria_id = c.categoria_id ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;`
+* **Consulta Solución (Interna):** `SELECT p.producto_id, p.nombre_producto, c.nombre_categoria, p.precio FROM productos p INNER JOIN categorias c ON p.categoria_id = c.categoria_id ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;`
 
 ````carousel
 <!-- slide -->
@@ -820,17 +854,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 PostgreSQL reemplaza la clave numérica buscando instantáneamente en el índice de categorías.
 
-**Objetivos:**
-- 1. Conectar `productos` con `categorias` mediante `categoria_id`.
-- 2. Proyectar `producto_id`, `nombre_producto`, `nombre_categoria` y `precio`.
-- 3. Ordenar por categoría ascendente y luego por nombre de producto ascendente.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Cruzar los artículos con la tabla maestra de familias comerciales.
+- 2. Sustituir el identificador numérico por el nombre legible de la categoría.
+- 3. Organizar alfabéticamente por categoría y luego por nombre de producto.
 ````
 
 ---
 
 ### Reto #26: Productos y sus Proveedores Directos
 * **ID:** `e0000000-0000-0000-0000-000000000034`
-* **Consulta Solución:** `SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor FROM productos pr INNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id ORDER BY pr.nombre_producto ASC;`
+* **Consulta Solución (Interna):** `SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor FROM productos pr INNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id ORDER BY pr.nombre_producto ASC;`
 
 ````carousel
 <!-- slide -->
@@ -852,17 +886,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Se cruzan los registros emparejando la clave del proveedor presente en la ficha de cada producto.
 
-**Objetivos:**
-- 1. Unir `productos` con `proveedores` mediante `proveedor_id`.
-- 2. Proyectar `producto_id`, `nombre_producto`, `nombre_proveedor` y `pais AS pais_proveedor`.
-- 3. Ordenar por `nombre_producto ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Vincular los artículos del catálogo con su empresa suministradora.
+- 2. Extraer el nombre del proveedor y su país de origen con alias claros.
+- 3. Ordenar los artículos alfabéticamente.
 ````
 
 ---
 
 ### Reto #27: Facturación Detallada con Pagos Aprobados
 * **ID:** `e0000000-0000-0000-0000-000000000035`
-* **Consulta Solución:** `SELECT f.factura_id, f.monto_total, pg.metodo_pago, pg.fecha_pago FROM facturas f INNER JOIN pagos pg ON f.factura_id = pg.factura_id WHERE pg.estado_pago = 'aprobado' ORDER BY f.factura_id ASC;`
+* **Consulta Solución (Interna):** `SELECT f.factura_id, f.monto_total, pg.metodo_pago, pg.fecha_pago FROM facturas f INNER JOIN pagos pg ON f.factura_id = pg.factura_id WHERE pg.estado_pago = 'aprobado' ORDER BY f.factura_id ASC;`
 
 ````carousel
 <!-- slide -->
@@ -884,10 +918,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Primero se emparejan las facturas con sus pagos y luego se filtran solo aquellos con estado aprobado.
 
-**Objetivos:**
-- 1. Unir `facturas` y `pagos` mediante `factura_id`.
-- 2. Filtrar con `WHERE pg.estado_pago = 'aprobado'`.
-- 3. Proyectar `factura_id`, `monto_total`, `metodo_pago`, `fecha_pago` y ordenar.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Cruzar los comprobantes fiscales con sus comprobantes de pago bancarios.
+- 2. Restringir la consulta a las transacciones con estado liquidado y aprobado.
+- 3. Proyectar los identificadores, fechas y montos en orden secuencial.
 ````
 
 ---
@@ -896,7 +930,7 @@
 
 ### Reto #28: Clientes sin Compras Registradas (LEFT JOIN & IS NULL)
 * **ID:** `e0000000-0000-0000-0000-000000000006`
-* **Consulta Solución:** `SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id WHERE p.pedido_id IS NULL;`
+* **Consulta Solución (Interna):** `SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id WHERE p.pedido_id IS NULL;`
 
 ````carousel
 <!-- slide -->
@@ -918,17 +952,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 `LEFT JOIN` rellena con valores `NULL` a la derecha cuando no encuentra coincidencias, permitiendo aislar registros sin actividad.
 
-**Objetivos:**
-- 1. Usar `LEFT JOIN` de `clientes` con `pedidos` mediante `cliente_id`.
-- 2. Filtrar con `WHERE p.pedido_id IS NULL`.
-- 3. Proyectar `cliente_id`, `nombre` y `apellido`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Relacionar clientes y compras conservando a la totalidad de usuarios registrados.
+- 2. Identificar a aquellos que no registran ningún pedido en la plataforma.
+- 3. Mostrar los datos de contacto de los usuarios inactivos.
 ````
 
 ---
 
 ### Reto #29: Productos sin Movimiento de Venta
 * **ID:** `e0000000-0000-0000-0000-000000000013`
-* **Consulta Solución:** `SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN detalle_pedidos dp ON p.producto_id = dp.producto_id WHERE dp.detalle_id IS NULL;`
+* **Consulta Solución (Interna):** `SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN detalle_pedidos dp ON p.producto_id = dp.producto_id WHERE dp.detalle_id IS NULL;`
 
 ````carousel
 <!-- slide -->
@@ -949,17 +983,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Los productos que nunca se incluyeron en un pedido tendrán `dp.detalle_id = NULL` en el resultado del `LEFT JOIN`.
 
-**Objetivos:**
-- 1. Conectar `productos` y `detalle_pedidos` con `LEFT JOIN`.
-- 2. Filtrar con `WHERE dp.detalle_id IS NULL`.
-- 3. Proyectar `producto_id` y `nombre_producto`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Cruzar el catálogo con las líneas de compra conservando todos los artículos.
+- 2. Aislar los productos que no registran ningún movimiento de salida.
+- 3. Proyectar el identificador y nombre de los artículos desatendidos.
 ````
 
 ---
 
 ### Reto #30: Facturas Pendientes de Cobro (Anti-Join)
 * **ID:** `e0000000-0000-0000-0000-000000000036`
-* **Consulta Solución:** `SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total FROM facturas f LEFT JOIN pagos p ON f.factura_id = p.factura_id WHERE p.pago_id IS NULL ORDER BY f.factura_id ASC;`
+* **Consulta Solución (Interna):** `SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total FROM facturas f LEFT JOIN pagos p ON f.factura_id = p.factura_id WHERE p.pago_id IS NULL ORDER BY f.factura_id ASC;`
 
 ````carousel
 <!-- slide -->
@@ -981,17 +1015,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Las facturas sin cobros generarán una fila con `pago_id = NULL` que es capturada por el filtro `WHERE`.
 
-**Objetivos:**
-- 1. Conectar `facturas` con `pagos` mediante `LEFT JOIN`.
-- 2. Filtrar con `WHERE p.pago_id IS NULL`.
-- 3. Proyectar `factura_id`, `pedido_id`, `fecha_emision`, `monto_total` y ordenar.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Relacionar las facturas emitidas con la tabla de cobros.
+- 2. Filtrar aquellos comprobantes que carecen de registro de abono.
+- 3. Presentar los datos de las facturas pendientes de cobro ordenadas por ID.
 ````
 
 ---
 
 ### Reto #31: Productos Fuera del Almacén Central (Anti-Join Condicional)
 * **ID:** `e0000000-0000-0000-0000-000000000037`
-* **Consulta Solución:** `SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1 WHERE i.almacen_id IS NULL ORDER BY p.producto_id ASC;`
+* **Consulta Solución (Interna):** `SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1 WHERE i.almacen_id IS NULL ORDER BY p.producto_id ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1013,17 +1047,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La condición en el `ON` restringe la búsqueda en la tabla derecha antes de cruzarla con la tabla de productos.
 
-**Objetivos:**
-- 1. Aplicar `LEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1`.
-- 2. Filtrar con `WHERE i.almacen_id IS NULL`.
-- 3. Proyectar `producto_id` y `nombre_producto` ordenados por `producto_id ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Vincular los productos con el inventario acotando la búsqueda a la instalación central.
+- 2. Aislar los artículos que no cuentan con existencias en dicha instalación.
+- 3. Proyectar el catálogo de productos ausentes en dicho centro.
 ````
 
 ---
 
 ### Reto #32: Censo Completo de Pedidos por Cliente (Preservando Ceros)
 * **ID:** `e0000000-0000-0000-0000-000000000038`
-* **Consulta Solución:** `SELECT c.cliente_id, c.nombre, c.apellido, COUNT(p.pedido_id) AS total_pedidos FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_pedidos DESC, c.cliente_id ASC;`
+* **Consulta Solución (Interna):** `SELECT c.cliente_id, c.nombre, c.apellido, COUNT(p.pedido_id) AS total_pedidos FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_pedidos DESC, c.cliente_id ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1046,10 +1080,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Al contar una columna específica de la tabla derecha (`p.pedido_id`), SQL descarta automáticamente las filas con `NULL`.
 
-**Objetivos:**
-- 1. Conectar `clientes` y `pedidos` con `LEFT JOIN`.
-- 2. Usar `COUNT(p.pedido_id) AS total_pedidos` para preservar los ceros.
-- 3. Agrupar por los campos del cliente y ordenar adecuadamente.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Conectar usuarios y pedidos garantizando que nadie quede fuera de la lista.
+- 2. Contabilizar los pedidos garantizando que los usuarios sin compras muestren 0.
+- 3. Ordenar el censo de mayor a menor número de compras y desempatar por ID.
 ````
 
 ---
@@ -1058,7 +1092,7 @@
 
 ### Reto #33: Desglose Completo de Líneas de Pedido
 * **ID:** `e0000000-0000-0000-0000-000000000014`
-* **Consulta Solución:** `SELECT p.pedido_id, c.nombre AS cliente_nombre, pr.nombre_producto, cat.nombre_categoria, dp.cantidad, dp.precio_unitario FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id INNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id INNER JOIN productos pr ON dp.producto_id = pr.producto_id INNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id ORDER BY p.pedido_id ASC, pr.nombre_producto ASC LIMIT 10;`
+* **Consulta Solución (Interna):** `SELECT p.pedido_id, c.nombre AS cliente_nombre, pr.nombre_producto, cat.nombre_categoria, dp.cantidad, dp.precio_unitario FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id INNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id INNER JOIN productos pr ON dp.producto_id = pr.producto_id INNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id ORDER BY p.pedido_id ASC, pr.nombre_producto ASC LIMIT 10;`
 
 ````carousel
 <!-- slide -->
@@ -1079,17 +1113,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 El motor va conectando cada tabla paso a paso como si fueran eslabones de una cadena.
 
-**Objetivos:**
-- 1. Conectar las 5 tablas con `INNER JOIN`.
-- 2. Proyectar las 6 columnas solicitadas usando el alias `cliente_nombre`.
-- 3. Ordenar por `pedido_id ASC, nombre_producto ASC` y limitar con `LIMIT 10`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Conectar en cadena las 5 entidades del circuito comercial.
+- 2. Extraer las dimensiones del comprador, artículo, categoría y transacción.
+- 3. Ordenar secuencialmente y acotar el lote a 10 líneas de muestra.
 ````
 
 ---
 
 ### Reto #34: Historial de Ventas por Ciudad y Categoría
 * **ID:** `e0000000-0000-0000-0000-000000000039`
-* **Consulta Solución:** `SELECT c.ciudad, cat.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id INNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id INNER JOIN productos pr ON dp.producto_id = pr.producto_id INNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id GROUP BY c.ciudad, cat.nombre_categoria ORDER BY c.ciudad ASC, monto_vendido DESC;`
+* **Consulta Solución (Interna):** `SELECT c.ciudad, cat.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id INNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id INNER JOIN productos pr ON dp.producto_id = pr.producto_id INNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id GROUP BY c.ciudad, cat.nombre_categoria ORDER BY c.ciudad ASC, monto_vendido DESC;`
 
 ````carousel
 <!-- slide -->
@@ -1112,17 +1146,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos calcula las ventas de cada fila y luego las acumula en la combinación de ciudad y categoría correspondiente.
 
-**Objetivos:**
-- 1. Conectar `clientes`, `pedidos`, `detalle_pedidos`, `productos` y `categorias`.
-- 2. Calcular `SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido`.
-- 3. Agrupar por `c.ciudad, cat.nombre_categoria` y ordenar.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Cruzar clientes, compras y catálogo para enlazar territorio y producto.
+- 2. Calcular la recaudación multiplicando volumen por precio unitario.
+- 3. Agrupar por ciudad y familia comercial ordenando de mayor a menor venta.
 ````
 
 ---
 
 ### Reto #35: Conciliación de Pedidos, Facturación y Pagos
 * **ID:** `e0000000-0000-0000-0000-000000000040`
-* **Consulta Solución:** `SELECT p.pedido_id, p.cliente_id, f.monto_total AS monto_factura, pg.monto AS monto_pago, pg.metodo_pago FROM pedidos p INNER JOIN facturas f ON p.pedido_id = f.pedido_id INNER JOIN pagos pg ON f.factura_id = pg.factura_id ORDER BY p.pedido_id ASC;`
+* **Consulta Solución (Interna):** `SELECT p.pedido_id, p.cliente_id, f.monto_total AS monto_factura, pg.monto AS monto_pago, pg.metodo_pago FROM pedidos p INNER JOIN facturas f ON p.pedido_id = f.pedido_id INNER JOIN pagos pg ON f.factura_id = pg.factura_id ORDER BY p.pedido_id ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1144,17 +1178,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Se enlazan los tres eslabones comerciales: la orden original, el documento fiscal y la transacción financiera.
 
-**Objetivos:**
-- 1. Unir `pedidos` con `facturas` y `pagos` mediante `INNER JOIN`.
-- 2. Proyectar `pedido_id`, `cliente_id`, `monto_factura`, `monto_pago` y `metodo_pago`.
-- 3. Ordenar por `pedido_id ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Enlazar los tres eslabones comerciales: pedido, comprobante fiscal y pago.
+- 2. Distinguir con alias transparentes el monto facturado frente al cobrado.
+- 3. Mostrar el método de pago y ordenar por número de orden.
 ````
 
 ---
 
 ### Reto #36: Trazabilidad Física de Inventario por Almacén
 * **ID:** `e0000000-0000-0000-0000-000000000041`
-* **Consulta Solución:** `SELECT pr.nombre_producto, a.nombre_almacen, a.ciudad, i.cantidad_disponible FROM productos pr INNER JOIN inventario i ON pr.producto_id = i.producto_id INNER JOIN almacenes a ON i.almacen_id = a.almacen_id WHERE i.cantidad_disponible > 10 ORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;`
+* **Consulta Solución (Interna):** `SELECT pr.nombre_producto, a.nombre_almacen, a.ciudad, i.cantidad_disponible FROM productos pr INNER JOIN inventario i ON pr.producto_id = i.producto_id INNER JOIN almacenes a ON i.almacen_id = a.almacen_id WHERE i.cantidad_disponible > 10 ORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1177,10 +1211,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Se resuelve la relación entre productos y ubicaciones mediante la tabla intermedia de existencias.
 
-**Objetivos:**
-- 1. Conectar `productos`, `inventario` y `almacenes` con `INNER JOIN`.
-- 2. Filtrar con `WHERE i.cantidad_disponible > 10`.
-- 3. Proyectar las 4 columnas requeridas y ordenar.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Conectar el catálogo con las instalaciones a través de la tabla de existencias.
+- 2. Filtrar únicamente las ubicaciones con existencias superiores a 10 unidades.
+- 3. Presentar el producto, almacén, ciudad y stock ordenados con prolijidad.
 ````
 
 ---
@@ -1189,7 +1223,7 @@
 
 ### Reto #37: Directorio Operativo Unificado (UNION)
 * **ID:** `e0000000-0000-0000-0000-000000000042`
-* **Consulta Solución:** `SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes UNION SELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes ORDER BY ciudad ASC, tipo_entidad ASC;`
+* **Consulta Solución (Interna):** `SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes UNION SELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes ORDER BY ciudad ASC, tipo_entidad ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1211,17 +1245,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 PostgreSQL ejecuta las dos consultas por separado, fusiona los resultados y descarta duplicados antes de ordenar.
 
-**Objetivos:**
-- 1. Escribir la primera consulta sobre `clientes` con `ciudad` y `'cliente' AS tipo_entidad`.
-- 2. Usar `UNION` para conectar con la segunda consulta sobre `almacenes`.
-- 3. Ordenar por `ciudad ASC, tipo_entidad ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Obtener la presencia geográfica tanto de clientes como de instalaciones.
+- 2. Unificar verticalmente ambos listados en una sola colección consolidada.
+- 3. Eliminar duplicidades y ordenar alfabéticamente por ciudad y tipo.
 ````
 
 ---
 
 ### Reto #38: Ciudades sin Presencia de Almacenes (EXCEPT)
 * **ID:** `e0000000-0000-0000-0000-000000000043`
-* **Consulta Solución:** `SELECT ciudad FROM clientes EXCEPT SELECT ciudad FROM almacenes ORDER BY ciudad ASC;`
+* **Consulta Solución (Interna):** `SELECT ciudad FROM clientes EXCEPT SELECT ciudad FROM almacenes ORDER BY ciudad ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1243,17 +1277,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 El motor busca los elementos únicos del primer conjunto y elimina cualquiera que coincida con el segundo conjunto.
 
-**Objetivos:**
-- 1. Seleccionar `ciudad` de `clientes`.
-- 2. Aplicar `EXCEPT` con la selección de `ciudad` de `almacenes`.
-- 3. Ordenar el resultado con `ORDER BY ciudad ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Obtener el conjunto de ciudades residenciales de los clientes.
+- 2. Restar las ciudades que ya disponen de almacén logístico propio.
+- 3. Generar la lista de territorios con clientes desprovistos de centro logístico.
 ````
 
 ---
 
 ### Reto #39: Matriz de Cobertura Almacén-Categoría (CROSS JOIN)
 * **ID:** `e0000000-0000-0000-0000-000000000044`
-* **Consulta Solución:** `SELECT a.nombre_almacen, c.nombre_categoria FROM almacenes a CROSS JOIN categorias c ORDER BY a.nombre_almacen ASC, c.nombre_categoria ASC;`
+* **Consulta Solución (Interna):** `SELECT a.nombre_almacen, c.nombre_categoria FROM almacenes a CROSS JOIN categorias c ORDER BY a.nombre_almacen ASC, c.nombre_categoria ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1274,17 +1308,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos multiplica las filas de la tabla A por las de la tabla B para generar la cuadrícula completa.
 
-**Objetivos:**
-- 1. Usar `CROSS JOIN` entre `almacenes a` y `categorias c`.
-- 2. Proyectar `nombre_almacen` y `nombre_categoria`.
-- 3. Ordenar por `nombre_almacen ASC, nombre_categoria ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Cruzar todas las instalaciones logísticas contra todas las familias comerciales.
+- 2. Generar la matriz completa de combinaciones posibles sin condiciones de enlace.
+- 3. Presentar la cuadrícula de cobertura ordenada por almacén y familia.
 ````
 
 ---
 
 ### Reto #40: Pares de Productos de la Misma Categoría (SELF JOIN)
 * **ID:** `e0000000-0000-0000-0000-000000000045`
-* **Consulta Solución:** `SELECT p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b, p1.precio AS precio_a, p2.precio AS precio_b FROM productos p1 INNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id ORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC;`
+* **Consulta Solución (Interna):** `SELECT p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b, p1.precio AS precio_a, p2.precio AS precio_b FROM productos p1 INNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id ORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1306,10 +1340,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos trata la tabla como si fueran dos copias independientes en memoria para hacer las combinaciones.
 
-**Objetivos:**
-- 1. Unir `productos p1` con `productos p2` sobre la misma `categoria_id`.
-- 2. Exigir `p1.producto_id < p2.producto_id`.
-- 3. Proyectar las 5 columnas requeridas y ordenar.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Cruzar la tabla de artículos consigo misma para comparar productos hermanos.
+- 2. Emparejar artículos pertenecientes a la misma familia comercial.
+- 3. Evitar emparejamientos con el mismo producto y suprimir duplicados simétricos.
 ````
 
 ---
@@ -1320,7 +1354,7 @@
 
 ### Reto #41: Productos sobre el Promedio de Precio
 * **ID:** `e0000000-0000-0000-0000-000000000015`
-* **Consulta Solución:** `SELECT nombre_producto, precio FROM productos WHERE precio > (SELECT AVG(precio) FROM productos) ORDER BY precio DESC;`
+* **Consulta Solución (Interna):** `SELECT nombre_producto, precio FROM productos WHERE precio > (SELECT AVG(precio) FROM productos) ORDER BY precio DESC;`
 
 ````carousel
 <!-- slide -->
@@ -1342,17 +1376,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 PostgreSQL calcula el promedio global una sola vez y luego compara cada producto contra esa cifra.
 
-**Objetivos:**
-- 1. Crear una subconsulta entre paréntesis para calcular `AVG(precio)`.
-- 2. Comparar el precio con `WHERE precio > (...)`.
-- 3. Proyectar `nombre_producto` y `precio`, ordenando descendente.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Calcular dinámicamente el precio de referencia promedio del catálogo completo.
+- 2. Comparar el precio de cada artículo contra dicho valor medio en el filtro.
+- 3. Proyectar los artículos de precio superior ordenados del más caro al más barato.
 ````
 
 ---
 
 ### Reto #42: Clientes con Pedidos de Alto Monto (IN Subquery)
 * **ID:** `e0000000-0000-0000-0000-000000000046`
-* **Consulta Solución:** `SELECT cliente_id, nombre, apellido, email FROM clientes WHERE cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000) ORDER BY cliente_id ASC;`
+* **Consulta Solución (Interna):** `SELECT cliente_id, nombre, apellido, email FROM clientes WHERE cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000) ORDER BY cliente_id ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1374,17 +1408,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La subconsulta genera la lista de clientes con compras grandes y la consulta principal extrae sus datos personales.
 
-**Objetivos:**
-- 1. Crear la subconsulta `(SELECT cliente_id FROM pedidos WHERE total >= 1000)`.
-- 2. Filtrar clientes con `WHERE cliente_id IN (...)`.
-- 3. Proyectar los 4 campos solicitados y ordenar por `cliente_id ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Obtener el conjunto de compradores con compras de gran volumen mediante una consulta interna.
+- 2. Utilizar dicho conjunto como criterio de pertenencia para filtrar la tabla de clientes.
+- 3. Proyectar los datos de contacto de los clientes clasificados en orden.
 ````
 
 ---
 
 ### Reto #43: Comprobación de Existencia Eficiente (EXISTS)
 * **ID:** `e0000000-0000-0000-0000-000000000047`
-* **Consulta Solución:** `SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado') ORDER BY c.cliente_id ASC;`
+* **Consulta Solución (Interna):** `SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado') ORDER BY c.cliente_id ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1406,10 +1440,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Cortocircuito: la base de datos deja de buscar en cuanto encuentra la primera compra completada de ese cliente.
 
-**Objetivos:**
-- 1. Usar `WHERE EXISTS (SELECT 1 FROM pedidos p WHERE ...)`.
-- 2. Conectar `p.cliente_id = c.cliente_id` y exigir `estado_pedido = 'completado'`.
-- 3. Proyectar `cliente_id`, `nombre` y `apellido`, ordenados por `cliente_id ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Evaluar de forma conectada si existe al menos una compra confirmada por cliente.
+- 2. Detener la búsqueda en cuanto se encuentre la primera coincidencia por usuario.
+- 3. Listar a los clientes activos ordenados secuencialmente.
 ````
 
 ---
@@ -1418,7 +1452,7 @@
 
 ### Reto #44: Segmentación de Pedidos por Monto
 * **ID:** `e0000000-0000-0000-0000-000000000016`
-* **Consulta Solución:** `SELECT pedido_id, total, CASE WHEN total >= 1000 THEN 'Alto Valor' WHEN total >= 300 THEN 'Medio Valor' ELSE 'Bajo Valor' END AS segmento FROM pedidos ORDER BY total DESC;`
+* **Consulta Solución (Interna):** `SELECT pedido_id, total, CASE WHEN total >= 1000 THEN 'Alto Valor' WHEN total >= 300 THEN 'Medio Valor' ELSE 'Bajo Valor' END AS segmento FROM pedidos ORDER BY total DESC;`
 
 ````carousel
 <!-- slide -->
@@ -1440,10 +1474,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Para cada fila, PostgreSQL evalúa las condiciones de arriba a abajo y asigna la etiqueta correspondiente.
 
-**Objetivos:**
-- 1. Construir la expresión `CASE` con las tres ramas (Alto, Medio y Bajo Valor).
-- 2. Bautizar la columna calculada como `segmento` con `END AS segmento`.
-- 3. Proyectar `pedido_id`, `total` y ordenar por `total DESC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Evaluar las reglas de cuantía económica para cada orden individual.
+- 2. Asignar la etiqueta correspondiente según los umbrales de valor comercial.
+- 3. Bautizar la nueva dimensión calculada y ordenar por importe descendente.
 ````
 
 ---
@@ -1452,7 +1486,7 @@
 
 ### Reto #45: Ranking Relativo por Categoría (DENSE_RANK)
 * **ID:** `e0000000-0000-0000-0000-000000000018`
-* **Consulta Solución:** `SELECT categoria_id, nombre_producto, precio, DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria FROM productos ORDER BY categoria_id ASC, ranking_categoria ASC;`
+* **Consulta Solución (Interna):** `SELECT categoria_id, nombre_producto, precio, DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria FROM productos ORDER BY categoria_id ASC, ranking_categoria ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1474,10 +1508,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 La base de datos organiza los productos por categoría en memoria y asigna los puestos antes de mostrar la tabla.
 
-**Objetivos:**
-- 1. Usar `DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC)`.
-- 2. Asignar el alias `ranking_categoria`.
-- 3. Ordenar el resultado final por `categoria_id ASC, ranking_categoria ASC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Segmentar los artículos por familia comercial sin colapsar el listado.
+- 2. Calcular la posición relativa de cada artículo según su precio descendente.
+- 3. Garantizar que valores idénticos compartan posición sin saltos en la correlación.
 ````
 
 ---
@@ -1486,7 +1520,7 @@
 
 ### Reto #45: Pivoteo Manual de Ventas por Estado (Conditional Aggregation)
 * **ID:** `e0000000-0000-0000-0000-000000000048`
-* **Consulta Solución:** `SELECT cliente_id, SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas, SUM(CASE WHEN estado_pedido = 'pendiente' THEN total ELSE 0 END) AS ventas_pendientes FROM pedidos GROUP BY cliente_id ORDER BY cliente_id ASC;`
+* **Consulta Solución (Interna):** `SELECT cliente_id, SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas, SUM(CASE WHEN estado_pedido = 'pendiente' THEN total ELSE 0 END) AS ventas_pendientes FROM pedidos GROUP BY cliente_id ORDER BY cliente_id ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1508,10 +1542,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Cada fila se evalúa por separado: si cumple la regla suma su monto, si no suma 0, produciendo dos columnas limpias.
 
-**Objetivos:**
-- 1. Usar `SUM(CASE ... END)` para compras completadas.
-- 2. Usar `SUM(CASE ... END)` para compras pendientes.
-- 3. Agrupar por `cliente_id` y ordenar ascendente.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Evaluar condicionalmente el monto transaccionado según el estado del pedido.
+- 2. Acumular las ventas confirmadas y las pendientes en columnas independientes.
+- 3. Condensar los importes por cada cliente y ordenar por ID.
 ````
 
 ---
@@ -1520,7 +1554,7 @@
 
 ### Reto #46: Facturación por Categoría mediante CTE
 * **ID:** `e0000000-0000-0000-0000-000000000017`
-* **Consulta Solución:** `WITH ventas_por_categoria AS (SELECT c.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS facturacion FROM categorias c INNER JOIN productos pr ON c.categoria_id = pr.categoria_id INNER JOIN detalle_pedidos dp ON pr.producto_id = dp.producto_id GROUP BY c.nombre_categoria) SELECT nombre_categoria, facturacion FROM ventas_por_categoria ORDER BY facturacion DESC;`
+* **Consulta Solución (Interna):** `WITH ventas_por_categoria AS (SELECT c.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS facturacion FROM categorias c INNER JOIN productos pr ON c.categoria_id = pr.categoria_id INNER JOIN detalle_pedidos dp ON pr.producto_id = dp.producto_id GROUP BY c.nombre_categoria) SELECT nombre_categoria, facturacion FROM ventas_por_categoria ORDER BY facturacion DESC;`
 
 ````carousel
 <!-- slide -->
@@ -1542,17 +1576,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 PostgreSQL calcula el bloque del `WITH` y deja el resultado listo en memoria para la consulta final.
 
-**Objetivos:**
-- 1. Definir la CTE `ventas_por_categoria` con el cálculo de suma por categoría.
-- 2. Realizar la consulta final `SELECT nombre_categoria, facturacion FROM ventas_por_categoria`.
-- 3. Ordenar por `facturacion DESC`.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Estructurar el cálculo de facturación por familia en una tabla temporal nombrada.
+- 2. Consultar la tabla temporal como origen para la selección final de datos.
+- 3. Ordenar el resultado final de mayor a menor recaudación.
 ````
 
 ---
 
 ### Reto #47: CTEs Múltiples Encadenadas (Pipeline de Datos)
 * **ID:** `e0000000-0000-0000-0000-000000000049`
-* **Consulta Solución:** `WITH gasto_clientes AS (SELECT cliente_id, SUM(total) AS total_gastado FROM pedidos GROUP BY cliente_id), promedio_general AS (SELECT AVG(total_gastado) AS gasto_medio FROM gasto_clientes) SELECT g.cliente_id, g.total_gastado FROM gasto_clientes g, promedio_general p WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC;`
+* **Consulta Solución (Interna):** `WITH gasto_clientes AS (SELECT cliente_id, SUM(total) AS total_gastado FROM pedidos GROUP BY cliente_id), promedio_general AS (SELECT AVG(total_gastado) AS gasto_medio FROM gasto_clientes) SELECT g.cliente_id, g.total_gastado FROM gasto_clientes g, promedio_general p WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC;`
 
 ````carousel
 <!-- slide -->
@@ -1574,10 +1608,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Se genera un flujo de datos en dos etapas secuenciales antes de emitir la respuesta definitiva.
 
-**Objetivos:**
-- 1. Crear la primera CTE `gasto_clientes` con la suma por cliente.
-- 2. Crear la segunda CTE `promedio_general` con el promedio del gasto.
-- 3. Consultar ambas para mostrar los clientes sobre la media ordenados descendente.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Encadenar la primera etapa de acumulación de gasto por cliente.
+- 2. Calcular el promedio general tomando como entrada la etapa previa.
+- 3. Filtrar en la consulta final a los clientes que superen dicho promedio general.
 ````
 
 ---
@@ -1586,7 +1620,7 @@
 
 ### Reto #48: Ranking de Productos por Precio (ROW_NUMBER)
 * **ID:** `e0000000-0000-0000-0000-000000000007`
-* **Consulta Solución:** `SELECT producto_id, nombre_producto, precio, ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking FROM productos;`
+* **Consulta Solución (Interna):** `SELECT producto_id, nombre_producto, precio, ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking FROM productos;`
 
 ````carousel
 <!-- slide -->
@@ -1608,17 +1642,17 @@
 
 **Bajo el Capó (Nivel 2):** 💡 Se ordenan las filas temporalmente y se les estampa un número secuencial de arriba a abajo.
 
-**Objetivos:**
-- 1. Proyectar `producto_id`, `nombre_producto` y `precio`.
-- 2. Usar `ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking`.
-- 3. Finalizar la consulta con punto y coma.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Enumerar correlativamente cada producto según su valor comercial.
+- 2. Distribuir las posiciones del artículo más costoso al más económico.
+- 3. Mantener todas las filas del catálogo sin agrupar.
 ````
 
 ---
 
 ### Reto #50: Análisis de Intervalo Temporal entre Pedidos (LAG)
 * **ID:** `e0000000-0000-0000-0000-000000000050`
-* **Consulta Solución:** `SELECT pedido_id, cliente_id, fecha_pedido, LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior FROM pedidos ORDER BY cliente_id ASC, fecha_pedido ASC;`
+* **Consulta Solución (Interna):** `SELECT pedido_id, cliente_id, fecha_pedido, LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior FROM pedidos ORDER BY cliente_id ASC, fecha_pedido ASC;`
 
 ````carousel
 <!-- slide -->
@@ -1640,10 +1674,10 @@
 
 **Bajo el Capó (Nivel 2):** 💡 PostgreSQL guarda el valor de la fila anterior en memoria mientras recorre la partición del cliente en orden cronológico.
 
-**Objetivos:**
-- 1. Usar `LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC)`.
-- 2. Asignar el alias `fecha_pedido_anterior`.
-- 3. Proyectar `pedido_id`, `cliente_id`, `fecha_pedido` y ordenar adecuadamente.
+**Objetivos (Requisitos Sin Spoilers):**
+- 1. Dividir las transacciones por cliente ordenándolas en secuencia temporal.
+- 2. Recuperar el valor cronológico de la compra inmediatamente anterior.
+- 3. Proyectar la fecha previa y ordenar adecuadamente.
 ````
 
 ---
