@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { UserProfile } from '@/types';
 import { persistence } from '@/lib/persistence';
+import { api } from '@/lib/api';
 
 export interface AuthContextType {
   session: Session | null;
@@ -13,6 +14,8 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isCloudAuth: boolean;
   isDemoMode: boolean;
+  isPasswordRecovery: boolean;
+  clearPasswordRecovery: () => void;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signUp: (
     email: string,
@@ -34,6 +37,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+
+  const clearPasswordRecovery = useCallback(() => {
+    setIsPasswordRecovery(false);
+  }, []);
 
   // Obtiene o crea el perfil en la tabla user_profiles de Supabase
   const fetchProfile = useCallback(async (userId: string, userMetadata?: Record<string, any>) => {
@@ -118,8 +126,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    // A. Obtener sesión actual de Supabase
-    supabase.auth.getSession().then(({ data: { session: currentSession }, error: sessionError }) => {
+    let isMounted = true;
+
+    // A. Verificar token_hash en query string si proviene de plantilla OTP/custom, luego obtener sesión
+    const initializeSession = async () => {
+      if (typeof window !== 'undefined') {
+        const searchParams = new URLSearchParams(window.location.search);
+        const tokenHash = searchParams.get('token_hash');
+        const linkType = searchParams.get('type');
+        if (tokenHash && (linkType === 'recovery' || linkType === 'signup' || linkType === 'email' || linkType === 'email_change')) {
+          const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: linkType,
+          });
+          if (!isMounted) return;
+          if (verifyError) {
+            setError(verifyError.message);
+          } else if (verifyData.session) {
+            if (linkType === 'recovery') {
+              setIsPasswordRecovery(true);
+            }
+            searchParams.delete('token_hash');
+            searchParams.delete('type');
+            const remainingSearch = searchParams.toString();
+            const cleanUrl = `${window.location.pathname}${remainingSearch ? `?${remainingSearch}` : ''}${window.location.hash}`;
+            window.history.replaceState(window.history.state, '', cleanUrl);
+          }
+        }
+      }
+
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+      if (!isMounted) return;
+
       if (sessionError) {
         setError(sessionError.message);
       }
@@ -132,26 +170,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(null);
       }
       setLoading(false);
-    });
+    };
+
+    initializeSession();
 
     // B. Listener reactivo de cambios de autenticación
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!isMounted) return;
       setSession(newSession);
       setUser(newSession?.user ?? null);
 
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
         if (newSession?.user) {
           await fetchProfile(newSession.user.id, newSession.user.user_metadata);
         }
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        if (event === 'USER_UPDATED') {
+          setIsPasswordRecovery(false);
+        }
+        if (newSession?.user) {
+          await fetchProfile(newSession.user.id, newSession.user.user_metadata);
+          if (event === 'SIGNED_IN') {
+            persistence.syncGuestProgress(newSession.user.id, (exId, sql, hints) =>
+              api.submitSolution(exId, sql, hints)
+            ).then((res) => {
+              if (res.syncedCount > 0) {
+                fetchProfile(newSession.user.id, newSession.user.user_metadata);
+              }
+            });
+          }
+        }
       } else if (event === 'SIGNED_OUT') {
+        setIsPasswordRecovery(false);
         setProfile(null);
       }
       setLoading(false);
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [fetchProfile]);
@@ -243,7 +303,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           username: username.trim(),
           display_name: username.trim(),
         },
-        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/#auth-confirm`,
+        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/confirm`,
       },
     });
 
@@ -299,7 +359,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/#reset-password`,
+        redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/reset-password`,
       });
 
       if (resetError) {
@@ -324,20 +384,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true };
     }
 
+    const MISSING_SESSION_MSG =
+      'No se encontró una sesión de recuperación activa. El enlace pudo haber expirado o ya fue utilizado; solicita uno nuevo desde "¿Olvidaste tu contraseña?".';
+
     try {
+      const {
+        data: { session: activeSession },
+      } = await supabase.auth.getSession();
+
+      if (!activeSession) {
+        setError(MISSING_SESSION_MSG);
+        return { success: false, error: MISSING_SESSION_MSG };
+      }
+
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
       if (updateError) {
-        setError(updateError.message);
-        return { success: false, error: updateError.message };
+        const lower = updateError.message.toLowerCase();
+        const friendlyMsg =
+          lower.includes('auth session missing') || lower.includes('session missing')
+            ? MISSING_SESSION_MSG
+            : updateError.message;
+        setError(friendlyMsg);
+        return { success: false, error: friendlyMsg };
       }
 
+      setIsPasswordRecovery(false);
       return { success: true };
     } catch (err: any) {
-      setError(err.message || 'Error al actualizar la contraseña.');
-      return { success: false, error: err.message };
+      const msg = err?.message || 'Error al actualizar la contraseña.';
+      const lower = String(msg).toLowerCase();
+      const friendlyMsg =
+        lower.includes('auth session missing') || lower.includes('session missing')
+          ? MISSING_SESSION_MSG
+          : msg;
+      setError(friendlyMsg);
+      return { success: false, error: friendlyMsg };
     }
   };
 
@@ -358,6 +442,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isAuthenticated: Boolean(user || (!isSupabaseConfigured && profile)),
       isCloudAuth: Boolean(user && isSupabaseConfigured),
       isDemoMode: !isSupabaseConfigured,
+      isPasswordRecovery,
+      clearPasswordRecovery,
       signIn,
       signUp,
       signOut,
@@ -368,7 +454,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) fetchProfile(user.id, user.user_metadata);
       },
     }),
-    [session, user, profile, loading, error, fetchProfile, updateProfileState]
+    [session, user, profile, loading, error, isPasswordRecovery, clearPasswordRecovery, fetchProfile, updateProfileState]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -386,6 +472,8 @@ export function useAuth(): AuthContextType {
       isAuthenticated: false,
       isCloudAuth: false,
       isDemoMode: true,
+      isPasswordRecovery: false,
+      clearPasswordRecovery: () => {},
       signIn: async () => ({ success: false, error: 'AuthProvider no inicializado' }),
       signUp: async () => ({ success: false, error: 'AuthProvider no inicializado' }),
       signOut: async () => {},

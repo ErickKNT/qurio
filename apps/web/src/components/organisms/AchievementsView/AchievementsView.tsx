@@ -7,6 +7,7 @@ import { RadioTab } from '@/components/atoms';
 export interface AchievementsViewProps {
   achievements: Achievement[];
   totalXp?: number;
+  level?: number;
   className?: string;
 }
 
@@ -19,7 +20,8 @@ const CATEGORIES: { id: AchievementCategory; label: string }[] = [
 
 export const AchievementsView: React.FC<AchievementsViewProps> = ({
   achievements,
-  totalXp = 480,
+  totalXp = 0,
+  level = 1,
 }) => {
   const [activeCategory, setActiveCategory] = useState<AchievementCategory>('todos');
 
@@ -69,14 +71,14 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({
 
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-wider text-content-muted">
-              XP en Medallas
+              XP Acumulado
             </span>
             <span className="text-xl font-bold text-amber-accent flex items-center gap-1">
               <Zap className="w-4 h-4 fill-amber-accent/30" />
               +{totalXp}
             </span>
             <span className="text-[11px] text-content-secondary">
-              Nivel 2 Activo
+              Nivel {level} Activo
             </span>
           </div>
         </div>

@@ -46,6 +46,7 @@ class SandboxRunner:
                     min_size=2,
                     max_size=settings.SANDBOX_MAX_CONNECTIONS,
                     command_timeout=settings.SANDBOX_STATEMENT_TIMEOUT_MS / 1000.0,
+                    timeout=3.0,
                 )
                 logger.info("Pool de conexiones con Sandbox PostgreSQL inicializado.")
             except Exception as e:

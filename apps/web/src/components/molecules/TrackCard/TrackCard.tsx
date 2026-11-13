@@ -20,9 +20,12 @@ export const TrackCard: React.FC<TrackCardProps> = ({
   className,
 }) => {
   const total = track.total_exercises || 20;
-  const completed = track.completed_exercises || 0;
-  const progressPercent = Math.round((completed / total) * 100);
-  const isCompleted = progressPercent === 100;
+  const isLoading = track.is_progress_loading || track.completed_exercises === null;
+  const completed = track.completed_exercises ?? 0;
+  const progressPercent = typeof track.progress_percent === 'number'
+    ? track.progress_percent
+    : Math.round((completed / total) * 100);
+  const isCompleted = !isLoading && progressPercent === 100;
 
   return (
     <div
@@ -58,7 +61,11 @@ export const TrackCard: React.FC<TrackCardProps> = ({
             </Badge>
           </div>
 
-          {isCompleted ? (
+          {isLoading ? (
+            <span className="text-[11px] font-mono text-cyan-accent animate-pulse px-2 py-0.5 rounded-full bg-cyan-accent/10 border border-cyan-accent/20">
+              Sincronizando...
+            </span>
+          ) : isCompleted ? (
             <Badge variant="emerald" dot size="sm">
               Completado
             </Badge>
@@ -90,18 +97,26 @@ export const TrackCard: React.FC<TrackCardProps> = ({
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-[11px] font-mono">
             <span className="text-content-muted">Progreso del currículum</span>
-            <span className="text-content-primary font-semibold">
-              {completed}/{total} ({progressPercent}%)
-            </span>
+            {isLoading ? (
+              <span className="text-cyan-accent/80 font-medium animate-pulse">Calculando...</span>
+            ) : (
+              <span className="text-content-primary font-semibold">
+                {completed}/{total} ({progressPercent}%)
+              </span>
+            )}
           </div>
           <div className="w-full h-1.5 rounded-full bg-surface-dim overflow-hidden border border-border-subtle/30">
-            <div
-              className={cn(
-                'h-full rounded-full transition-all duration-500',
-                isCompleted ? 'bg-emerald' : 'bg-cyan-accent'
-              )}
-              style={{ width: `${progressPercent}%` }}
-            />
+            {isLoading ? (
+              <div className="h-full w-full bg-cyan-accent/30 animate-pulse" />
+            ) : (
+              <div
+                className={cn(
+                  'h-full rounded-full transition-all duration-500',
+                  isCompleted ? 'bg-emerald' : 'bg-cyan-accent'
+                )}
+                style={{ width: `${progressPercent}%` }}
+              />
+            )}
           </div>
         </div>
 

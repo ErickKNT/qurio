@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Terminal,
   Clock,
@@ -9,6 +9,10 @@ import {
   ArrowRight,
   Table as TableIcon,
   GitCompare,
+  Unlock,
+  Lock,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { ColumnInfo, DiffResult } from '@/types';
 import { Badge } from '@/components/atoms/Badge/Badge';
@@ -27,6 +31,11 @@ export interface DataGridResultsProps {
   xpAwarded?: number;
   onNextExercise?: () => void;
   isPlayground?: boolean;
+  failedAttemptsCount?: number;
+  isSolutionRevealed?: boolean;
+  onOpenRevealModal?: () => void;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
   className?: string;
 }
 
@@ -42,9 +51,23 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
   xpAwarded,
   onNextExercise,
   isPlayground = false,
+  failedAttemptsCount = 0,
+  isSolutionRevealed = false,
+  onOpenRevealModal,
+  isExpanded = false,
+  onToggleExpand,
   className,
 }) => {
   const [activeTab, setActiveTab] = useState<'table' | 'diff'>('table');
+
+  // Si no hay discrepancia (diff es undefined) o el resultado fue exitoso, la pestaña debe resolverse a 'table'
+  const effectiveTab = !diff || status === 'SUCCESS' ? 'table' : activeTab;
+
+  useEffect(() => {
+    if (!diff || status === 'SUCCESS') {
+      setActiveTab('table');
+    }
+  }, [diff, status]);
 
   // Normalizar columnas a objetos { name, type }
   const normalizedColumns = columns.map((c) => {
@@ -57,7 +80,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
   return (
     <div className={cn('flex flex-col h-full w-full bg-surface select-none overflow-hidden', className)}>
       {/* 1. BARRA SUPERIOR DE HERRAMIENTAS Y PESTAÑAS */}
-      <div className="h-10 px-4 bg-surface-dim border-b border-border-subtle flex items-center justify-between shrink-0 font-mono text-xs">
+      <div className="h-9 px-4 bg-surface-dim border-b border-border-subtle flex items-center justify-between shrink-0 font-mono text-xs">
         <div className="flex items-center gap-2">
           {/* Pestaña: Tabla de Datos Devueltos */}
           <button
@@ -65,7 +88,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
             onClick={() => setActiveTab('table')}
             className={cn(
               'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-medium transition-colors',
-              activeTab === 'table'
+              effectiveTab === 'table'
                 ? 'bg-surface-card text-content-primary border border-border-subtle shadow-sm'
                 : 'text-content-muted hover:text-content-primary hover:bg-surface-card/50'
             )}
@@ -86,7 +109,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
               onClick={() => setActiveTab('diff')}
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-medium transition-colors',
-                activeTab === 'diff'
+                effectiveTab === 'diff'
                   ? 'bg-amber-streak/15 text-amber-streak border border-amber-streak/30 shadow-sm'
                   : 'text-amber-streak/80 hover:text-amber-streak hover:bg-surface-card/50'
               )}
@@ -129,12 +152,34 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
               ERROR DE EJECUCIÓN
             </Badge>
           )}
+
+          {onToggleExpand && (
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              title={isExpanded ? 'Restaurar tamaño del panel' : 'Expandir tabla de resultados'}
+              aria-label={isExpanded ? 'Restaurar tamaño del panel' : 'Expandir tabla de resultados'}
+              className="hidden lg:inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border-subtle/70 bg-surface-card/60 text-content-muted hover:text-content-primary hover:border-primary/40 transition-colors"
+            >
+              {isExpanded ? (
+                <>
+                  <Minimize2 className="w-3 h-3" />
+                  <span>Restaurar</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3 h-3" />
+                  <span>Expandir</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
       {/* 2. BANNER DE RETO SUPERADO (SOLO EN MODO RETO/EJERCICIO, NUNCA EN PLAYGROUND) */}
       {status === 'SUCCESS' && !isPlayground && (
-        <div className="px-4 py-2.5 bg-emerald/10 border-b border-emerald/30 flex items-center justify-between shrink-0 animate-fadeIn">
+        <div className="px-4 py-1.5 bg-emerald/10 border-b border-emerald/30 flex items-center justify-between shrink-0 animate-fadeIn">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-full bg-emerald/20 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-4 h-4 text-emerald" />
@@ -203,11 +248,40 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
             <span className="text-[11px] text-content-muted">
               💡 Revisa la sintaxis de las palabras reservadas, comas y nombres exactos de las columnas en el esquema.
             </span>
+
+            {/* Asistente pedagógico tras intentos fallidos */}
+            {!isPlayground && !isSolutionRevealed && (
+              <div className="pt-2 border-t border-border-subtle/40 flex items-center justify-between text-xs mt-1">
+                {failedAttemptsCount >= 2 ? (
+                  <div className="flex items-center justify-between w-full gap-2 flex-wrap">
+                    <span className="text-[11px] text-amber-streak">
+                      Acumulaste {failedAttemptsCount} intentos fallidos. Ya tienes disponible la solución oficial.
+                    </span>
+                    {onOpenRevealModal && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={onOpenRevealModal}
+                        leftIcon={<Unlock className="w-3 h-3" />}
+                        className="text-[11px] bg-amber-streak text-canvas font-bold hover:bg-amber-streak/90 border-transparent shrink-0"
+                      >
+                        Ver Solución Oficial
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-[11px] text-content-muted flex items-center gap-1.5">
+                    <Lock className="w-3 h-3 text-content-muted" />
+                    Intento {failedAttemptsCount}/2 fallido (solución disponible al 2° intento fallido).
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
         {/* PESTAÑA DIFF (COMPARATIVA SEMÁNTICA) */}
-        {activeTab === 'diff' && diff && (
+        {effectiveTab === 'diff' && diff && (
           <div className="p-4 m-4 rounded-xl bg-surface-card border border-amber-streak/40 flex flex-col gap-3 animate-fadeIn font-mono">
             <div className="flex items-center gap-2 text-amber-streak text-xs font-bold uppercase tracking-wider">
               <HelpCircle className="w-4 h-4 shrink-0" />
@@ -222,6 +296,27 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
               <p className="text-[11px] text-content-secondary italic">
                 {message}
               </p>
+            )}
+
+            {/* Asistente pedagógico tras discrepancias reiteradas */}
+            {!isPlayground && !isSolutionRevealed && failedAttemptsCount >= 2 && onOpenRevealModal && (
+              <div className="p-2.5 rounded-lg bg-amber-streak/10 border border-amber-streak/30 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-amber-streak">
+                  <Unlock className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-sans">
+                    ¿Te resulta difícil ajustar la discrepancia? Puedes consultar la solución oficial para aprenderla (otorgará 0 XP).
+                  </span>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={onOpenRevealModal}
+                  leftIcon={<Unlock className="w-3 h-3" />}
+                  className="text-xs bg-amber-streak text-canvas font-bold hover:bg-amber-streak/90 border-transparent shrink-0"
+                >
+                  Ver Solución
+                </Button>
+              </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1 text-xs">
@@ -252,7 +347,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
         )}
 
         {/* PESTAÑA TABLA: RENDERIZADO TABULAR COMPLETO DE FILAS Y COLUMNAS */}
-        {activeTab === 'table' && (status === 'SUCCESS' || status === 'FAILED') && (
+        {effectiveTab === 'table' && (status === 'SUCCESS' || status === 'FAILED') && (
           <div>
             {/* Aviso de discrepancia sutil cuando está en modo tabla con fallo */}
             {status === 'FAILED' && diff && (
@@ -280,7 +375,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
                   {normalizedColumns.map((col, idx) => (
                     <th
                       key={idx}
-                      className="py-2.5 px-3 text-content-primary font-semibold border-r border-border-subtle/50 last:border-r-0 whitespace-nowrap"
+                      className="py-2 px-3.5 text-content-primary font-semibold border-r border-border-subtle/50 last:border-r-0 whitespace-nowrap"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <span>{col.name}</span>
@@ -319,7 +414,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
                       {row.map((val, colIdx) => (
                         <td
                           key={colIdx}
-                          className="py-2 px-3 text-content-primary border-r border-border-subtle/30 last:border-r-0 whitespace-nowrap"
+                          className="py-2 px-3.5 text-content-primary border-r border-border-subtle/30 last:border-r-0 whitespace-nowrap"
                         >
                           {val === null ? (
                             <span className="inline-block px-1.5 py-0.2 rounded bg-surface-hover text-content-muted italic text-[10px]">

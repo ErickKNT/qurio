@@ -107,7 +107,7 @@ El currículum de Qurio entrena al estudiante para internalizar este modelo ment
 | **24** | `e0000000-...-0012` | **Gasto Acumulado por Cliente** | Analizar | [7.2.1. Joined Tables + Grouping](https://www.postgresql.org/docs/16/queries-table-expressions.html#QUERIES-JOIN) | Cruce con agregación: sumar pedidos completados por cliente y ordenar de mayor a menor gasto. |
 | **25** | `e0000000-...-0033` | **Catálogo con Nombre de Categoría** | Aplicar | [7.2.1. Joined Tables](https://www.postgresql.org/docs/16/queries-table-expressions.html#QUERIES-JOIN) | Normalización: cruzar `productos` con `categorias` para mostrar `nombre_producto`, `nombre_categoria` y `precio`. |
 | **26** | `e0000000-...-0034` | **Productos y sus Proveedores Directos** | Aplicar | [7.2.1. Joined Tables](https://www.postgresql.org/docs/16/queries-table-expressions.html#QUERIES-JOIN) | Directorio de suministros: vincular `productos` y `proveedores` mostrando nombre del producto y razón social del proveedor. |
-| **27** | `e0000000-...-0035` | **Facturación Detallada con Método de Pago** | Analizar | [7.2.1. Joined Tables](https://www.postgresql.org/docs/16/queries-table-expressions.html#QUERIES-JOIN) | Conciliación financiera: cruzar `facturas` con `metodos_pago` mostrando `factura_id`, `total` y `nombre_metodo`. |
+| **27** | `e0000000-...-0035` | **Facturación Detallada con Pagos Aprobados** | Analizar | [7.2.1. Joined Tables](https://www.postgresql.org/docs/16/queries-table-expressions.html#QUERIES-JOIN) | Conciliación financiera: cruzar `facturas` con `pagos` mostrando `factura_id`, `monto_total`, `metodo_pago` y `fecha_pago` donde `estado_pago = 'aprobado'`. |
 
 #### Módulo 6: Detección de Ausencias (LEFT JOIN & Tratamiento de NULL) (5 Retos)
 | # | ID | Título | Bloom | Fuente Oficial PostgreSQL 16 | Concepto / Reto de Negocio |
@@ -174,5 +174,5 @@ Cada uno de los 50 ejercicios definidos en esta especificación cumple las sigui
 1. **Aserciones Semánticas en Docker:** Las 50 soluciones de referencia se ejecutan contra el PostgreSQL Sandbox local (`localhost:5433`).
 2. **Cardinalidad No Degenerada:** Ninguna consulta devuelve 0 filas (conjunto vacío involuntario) ni la totalidad ciega de la tabla, garantizando que el filtro o cálculo sea significativo.
 3. **Soporte Bidireccional:**
-   * Archivo de producción en la nube: [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql).
-   * Catálogo de resiliencia offline de la API: [`apps/api/app/modules/curriculum/seed_data.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/seed_data.py).
+   * Archivo de producción en la nube: [`database/supabase/02_seed_curriculum.sql`](../database/supabase/02_seed_curriculum.sql).
+   * Catálogo de resiliencia offline de la API: [`apps/api/app/modules/curriculum/seed_data.py`](../apps/api/app/modules/curriculum/seed_data.py).

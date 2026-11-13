@@ -4,9 +4,9 @@
 **Versión:** 1.0 (MVP)  
 **Fecha:** Noviembre 2026  
 **Estado:** Documento de Arquitectura Base  
-**PRD de Referencia:** [`docs/PRD.md`](file:///c:/Desarrollo/Qurio/docs/PRD.md)  
-**Intención Fundacional:** [`docs/intent/qurio-mvp.md`](file:///c:/Desarrollo/Qurio/docs/intent/qurio-mvp.md)  
-**Sistema de Diseño:** [`Terminal Glow Minimal`](file:///c:/Desarrollo/Qurio/docs/stitch_qurio_interactive_sql_platform/stitch_qurio_interactive_sql_platform/terminal_glow_minimal/DESIGN.md)
+**PRD de Referencia:** [`docs/PRD.md`](PRD.md)  
+**Intención Fundacional:** [`docs/intent/qurio-mvp.md`](intent/qurio-mvp.md)  
+**Sistema de Diseño:** [`Terminal Glow Minimal`](stitch_qurio_interactive_sql_platform/stitch_qurio_interactive_sql_platform/terminal_glow_minimal/DESIGN.md)
 
 ---
 

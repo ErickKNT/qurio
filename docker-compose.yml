@@ -39,12 +39,16 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    env_file:
+      - ./apps/api/.env
     environment:
       SANDBOX_DB_HOST: postgres-sandbox
       SANDBOX_DB_PORT: 5432
       SANDBOX_DB_NAME: ecommerce_sandbox
       SANDBOX_DB_USER: readonly_student
       SANDBOX_DB_PASSWORD: student_safe_pass
+    volumes:
+      - ./apps/api/app:/app/app:ro
     depends_on:
       postgres-sandbox:
         condition: service_healthy

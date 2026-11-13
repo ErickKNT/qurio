@@ -1,12 +1,14 @@
 import {
   ExecutionResult,
   EvaluationResponse,
+  RevealSolutionResponse,
   Exercise,
   Track,
   Achievement,
   TableSchemaInfo,
   QueryHistoryItem,
   SampleTableData,
+  UserProfile,
 } from '@/types';
 import { supabase } from '@/lib/supabase';
 
@@ -62,7 +64,21 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE_URL}/exercises`);
       if (!res.ok) throw new ApiError('No se pudo cargar la lista de ejercicios', res.status);
-      return await res.json();
+      const apiExercises: Exercise[] = await res.json();
+      // Enriquecer con metadatos pedagógicos del catálogo local (concept, objectives, sample_tables, prompt actualizado)
+      return apiExercises.map((apiEx) => {
+        const fallback = FALLBACK_EXERCISES.find((f) => f.id === apiEx.id);
+        if (!fallback) return apiEx;
+        return {
+          ...fallback,
+          ...apiEx,
+          prompt: fallback.prompt || apiEx.prompt,
+          concept: apiEx.concept || fallback.concept,
+          objectives: (apiEx.objectives && apiEx.objectives.length > 0) ? apiEx.objectives : fallback.objectives,
+          sample_tables: (apiEx.sample_tables && apiEx.sample_tables.length > 0) ? apiEx.sample_tables : fallback.sample_tables,
+          hints: (apiEx.hints && apiEx.hints.length > 0) ? apiEx.hints : fallback.hints,
+        };
+      });
     } catch (err: any) {
       console.warn('Usando catálogo fallback local:', err.message);
       return FALLBACK_EXERCISES;
@@ -76,7 +92,18 @@ export const api = {
     try {
       const res = await fetch(`${API_BASE_URL}/exercises/${exerciseId}`);
       if (!res.ok) throw new ApiError(`Ejercicio ${exerciseId} no encontrado`, res.status);
-      return await res.json();
+      const apiEx: Exercise = await res.json();
+      const fallback = FALLBACK_EXERCISES.find((f) => f.id === exerciseId);
+      if (!fallback) return apiEx;
+      return {
+        ...fallback,
+        ...apiEx,
+        prompt: fallback.prompt || apiEx.prompt,
+        concept: apiEx.concept || fallback.concept,
+        objectives: (apiEx.objectives && apiEx.objectives.length > 0) ? apiEx.objectives : fallback.objectives,
+        sample_tables: (apiEx.sample_tables && apiEx.sample_tables.length > 0) ? apiEx.sample_tables : fallback.sample_tables,
+        hints: (apiEx.hints && apiEx.hints.length > 0) ? apiEx.hints : fallback.hints,
+      };
     } catch (err: any) {
       const fallback = FALLBACK_EXERCISES.find((e) => e.id === exerciseId);
       if (fallback) return fallback;
@@ -164,17 +191,33 @@ export const api = {
   async submitSolution(
     exerciseId: string,
     query: string,
-    hintsRevealed = 0
+    hintsRevealed = 0,
+    solutionViewed = false
   ): Promise<EvaluationResponse> {
     try {
       const headers = await getAuthHeaders();
       const res = await fetch(`${API_BASE_URL}/exercises/${exerciseId}/submit`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ query, hints_revealed: hintsRevealed }),
+        body: JSON.stringify({
+          query,
+          hints_revealed: hintsRevealed,
+          solution_viewed: solutionViewed,
+        }),
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        if (res.status === 401 && errorData.detail?.includes('REGISTRATION_REQUIRED_AFTER_TRIAL')) {
+          return {
+            status: 'AUTH_REQUIRED',
+            execution_time_ms: 0,
+            xp_awarded: 0,
+            columns: [],
+            rows: [],
+            message: 'Has completado los 3 retos de prueba. Crea tu cuenta para continuar practicando.',
+            error: errorData.detail,
+          };
+        }
         throw new ApiError(errorData.detail || 'Error al evaluar solución', res.status);
       }
       return await res.json();
@@ -189,6 +232,31 @@ export const api = {
         error: err.message,
       };
     }
+  },
+
+  /**
+   * Revela la consulta de solución oficial tras al menos 2 intentos fallidos.
+   */
+  async revealSolution(
+    exerciseId: string,
+    failedAttempts: number
+  ): Promise<RevealSolutionResponse> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE_URL}/exercises/${exerciseId}/reveal-solution`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ failed_attempts: failedAttempts }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new ApiError(
+        errorData.detail || 'No se pudo desbloquear la solución oficial del ejercicio',
+        res.status
+      );
+    }
+
+    return await res.json();
   },
 };
 
@@ -307,1568 +375,1546 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     id: 'e0000000-0000-0000-0000-000000000001',
     module_id: 'a0000000-0000-0000-0000-000000000001',
     title: "Catálogo Básico de Productos",
-    prompt: "El departamento de ventas necesita listar los nombres de los productos junto con su precio de venta unitario. Escribe una consulta que obtenga únicamente las columnas nombre_producto y precio de la tabla productos.",
+    prompt: "Imagina que necesitas armar un catálogo sencillo para la tienda. Muestra únicamente el nombre de cada producto (`nombre_producto`) y su precio (`precio`) desde la tabla `productos`.",
     initial_code: "-- Escribe tu consulta aquí\nSELECT ",
-    solution_query: "SELECT nombre_producto, precio FROM productos;",
     xp_reward: 30,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 1,
     hints: [
-      "Usa la sentencia SELECT seguida de las columnas solicitadas separadas por coma.",
-      "La cláusula FROM indica la tabla productos.",
-    ],
+      "Usa la sentencia SELECT seguida de las columnas solicitadas separadas por coma: nombre_producto, precio",
+      "La cláusula FROM indica la tabla: FROM productos;"
+],
     concept: {
-      summary: "La sentencia SELECT es la instrucción fundamental en SQL para recuperar datos de una base de datos relacional. Te permite proyectar únicamente las columnas necesarias.",
+      summary: "Con `SELECT` eliges exactamente qué columnas quieres ver de una tabla, como si seleccionaras qué columnas mantener a la vista en una hoja de cálculo.",
       syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla;",
       key_points: [
-        "SELECT especifica qué atributos deseas proyectar en el conjunto final.",
-        "FROM indica la entidad o tabla de origen donde residen los datos.",
-        "En PostgreSQL las columnas y tablas no distinguen mayúsculas salvo que lleven comillas dobles.",
+        "`SELECT` va seguido de las columnas que quieres mostrar, separadas por coma `,`.",
+        "`FROM` indica el nombre de la tabla de donde se obtendrán los datos.",
+        "Toda instrucción en SQL finaliza con un punto y coma `;`."
       ],
-      execution_order_note: "⚡ Orden de procesamiento interno: FROM se ejecuta antes que SELECT para cargar primero la relación en el buffer.",
+      execution_order_note: "💡 ¿Cómo lo lee la base de datos? Primero busca la tabla con `FROM` y luego extrae solo las columnas que pediste en `SELECT`.",
     },
     objectives: [
-      "1. Identificar la tabla de origen: 'productos'.",
-      "2. Proyectar exactamente las columnas 'nombre_producto' y 'precio'.",
-      "3. Finalizar la instrucción con punto y coma (;).",
-    ],
+      "1. Identificar la tabla de productos dentro del esquema.",
+      "2. Seleccionar únicamente el nombre y el costo unitario de cada artículo.",
+      "3. Ejecutar y verificar los registros devueltos en la cuadrícula."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000008',
     module_id: 'a0000000-0000-0000-0000-000000000001',
     title: "Cálculo de Precios con IVA",
-    prompt: "El área contable requiere proyectar el precio final de cada producto aplicando el 21% de IVA (multiplicando el precio por 1.21). Escribe una consulta que devuelva el nombre_producto, el precio original y el precio calculado redondeado a 2 decimales bajo el alias precio_con_iva.",
+    prompt: "Calcula el precio final con impuestos para cada producto. Muestra el `nombre_producto`, el `precio` original y calcula el precio con el 21% de IVA (`precio * 1.21`) redondeado a 2 decimales, llamando a esa nueva columna `precio_con_iva`.",
     initial_code: "-- Proyecta columnas y calcula el precio con IVA\nSELECT ",
-    solution_query: "SELECT nombre_producto, precio, ROUND(precio * 1.21, 2) AS precio_con_iva FROM productos;",
     xp_reward: 35,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 2,
     hints: [
       "Puedes realizar operaciones matemáticas directamente en SELECT, ej: precio * 1.21",
-      "Usa ROUND(expresion, 2) AS precio_con_iva para limitar a 2 decimales y asignar el alias.",
-    ],
+      "Usa ROUND(precio * 1.21, 2) AS precio_con_iva para limitar a 2 decimales y asignar el alias."
+],
     concept: {
-      summary: "En SQL las expresiones aritméticas (+, -, *, /) se evalúan en la cláusula SELECT para derivar métricas en tiempo de consulta. La palabra clave AS asigna un nombre limpio y legible al atributo calculado.",
-      syntax: "SELECT columna, ROUND(columna * factor, 2) AS nuevo_nombre\nFROM nombre_tabla;",
+      summary: "En SQL puedes realizar cálculos aritméticos directamente en la cláusula `SELECT` (+, -, *, /) y renombrar el resultado con `AS`.",
+      syntax: "SELECT columna,\n       ROUND(columna * factor, 2) AS nuevo_nombre\nFROM nombre_tabla;",
       key_points: [
-        "Las operaciones aritméticas respetan la precedencia estándar de las matemáticas.",
-        "ROUND(valor, decimales) ajusta la precisión numérica para evitar artefactos de punto flotante.",
-        "Los alias de columna renombran los campos en la proyección final sin modificar la tabla física.",
+        "Puedes operar con columnas numéricas directamente en el `SELECT`: `columna * multiplicador` o `col_a + col_b`.",
+        "`ROUND(expresion, N)` redondea el número resultante a `N` decimales de precisión.",
+        "`AS alias_deseado` asigna un encabezado limpio y descriptivo a la columna calculada en la cuadrícula final."
       ],
-      execution_order_note: "⚡ Las expresiones aritméticas se calculan en la fase de proyección SELECT una vez leídas las filas.",
+      execution_order_note: "💡 El cálculo se hace al vuelo en la consulta; no altera los valores originales guardados en la tabla.",
     },
     objectives: [
-      "1. Proyectar 'nombre_producto' y 'precio'.",
-      "2. Calcular 'precio * 1.21' redondeado con ROUND(..., 2).",
-      "3. Asignar el alias 'precio_con_iva'.",
-    ],
+      "1. Mostrar las columnas descriptivas y de precio base del artículo.",
+      "2. Aplicar el cálculo de la tasa del 21% de impuesto con 2 decimales.",
+      "3. Asignar un nombre claro y representativo a la columna calculada."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000019',
     module_id: 'a0000000-0000-0000-0000-000000000001',
     title: "Concatenación de Nombre Completo",
-    prompt: "El departamento de soporte requiere un directorio de clientes con su nombre completo unificado y su correo electrónico. Escribe una consulta que combine las columnas nombre y apellido separadas por un espacio bajo el alias cliente_completo, junto con la columna email de la tabla clientes.",
+    prompt: "Prepara un directorio para el equipo de atención al cliente. Une el `nombre` y el `apellido` de cada cliente separados por un espacio, nómbralo `cliente_completo`, y muestra también su `email` desde la tabla `clientes`.",
     initial_code: "-- Concatena nombre y apellido con un espacio\nSELECT ",
-    solution_query: "SELECT nombre || ' ' || apellido AS cliente_completo, email FROM clientes;",
     xp_reward: 35,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 3,
     hints: [
-      "Usa el operador de concatenación de cadenas de texto en SQL: '||'.",
-      "Para insertar un espacio en medio escribe: nombre || ' ' || apellido AS cliente_completo.",
-    ],
+      "Usa el operador de combinación de textos en SQL: '||'.",
+      "Para insertar un espacio en medio escribe: nombre || ' ' || apellido AS cliente_completo."
+],
     concept: {
-      summary: "El operador de tubería doble '||' permite concatenar cadenas de caracteres en SQL estándar y PostgreSQL. La cláusula AS renombra la columna resultante en la proyección.",
-      syntax: "SELECT columna1 || ' ' || columna2 AS nombre_completo\nFROM tabla;",
+      summary: "El operador de concatenación `||` permite unir dos o más valores de texto en una sola columna combinada.",
+      syntax: "SELECT columna_a || ' ' || columna_b AS texto_completo\nFROM nombre_tabla;",
       key_points: [
-        "El operador || une valores de texto o columnas de tipo VARCHAR/TEXT.",
-        "Si un término es NULL, la concatenación en SQL estándar resulta en NULL (a menos que uses CONCAT).",
+        "Para intercalar un espacio entre dos textos, se encadenan tres elementos con `||`: `col1 || ' ' || col2`.",
+        "En SQL, las cadenas de texto literales siempre deben encerrarse entre comillas simples: `' '`.",
+        "Usa `AS nombre_columna` para darle un nombre representativo a la columna resultante."
       ],
-      execution_order_note: "⚡ La concatenación se evalúa fila por fila en la fase de proyección SELECT.",
+      execution_order_note: "💡 Si cualquiera de los dos lados concatenados fuera `NULL`, el resultado total de `||` sería `NULL`.",
     },
     objectives: [
-      "1. Identificar la tabla de origen 'clientes'.",
-      "2. Concatenar 'nombre', un espacio ' ' y 'apellido' bajo el alias 'cliente_completo'.",
-      "3. Proyectar la columna 'email'.",
-    ],
+      "1. Obtener los registros de la tabla de clientes.",
+      "2. Combinar el nombre y el apellido en una sola columna con separación legible.",
+      "3. Presentar la columna unificada junto con la dirección de correo electrónico."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000020',
     module_id: 'a0000000-0000-0000-0000-000000000001',
     title: "Catálogo de Ciudades Únicas (DISTINCT)",
-    prompt: "El equipo de logística necesita conocer todas las ciudades únicas donde residen clientes para planificar nuevas rutas de entrega. Escribe una consulta que obtenga la lista de ciudades sin repeticiones de la tabla clientes, bajo la columna ciudad.",
+    prompt: "Logística necesita saber en qué ciudades tenemos clientes sin que los nombres se repitan. Obtén la lista de ciudades únicas (`ciudad`) de la tabla `clientes`.",
     initial_code: "-- Obtén valores únicos de ciudad\nSELECT ",
-    solution_query: "SELECT DISTINCT ciudad FROM clientes;",
     xp_reward: 35,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 4,
     hints: [
       "La palabra reservada DISTINCT se coloca inmediatamente después de SELECT.",
-      "Escribe: SELECT DISTINCT ciudad FROM clientes;",
-    ],
+      "Escribe: SELECT DISTINCT ciudad FROM clientes;"
+],
     concept: {
-      summary: "La cláusula DISTINCT elimina filas duplicadas del conjunto de resultados devuelto por la consulta relacional, garantizando unicidad en la proyección.",
+      summary: "`DISTINCT` filtra y elimina filas duplicadas, devolviendo únicamente valores únicos en el resultado.",
       syntax: "SELECT DISTINCT columna\nFROM nombre_tabla;",
       key_points: [
-        "DISTINCT opera sobre todas las columnas de la lista de selección en conjunto.",
-        "Internamente suele ejecutar una ordenación o un hash en memoria para descartar repetidos.",
+        "`DISTINCT` se escribe inmediatamente después de la palabra clave `SELECT`.",
+        "Si un valor se repite en cientos de registros, `DISTINCT` colapsa los duplicados en una única aparición.",
+        "Se aplica sobre el conjunto de columnas proyectadas; si proyectas una columna, garantiza valores únicos de esa columna."
       ],
-      execution_order_note: "⚡ DISTINCT se procesa casi al final del pipeline lógico, justo antes de ORDER BY y LIMIT.",
+      execution_order_note: "💡 El motor primero reúne las filas y luego ejecuta una ordenación interna para descartar duplicados.",
     },
     objectives: [
-      "1. Usar la palabra clave DISTINCT tras SELECT.",
-      "2. Proyectar la columna 'ciudad' de la tabla 'clientes'.",
-    ],
+      "1. Consultar la ubicación de residencia de los clientes.",
+      "2. Filtrar el listado para suprimir todas las ciudades repetidas.",
+      "3. Presentar una lista de ubicaciones geográficas únicas."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000002',
     module_id: 'a0000000-0000-0000-0000-000000000002',
     title: "Productos Premium (> 500€)",
-    prompt: "Para una campaña exclusiva, marketing solicita todos los productos cuyo precio supere los 500 euros. Devuelve el nombre del producto, el precio y el stock actual para aquellos productos con precio estrictamente mayor a 500.",
+    prompt: "El equipo de marketing prepara una campaña especial de productos exclusivos. Muestra el `nombre_producto`, el `precio` y el `stock` de aquellos productos cuyo precio sea mayor a 500€.",
     initial_code: "-- Filtra los productos de alto valor\nSELECT ",
-    solution_query: "SELECT nombre_producto, precio, stock FROM productos WHERE precio > 500;",
     xp_reward: 35,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 5,
     hints: [
       "Agrega una cláusula WHERE después de FROM productos.",
-      "Utiliza el operador de comparación mayor que (>).",
-    ],
+      "Utiliza el operador de comparación mayor que (>): WHERE precio > 500;"
+],
     concept: {
-      summary: "La cláusula WHERE restringe los resultados evaluando una condición booleana fila por fila. Solo las filas donde la expresión resulte TRUE son devueltas.",
-      syntax: "SELECT col1, col2, col3\nFROM tabla\nWHERE condicion_comparacion;",
+      summary: "`WHERE` es la cláusula de filtrado de SQL: instruye a la base de datos a retornar únicamente aquellas filas que cumplan una condición lógica.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna_numerica > valor_umbral;",
       key_points: [
-        "Operadores estándar: >, <, >=, <=, =, <> (o !=).",
-        "WHERE evalúa tuplas individuales antes de cualquier agregación o agrupamiento.",
+        "`WHERE` se ubica después de `FROM nombre_tabla` y antes de cualquier ordenamiento.",
+        "Operadores numéricos de teclado: mayor que `>`, menor que `<`, igual `=`, mayor o igual `>=` y menor o igual `<=`.",
+        "Los operadores `>=` y `<=` se escriben combinando dos caracteres seguidos en el teclado sin espacios (`>` luego `=`, `<` luego `=`)."
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM → WHERE → SELECT. El filtro se evalúa ANTES de proyectar las columnas.",
+      execution_order_note: "💡 El motor filtra con `WHERE` antes de armar las columnas del `SELECT` para no procesar datos innecesarios.",
     },
     objectives: [
-      "1. Seleccionar 'nombre_producto', 'precio' y 'stock' de 'productos'.",
-      "2. Añadir la cláusula WHERE con la condición 'precio > 500'.",
-      "3. Verificar que no se incluyan productos de 500€ exactos o menores.",
-    ],
+      "1. Seleccionar la descripción, precio y existencias del inventario.",
+      "2. Establecer una condición para aislar exclusivamente los artículos de alto valor.",
+      "3. Asegurar que los productos que no alcancen el umbral queden excluidos."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000009',
     module_id: 'a0000000-0000-0000-0000-000000000002',
     title: "Productos en Rango Medio (BETWEEN)",
-    prompt: "El equipo de catálogo desea identificar productos de gama media con precios entre 100€ y 800€ (inclusive). Escribe una consulta que liste el nombre_producto y el precio de los productos que cumplan con dicho rango.",
+    prompt: "Encuentra los productos de gama media para una promoción especial. Muestra el `nombre_producto` y el `precio` de todos los artículos cuyo precio esté entre 100€ y 800€ (ambos inclusive).",
     initial_code: "-- Filtra productos en el rango de 100 a 800\nSELECT ",
-    solution_query: "SELECT nombre_producto, precio FROM productos WHERE precio BETWEEN 100 AND 800;",
     xp_reward: 35,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 6,
     hints: [
-      "El operador BETWEEN valor_min AND valor_max incluye ambos extremos del intervalo.",
-      "Equivale lógicamente a 'WHERE precio >= 100 AND precio <= 800'.",
-    ],
+      "Usa la cláusula WHERE con el operador BETWEEN: WHERE precio BETWEEN 100 AND 800;",
+      "Recuerda que BETWEEN siempre conecta el rango con la palabra AND."
+],
     concept: {
-      summary: "El operador BETWEEN evalúa si una expresión se encuentra dentro de un rango cerrado inclusivo [min, max]. Es más conciso y legible que combinar dos condiciones con AND.",
-      syntax: "SELECT columna_1, columna_2\nFROM tabla\nWHERE columna BETWEEN valor_min AND valor_max;",
+      summary: "`BETWEEN` evalúa si un valor se encuentra dentro de un intervalo cerrado (entre un límite inferior y un límite superior).",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna BETWEEN limite_min AND limite_max;",
       key_points: [
-        "BETWEEN es inclusivo: incluye los valores frontera min y max.",
-        "Funciona tanto con números como con fechas y cadenas de texto alfabéticas.",
+        "`BETWEEN min AND max` es inclusivo: incluye tanto el límite inferior como el superior.",
+        "Escribir `col BETWEEN a AND b` equivale lógicamente a `col >= a AND col <= b`.",
+        "Funciona de manera óptima tanto con números como con fechas y cadenas alfanuméricas."
       ],
-      execution_order_note: "⚡ WHERE BETWEEN filtra las tuplas durante la etapa de restricción en el escaneo de tabla.",
+      execution_order_note: "💡 El motor evalúa el rango directamente sobre los datos de la columna de forma optimizada.",
     },
     objectives: [
-      "1. Consultar 'nombre_producto' y 'precio' de la tabla 'productos'.",
-      "2. Aplicar 'WHERE precio BETWEEN 100 AND 800'.",
-      "3. Comprobar que los límites de 100 y 800 queden incluidos.",
-    ],
+      "1. Consultar el catálogo de artículos de gama media.",
+      "2. Delimitar los resultados mediante un operador de rango continuo.",
+      "3. Comprobar que los límites superior e inferior queden incluidos."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000021',
     module_id: 'a0000000-0000-0000-0000-000000000002',
     title: "Búsqueda por Patrón de Correo (LIKE)",
-    prompt: "El equipo de marketing desea enviar un comunicado a los usuarios registrados con cuentas corporativas estándar que utilicen el dominio genérico '@email.com'. Escribe una consulta que devuelva el nombre, apellido y email de todos los clientes cuyo correo electrónico termine exactamente en '@email.com'.",
+    prompt: "Marketing quiere enviar un aviso a los usuarios registrados con correos corporativos estándar `@email.com`. Muestra el `nombre`, `apellido` y `email` de aquellos clientes cuyo correo termine exactamente en `@email.com`.",
     initial_code: "-- Filtra clientes con comodín LIKE\nSELECT ",
-    solution_query: "SELECT nombre, apellido, email FROM clientes WHERE email LIKE '%@email.com';",
     xp_reward: 40,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 7,
     hints: [
-      "Usa el operador LIKE en la cláusula WHERE.",
-      "El comodín '%' representa cero o más caracteres arbitrarios: LIKE '%@email.com'.",
-    ],
+      "El comodín % colocado al inicio indica que puede haber cualquier texto antes del dominio.",
+      "Escribe: WHERE email LIKE '%@email.com';"
+],
     concept: {
-      summary: "El operador LIKE evalúa si una cadena coincide con un patrón específico utilizando comodines. En PostgreSQL, '%' coincide con cualquier secuencia de caracteres y '_' con un solo carácter.",
-      syntax: "SELECT columnas\nFROM tabla\nWHERE columna LIKE 'patron%';",
+      summary: "`LIKE` busca coincidencias en cadenas de texto mediante caracteres comodín como `%` (cualquier secuencia de caracteres).",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna_texto LIKE '%terminacion';",
       key_points: [
-        "'%texto' coincide con cadenas que terminen en ese texto.",
-        "LIKE distingue entre mayúsculas y minúsculas; en PostgreSQL existe ILIKE para búsquedas insensibles.",
+        "El comodín `%` representa cero, uno o múltiples caracteres arbitrarios.",
+        "`'%texto'` busca textos que terminen exactamente en esa palabra; `'texto%'` busca que comiencen con ella; y `'%texto%'` busca que la contenga en cualquier parte.",
+        "El patrón de búsqueda siempre debe encerrarse entre comillas simples: `'...%'`."
       ],
-      execution_order_note: "⚡ WHERE se evalúa sobre cada tupla leída de disco antes de enviar los datos al cliente.",
+      execution_order_note: "💡 `LIKE` distingue mayúsculas de minúsculas. Si necesitas ignorar mayúsculas en PostgreSQL se usa `ILIKE`.",
     },
     objectives: [
-      "1. Proyectar 'nombre', 'apellido' y 'email'.",
-      "2. Aplicar WHERE email LIKE '%@email.com'.",
-    ],
+      "1. Consultar los datos de contacto de los clientes registrados.",
+      "2. Aplicar un filtro de patrón para identificar la terminación del correo corporativo.",
+      "3. Verificar que solo aparezcan cuentas con el dominio especificado."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000022',
     module_id: 'a0000000-0000-0000-0000-000000000002',
     title: "Filtro de Ciudades Específicas (IN)",
-    prompt: "Operaciones ha lanzado una promoción especial de envíos exprés para los centros urbanos principales: Madrid, Barcelona y Valencia. Escribe una consulta que devuelva cliente_id, nombre, apellido y ciudad para los clientes que residan en cualquiera de estas tres ciudades.",
+    prompt: "Operaciones lanzó envíos express para tres ciudades clave: Madrid, Barcelona y Valencia. Muestra el `cliente_id`, `nombre`, `apellido` y `ciudad` de los clientes que vivan en cualquiera de estas tres ciudades.",
     initial_code: "-- Filtra mediante el operador IN\nSELECT ",
-    solution_query: "SELECT cliente_id, nombre, apellido, ciudad FROM clientes WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia');",
     xp_reward: 40,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 8,
     hints: [
-      "El operador IN permite comprobar la pertenencia a una lista de valores discretos.",
-      "Escribe WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia').",
-    ],
+      "Usa el operador IN seguido de la lista entre paréntesis: IN ('Madrid', 'Barcelona', 'Valencia').",
+      "No olvides las comillas simples en cada ciudad dentro de la lista."
+],
     concept: {
-      summary: "El operador IN es una abreviación concisa y optimizada para múltiples condiciones OR (col = 'A' OR col = 'B' OR col = 'C'). Comprueba si un valor pertenece a una lista explícita.",
-      syntax: "SELECT columnas\nFROM tabla\nWHERE columna IN (val1, val2, val3);",
+      summary: "`IN` comprueba si el valor de una columna coincide con cualquiera de los elementos listados dentro de un conjunto cerrado.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna IN ('valor_1', 'valor_2', 'valor_3');",
       key_points: [
-        "Mejora la legibilidad del código SQL evitando cadenas repetitivas de OR.",
-        "El optimizador de consultas de PostgreSQL suele transformar listas IN en búsquedas indexadas eficientes.",
+        "La lista de opciones válidas se delimita entre paréntesis `(...)` y cada elemento se separa por comas.",
+        "`col IN (a, b)` es la alternativa limpia y recomendada para evitar múltiples `OR` encadenados (`col = a OR col = b`).",
+        "Cada valor de texto dentro de la lista debe llevar sus propias comillas simples individuales: `'valor'`."
       ],
-      execution_order_note: "⚡ La comprobación IN se ejecuta durante la fase de filtrado de filas WHERE.",
+      execution_order_note: "💡 `IN` suele ejecutarse de forma mucho más rápida que múltiples `OR` gracias a la búsqueda por tabla hash en el motor.",
     },
     objectives: [
-      "1. Proyectar 'cliente_id', 'nombre', 'apellido' y 'ciudad'.",
-      "2. Filtrar con WHERE ciudad IN ('Madrid', 'Barcelona', 'Valencia').",
-    ],
+      "1. Consultar la lista de clientes y sus ciudades de residencia.",
+      "2. Filtrar los usuarios pertenecientes al listado de centros urbanos clave.",
+      "3. Resolver el filtro sin encadenar comparaciones individuales repetidas."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000023',
     module_id: 'a0000000-0000-0000-0000-000000000002',
     title: "Productos en Riesgo de Stock (OR)",
-    prompt: "Almacén necesita identificar con urgencia los artículos que están en extremos de inventario (aquellos con existencias críticas menores o iguales a 15 unidades, o artículos con sobrestock igual o mayor a 75 unidades). Escribe una consulta que devuelva producto_id, nombre_producto y stock para los productos que cumplan alguna de estas dos condiciones.",
+    prompt: "El almacén necesita ubicar productos en situación crítica de inventario: artículos con muy poco stock (15 o menos unidades) o artículos con sobrestock (75 o más unidades). Muestra el `producto_id`, `nombre_producto` y `stock` que cumplan cualquiera de estas dos condiciones.",
     initial_code: "-- Combina condiciones con OR\nSELECT ",
-    solution_query: "SELECT producto_id, nombre_producto, stock FROM productos WHERE stock <= 15 OR stock >= 75;",
     xp_reward: 40,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 9,
     hints: [
-      "Usa el operador lógico OR para combinar dos predicados de comparación.",
-      "Escribe WHERE stock <= 15 OR stock >= 75;",
-    ],
+      "Usa OR para unir las dos reglas: stock <= 15 OR stock >= 75.",
+      "Asegúrate de incluir los símbolos de igual (=) junto a < y >."
+],
     concept: {
-      summary: "El operador lógico OR devuelve TRUE si al menos una de las expresiones condicionales evaluadas es verdadera. Permite ampliar el conjunto de resultados para capturar múltiples criterios alternativos.",
-      syntax: "SELECT columnas\nFROM tabla\nWHERE condicion1 OR condicion2;",
+      summary: "El operador lógico `OR` permite incluir una fila si satisface al menos una de las condiciones especificadas (o ambas).",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE condicion_1 OR condicion_2;",
       key_points: [
-        "A diferencia de AND, con OR basta que una condición se cumpla para que la fila pase el filtro.",
-        "Cuidado con la precedencia de operadores: AND tiene mayor prioridad que OR; usa paréntesis cuando combines ambos.",
+        "`cond1 OR cond2` devolverá la fila si la condición 1 es verdadera, si la condición 2 es verdadera, o si ambas lo son.",
+        "Para operadores compuestos de teclado: menor o igual se escribe `<=` y mayor o igual se escribe `>=` (sin espacios entre los dos símbolos).",
+        "Puedes combinar rangos extremos uniendo dos predicados con `OR` en la cláusula `WHERE`."
       ],
-      execution_order_note: "⚡ El motor evalúa con cortocircuito: si la primera condición es TRUE, no necesita verificar la segunda.",
+      execution_order_note: "💡 En lógica booleana de SQL, `AND` tiene mayor precedencia que `OR`; si mezclas ambos operadores, usa paréntesis `()`.",
     },
     objectives: [
-      "1. Proyectar 'producto_id', 'nombre_producto' y 'stock'.",
-      "2. Filtrar con WHERE stock <= 15 OR stock >= 75.",
-    ],
+      "1. Consultar los artículos en los extremos de disponibilidad.",
+      "2. Establecer una doble condición donde baste cumplir cualquiera de los dos extremos.",
+      "3. Incluir productos en escasez crítica o con exceso de inventario."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000024',
     module_id: 'a0000000-0000-0000-0000-000000000002',
     title: "Facturas de Alto Valor No Pagadas (AND + NOT)",
-    prompt: "El departamento de cobranzas necesita auditar las facturas pendientes o en litigio de importe relevante. Escribe una consulta que devuelva factura_id, monto_total y estado_factura de todas las facturas cuyo monto_total sea mayor o igual a 400 y cuyo estado_factura sea diferente de 'pagada'.",
+    prompt: "Contabilidad necesita revisar facturas importantes pendientes de cobro. Muestra el `factura_id`, `monto_total` y `estado_factura` de aquellas facturas con un monto de 400€ o más y cuyo estado sea distinto de `'pagada'`.",
     initial_code: "-- Combina AND con el operador de desigualdad\nSELECT ",
-    solution_query: "SELECT factura_id, monto_total, estado_factura FROM facturas WHERE monto_total >= 400 AND estado_factura <> 'pagada';",
     xp_reward: 45,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 10,
     hints: [
-      "En SQL estándar la desigualdad se expresa con '<>' o '!='.",
-      "Combina ambas condiciones con AND: WHERE monto_total >= 400 AND estado_factura <> 'pagada'.",
-    ],
+      "Combina las condiciones con AND: WHERE monto_total >= 400 AND estado_factura <> 'pagada';",
+      "Recuerda que 'pagada' va entre comillas simples."
+],
     concept: {
-      summary: "El operador lógico AND exige que ambas condiciones se satisfagan simultáneamente. El operador de desigualdad '<>' (o '!=') excluye valores específicos del conjunto de resultados.",
-      syntax: "SELECT columnas\nFROM tabla\nWHERE cond1 AND cond2 <> 'valor';",
+      summary: "`AND` exige el cumplimiento simultáneo de dos reglas. Para evaluar desigualdad ('distinto de'), SQL utiliza `<>` o `!=`.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE condicion_1 AND columna_estado <> 'valor_excluido';",
       key_points: [
-        "AND reduce la cardinalidad del resultado al exigir el cumplimiento de todos los predicados.",
-        "Recuerda que si un valor es NULL, cualquier comparación con <> devolverá UNKNOWN, no TRUE.",
+        "`AND` requiere que ambas expresiones sean verdaderas para que el registro aparezca en el resultado.",
+        "En SQL, la desigualdad se expresa con `<>` (estándar ISO) o con `!=` (signo de admiración `!` seguido de `=`). Ambos son reconocidos por PostgreSQL.",
+        "Mayor o igual se escribe `>=` con los dos caracteres de teclado consecutivos (`>` y `=`)."
       ],
-      execution_order_note: "⚡ El optimizador puede reordenar las condiciones del WHERE para evaluar primero el predicado más selectivo.",
+      execution_order_note: "💡 PostgreSQL evalúa primero la condición que descarte más filas rápidamente para ahorrar trabajo.",
     },
     objectives: [
-      "1. Proyectar 'factura_id', 'monto_total' y 'estado_factura'.",
-      "2. Filtrar con WHERE monto_total >= 400 AND estado_factura <> 'pagada'.",
-    ],
+      "1. Consultar la información contable de las facturas.",
+      "2. Exigir simultáneamente un importe relevante y un estado pendiente de cobro.",
+      "3. Excluir explícitamente los comprobantes que ya fueron liquidados."
+],
     sample_tables: [SAMPLE_TABLE_FACTURAS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000003',
     module_id: 'a0000000-0000-0000-0000-000000000003',
     title: "Clientes Españoles Ordenados por Apellido",
-    prompt: "Obtén el nombre, apellido y ciudad de todos los clientes cuyo país sea 'España'. Los resultados deben venir ordenados alfabéticamente de forma ascendente por su apellido.",
+    prompt: "Organiza la lista de clientes que viven en España por orden alfabético. Muestra su `nombre`, `apellido` y `ciudad` de la tabla `clientes`, ordenando los resultados alfabéticamente por su `apellido` (de la A a la Z).",
     initial_code: "-- Filtra y ordena los clientes\nSELECT ",
-    solution_query: "SELECT nombre, apellido, ciudad FROM clientes WHERE pais = 'España' ORDER BY apellido ASC;",
     xp_reward: 40,
     difficulty: 'Principiante',
     check_order: true,
     sort_order: 11,
     hints: [
-      "Usa WHERE pais = 'España'.",
-      "Para ordenar utiliza ORDER BY apellido ASC.",
-    ],
+      "Primero filtra el país en el WHERE y luego añade la cláusula ORDER BY al final.",
+      "Escribe: ORDER BY apellido ASC;"
+],
     concept: {
-      summary: "La cláusula ORDER BY ordena el conjunto de tuplas resultante por una o más columnas. ASC ordena de menor a mayor (A-Z) y DESC de mayor a menor (Z-A).",
-      syntax: "SELECT col1, col2\nFROM tabla\nWHERE condicion\nORDER BY columna_orden [ASC | DESC];",
+      summary: "`ORDER BY` controla la ordenación de las filas devueltas, permitiendo clasificar de forma ascendente (`ASC`) o descendente (`DESC`).",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE condicion_filtro\nORDER BY columna_criterio [ASC | DESC];",
       key_points: [
-        "Los literales de texto en SQL siempre se encierran entre comillas simples ('España').",
-        "Por defecto, si omites la dirección, PostgreSQL asume orden ascendente (ASC).",
+        "`ORDER BY col ASC` ordena de menor a mayor (A-Z o numérico creciente); es el modo por defecto si se omite.",
+        "`ORDER BY col DESC` ordena de mayor a menor (Z-A o numérico decreciente).",
+        "La cláusula `ORDER BY` se escribe al final de la consulta (después de `FROM` y `WHERE`)."
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM → WHERE → SELECT → ORDER BY.",
+      execution_order_note: "💡 `ORDER BY` se ejecuta casi al final de todo el proceso de consulta, justo antes de enviar los datos al cliente.",
     },
     objectives: [
-      "1. Filtrar los clientes con 'pais = \\'España\\' '.",
-      "2. Proyectar 'nombre', 'apellido' y 'ciudad'.",
-      "3. Ordenar alfabéticamente por 'apellido' en orden ascendente (ASC).",
-    ],
+      "1. Acotar el conjunto de clientes al país solicitado.",
+      "2. Seleccionar los campos de identidad y residencia.",
+      "3. Ordenar alfabéticamente el listado de la A a la Z por el apellido."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000010',
     module_id: 'a0000000-0000-0000-0000-000000000003',
     title: "Top 5 Productos Críticos por Stock",
-    prompt: "El almacén necesita reponer con urgencia los artículos con menores existencias. Escribe una consulta que devuelva el nombre_producto y el stock de los 5 productos con menor cantidad disponible en inventario, ordenados de menor a mayor stock.",
+    prompt: "El almacén necesita reponer con urgencia los artículos que están por agotarse. Muestra el `nombre_producto` y el `stock` de los 5 productos con menor cantidad disponible en inventario.",
     initial_code: "-- Ordena y limita a los 5 productos con menos stock\nSELECT ",
-    solution_query: "SELECT nombre_producto, stock FROM productos ORDER BY stock ASC LIMIT 5;",
     xp_reward: 40,
     difficulty: 'Principiante',
     check_order: true,
     sort_order: 12,
     hints: [
-      "Ordena por la columna stock en dirección ascendente: ORDER BY stock ASC.",
-      "Agrega la cláusula LIMIT 5 al final para acotar el resultado a 5 filas.",
-    ],
+      "Ordena por stock en orden ascendente para poner los más bajos primero: ORDER BY stock ASC.",
+      "Agrega LIMIT 5 al final para quedarte solo con los primeros 5."
+],
     concept: {
-      summary: "La cláusula LIMIT restringe el número máximo de tuplas retornadas por el motor. Cuando se combina con ORDER BY, permite construir rankings o consultas de tipo 'Top N' de forma muy eficiente.",
-      syntax: "SELECT columna_1, columna_2\nFROM tabla\nORDER BY columna_criterio ASC\nLIMIT cantidad;",
+      summary: "`LIMIT` restringe la cantidad máxima de filas retornadas, permitiendo obtener los primeros `N` registros clasificados.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nORDER BY columna_criterio ASC\nLIMIT cantidad_filas;",
       key_points: [
-        "LIMIT siempre debe acompañarse de ORDER BY para garantizar resultados deterministas.",
-        "En PostgreSQL LIMIT se procesa en el último paso antes de emitir la respuesta al cliente.",
+        "`LIMIT N` corta el conjunto de datos y entrega únicamente las primeras `N` filas.",
+        "El orden es determinante: primero se ordenan los datos con `ORDER BY` y luego `LIMIT` toma los primeros puestos del ranking.",
+        "Si buscas los menores valores, ordena con `ASC`; si buscas los mayores, ordena con `DESC`."
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM → WHERE → SELECT → ORDER BY → LIMIT.",
+      execution_order_note: "💡 Usar `LIMIT` evita transferir gigabytes de datos cuando solo te interesan las muestras principales.",
     },
     objectives: [
-      "1. Seleccionar 'nombre_producto' y 'stock' de 'productos'.",
-      "2. Ordenar por 'stock ASC' (menor a mayor).",
-      "3. Limitar el resultado a exactamente 5 registros con 'LIMIT 5'.",
-    ],
+      "1. Consultar los artículos de menor disponibilidad en almacén.",
+      "2. Clasificar el inventario de menor a mayor existencia.",
+      "3. Acotar el resultado para mostrar exactamente los 5 artículos más urgentes."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000025',
     module_id: 'a0000000-0000-0000-0000-000000000003',
     title: "Ordenamiento Multi-Criterio",
-    prompt: "Catalogación requiere listar los productos organizados por su categoría y valor comercial. Escribe una consulta que devuelva producto_id, categoria_id, nombre_producto y precio, ordenados primero por categoria_id en orden ascendente (ASC) y, para productos dentro de la misma categoría, por precio en orden descendente (DESC).",
+    prompt: "Organiza los productos por su categoría y luego por su valor comercial. Muestra `producto_id`, `categoria_id`, `nombre_producto` y `precio`, ordenándolos primero por categoría de menor a mayor (`categoria_id ASC`), y dentro de cada categoría, del más caro al más barato (`precio DESC`).",
     initial_code: "-- Ordena por múltiples columnas\nSELECT ",
-    solution_query: "SELECT producto_id, categoria_id, nombre_producto, precio FROM productos ORDER BY categoria_id ASC, precio DESC;",
     xp_reward: 45,
     difficulty: 'Principiante',
     check_order: true,
     sort_order: 13,
     hints: [
-      "Puedes incluir múltiples columnas separadas por comas en ORDER BY.",
-      "Especifica la dirección tras cada columna: ORDER BY categoria_id ASC, precio DESC.",
-    ],
+      "Separa las dos columnas en ORDER BY con una coma: ORDER BY categoria_id ASC, precio DESC;",
+      "Asegúrate de que categoria_id sea ASC y precio sea DESC."
+],
     concept: {
-      summary: "La cláusula ORDER BY permite ordenar el resultado por múltiples columnas estableciendo prioridades: si hay valores idénticos en la primera columna, el motor desempata utilizando la segunda columna.",
-      syntax: "SELECT columnas\nFROM tabla\nORDER BY col1 ASC, col2 DESC;",
+      summary: "Puedes ordenar por múltiples columnas separándolas por coma en el `ORDER BY`, estableciendo prioridades de desempate.",
+      syntax: "SELECT columna_1, columna_2, columna_3\nFROM nombre_tabla\nORDER BY columna_prioritaria ASC, columna_desempate DESC;",
       key_points: [
-        "ASC ordena de menor a mayor (por defecto); DESC ordena de mayor a menor.",
-        "El orden en que listas las columnas en ORDER BY define la jerarquía del ordenamiento.",
+        "El motor ordena primero por la columna inicial; si existen valores idénticos (empates), recurre a la segunda columna para desempatar.",
+        "Cada columna en la lista puede tener su propia dirección independiente (`ASC` o `DESC`).",
+        "Separa cada criterio de ordenación mediante una coma `,`."
       ],
-      execution_order_note: "⚡ ORDER BY se ejecuta después de SELECT, por lo que puede hacer referencia a columnas proyectadas o alias.",
+      execution_order_note: "💡 Los índices compuestos en la base de datos aceleran drásticamente los ordenamientos multi-columna.",
     },
     objectives: [
-      "1. Proyectar 'producto_id', 'categoria_id', 'nombre_producto' y 'precio'.",
-      "2. Ordenar por categoria_id ASC.",
-      "3. Desempatar con precio DESC.",
-    ],
+      "1. Consultar los artículos asociando su familia comercial y precio.",
+      "2. Ordenar las categorías en sentido ascendente.",
+      "3. Desempatar los artículos de una misma familia del más caro al más barato."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000026',
     module_id: 'a0000000-0000-0000-0000-000000000003',
     title: "Paginación de Clientes (OFFSET)",
-    prompt: "Para implementar paginación en el panel administrativo con 5 registros por página, obtén los clientes correspondientes a la segunda página. Escribe una consulta que devuelva cliente_id, nombre y email, ordenados por cliente_id ASC, omitiendo los primeros 5 clientes y limitando el resultado a los siguientes 5 registros.",
+    prompt: "Simula la paginación de un panel web que muestra 5 clientes por página. Obtén los clientes de la segunda página mostrando `cliente_id`, `nombre` y `email`, ordenados por `cliente_id ASC`, saltando los primeros 5 registros y mostrando los siguientes 5.",
     initial_code: "-- Usa LIMIT y OFFSET para paginar\nSELECT ",
-    solution_query: "SELECT cliente_id, nombre, email FROM clientes ORDER BY cliente_id ASC LIMIT 5 OFFSET 5;",
     xp_reward: 45,
     difficulty: 'Principiante',
     check_order: true,
     sort_order: 14,
     hints: [
-      "Combina LIMIT para el tamaño de página y OFFSET para la cantidad de filas a saltar.",
-      "Escribe ORDER BY cliente_id ASC LIMIT 5 OFFSET 5;",
-    ],
+      "El orden es: ORDER BY cliente_id ASC LIMIT 5 OFFSET 5;",
+      "OFFSET 5 salta los primeros 5, y LIMIT 5 toma los 5 siguientes."
+],
     concept: {
-      summary: "OFFSET salta un número determinado de filas antes de comenzar a devolver resultados, mientras que LIMIT acota el número máximo de tuplas entregadas. Juntos forman el mecanismo clásico de paginación.",
-      syntax: "SELECT columnas\nFROM tabla\nORDER BY id ASC LIMIT N OFFSET M;",
+      summary: "`OFFSET` salta un número determinado de filas antes de empezar a devolver resultados, permitiendo implementar paginación junto a `LIMIT`.",
+      syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nORDER BY columna_identificador ASC\nLIMIT tamano_pagina OFFSET filas_a_saltar;",
       key_points: [
-        "OFFSET sin ORDER BY no es determinista: las bases de datos relacionales no garantizan orden sin ORDER BY.",
-        "OFFSET M salta M filas; LIMIT N toma las siguientes N filas.",
+        "`LIMIT` define el tamaño de la página (cuántas filas ver) y `OFFSET` define el salto (cuántas filas ignorar al inicio).",
+        "Para una paginación determinista y reproducible, siempre se debe incluir un `ORDER BY` con una clave única.",
+        "La fórmula clásica de salto es: `OFFSET (numero_pagina - 1) * tamano_pagina`."
       ],
-      execution_order_note: "⚡ LIMIT y OFFSET son las últimas operaciones del pipeline de ejecución relacional.",
+      execution_order_note: "💡 Aunque `OFFSET` salte filas, el motor debe leerlas internamente; para millones de registros se recomienda paginación por cursor.",
     },
     objectives: [
-      "1. Proyectar 'cliente_id', 'nombre' y 'email'.",
-      "2. Ordenar por cliente_id ASC.",
-      "3. Aplicar LIMIT 5 OFFSET 5.",
-    ],
+      "1. Establecer el orden de visualización de los clientes.",
+      "2. Omitir el bloque de registros correspondiente a la primera página.",
+      "3. Acotar el lote devuelto al tamaño de página requerido."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000004',
     module_id: 'a0000000-0000-0000-0000-000000000004',
     title: "Conteo de Productos por Categoría",
-    prompt: "El equipo de inventario desea saber cuántos productos existen en cada categoría. Escribe una consulta que devuelva el categoria_id y el total de productos bajo el alias total_productos para aquellas categorías que tengan más de 2 productos registrados.",
+    prompt: "¿Cuántos productos tenemos en cada categoría? Muestra el `categoria_id` y el número total de productos bajo el nombre `total_productos`, mostrando únicamente aquellas categorías que tengan más de 2 productos.",
     initial_code: "-- Utiliza GROUP BY y HAVING\nSELECT ",
-    solution_query: "SELECT categoria_id, COUNT(*) AS total_productos FROM productos GROUP BY categoria_id HAVING COUNT(*) > 2;",
     xp_reward: 45,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 15,
     hints: [
-      "Agrupa por categoria_id con GROUP BY.",
-      "Para filtrar grupos agregados usa HAVING COUNT(*) > 2.",
-    ],
+      "Usa GROUP BY categoria_id para agrupar los artículos.",
+      "Usa HAVING COUNT(*) > 2 después de GROUP BY para quedarte solo con categorías con más de 2 productos."
+],
     concept: {
-      summary: "GROUP BY agrupa filas que comparten valores comunes en columnas específicas. HAVING funciona como un WHERE especializado que filtra exclusivamente sobre los grupos agregados.",
-      syntax: "SELECT categoria_id, COUNT(*) AS total_productos\nFROM productos\nGROUP BY categoria_id\nHAVING COUNT(*) > 2;",
+      summary: "`GROUP BY` agrupa filas que comparten el mismo valor en una o más columnas, permitiendo calcular agregaciones como `COUNT(*)` por cada grupo.",
+      syntax: "SELECT columna_grupo,\n       COUNT(*) AS total_registros\nFROM nombre_tabla\nGROUP BY columna_grupo;",
       key_points: [
-        "WHERE filtra filas individuales ANTES de agrupar.",
-        "HAVING filtra grupos calculados DESPUÉS de ejecutar GROUP BY.",
-        "Toda columna en el SELECT que no esté envuelta en una función de agregación debe estar en el GROUP BY.",
+        "`GROUP BY columna` condensa todas las filas que tienen el mismo valor en una sola fila representativa.",
+        "Toda columna en el `SELECT` que no esté dentro de una función de agregación (`COUNT`, `SUM`, etc.) debe estar presente en la cláusula `GROUP BY`.",
+        "`COUNT(*)` contabiliza el número total de filas pertenecientes a cada grupo formado."
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM → WHERE → GROUP BY → HAVING → SELECT.",
+      execution_order_note: "💡 `GROUP BY` se ejecuta inmediatamente después de `WHERE` y antes de evaluar las funciones del `SELECT`.",
     },
     objectives: [
-      "1. Agrupar las filas de 'productos' por 'categoria_id'.",
-      "2. Calcular el conteo con COUNT(*) y asignarle el alias 'total_productos'.",
-      "3. Filtrar los grupos que tengan más de 2 productos con 'HAVING COUNT(*) > 2'.",
-    ],
+      "1. Condensar los artículos agrupándolos por su familia comercial.",
+      "2. Contar el volumen total de productos asociados a cada familia.",
+      "3. Descartar los grupos que no superen el volumen mínimo establecido."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000011',
     module_id: 'a0000000-0000-0000-0000-000000000004',
     title: "Métricas Globales de Ventas",
-    prompt: "La dirección comercial solicita un resumen ejecutivo de las ventas completadas. Escribe una consulta que calcule el total de pedidos completados bajo el alias total_pedidos, la suma acumulada de ingresos bajo ingresos_totales y el ticket promedio redondeado a 2 decimales bajo ticket_promedio, considerando únicamente pedidos con estado_pedido = 'completado'.",
+    prompt: "Genera un resumen ejecutivo de las ventas completadas. Calcula el número de pedidos bajo el nombre `total_pedidos`, la suma total de dinero bajo `ingresos_totales` y el promedio de compra redondeado a 2 decimales bajo `ticket_promedio`, tomando solo los pedidos con estado `'completado'`.",
     initial_code: "-- Agrega las métricas globales para pedidos completados\nSELECT ",
-    solution_query: "SELECT COUNT(*) AS total_pedidos, SUM(total) AS ingresos_totales, ROUND(AVG(total), 2) AS ticket_promedio FROM pedidos WHERE estado_pedido = 'completado';",
     xp_reward: 45,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 16,
     hints: [
-      "Filtra primero con WHERE estado_pedido = 'completado'.",
-      "Aplica COUNT(*), SUM(total) y ROUND(AVG(total), 2) con sus respectivos alias.",
-    ],
+      "Escribe las tres funciones en el SELECT separadas por coma.",
+      "No necesitas GROUP BY porque quieres un solo resultado global."
+],
     concept: {
-      summary: "Las funciones de agregación global (COUNT, SUM, AVG, MIN, MAX) procesan el conjunto completo de tuplas filtradas sin necesidad de GROUP BY, devolviendo un único registro de resumen ejecutivo.",
-      syntax: "SELECT COUNT(*) AS total, SUM(monto) AS acumulado, ROUND(AVG(monto), 2) AS promedio\nFROM pedidos\nWHERE estado = 'completado';",
+      summary: "Las funciones de agregación (`COUNT`, `SUM`, `AVG`) condensan todo el conjunto de filas en una sola fila resumen de métricas clave.",
+      syntax: "SELECT COUNT(*) AS total_filas,\n       SUM(columna_monto) AS suma_total,\n       ROUND(AVG(columna_monto), 2) AS promedio\nFROM nombre_tabla\nWHERE condicion_filtro;",
       key_points: [
-        "Al no haber GROUP BY, el resultado colapsa siempre en una única tupla resumen.",
-        "ROUND(AVG(campo), 2) formatea el promedio con precisión monetaria estándar.",
+        "`COUNT(*)` cuenta el total de registros, `SUM(col)` acumula el total numérico y `AVG(col)` calcula la media aritmética.",
+        "Al aplicar filtros con `WHERE`, las funciones de agregación operan únicamente sobre las filas que cumplan la condición.",
+        "`ROUND(expresion, 2)` evita decimales flotantes interminables y garantiza precisión comercial."
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM → WHERE → Funciones de agregación → SELECT.",
+      execution_order_note: "💡 Si no usas `GROUP BY`, las funciones de agregación reducen toda la tabla a una sola fila de resultados globales.",
     },
     objectives: [
-      "1. Filtrar los pedidos con 'estado_pedido = \\'completado\\' '.",
-      "2. Calcular 'COUNT(*)' con alias 'total_pedidos'.",
-      "3. Calcular 'SUM(total)' como 'ingresos_totales' y 'ROUND(AVG(total), 2)' como 'ticket_promedio'.",
-    ],
+      "1. Filtrar las transacciones considerando únicamente las compras exitosas.",
+      "2. Calcular simultáneamente el recuento, la suma total de ingresos y el promedio.",
+      "3. Asegurar que los promedios monetarios tengan el formato decimal requerido."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000027',
     module_id: 'a0000000-0000-0000-0000-000000000004',
     title: "Rango de Precios por Categoría (MAX/MIN)",
-    prompt: "El departamento de pricing necesita analizar la dispersión de precios en cada departamento comercial. Escribe una consulta que devuelva el categoria_id, el precio más bajo bajo el alias precio_minimo y el precio más alto bajo el alias precio_maximo para cada categoría de productos.",
+    prompt: "Analiza la diferencia de precios en cada departamento. Muestra el `categoria_id`, el precio más bajo bajo el nombre `precio_minimo` y el precio más alto bajo `precio_maximo` para cada categoría de productos.",
     initial_code: "-- Calcula precios extremos por categoría\nSELECT ",
-    solution_query: "SELECT categoria_id, MIN(precio) AS precio_minimo, MAX(precio) AS precio_maximo FROM productos GROUP BY categoria_id;",
     xp_reward: 45,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 17,
     hints: [
-      "Utiliza las funciones de agregación MIN(precio) y MAX(precio).",
-      "Agrupa las filas por categoria_id mediante GROUP BY categoria_id.",
-    ],
+      "Selecciona: categoria_id, MIN(precio) AS precio_minimo, MAX(precio) AS precio_maximo.",
+      "No olvides agrupar al final: GROUP BY categoria_id;"
+],
     concept: {
-      summary: "Las funciones de agregación MIN() y MAX() calculan los valores extremos dentro de cada grupo formado por GROUP BY. Si no hay GROUP BY, operan sobre la totalidad de la tabla.",
-      syntax: "SELECT grupo, MIN(col), MAX(col)\nFROM tabla\nGROUP BY grupo;",
+      summary: "`MIN()` y `MAX()` obtienen el valor más bajo y el valor más alto de una columna dentro de cada grupo o en toda la tabla.",
+      syntax: "SELECT columna_grupo,\n       MIN(columna_valor) AS valor_minimo,\n       MAX(columna_valor) AS valor_maximo\nFROM nombre_tabla\nGROUP BY columna_grupo;",
       key_points: [
-        "MIN() y MAX() ignoran valores NULL en la columna evaluada.",
-        "Toda columna no agregada en SELECT debe figurar obligatoriamente en GROUP BY.",
+        "`MIN(col)` localiza el valor mínimo del grupo y `MAX(col)` el valor máximo.",
+        "`GROUP BY columna_grupo` permite obtener estos extremos de forma segmentada para cada grupo independiente.",
+        "Tanto `MIN` como `MAX` ignoran automáticamente valores nulos (`NULL`) en su cálculo."
       ],
-      execution_order_note: "⚡ GROUP BY colapsa las filas antes de que SELECT calcule MIN() y MAX().",
+      execution_order_note: "💡 En columnas indexadas, `MIN` y `MAX` son operaciones casi instantáneas (O(log N)).",
     },
     objectives: [
-      "1. Proyectar 'categoria_id'.",
-      "2. Calcular MIN(precio) AS precio_minimo.",
-      "3. Calcular MAX(precio) AS precio_maximo.",
-      "4. Agrupar por 'categoria_id'.",
-    ],
+      "1. Agrupar el catálogo por familia comercial.",
+      "2. Detectar el artículo más económico de cada grupo.",
+      "3. Detectar el artículo de mayor valor de cada grupo y nombrar las columnas."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000028',
     module_id: 'a0000000-0000-0000-0000-000000000004',
     title: "Distribución de Clientes por País",
-    prompt: "Expansión internacional requiere un censo de clientes por país de residencia. Escribe una consulta que devuelva la columna pais y el número total de clientes bajo el alias total_clientes, agrupando por país y ordenando el resultado de mayor a menor número de clientes.",
+    prompt: "¿De qué países son nuestros clientes? Muestra la columna `pais` y el número total de clientes en cada país bajo el nombre `total_clientes`, ordenando la lista de mayor a menor número de clientes.",
     initial_code: "-- Agrupa clientes por país\nSELECT ",
-    solution_query: "SELECT pais, COUNT(*) AS total_clientes FROM clientes GROUP BY pais ORDER BY total_clientes DESC;",
     xp_reward: 45,
     difficulty: 'Principiante',
     check_order: true,
     sort_order: 18,
     hints: [
-      "Agrupa por pais usando GROUP BY pais.",
-      "Cuenta las filas con COUNT(*) AS total_clientes y ordena con ORDER BY total_clientes DESC.",
-    ],
+      "Usa COUNT(*) AS total_clientes para contar a los clientes de cada país.",
+      "Agrupa por pais y ordena por total_clientes DESC."
+],
     concept: {
-      summary: "COUNT(*) devuelve el recuento de tuplas en cada grupo relacional. Combinado con ORDER BY descendente, permite construir rankings de distribución de frecuencias.",
-      syntax: "SELECT pais, COUNT(*) AS total\nFROM tabla\nGROUP BY pais\nORDER BY total DESC;",
+      summary: "Combinar `GROUP BY`, `COUNT(*)` y `ORDER BY` permite crear tablas de distribución de frecuencias ordenadas por volumen.",
+      syntax: "SELECT columna_segmento,\n       COUNT(*) AS total_filas\nFROM nombre_tabla\nGROUP BY columna_segmento\nORDER BY total_filas DESC;",
       key_points: [
-        "COUNT(*) cuenta todas las tuplas del grupo, incluyendo aquellas con columnas nulas.",
-        "Puedes usar el alias de agregación en ORDER BY porque ORDER BY se evalúa después de SELECT.",
+        "El `GROUP BY` agrupa por el criterio demográfico o de categorización deseado.",
+        "Para ver los grupos más numerosos arriba de todo, ordena por el alias de la función de conteo con `DESC`.",
+        "El orden de ejecución del motor procesa primero `GROUP BY`, luego la proyección del `SELECT` y finalmente `ORDER BY`."
       ],
-      execution_order_note: "⚡ GROUP BY particiona $\to$ SELECT proyecta y cuenta $\to$ ORDER BY ordena las filas colapsadas.",
+      execution_order_note: "💡 Puedes referenciar el alias de la columna agregada directamente en el `ORDER BY` final.",
     },
     objectives: [
-      "1. Proyectar 'pais' y 'COUNT(*) AS total_clientes'.",
-      "2. Agrupar por 'pais'.",
-      "3. Ordenar por total_clientes DESC.",
-    ],
+      "1. Agrupar la base de usuarios por su país de origen.",
+      "2. Contar el volumen de clientes registrados en cada territorio.",
+      "3. Presentar los países en un ranking ordenado de mayor a menor presencia."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000029',
     module_id: 'a0000000-0000-0000-0000-000000000004',
     title: "Stock Total por Proveedor",
-    prompt: "Gestión de proveedores necesita conocer el volumen total de inventario que suministra cada fabricante. Escribe una consulta que devuelva el proveedor_id y la suma de unidades disponibles bajo el alias stock_total para cada proveedor en la tabla productos.",
+    prompt: "Calcula el volumen total de productos que nos suministra cada fabricante. Muestra el `proveedor_id` y la suma de unidades disponibles en stock bajo el nombre `stock_total` desde la tabla `productos`.",
     initial_code: "-- Suma el stock por proveedor\nSELECT ",
-    solution_query: "SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id;",
     xp_reward: 45,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 19,
     hints: [
-      "Usa SUM(stock) AS stock_total para sumar las unidades.",
-      "Agrupa por proveedor_id con GROUP BY proveedor_id.",
-    ],
+      "Escribe: SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id;"
+],
     concept: {
-      summary: "La función SUM() agrega valores numéricos de una columna en un acumulado total por grupo. Devuelve NULL si el grupo solo contiene valores NULL.",
-      syntax: "SELECT grupo, SUM(numerico) AS total\nFROM tabla\nGROUP BY grupo;",
+      summary: "`SUM()` suma todos los valores de una columna numérica dentro de cada grupo formado por `GROUP BY`.",
+      syntax: "SELECT columna_identificador,\n       SUM(columna_cantidad) AS total_acumulado\nFROM nombre_tabla\nGROUP BY columna_identificador;",
       key_points: [
-        "SUM() solo es aplicable a columnas numéricas (INT, NUMERIC, DECIMAL, FLOAT).",
-        "Se evalúa después de WHERE y colapsa las filas que compartan el mismo valor en GROUP BY.",
+        "`SUM(col)` totaliza los valores cuantitativos de todas las filas agrupadas.",
+        "Debes incluir en el `GROUP BY` la clave o columna que identifica al grupo.",
+        "Si una fila contiene `NULL` en la columna sumada, `SUM` la ignora sin alterar el acumulado."
       ],
-      execution_order_note: "⚡ GROUP BY crea los grupos en memoria y SUM() acumula las cantidades de cada grupo.",
+      execution_order_note: "💡 `SUM()` sobre columnas vacías o solo con nulos devuelve `NULL`, no 0. Para forzar cero se suele usar `COALESCE(SUM(col), 0)`.",
     },
     objectives: [
-      "1. Proyectar 'proveedor_id'.",
-      "2. Calcular SUM(stock) AS stock_total.",
-      "3. Agrupar por 'proveedor_id'.",
-    ],
+      "1. Agrupar el inventario en función del fabricante o distribuidor.",
+      "2. Acumular las unidades totales en almacén provistas por cada entidad.",
+      "3. Asignar un alias descriptivo al total acumulado."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_PROVEEDORES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000030',
     module_id: 'a0000000-0000-0000-0000-000000000004',
     title: "Proveedores de Alto Volumen (HAVING SUM)",
-    prompt: "Compras desea clasificar a sus proveedores estratégicos. Escribe una consulta que obtenga el proveedor_id y el total de existencias bajo el alias stock_total, mostrando únicamente aquellos proveedores cuyo stock total acumulado supere estrictamente las 100 unidades.",
+    prompt: "Identifica a nuestros proveedores más importantes en volumen. Muestra el `proveedor_id` y su stock total bajo el nombre `stock_total`, mostrando únicamente a aquellos proveedores cuyo stock total acumulado supere las 100 unidades.",
     initial_code: "-- Filtra grupos con HAVING\nSELECT ",
-    solution_query: "SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id HAVING SUM(stock) > 100;",
     xp_reward: 50,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 20,
     hints: [
-      "La cláusula HAVING se coloca después de GROUP BY.",
-      "Escribe HAVING SUM(stock) > 100;",
-    ],
+      "Agrega HAVING SUM(stock) > 100 después de tu GROUP BY proveedor_id.",
+      "Recuerda que no puedes usar WHERE con funciones como SUM o COUNT."
+],
     concept: {
-      summary: "HAVING es el mecanismo de filtrado para grupos agregados en SQL. Mientras WHERE filtra filas individuales ANTES de agrupar, HAVING filtra grupos DESPUÉS de que las agregaciones han sido calculadas.",
-      syntax: "SELECT grupo, SUM(col)\nFROM tabla\nGROUP BY grupo\nHAVING SUM(col) > valor;",
+      summary: "`HAVING` es el filtro de los grupos: se aplica sobre los resultados calculados por funciones de agregación, donde `WHERE` no tiene alcance.",
+      syntax: "SELECT columna_grupo,\n       SUM(columna_metrica) AS acumulado\nFROM nombre_tabla\nGROUP BY columna_grupo\nHAVING SUM(columna_metrica) > valor_corte;",
       key_points: [
-        "Prohibido usar agregados en WHERE: WHERE SUM(...) es un error de sintaxis en cualquier base de datos SQL.",
-        "HAVING evalúa predicados booleanos sobre funciones agregadas o columnas de agrupamiento.",
+        "Regla de oro: `WHERE` filtra filas individuales *antes* de agrupar; `HAVING` filtra grupos *después* de agrupar.",
+        "En la cláusula `HAVING` se escriben directamente funciones agregadas como `SUM(...) > umbral` o `COUNT(...) >= N`.",
+        "La cláusula `HAVING` siempre se posiciona inmediatamente después de `GROUP BY`."
       ],
-      execution_order_note: "⚡ Orden crucial: WHERE (filtra filas) $\to$ GROUP BY (agrupa) $\to$ HAVING (descarta grupos completos).",
+      execution_order_note: "💡 Nunca coloques funciones de agregación en el `WHERE`; el motor lanzará error de sintaxis.",
     },
     objectives: [
-      "1. Proyectar 'proveedor_id' y 'SUM(stock) AS stock_total'.",
-      "2. Agrupar por 'proveedor_id'.",
-      "3. Filtrar los grupos con HAVING SUM(stock) > 100.",
-    ],
+      "1. Calcular el inventario acumulado por cada fabricante.",
+      "2. Aplicar un filtro posterior a la agregación para evaluar el volumen conjunto.",
+      "3. Conservar únicamente los proveedores estratégicos de gran volumen."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000031',
     module_id: 'a0000000-0000-0000-0000-000000000004',
     title: "Clientes con Ticket Promedio Alto (HAVING AVG)",
-    prompt: "Fidelización busca identificar a los compradores con mayor poder adquisitivo por compra. Escribe una consulta sobre la tabla pedidos que devuelva el cliente_id y el importe promedio de sus compras redondeado a 2 decimales bajo el alias ticket_promedio, considerando únicamente a los clientes cuyo promedio de compras supere los 500 euros.",
+    prompt: "Encuentra a los clientes que hacen compras de alto valor promedio. Muestra el `cliente_id` y su importe promedio de compra redondeado a 2 decimales bajo el nombre `ticket_promedio`, mostrando solo a aquellos clientes cuyo promedio de compras supere los 500€.",
     initial_code: "-- Filtra clientes por ticket promedio\nSELECT ",
-    solution_query: "SELECT cliente_id, ROUND(AVG(total), 2) AS ticket_promedio FROM pedidos GROUP BY cliente_id HAVING AVG(total) > 500;",
     xp_reward: 50,
     difficulty: 'Principiante',
     check_order: false,
     sort_order: 21,
     hints: [
-      "Usa ROUND(AVG(total), 2) AS ticket_promedio en SELECT.",
-      "Filtra en HAVING usando AVG(total) > 500.",
-    ],
+      "Usa HAVING AVG(total) > 500 después del GROUP BY cliente_id.",
+      "Redondea el promedio con ROUND(AVG(total), 2) en el SELECT."
+],
     concept: {
-      summary: "AVG() calcula la media aritmética ignorando valores NULL. Combinado con HAVING AVG(...) > X permite identificar segmentos basados en comportamiento medio o representativo.",
-      syntax: "SELECT cliente_id, ROUND(AVG(total), 2) AS avg_total\nFROM pedidos\nGROUP BY cliente_id\nHAVING AVG(total) > 500;",
+      summary: "`HAVING` con `AVG()` filtra aquellos grupos cuya media aritmética supera o no alcanza un determinado umbral de negocio.",
+      syntax: "SELECT columna_grupo,\n       ROUND(AVG(columna_monto), 2) AS promedio_grupo\nFROM nombre_tabla\nGROUP BY columna_grupo\nHAVING AVG(columna_monto) > umbral_promedio;",
       key_points: [
-        "ROUND() en la proyección asegura la presentación limpia con 2 decimales.",
-        "HAVING puede utilizar la función agregada directamente sin alias: HAVING AVG(total) > 500.",
+        "`HAVING AVG(columna) > umbral` descarta grupos cuyo promedio no cumpla con la regla mínima.",
+        "Para operadores de teclado: mayor o igual se escribe `>=` y menor o igual se escribe `<=` (caracteres contiguos sin espacios).",
+        "`AVG` solo puede aplicarse a tipos de datos numéricos (enteros, decimales, flotantes)."
       ],
-      execution_order_note: "⚡ HAVING calcula el promedio de cada partición de cliente y descarta los que no alcancen el umbral.",
+      execution_order_note: "💡 Puedes usar `ROUND()` en el `SELECT` para presentar la media limpia y mantener la comparación pura en el `HAVING`.",
     },
     objectives: [
-      "1. Proyectar 'cliente_id'.",
-      "2. Calcular ROUND(AVG(total), 2) AS ticket_promedio.",
-      "3. Agrupar por 'cliente_id'.",
-      "4. Filtrar con HAVING AVG(total) > 500.",
-    ],
+      "1. Calcular el gasto medio por transacción de cada comprador.",
+      "2. Filtrar a los clientes cuyo promedio supere el umbral de alto poder adquisitivo.",
+      "3. Asegurar el redondeo monetario adecuado en la columna final."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000032',
     module_id: 'a0000000-0000-0000-0000-000000000004',
     title: "Resumen de Pedidos por Estado",
-    prompt: "Operaciones comerciales solicita un cuadro de control de pedidos. Escribe una consulta que devuelva estado_pedido, la cantidad de pedidos bajo el alias total_pedidos y la suma acumulada de dinero bajo el alias monto_acumulado, agrupando por el estado del pedido y ordenando por monto_acumulado en orden descendente.",
+    prompt: "Construye un panel de control de pedidos. Muestra el `estado_pedido`, la cantidad de pedidos bajo el nombre `total_pedidos` y la suma acumulada de dinero bajo `monto_acumulado`, agrupando por estado y ordenando del estado con mayor dinero al de menor dinero.",
     initial_code: "-- Resumen consolidado por estado de pedido\nSELECT ",
-    solution_query: "SELECT estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado FROM pedidos GROUP BY estado_pedido ORDER BY monto_acumulado DESC;",
     xp_reward: 50,
     difficulty: 'Principiante',
     check_order: true,
     sort_order: 22,
     hints: [
-      "Proyecta estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado.",
-      "Agrupa por estado_pedido y ordena por monto_acumulado DESC.",
-    ],
+      "En el SELECT coloca: estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado.",
+      "Agrupa por estado_pedido y ordena por monto_acumulado DESC."
+],
     concept: {
-      summary: "En una sola consulta de agregación es posible combinar múltiples funciones agregadas (COUNT, SUM, AVG) sobre la misma partición para construir paneles ejecutivos y tableros analíticos.",
-      syntax: "SELECT estado, COUNT(*), SUM(monto)\nFROM tabla\nGROUP BY estado\nORDER BY SUM(monto) DESC;",
+      summary: "Puedes calcular múltiples agregaciones simultáneas (`COUNT`, `SUM`, `AVG`) en un solo `GROUP BY` para construir dashboards analíticos.",
+      syntax: "SELECT columna_estado,\n       COUNT(*) AS total_operaciones,\n       SUM(columna_monto) AS monto_total\nFROM nombre_tabla\nGROUP BY columna_estado\nORDER BY monto_total DESC;",
       key_points: [
-        "Permite auditar el estado del negocio agrupando por dimensiones categóricas ('completado', 'pendiente', 'cancelado').",
-        "ORDER BY sobre el resultado acumulado destaca de inmediato el segmento más relevante para el negocio.",
+        "Un solo `GROUP BY` puede alimentar tantas métricas agregadas en el `SELECT` como requiera el análisis.",
+        "Puedes ordenar la salida final por cualquiera de las métricas agregadas utilizando su alias o la función con `DESC`.",
+        "Asegúrate de que la columna categórica no agregada esté presente en la cláusula `GROUP BY`."
       ],
-      execution_order_note: "⚡ Agrupación $\to$ Cálculo múltiple (COUNT y SUM) $\to$ Ordenación final por la suma calculada.",
+      execution_order_note: "💡 Cada estado diferente formará una fila con sus totales correspondientes calculados en un solo pase de datos.",
     },
     objectives: [
-      "1. Proyectar 'estado_pedido'.",
-      "2. Calcular COUNT(*) AS total_pedidos.",
-      "3. Calcular SUM(total) AS monto_acumulado.",
-      "4. Agrupar por 'estado_pedido'.",
-      "5. Ordenar por monto_acumulado DESC.",
-    ],
+      "1. Agrupar el histórico de pedidos según su estado operativo.",
+      "2. Contar el número de operaciones y calcular el dinero asociado a cada estado.",
+      "3. Ordenar el tablero de mayor a menor recaudación económica."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000005',
     module_id: 'b0000000-0000-0000-0000-000000000005',
     title: "Pedidos con Identidad del Cliente",
-    prompt: "Genera un reporte que muestre el pedido_id, el nombre del cliente, su apellido y el total del pedido. Relaciona las tablas pedidos y clientes mediante su clave compartida.",
+    prompt: "Descubre qué cliente realizó cada pedido. Cruza las tablas `pedidos` y `clientes` mediante su identificador común y muestra el `pedido_id`, el `nombre` del cliente, su `apellido` y el `total` del pedido.",
     initial_code: "-- Cruza clientes con sus respectivos pedidos\nSELECT ",
-    solution_query: "SELECT p.pedido_id, c.nombre, c.apellido, p.total FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id;",
     xp_reward: 45,
     difficulty: 'Intermedio',
     check_order: false,
     sort_order: 23,
     hints: [
-      "Usa INNER JOIN clientes c ON p.cliente_id = c.cliente_id.",
-      "Proyecta p.pedido_id, c.nombre, c.apellido, p.total.",
-    ],
+      "Usa alias: FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id.",
+      "Indica las columnas deseadas en el SELECT."
+],
     concept: {
-      summary: "INNER JOIN combina tuplas de dos tablas basándose en una condición de coincidencia entre claves (PK y FK). Solo incluye registros que tengan correspondencia exacta en ambos lados.",
-      syntax: "SELECT p.pedido_id, c.nombre, c.apellido, p.total\nFROM pedidos p\nINNER JOIN clientes c ON p.cliente_id = c.cliente_id;",
+      summary: "`INNER JOIN` combina filas de dos tablas basándose en una condición de coincidencia común (`ON`), preservando solo los registros que existen en ambas.",
+      syntax: "SELECT t1.columna_a, t2.columna_b\nFROM tabla_1 t1\nINNER JOIN tabla_2 t2 ON t1.clave_foranea = t2.clave_primaria;",
       key_points: [
-        "Los alias de tabla (como 'p' o 'c') son obligatorios en consultas profesionales para evitar ambigüedades.",
-        "El predicado ON define cómo se intersecan los dos conjuntos de datos relacionales.",
+        "La cláusula `ON` especifica la igualdad entre la clave primaria de una tabla y la clave foránea de la otra.",
+        "Los alias cortos de tabla (como `t1` y `t2`) simplifican la consulta y evitan ambigüedad al referenciar columnas homónimas.",
+        "Si un registro en una tabla no tiene correspondencia en la otra, `INNER JOIN` lo omite del resultado final."
       ],
-      execution_order_note: "⚡ El cruce relacional (JOIN) se evalúa dentro de la cláusula FROM antes de aplicar filtros.",
+      execution_order_note: "💡 Los optimizadores eligen algoritmos como Hash Join o Nested Loop según el tamaño de las tablas unidas.",
     },
     objectives: [
-      "1. Relacionar 'pedidos' con 'clientes' usando 'cliente_id'.",
-      "2. Proyectar 'p.pedido_id', 'c.nombre', 'c.apellido' y 'p.total'.",
-      "3. Desambiguar los atributos con alias de tabla.",
-    ],
+      "1. Conectar las transacciones con el directorio de usuarios mediante su clave compartida.",
+      "2. Extraer los datos personales del comprador y el total de la orden.",
+      "3. Verificar que solo aparezcan órdenes con compradores válidos."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS, SAMPLE_TABLE_CLIENTES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000012',
     module_id: 'b0000000-0000-0000-0000-000000000005',
     title: "Gasto Acumulado por Cliente",
-    prompt: "El departamento de fidelización necesita saber cuánto ha gastado en total cada cliente. Escribe una consulta que relacione clientes y pedidos, y devuelva cliente_id, nombre, apellido y la suma total de sus compras bajo el alias total_gastado, ordenando a los clientes de mayor a menor gasto total.",
+    prompt: "Calcula cuánto dinero ha gastado en total cada uno de nuestros clientes. Cruza `clientes` y `pedidos`, y muestra el `cliente_id`, `nombre`, `apellido` y la suma de todas sus compras bajo el nombre `total_gastado`, ordenando de mayor a menor gasto.",
     initial_code: "-- Cruza clientes y pedidos y agrupa para sumar el gasto\nSELECT ",
-    solution_query: "SELECT c.cliente_id, c.nombre, c.apellido, SUM(p.total) AS total_gastado FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_gastado DESC;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 24,
     hints: [
-      "Usa INNER JOIN clientes c ON c.cliente_id = p.cliente_id.",
-      "Agrupa por c.cliente_id, c.nombre, c.apellido en la cláusula GROUP BY.",
-      "Ordena el resultado con ORDER BY total_gastado DESC.",
-    ],
+      "Recuerda incluir todas las columnas que no son funciones en el GROUP BY: GROUP BY c.cliente_id, c.nombre, c.apellido.",
+      "Ordena al final por total_gastado DESC."
+],
     concept: {
-      summary: "La combinación de JOIN con GROUP BY es uno de los patrones más recurrentes en SQL analítico: se enriquecen los datos mediante relaciones y luego se condensan por entidad usando funciones de agregación.",
-      syntax: "SELECT c.cliente_id, c.nombre, SUM(p.total) AS total_gastado\nFROM clientes c\nINNER JOIN pedidos p ON c.cliente_id = p.cliente_id\nGROUP BY c.cliente_id, c.nombre\nORDER BY total_gastado DESC;",
+      summary: "Combinar `INNER JOIN` con `GROUP BY` permite cruzar datos de transacciones con entidades maestras y agregar totales por entidad.",
+      syntax: "SELECT t1.id, t1.nombre_entidad,\n       SUM(t2.columna_monto) AS total_agregado\nFROM tabla_entidades t1\nINNER JOIN tabla_transacciones t2 ON t1.id = t2.entidad_id\nGROUP BY t1.id, t1.nombre_entidad\nORDER BY total_agregado DESC;",
       key_points: [
-        "Todas las columnas de 'clientes' en el SELECT deben aparecer en la cláusula GROUP BY.",
-        "ORDER BY sobre un alias de agregación permite ordenar directamente por la métrica calculada.",
+        "Primero se establece la unión relacional mediante `INNER JOIN ... ON ...`.",
+        "En el `GROUP BY` deben incluirse todas las columnas de la entidad maestra seleccionadas en el `SELECT` que no sean funciones agregadas.",
+        "`ORDER BY total_agregado DESC` clasifica de mayor a menor según el acumulado obtenido."
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM (JOIN) → GROUP BY → Agregación SUM → SELECT → ORDER BY.",
+      execution_order_note: "💡 El motor primero ejecuta el cruce `JOIN`, filtra filas si hay `WHERE`, agrupa con `GROUP BY` y finalmente calcula el `SUM`.",
     },
     objectives: [
-      "1. Realizar INNER JOIN entre 'clientes c' y 'pedidos p'.",
-      "2. Agrupar por 'c.cliente_id', 'c.nombre' y 'c.apellido'.",
-      "3. Sumar 'p.total' como 'total_gastado' y ordenar en sentido DESC.",
-    ],
+      "1. Cruzar las órdenes de compra con la información de los clientes.",
+      "2. Acumular el monto total pagado por cada persona en su historial.",
+      "3. Ordenar el resultado destacando a los clientes con mayor volumen de compras."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000033',
     module_id: 'b0000000-0000-0000-0000-000000000005',
     title: "Catálogo con Nombre de Categoría",
-    prompt: "Catalogación necesita presentar el catálogo con el nombre de su categoría descriptiva en vez del código numérico. Escribe una consulta que devuelva el producto_id, nombre_producto, nombre_categoria y precio, relacionando las tablas productos y categorias mediante categoria_id. Ordena los resultados por nombre_categoria ASC y luego por nombre_producto ASC.",
+    prompt: "Haz que el catálogo de productos sea legible mostrando el nombre de la categoría en lugar de su código numérico. Cruza `productos` con `categorias` y muestra `producto_id`, `nombre_producto`, `nombre_categoria` y `precio`. Ordena primero por categoría (A-Z) y luego por producto (A-Z).",
     initial_code: "-- Cruza productos con categorias\nSELECT ",
-    solution_query: "SELECT p.producto_id, p.nombre_producto, c.nombre_categoria, p.precio FROM productos p INNER JOIN categorias c ON p.categoria_id = c.categoria_id ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;",
     xp_reward: 45,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 25,
     hints: [
-      "Usa INNER JOIN categorias c ON p.categoria_id = c.categoria_id.",
-      "Ordena con ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;",
-    ],
+      "FROM productos p INNER JOIN categorias c ON p.categoria_id = c.categoria_id.",
+      "Ordena con ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC."
+],
     concept: {
-      summary: "El INNER JOIN sustituye claves foráneas numéricas por nombres descriptivos provenientes de tablas maestras o dimensiones (normalización relacional).",
-      syntax: "SELECT p.producto_id, p.nombre_producto, c.nombre_categoria, p.precio\nFROM productos p\nINNER JOIN categorias c ON p.categoria_id = c.categoria_id\nORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;",
+      summary: "`INNER JOIN` permite sustituir códigos numéricos de clasificación (IDs) por nombres descriptivos presentes en tablas maestras.",
+      syntax: "SELECT t1.id, t1.nombre_item, t2.nombre_clasificacion, t1.precio\nFROM tabla_items t1\nINNER JOIN tabla_clasificaciones t2 ON t1.clasificacion_id = t2.clasificacion_id\nORDER BY t2.nombre_clasificacion ASC, t1.nombre_item ASC;",
       key_points: [
-        "Permite enriquecer entidades de catálogo sustituyendo códigos por etiquetas comprensibles.",
-        "Solo se conservan las filas que presenten correspondencia en ambas entidades.",
+        "La condición `ON t1.id_relacional = t2.id_relacional` enlaza el detalle con su catálogo descriptivo.",
+        "Prefijar cada columna con su alias (`t1.columna`, `t2.columna`) evita errores de columna ambigua.",
+        "Puedes ordenar jerárquicamente por la descripción de la categoría y luego por el nombre del artículo."
       ],
-      execution_order_note: "⚡ Se evalúa la condición de cruce ON p.categoria_id = c.categoria_id al escanear las tablas.",
+      execution_order_note: "💡 Los índices de clave foránea aceleran el proceso de emparejamiento entre las tablas maestras y de detalle.",
     },
     objectives: [
-      "1. Realizar INNER JOIN entre productos y categorias.",
-      "2. Proyectar producto_id, nombre_producto, nombre_categoria y precio.",
-      "3. Ordenar por nombre_categoria ASC, nombre_producto ASC.",
-    ],
+      "1. Cruzar los artículos con la tabla maestra de familias comerciales.",
+      "2. Sustituir el identificador numérico por el nombre legible de la categoría.",
+      "3. Organizar alfabéticamente por categoría y luego por nombre de producto."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000034',
     module_id: 'b0000000-0000-0000-0000-000000000005',
     title: "Productos y sus Proveedores Directos",
-    prompt: "El área de compras requiere auditar el origen geográfico de cada artículo del catálogo. Escribe una consulta que relacione las tablas productos y proveedores, devolviendo producto_id, nombre_producto, nombre_proveedor y el país del proveedor bajo el alias pais_proveedor. Ordena alfabéticamente por nombre_producto ASC.",
+    prompt: "Compras necesita saber de qué país proviene cada producto. Cruza `productos` con `proveedores` y muestra `producto_id`, `nombre_producto`, `nombre_proveedor` y el país del proveedor bajo el nombre `pais_proveedor`. Ordena los productos alfabéticamente.",
     initial_code: "-- Relaciona productos con sus proveedores\nSELECT ",
-    solution_query: "SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor FROM productos pr INNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id ORDER BY pr.nombre_producto ASC;",
     xp_reward: 45,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 26,
     hints: [
-      "Une productos pr con proveedores pv usando proveedor_id.",
-      "Asigna el alias pais_proveedor a pv.pais y ordena con ORDER BY pr.nombre_producto ASC;",
-    ],
+      "Usa INNER JOIN entre productos y proveedores conectando proveedor_id.",
+      "No olvides asignar el alias pais_proveedor a la columna pais."
+],
     concept: {
-      summary: "Vincular una tabla transaccional o de artículos con sus entidades suministradoras es esencial en la gestión de la cadena de suministro.",
-      syntax: "SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor\nFROM productos pr\nINNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id\nORDER BY pr.nombre_producto ASC;",
+      summary: "Puedes aplicar filtros con `WHERE` sobre cualquiera de las tablas unidas en un `INNER JOIN` para refinar el resultado conjunto.",
+      syntax: "SELECT t1.columna_a, t2.columna_b\nFROM tabla_1 t1\nINNER JOIN tabla_2 t2 ON t1.fk_id = t2.pk_id\nWHERE t2.columna_filtro = 'criterio'\nORDER BY t1.columna_a ASC;",
       key_points: [
-        "El uso de alias cortos de tabla (pr, pv) simplifica la lectura y mantenimiento del código SQL.",
-        "El alias de columna renombra el atributo en la salida sin modificar el catálogo subyacente.",
+        "El `WHERE` se evalúa después de que el motor ha resuelto el `JOIN`, filtrando las filas ya combinadas.",
+        "Puedes filtrar por columnas de la tabla principal, de la tabla unida o de ambas a la vez.",
+        "Recuerda que los valores alfanuméricos en el `WHERE` van entre comillas simples: `'criterio'`."
       ],
-      execution_order_note: "⚡ Se asocian los productos con sus proveedores mediante su clave foránea común.",
+      execution_order_note: "💡 El optimizador suele aplicar 'pushdown de predicados', filtrando las tablas antes del JOIN para reducir filas.",
     },
     objectives: [
-      "1. Relacionar productos con proveedores mediante proveedor_id.",
-      "2. Proyectar producto_id, nombre_producto, nombre_proveedor y pais con alias pais_proveedor.",
-      "3. Ordenar por nombre_producto ASC.",
-    ],
+      "1. Vincular los artículos del catálogo con su empresa suministradora.",
+      "2. Extraer el nombre del proveedor y su país de origen con alias claros.",
+      "3. Ordenar los artículos alfabéticamente."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_PROVEEDORES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000035',
     module_id: 'b0000000-0000-0000-0000-000000000005',
     title: "Facturación Detallada con Pagos Aprobados",
-    prompt: "Contabilidad solicita una conciliación de facturas con sus pagos exitosos. Escribe una consulta que una facturas con pagos mediante factura_id, proyectando factura_id, monto_total de la factura, metodo_pago y fecha_pago, considerando únicamente aquellos registros donde estado_pago = 'aprobado'. Ordena por factura_id ASC.",
+    prompt: "Concilia las facturas emitidas con sus pagos aprobados. Cruza `facturas` con `pagos` mediante `factura_id`, mostrando `factura_id`, el monto de la factura (`monto_total`), el `metodo_pago` y la `fecha_pago`, tomando únicamente los registros con `estado_pago = 'aprobado'`. Ordena por `factura_id` ascendente.",
     initial_code: "-- Concilia facturas con pagos aprobados\nSELECT ",
-    solution_query: "SELECT f.factura_id, f.monto_total, pg.metodo_pago, pg.fecha_pago FROM facturas f INNER JOIN pagos pg ON f.factura_id = pg.factura_id WHERE pg.estado_pago = 'aprobado' ORDER BY f.factura_id ASC;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 27,
     hints: [
-      "Usa INNER JOIN pagos pg ON f.factura_id = pg.factura_id.",
-      "Filtra en WHERE pg.estado_pago = 'aprobado' y ordena por f.factura_id ASC.",
-    ],
+      "Cruza mediante factura_id y añade la condición WHERE pg.estado_pago = 'aprobado'.",
+      "Ordena con ORDER BY f.factura_id ASC."
+],
     concept: {
-      summary: "La combinación de INNER JOIN con filtros WHERE permite conciliar movimientos financieros entre entidades relacionadas descartando transacciones pendientes o fallidas.",
-      syntax: "SELECT f.factura_id, f.monto_total, pg.metodo_pago, pg.fecha_pago\nFROM facturas f\nINNER JOIN pagos pg ON f.factura_id = pg.factura_id\nWHERE pg.estado_pago = 'aprobado'\nORDER BY f.factura_id ASC;",
+      summary: "Encadenar múltiples cláusulas `INNER JOIN` permite trazar relaciones a lo largo de tres o más tablas conectadas en cadena.",
+      syntax: "SELECT t1.id, t2.col_b, t3.col_c\nFROM tabla_1 t1\nINNER JOIN tabla_2 t2 ON t1.t2_id = t2.id\nINNER JOIN tabla_3 t3 ON t2.t3_id = t3.id\nWHERE t3.estado = 'aprobado';",
       key_points: [
-        "El JOIN establece el vínculo 1:N o 1:1 entre facturas y sus abonos.",
-        "WHERE filtra las filas resultantes preservando solo los pagos conformes.",
+        "Cada nuevo `INNER JOIN` requiere su propia cláusula `ON` que defina la llave de conexión con alguna tabla previa.",
+        "La consulta se ejecuta como una cadena relacional: `T1` conecta con `T2`, y `T2` a su vez conecta con `T3`.",
+        "Los filtros `WHERE` pueden evaluar condiciones sobre cualquiera de las tres tablas participantes."
       ],
-      execution_order_note: "⚡ JOIN empareja facturas con pagos $\to$ WHERE restringe a estado_pago = 'aprobado' $\to$ SELECT proyecta y ordena.",
+      execution_order_note: "💡 El planificador de PostgreSQL reorganiza el orden de unión para procesar primero las tablas más pequeñas.",
     },
     objectives: [
-      "1. Cruzar facturas con pagos por factura_id.",
-      "2. Filtrar pagos donde estado_pago = 'aprobado'.",
-      "3. Proyectar factura_id, monto_total, metodo_pago, fecha_pago y ordenar por factura_id ASC.",
-    ],
+      "1. Cruzar los comprobantes fiscales con sus comprobantes de pago bancarios.",
+      "2. Restringir la consulta a las transacciones con estado liquidado y aprobado.",
+      "3. Proyectar los identificadores, fechas y montos en orden secuencial."
+],
     sample_tables: [SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_PAGOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000006',
     module_id: 'b0000000-0000-0000-0000-000000000006',
     title: "Clientes sin Compras Registradas (LEFT JOIN & IS NULL)",
-    prompt: "El equipo de marketing necesita reactivar a usuarios registrados que nunca han realizado un pedido en la plataforma. Escribe una consulta que devuelva el ID del cliente, su nombre y su apellido para todos los clientes que no tienen registros en la tabla de compras.",
+    prompt: "¿Qué clientes se han registrado pero nunca han realizado una compra? Haz un `LEFT JOIN` entre `clientes` y `pedidos` para mostrar el `cliente_id`, `nombre` y `apellido` de todos los usuarios sin pedidos registrados.",
     initial_code: "-- Identifica clientes inactivos sin pedidos asociados\nSELECT ",
-    solution_query: "SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id WHERE p.pedido_id IS NULL;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: false,
     sort_order: 28,
     hints: [
-      "Inicia realizando un LEFT JOIN desde la tabla clientes hacia la tabla pedidos usando la relación c.cliente_id = p.cliente_id.",
-      "Cuando un cliente no tiene pedidos, las columnas provenientes de la tabla pedidos resultarán con valores NULL. Filtra usando WHERE p.pedido_id IS NULL.",
-      "Asegúrate de proyectar exactamente tres columnas: cliente_id, nombre y apellido.",
-    ],
+      "Usa LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id.",
+      "Filtra los que no tienen compra con WHERE p.pedido_id IS NULL;"
+],
     concept: {
-      summary: "LEFT JOIN preserva todas las filas de la tabla izquierda ('clientes'), rellenando con NULL los campos de la tabla derecha ('pedidos') cuando no existe coincidencia. El filtro 'WHERE p.id IS NULL' aísla las tuplas huérfanas.",
-      syntax: "SELECT c.cliente_id, c.nombre, c.apellido\nFROM clientes c\nLEFT JOIN pedidos p ON c.cliente_id = p.cliente_id\nWHERE p.pedido_id IS NULL;",
+      summary: "`LEFT JOIN` preserva todas las filas de la tabla izquierda; al combinarse con `WHERE clave_derecha IS NULL`, crea un patrón Anti-Join.",
+      syntax: "SELECT t1.id, t1.nombre\nFROM tabla_izquierda t1\nLEFT JOIN tabla_derecha t2 ON t1.id = t2.entidad_id\nWHERE t2.entidad_id IS NULL;",
       key_points: [
-        "Para evaluar valores nulos siempre se usa 'IS NULL' o 'IS NOT NULL', nunca '= NULL'.",
-        "Es el patrón canónico para auditoría de integridad referencial y detección de inactividad.",
+        "`LEFT JOIN` incluye todos los registros de la tabla izquierda, rellenando con `NULL` las columnas de la derecha si no hay coincidencia.",
+        "El filtro `WHERE t2.clave IS NULL` descarta las filas que sí hicieron match, aislando exclusivamente a los registros sin actividad.",
+        "En SQL la comprobación de nulos se escribe siempre `IS NULL` (nunca `= NULL`)."
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM (LEFT JOIN) → WHERE (filtra solo registros con clave foránea NULL) → SELECT.",
+      execution_order_note: "💡 Esta técnica es más eficiente que subconsultas `NOT IN` cuando las tablas contienen valores nulos.",
     },
     objectives: [
-      "1. Realizar un LEFT JOIN de 'clientes c' hacia 'pedidos p' por 'cliente_id'.",
-      "2. Filtrar únicamente las filas donde 'p.pedido_id IS NULL'.",
-      "3. Proyectar 'cliente_id', 'nombre' y 'apellido'.",
-    ],
+      "1. Relacionar clientes y compras conservando a la totalidad de usuarios registrados.",
+      "2. Identificar a aquellos que no registran ningún pedido en la plataforma.",
+      "3. Mostrar los datos de contacto de los usuarios inactivos."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000013',
     module_id: 'b0000000-0000-0000-0000-000000000006',
     title: "Productos sin Movimiento de Venta",
-    prompt: "Auditoría de catálogo necesita detectar productos que nunca han sido incluidos en ninguna orden de compra. Escribe una consulta que devuelva el producto_id y el nombre_producto de los artículos que no tienen ninguna línea registrada en detalle_pedidos.",
+    prompt: "Detecta qué artículos del catálogo nunca han tenido ventas. Muestra el `producto_id` y `nombre_producto` de aquellos artículos que no tengan ninguna línea registrada en la tabla `detalle_pedidos`.",
     initial_code: "-- Localiza productos sin ventas cruzando con detalle_pedidos\nSELECT ",
-    solution_query: "SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN detalle_pedidos dp ON p.producto_id = dp.producto_id WHERE dp.detalle_id IS NULL;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: false,
     sort_order: 29,
     hints: [
-      "Une productos p con detalle_pedidos dp mediante LEFT JOIN usando producto_id.",
-      "Filtra las filas donde la clave foránea o primaria de la tabla derecha sea nula: WHERE dp.detalle_id IS NULL.",
-    ],
+      "Escribe: FROM productos p LEFT JOIN detalle_pedidos dp ON p.producto_id = dp.producto_id WHERE dp.detalle_id IS NULL;"
+],
     concept: {
-      summary: "El patrón Anti-Join mediante LEFT JOIN ... WHERE right.pk IS NULL permite encontrar registros huérfanos o entidades inactivas con un rendimiento óptimo en motores relacionales.",
-      syntax: "SELECT p.producto_id, p.nombre_producto\nFROM productos p\nLEFT JOIN detalle_pedidos dp ON p.producto_id = dp.producto_id\nWHERE dp.detalle_id IS NULL;",
+      summary: "El patrón Anti-Join (`LEFT JOIN ... WHERE ... IS NULL`) es fundamental para detectar inventario huérfano o elementos sin transacciones.",
+      syntax: "SELECT t1.id, t1.nombre\nFROM tabla_catalogo t1\nLEFT JOIN tabla_movimientos t2 ON t1.id = t2.item_id\nWHERE t2.item_id IS NULL\nORDER BY t1.id ASC;",
       key_points: [
-        "Preserva todos los productos de la tabla izquierda.",
-        "Los productos sin ventas tendrán 'dp.detalle_id' con valor NULL.",
+        "La tabla del catálogo va a la izquierda (`FROM`) y la tabla transaccional va a la derecha (`LEFT JOIN`).",
+        "Si un artículo jamás fue vendido o movido, sus columnas asociadas en la tabla derecha tendrán valor `NULL`.",
+        "Utiliza `WHERE t2.clave_primaria IS NULL` para capturar únicamente los elementos sin registros en la tabla derecha."
       ],
-      execution_order_note: "⚡ Orden de procesamiento: FROM (LEFT JOIN) → WHERE (dp.detalle_id IS NULL) → SELECT.",
+      execution_order_note: "💡 Al elegir la columna a verificar en el `WHERE ... IS NULL`, opta siempre por la clave primaria de la tabla derecha.",
     },
     objectives: [
-      "1. Realizar LEFT JOIN entre 'productos p' y 'detalle_pedidos dp'.",
-      "2. Filtrar con 'WHERE dp.detalle_id IS NULL'.",
-      "3. Proyectar 'producto_id' y 'nombre_producto'.",
-    ],
+      "1. Cruzar el catálogo con las líneas de compra conservando todos los artículos.",
+      "2. Aislar los productos que no registran ningún movimiento de salida.",
+      "3. Proyectar el identificador y nombre de los artículos desatendidos."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_DETALLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000036',
     module_id: 'b0000000-0000-0000-0000-000000000006',
     title: "Facturas Pendientes de Cobro (Anti-Join)",
-    prompt: "Tesorería necesita listar las facturas emitidas para las cuales todavía no se ha registrado ningún abono en la tabla de pagos (patrón Anti-Join). Escribe una consulta mediante LEFT JOIN entre facturas y pagos que obtenga factura_id, pedido_id, fecha_emision y monto_total de aquellas facturas sin ningún pago asociado. Ordena por factura_id ASC.",
+    prompt: "Tesorería necesita una lista de facturas emitidas que todavía no tienen ningún pago registrado. Haz un `LEFT JOIN` entre `facturas` y `pagos` para obtener `factura_id`, `pedido_id`, `fecha_emision` y `monto_total` de aquellas facturas sin ningún abono. Ordena por `factura_id` ascendente.",
     initial_code: "-- Identifica facturas sin pagos registrados\nSELECT ",
-    solution_query: "SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total FROM facturas f LEFT JOIN pagos p ON f.factura_id = p.factura_id WHERE p.pago_id IS NULL ORDER BY f.factura_id ASC;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 30,
     hints: [
-      "Haz un LEFT JOIN desde facturas f hacia pagos p por factura_id.",
-      "Filtra con WHERE p.pago_id IS NULL para encontrar facturas sin ningún abono.",
-      "Ordena por f.factura_id ASC.",
-    ],
+      "Asegúrate de unir sobre factura_id y filtrar con WHERE p.pago_id IS NULL.",
+      "Ordena al final con ORDER BY f.factura_id ASC."
+],
     concept: {
-      summary: "El patrón Anti-Join con LEFT JOIN y predicado IS NULL es la técnica óptima y estándar en SQL para encontrar entidades principales que carecen de registros subordinados.",
-      syntax: "SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total\nFROM facturas f\nLEFT JOIN pagos p ON f.factura_id = p.factura_id\nWHERE p.pago_id IS NULL\nORDER BY f.factura_id ASC;",
+      summary: "Localiza documentos o comprobantes maestros que no registran ningún pago asociado en la tabla de transacciones de pago.",
+      syntax: "SELECT t1.documento_id, t1.monto\nFROM tabla_documentos t1\nLEFT JOIN tabla_pagos t2 ON t1.documento_id = t2.documento_id\nWHERE t2.pago_id IS NULL;",
       key_points: [
-        "LEFT JOIN asegura que todas las facturas aparezcan en el conjunto intermedio.",
-        "Las facturas sin pago tendrán p.pago_id con valor NULL; WHERE aísla exactamente esas filas.",
+        "Conecta el encabezado con el detalle mediante `LEFT JOIN ... ON t1.id = t2.fk_id`.",
+        "Aplica `IS NULL` sobre la clave primaria de la tabla de pagos para identificar comprobantes sin abonos.",
+        "El operador de desigualdad para exclusiones explícitas de estado es `<>` o `!=`."
       ],
-      execution_order_note: "⚡ LEFT JOIN preserva facturas $\to$ WHERE filtra donde p.pago_id IS NULL.",
+      execution_order_note: "💡 PostgreSQL puede convertir internamente este patrón en un Hash Anti Join de alto rendimiento.",
     },
     objectives: [
-      "1. Efectuar LEFT JOIN entre facturas y pagos.",
-      "2. Filtrar con WHERE p.pago_id IS NULL.",
-      "3. Proyectar factura_id, pedido_id, fecha_emision, monto_total y ordenar por factura_id ASC.",
-    ],
+      "1. Relacionar las facturas emitidas con la tabla de cobros.",
+      "2. Filtrar aquellos comprobantes que carecen de registro de abono.",
+      "3. Presentar los datos de las facturas pendientes de cobro ordenadas por ID."
+],
     sample_tables: [SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_PAGOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000037',
     module_id: 'b0000000-0000-0000-0000-000000000006',
     title: "Productos Fuera del Almacén Central (Anti-Join Condicional)",
-    prompt: "El responsable del Hub Logístico Central Madrid (almacen_id = 1) desea identificar qué productos del catálogo no disponen de existencias ubicadas en sus instalaciones. Escribe una consulta que relacione la tabla productos con inventario mediante un LEFT JOIN acotado al almacén 1 (ON p.producto_id = i.producto_id AND i.almacen_id = 1) y devuelva producto_id y nombre_producto de los artículos ausentes en dicho almacén. Ordena por producto_id ASC.",
+    prompt: "El responsable del almacén central de Madrid (`almacen_id = 1`) quiere saber qué productos del catálogo NO disponen de existencias en ese almacén en particular. Conecta `productos` con `inventario` mediante un `LEFT JOIN` acotado al almacén 1 y muestra el `producto_id` y `nombre_producto` de los artículos ausentes en ese almacén, ordenados por `producto_id` ascendente.",
     initial_code: "-- Detecta productos no inventariados en el almacén 1\nSELECT ",
-    solution_query: "SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1 WHERE i.almacen_id IS NULL ORDER BY p.producto_id ASC;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 31,
     hints: [
-      "En el ON del LEFT JOIN incluye p.producto_id = i.producto_id AND i.almacen_id = 1.",
-      "En WHERE comprueba WHERE i.almacen_id IS NULL para encontrar las ausencias.",
-    ],
+      "Coloca AND i.almacen_id = 1 dentro de la cláusula ON del LEFT JOIN.",
+      "En el WHERE usa: WHERE i.almacen_id IS NULL."
+],
     concept: {
-      summary: "Agregar condiciones adicionales a la cláusula ON en un LEFT JOIN filtra la tabla derecha antes de realizar la unión, permitiendo evaluar la ausencia de una relación en un contexto específico.",
-      syntax: "SELECT p.producto_id, p.nombre_producto\nFROM productos p\nLEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1\nWHERE i.almacen_id IS NULL\nORDER BY p.producto_id ASC;",
+      summary: "Puedes incorporar condiciones adicionales en la cláusula `ON` del `LEFT JOIN` antes de aplicar la exclusión de nulos en `WHERE`.",
+      syntax: "SELECT t1.id, t1.descripcion\nFROM tabla_items t1\nLEFT JOIN tabla_asignaciones t2\n  ON t1.id = t2.item_id AND t2.ubicacion_id = valor_especifico\nWHERE t2.item_id IS NULL;",
       key_points: [
-        "Colocar el filtro de almacén en ON restringe qué filas de inventario se cruzan, no las filas de productos.",
-        "Si pusieras i.almacen_id = 1 en WHERE convertirías el LEFT JOIN en un INNER JOIN implícito.",
+        "Colocar una condición en el `ON` del `LEFT JOIN` restringe el cruce a esa condición antes de generar los nulos.",
+        "El `WHERE ... IS NULL` posterior filtra a los elementos que no tuvieron coincidencia bajo esa regla específica.",
+        "Es una técnica eficiente para auditar ausencias en ubicaciones o estados determinados."
       ],
-      execution_order_note: "⚡ ON evalúa el predicado compuesto en la unión $\to$ WHERE detecta los nulos resultantes.",
+      execution_order_note: "💡 Las condiciones en `ON` afectan a qué filas se emparejan; las condiciones en `WHERE` descartan filas después de la unión.",
     },
     objectives: [
-      "1. Realizar LEFT JOIN con doble condición en ON (producto_id y almacen_id = 1).",
-      "2. Filtrar con WHERE i.almacen_id IS NULL.",
-      "3. Proyectar producto_id y nombre_producto ordenados por producto_id ASC.",
-    ],
+      "1. Vincular los productos con el inventario acotando la búsqueda a la instalación central.",
+      "2. Aislar los artículos que no cuentan con existencias en dicha instalación.",
+      "3. Proyectar el catálogo de productos ausentes en dicho centro."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_INVENTARIO],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000038',
     module_id: 'b0000000-0000-0000-0000-000000000006',
     title: "Censo Completo de Pedidos por Cliente (Preservando Ceros)",
-    prompt: "CRM requiere un censo íntegro de la cartera de clientes, visualizando cuántos pedidos ha efectuado cada usuario sin omitir a aquellos que nunca han comprado. Escribe una consulta mediante LEFT JOIN de clientes con pedidos que devuelva cliente_id, nombre, apellido y el recuento total de compras bajo el alias total_pedidos (usando COUNT(p.pedido_id)). Ordena los resultados por total_pedidos DESC y, en caso de empate, por cliente_id ASC.",
+    prompt: "Queremos una lista completa de todos los clientes y saber cuántos pedidos ha hecho cada uno, incluyendo con 0 a los que nunca han comprado. Muestra `cliente_id`, `nombre`, `apellido` y el total de compras bajo el nombre `total_pedidos` (usando `COUNT(p.pedido_id)`). Ordena por número de pedidos de mayor a menor y, en caso de empate, por `cliente_id` ascendente.",
     initial_code: "-- Agrupa preservando clientes sin compras con COUNT(columna)\nSELECT ",
-    solution_query: "SELECT c.cliente_id, c.nombre, c.apellido, COUNT(p.pedido_id) AS total_pedidos FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_pedidos DESC, c.cliente_id ASC;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 32,
     hints: [
-      "Usa COUNT(p.pedido_id) AS total_pedidos para contar únicamente pedidos existentes.",
-      "Agrupa por c.cliente_id, c.nombre, c.apellido y ordena con ORDER BY total_pedidos DESC, c.cliente_id ASC;",
-    ],
+      "No uses COUNT(*); usa COUNT(p.pedido_id) para que a los que no han comprado les salga 0.",
+      "Ordena con ORDER BY total_pedidos DESC, c.cliente_id ASC."
+],
     concept: {
-      summary: "Diferencia crucial entre COUNT(*) y COUNT(columna): COUNT(*) cuenta filas físicas (daría 1 para clientes sin pedidos por la fila generada con NULLs), mientras que COUNT(p.pedido_id) ignora los NULLs y devuelve correctamente 0.",
-      syntax: "SELECT c.cliente_id, c.nombre, COUNT(p.pedido_id) AS total_pedidos\nFROM clientes c\nLEFT JOIN pedidos p ON c.cliente_id = p.cliente_id\nGROUP BY c.cliente_id, c.nombre\nORDER BY total_pedidos DESC;",
+      summary: "`LEFT JOIN` con `COUNT(columna_derecha)` permite contabilizar ocurrencias preservando en 0 a las entidades sin actividad.",
+      syntax: "SELECT t1.id, t1.nombre,\n       COUNT(t2.transaccion_id) AS total_ocurrencias\nFROM tabla_maestra t1\nLEFT JOIN tabla_movimientos t2 ON t1.id = t2.entidad_id\nGROUP BY t1.id, t1.nombre\nORDER BY total_ocurrencias DESC;",
       key_points: [
-        "COUNT(expresion) solo suma tuplas donde 'expresion' NO sea nula.",
-        "Es el estándar relacional para métricas acumuladas que deben reflejar el cero absoluto.",
+        "Cuidado con `COUNT`: `COUNT(*)` contaría 1 para los registros con nulos; debes usar `COUNT(t2.id)` para que los nulos sumen 0.",
+        "`LEFT JOIN` asegura que ninguna entidad de la tabla izquierda sea omitida, aunque tenga cero movimientos.",
+        "Agrupa por los campos de la tabla maestra incluidos en el `SELECT`."
       ],
-      execution_order_note: "⚡ LEFT JOIN preserva entidades huérfanas $\to$ GROUP BY colapsa $\to$ COUNT(col) ignora los nulos.",
+      execution_order_note: "💡 `COUNT(columna)` ignora nulos automáticamente, garantizando que clientes o productos sin eventos tengan conteo 0.",
     },
     objectives: [
-      "1. Efectuar LEFT JOIN entre clientes y pedidos.",
-      "2. Agrupar por cliente_id, nombre, apellido.",
-      "3. Contar pedidos con COUNT(p.pedido_id) AS total_pedidos.",
-      "4. Ordenar por total_pedidos DESC, cliente_id ASC.",
-    ],
+      "1. Conectar usuarios y pedidos garantizando que nadie quede fuera de la lista.",
+      "2. Contabilizar los pedidos garantizando que los usuarios sin compras muestren 0.",
+      "3. Ordenar el censo de mayor a menor número de compras y desempatar por ID."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000014',
     module_id: 'b0000000-0000-0000-0000-000000000007',
     title: "Desglose Completo de Líneas de Pedido",
-    prompt: "Operaciones necesita auditar las transacciones vinculando todas sus dimensiones relacionales. Escribe una consulta que conecte pedidos, clientes, detalle_pedidos, productos y categorias, y devuelva pedido_id, el nombre del cliente bajo el alias cliente_nombre, nombre_producto, nombre_categoria, cantidad y precio_unitario. Ordena los resultados por pedido_id ASC y nombre_producto ASC, limitando a 10 registros.",
+    prompt: "Audita las compras mostrando toda la información conectada: pedido, cliente, producto y categoría. Conecta `pedidos`, `clientes`, `detalle_pedidos`, `productos` y `categorias`, y muestra `pedido_id`, el nombre del cliente como `cliente_nombre`, `nombre_producto`, `nombre_categoria`, `cantidad` y `precio_unitario`. Ordena por `pedido_id ASC` y `nombre_producto ASC`, limitando a los primeros 10 registros.",
     initial_code: "-- Conecta en cascada pedidos, clientes, detalle, productos y categorias\nSELECT ",
-    solution_query: "SELECT p.pedido_id, c.nombre AS cliente_nombre, pr.nombre_producto, cat.nombre_categoria, dp.cantidad, dp.precio_unitario FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id INNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id INNER JOIN productos pr ON dp.producto_id = pr.producto_id INNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id ORDER BY p.pedido_id ASC, pr.nombre_producto ASC LIMIT 10;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 33,
     hints: [
-      "Encadena 4 cláusulas INNER JOIN siguiendo las claves foráneas correspondientes.",
-      "Usa alias de tabla concisos: p, c, dp, pr, cat.",
-      "Añade ORDER BY p.pedido_id ASC, pr.nombre_producto ASC LIMIT 10; al final.",
-    ],
+      "Encadena los JOINs: pedidos -> clientes, pedidos -> detalle_pedidos -> productos -> categorias.",
+      "Usa c.nombre AS cliente_nombre y aplica LIMIT 10 al final."
+],
     concept: {
-      summary: "Las consultas multi-tabla permiten recorrer esquemas en estrella o copo de nieve conectando tablas de hechos (como pedidos y detalle_pedidos) con tablas de dimensiones (clientes, productos, categorías).",
-      syntax: "SELECT p.pedido_id, c.nombre AS cliente_nombre, pr.nombre_producto, cat.nombre_categoria, dp.cantidad, dp.precio_unitario\nFROM pedidos p\nINNER JOIN clientes c ON p.cliente_id = c.cliente_id\nINNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id\nINNER JOIN productos pr ON dp.producto_id = pr.producto_id\nINNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id\nORDER BY p.pedido_id ASC, pr.nombre_producto ASC LIMIT 10;",
+      summary: "Las relaciones maestro-detalle complejas suelen requerir unir la cabecera, las líneas de detalle y los catálogos descriptivos.",
+      syntax: "SELECT c.id, d.linea_id, i.nombre, d.cantidad, d.precio_unitario\nFROM cabecera c\nINNER JOIN detalle d ON c.id = d.cabecera_id\nINNER JOIN catalogo i ON d.item_id = i.id\nORDER BY c.id ASC, d.linea_id ASC;",
       key_points: [
-        "Cada JOIN agrega una dimensión al árbol de relaciones relacional.",
-        "El optimizador de PostgreSQL reordena los joins basándose en estadísticas de cardinalidad.",
+        "La cabecera se une con las líneas de detalle (`cabecera_id`), y cada línea se une con su artículo (`item_id`).",
+        "Los alias de una letra (`c`, `d`, `i`) mantienen la consulta legible y compacta.",
+        "Puedes calcular valores de línea multiplicando columnas: `d.cantidad * d.precio_unitario`."
       ],
-      execution_order_note: "⚡ Se evalúan todos los joins dentro de FROM construyendo el producto cartesiano restringido.",
+      execution_order_note: "💡 Cada línea de pedido generará una fila en el resultado; un pedido con 3 artículos devolverá 3 filas.",
     },
     objectives: [
-      "1. Conectar las 5 tablas con 4 INNER JOINs correctos.",
-      "2. Proyectar las 6 columnas especificadas con el alias 'cliente_nombre'.",
-      "3. Aplicar 'ORDER BY p.pedido_id ASC, pr.nombre_producto ASC LIMIT 10'.",
-    ],
+      "1. Conectar en cadena las 5 entidades del circuito comercial.",
+      "2. Extraer las dimensiones del comprador, artículo, categoría y transacción.",
+      "3. Ordenar secuencialmente y acotar el lote a 10 líneas de muestra."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS, SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_DETALLE_PEDIDOS, SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000039',
     module_id: 'b0000000-0000-0000-0000-000000000007',
     title: "Historial de Ventas por Ciudad y Categoría",
-    prompt: "Dirección estratégica solicita un desglose de facturación territorial por categoría de producto. Conecta clientes, pedidos, detalle_pedidos, productos y categorias para calcular la suma de ventas (SUM(dp.cantidad * dp.precio_unitario)) bajo el alias monto_vendido, agrupada por la ciudad del cliente y el nombre_categoria. Ordena por ciudad ASC y luego por monto_vendido DESC.",
+    prompt: "Descubre cuánto dinero se ha vendido en cada ciudad por cada tipo de producto. Conecta las tablas necesarias para calcular la suma de ventas (`SUM(dp.cantidad * dp.precio_unitario)`) bajo el nombre `monto_vendido`, agrupando por la `ciudad` del cliente y el `nombre_categoria`. Ordena alfabéticamente por ciudad y luego de mayor a menor venta.",
     initial_code: "-- Conecta 5 tablas y calcula ventas por ciudad y categoria\nSELECT ",
-    solution_query: "SELECT c.ciudad, cat.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id INNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id INNER JOIN productos pr ON dp.producto_id = pr.producto_id INNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id GROUP BY c.ciudad, cat.nombre_categoria ORDER BY c.ciudad ASC, monto_vendido DESC;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 34,
     hints: [
-      "Encadena 4 INNER JOINs desde clientes hasta categorias.",
-      "Agrupa por c.ciudad y cat.nombre_categoria, calculando SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido.",
-      "Ordena por c.ciudad ASC, monto_vendido DESC;",
-    ],
+      "Cruza las tablas necesarias para llegar de clientes a categorías pasando por pedidos y detalle.",
+      "Agrupa por c.ciudad y cat.nombre_categoria."
+],
     concept: {
-      summary: "Al conectar un esquema relacional normalizado en estrella o copo de nieve, se pueden cruzar dimensiones geográficas (ciudad) con dimensiones de producto (categoría) para análisis multidimensional.",
-      syntax: "SELECT c.ciudad, cat.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido\nFROM clientes c\nINNER JOIN pedidos p ON c.cliente_id = p.cliente_id\nINNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id\nINNER JOIN productos pr ON dp.producto_id = pr.producto_id\nINNER JOIN categorias cat ON pr.categoria_id = cat.categoria_id\nGROUP BY c.ciudad, cat.nombre_categoria\nORDER BY c.ciudad ASC, monto_vendido DESC;",
+      summary: "Unir múltiples tablas antes de agrupar permite construir cubos multidimensionales de agregación geográfica y comercial.",
+      syntax: "SELECT t_geo.ciudad, t_cat.categoria,\n       SUM(t_mov.monto) AS volumen_total\nFROM transacciones t_mov\nINNER JOIN entidades t_ent ON t_mov.entidad_id = t_ent.id\nINNER JOIN clasificaciones t_cat ON t_mov.clasificacion_id = t_cat.id\nGROUP BY t_geo.ciudad, t_cat.categoria\nORDER BY volumen_total DESC;",
       key_points: [
-        "El cálculo de línea (cantidad * precio_unitario) se evalúa antes de la agregación SUM().",
-        "Todas las columnas de dimensión no agregadas deben incluirse en GROUP BY.",
+        "El `GROUP BY` multidimensional agrupa por cada combinación única de ciudad y categoría.",
+        "Asegúrate de que todas las columnas no agregadas del `SELECT` figuren en el `GROUP BY`.",
+        "El cruce previo con `INNER JOIN` conecta la transacción con la entidad geográfica y el catálogo."
       ],
-      execution_order_note: "⚡ Cadena de JOINs genera el cubo de datos $\to$ GROUP BY agrupa por ciudad y categoría $\to$ SUM acumula.",
+      execution_order_note: "💡 Si tienes N ciudades y M categorías activas, el resultado tendrá un máximo de N * M filas agrupadas.",
     },
     objectives: [
-      "1. Unir clientes, pedidos, detalle_pedidos, productos y categorias.",
-      "2. Calcular SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido.",
-      "3. Agrupar por c.ciudad y cat.nombre_categoria.",
-      "4. Ordenar por c.ciudad ASC, monto_vendido DESC.",
-    ],
+      "1. Cruzar clientes, compras y catálogo para enlazar territorio y producto.",
+      "2. Calcular la recaudación multiplicando volumen por precio unitario.",
+      "3. Agrupar por ciudad y familia comercial ordenando de mayor a menor venta."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS, SAMPLE_TABLE_DETALLE_PEDIDOS, SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000040',
     module_id: 'b0000000-0000-0000-0000-000000000007',
     title: "Conciliación de Pedidos, Facturación y Pagos",
-    prompt: "Auditoría financiera requiere verificar la trazabilidad íntegra entre órdenes de compra, facturación emitida y pagos liquidados. Escribe una consulta que una pedidos con facturas y pagos, proyectando pedido_id, cliente_id, monto_total de la factura como monto_factura, el monto del pago como monto_pago y el metodo_pago. Ordena por pedido_id ASC.",
+    prompt: "Verifica el flujo completo de una compra: el pedido, su factura y su cobro. Conecta `pedidos` con `facturas` y `pagos`, mostrando `pedido_id`, `cliente_id`, el monto de la factura bajo el nombre `monto_factura`, el monto del pago bajo `monto_pago` y el `metodo_pago`. Ordena por `pedido_id` ascendente.",
     initial_code: "-- Cruza pedidos con facturas y pagos\nSELECT ",
-    solution_query: "SELECT p.pedido_id, p.cliente_id, f.monto_total AS monto_factura, pg.monto AS monto_pago, pg.metodo_pago FROM pedidos p INNER JOIN facturas f ON p.pedido_id = f.pedido_id INNER JOIN pagos pg ON f.factura_id = pg.factura_id ORDER BY p.pedido_id ASC;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 35,
     hints: [
-      "Une pedidos p con facturas f por pedido_id, y facturas f con pagos pg por factura_id.",
-      "Usa f.monto_total AS monto_factura y pg.monto AS monto_pago.",
-      "Ordena por p.pedido_id ASC;",
-    ],
+      "pedidos p INNER JOIN facturas f ON p.pedido_id = f.pedido_id INNER JOIN pagos pg ON f.factura_id = pg.factura_id.",
+      "Renombra los montos con AS monto_factura y AS monto_pago."
+],
     concept: {
-      summary: "Las consultas multi-tabla en el dominio contable conectan la orden comercial con el comprobante fiscal y la transacción bancaria para certificar la consistencia del flujo de caja.",
-      syntax: "SELECT p.pedido_id, p.cliente_id, f.monto_total AS monto_factura, pg.monto AS monto_pago, pg.metodo_pago\nFROM pedidos p\nINNER JOIN facturas f ON p.pedido_id = f.pedido_id\nINNER JOIN pagos pg ON f.factura_id = pg.factura_id\nORDER BY p.pedido_id ASC;",
+      summary: "La conciliación transaccional conecta el ciclo de vida comercial completo: orden de pedido, factura emitida y cobro acreditado.",
+      syntax: "SELECT p.id, f.numero_factura, pag.metodo_pago, pag.monto\nFROM ordenes p\nINNER JOIN facturas f ON p.id = f.orden_id\nINNER JOIN pagos pag ON f.id = pag.factura_id\nWHERE pag.estado = 'aprobado';",
       key_points: [
-        "Permite contrastar si el importe facturado coincide con el importe cobrado.",
-        "Identifica discrepancias en importes o modalidades de pago entre órdenes.",
+        "Encadena cada relación con su llave natural: la orden vincula a la factura, y la factura vincula al pago.",
+        "Filtra en el `WHERE` para restringir el análisis a transacciones con estado validado.",
+        "La proyección debe incluir los identificadores necesarios de cada etapa para garantizar trazabilidad."
       ],
-      execution_order_note: "⚡ pedidos se une a facturas $\to$ facturas se une a pagos $\to$ proyección de atributos financieros.",
+      execution_order_note: "💡 `INNER JOIN` descarta pedidos que no tengan factura o facturas sin pago registrado.",
     },
     objectives: [
-      "1. Cruzar pedidos, facturas y pagos mediante sus claves foráneas.",
-      "2. Proyectar pedido_id, cliente_id, monto_factura, monto_pago y metodo_pago.",
-      "3. Ordenar por pedido_id ASC.",
-    ],
+      "1. Enlazar los tres eslabones comerciales: pedido, comprobante fiscal y pago.",
+      "2. Distinguir con alias transparentes el monto facturado frente al cobrado.",
+      "3. Mostrar el método de pago y ordenar por número de orden."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS, SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_PAGOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000041',
     module_id: 'b0000000-0000-0000-0000-000000000007',
     title: "Trazabilidad Física de Inventario por Almacén",
-    prompt: "Operaciones logísticas necesita un informe de existencias distribuidas por punto de almacenamiento. Conecta las tablas productos, inventario y almacenes, proyectando nombre_producto, nombre_almacen, la ciudad del almacén y cantidad_disponible, filtrando únicamente registros con existencias mayores a 10 unidades. Ordena por nombre_producto ASC y luego por nombre_almacen ASC.",
+    prompt: "Consulta la disponibilidad física de inventario por almacén. Conecta `productos`, `inventario` y `almacenes`, mostrando `nombre_producto`, `nombre_almacen`, la `ciudad` del almacén y la `cantidad_disponible`, filtrando únicamente aquellos registros con más de 10 unidades. Ordena por nombre de producto y luego por almacén.",
     initial_code: "-- Conecta productos, inventario y almacenes\nSELECT ",
-    solution_query: "SELECT pr.nombre_producto, a.nombre_almacen, a.ciudad, i.cantidad_disponible FROM productos pr INNER JOIN inventario i ON pr.producto_id = i.producto_id INNER JOIN almacenes a ON i.almacen_id = a.almacen_id WHERE i.cantidad_disponible > 10 ORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 36,
     hints: [
-      "Une productos pr con inventario i por producto_id, e inventario i con almacenes a por almacen_id.",
-      "Filtra en WHERE i.cantidad_disponible > 10 y ordena con ORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;",
-    ],
+      "Une productos a inventario y luego inventario a almacenes.",
+      "Filtra con WHERE i.cantidad_disponible > 10."
+],
     concept: {
-      summary: "En modelos de inventario multi-almacén (relación N:M entre productos y almacenes mediante la tabla de enlace inventario), conectar las tres entidades resuelve la ubicación física y disponibilidad exacta.",
-      syntax: "SELECT pr.nombre_producto, a.nombre_almacen, a.ciudad, i.cantidad_disponible\nFROM productos pr\nINNER JOIN inventario i ON pr.producto_id = i.producto_id\nINNER JOIN almacenes a ON i.almacen_id = a.almacen_id\nWHERE i.cantidad_disponible > 10\nORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;",
+      summary: "Conectar tablas de existencias físicas, artículos y almacenes permite rastrear la distribución geográfica del stock.",
+      syntax: "SELECT a.nombre_almacen, p.nombre_item, inv.cantidad_stock\nFROM inventarios inv\nINNER JOIN almacenes a ON inv.almacen_id = a.id\nINNER JOIN productos p ON inv.producto_id = p.id\nWHERE inv.cantidad_stock > 0\nORDER BY a.nombre_almacen ASC, inv.cantidad_stock DESC;",
       key_points: [
-        "La tabla 'inventario' actúa como tabla de unión (junction table) con atributos descriptivos adicionales (cantidad_disponible).",
-        "El filtro WHERE restringe las existencias antes del ordenamiento.",
+        "La tabla puente de inventario conecta las entidades de almacén y de producto.",
+        "Operadores numéricos de teclado: mayor que `>`, menor que `<`, mayor o igual `>=` y menor o igual `<=`.",
+        "El ordenamiento múltiple permite agrupar visualmente por instalación y jerarquizar por volumen de existencias."
       ],
-      execution_order_note: "⚡ Cruce N:M resuelto mediante tabla intermedia $\to$ filtrado de stock $\to$ ordenamiento compuesto.",
+      execution_order_note: "💡 Las claves foráneas compuestas garantizan que no existan registros duplicados para un mismo par producto-almacén.",
     },
     objectives: [
-      "1. Conectar productos, inventario y almacenes.",
-      "2. Filtrar donde cantidad_disponible > 10.",
-      "3. Proyectar nombre_producto, nombre_almacen, ciudad, cantidad_disponible.",
-      "4. Ordenar por nombre_producto ASC, nombre_almacen ASC.",
-    ],
+      "1. Conectar el catálogo con las instalaciones a través de la tabla de existencias.",
+      "2. Filtrar únicamente las ubicaciones con existencias superiores a 10 unidades.",
+      "3. Presentar el producto, almacén, ciudad y stock ordenados con prolijidad."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_INVENTARIO, SAMPLE_TABLE_ALMACENES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000042',
     module_id: 'b0000000-0000-0000-0000-000000000008',
     title: "Directorio Operativo Unificado (UNION)",
-    prompt: "Planificación territorial necesita construir un censo consolidado de todas las ciudades con presencia de la empresa, distinguiendo si la presencia es comercial (clientes) o logística (almacenes). Escribe una consulta mediante el operador UNION que combine ciudad y el literal 'cliente' AS tipo_entidad de la tabla clientes, con ciudad y el literal 'almacen' AS tipo_entidad de almacenes. Ordena por ciudad ASC y tipo_entidad ASC.",
+    prompt: "Crea una lista unificada de todas las ciudades donde tenemos presencia, indicando si la presencia es de clientes o de almacenes. Combina con `UNION` la ciudad y la etiqueta `'cliente'` como `tipo_entidad` de la tabla `clientes`, con la ciudad y la etiqueta `'almacen'` como `tipo_entidad` de la tabla `almacenes`. Ordena por ciudad y por tipo de entidad.",
     initial_code: "-- Combina ciudades de clientes y almacenes con UNION\nSELECT ",
-    solution_query: "SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes UNION SELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes ORDER BY ciudad ASC, tipo_entidad ASC;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 37,
     hints: [
-      "El primer bloque es SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes.",
-      "Usa UNION con el segundo bloque: SELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes.",
-      "Finaliza la instrucción con ORDER BY ciudad ASC, tipo_entidad ASC;",
-    ],
+      "SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes UNION SELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes...",
+      "Coloca el ORDER BY al final de la instrucción."
+],
     concept: {
-      summary: "El operador UNION combina verticalmente el resultado de dos consultas compatibles en tipos de datos y número de columnas, eliminando filas duplicadas de forma automática.",
-      syntax: "SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes\nUNION\nSELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes\nORDER BY ciudad ASC, tipo_entidad ASC;",
+      summary: "`UNION` combina verticalmente los resultados de dos consultas `SELECT` independientes en una única lista de filas.",
+      syntax: "SELECT nombre, correo, 'Rol A' AS tipo_entidad FROM tabla_a\nUNION\nSELECT nombre, correo, 'Rol B' AS tipo_entidad FROM tabla_b\nORDER BY nombre ASC;",
       key_points: [
-        "A diferencia de los JOINs que combinan horizontalmente columnas, los operadores de conjunto combinan verticalmente filas.",
-        "Cada consulta componente debe proyectar el mismo número de columnas y de tipos compatibles.",
+        "Ambas consultas deben tener exactamente la misma cantidad de columnas y en el mismo orden de tipos de datos.",
+        "`UNION` elimina duplicados automáticamente; si deseas conservar duplicados, utiliza `UNION ALL`.",
+        "La cláusula `ORDER BY` solo se escribe una vez al final de toda la sentencia compuesta."
       ],
-      execution_order_note: "⚡ Se evalúa cada consulta por separado $\to$ UNION une los conjuntos y descarta duplicados $\to$ ORDER BY final.",
+      execution_order_note: "💡 `UNION` ejecuta un sort interno para deduplicar filas; `UNION ALL` es más rápido porque concatena directamente.",
     },
     objectives: [
-      "1. Construir la consulta sobre clientes proyectando ciudad y literal 'cliente' AS tipo_entidad.",
-      "2. Unir con UNION la consulta sobre almacenes proyectando ciudad y 'almacen' AS tipo_entidad.",
-      "3. Ordenar por ciudad ASC, tipo_entidad ASC.",
-    ],
+      "1. Obtener la presencia geográfica tanto de clientes como de instalaciones.",
+      "2. Unificar verticalmente ambos listados en una sola colección consolidada.",
+      "3. Eliminar duplicidades y ordenar alfabéticamente por ciudad y tipo."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_ALMACENES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000043',
     module_id: 'b0000000-0000-0000-0000-000000000008',
     title: "Ciudades sin Presencia de Almacenes (EXCEPT)",
-    prompt: "Expansión comercial busca detectar mercados desabastecidos de infraestructura logística propia. Escribe una consulta utilizando el operador de diferencia de conjuntos EXCEPT que obtenga las ciudades de la tabla clientes que NO existan en la tabla almacenes. Ordena la lista alfabéticamente por ciudad ASC.",
+    prompt: "Encuentra ciudades donde tengamos clientes pero todavía NO tengamos ningún almacén logístico. Usa el operador de diferencia `EXCEPT` para restar a las ciudades de `clientes` las ciudades de `almacenes`, ordenando la lista alfabéticamente.",
     initial_code: "-- Diferencia de conjuntos con EXCEPT\nSELECT ",
-    solution_query: "SELECT ciudad FROM clientes EXCEPT SELECT ciudad FROM almacenes ORDER BY ciudad ASC;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 38,
     hints: [
-      "Escribe SELECT ciudad FROM clientes seguido de EXCEPT SELECT ciudad FROM almacenes.",
-      "Agrega ORDER BY ciudad ASC; al final.",
-    ],
+      "Escribe: SELECT ciudad FROM clientes EXCEPT SELECT ciudad FROM almacenes ORDER BY ciudad ASC;"
+],
     concept: {
-      summary: "El operador EXCEPT (o MINUS en otros motores) devuelve todas las tuplas distintas devueltas por la primera consulta que no están presentes en el resultado de la segunda consulta.",
-      syntax: "SELECT ciudad FROM clientes\nEXCEPT\nSELECT ciudad FROM almacenes\nORDER BY ciudad ASC;",
+      summary: "`EXCEPT` (o `MINUS`) devuelve los registros de la primera consulta que no existen en el resultado de la segunda consulta.",
+      syntax: "SELECT columna_a FROM tabla_origen\nEXCEPT\nSELECT columna_b FROM tabla_exclusion\nORDER BY columna_a ASC;",
       key_points: [
-        "Aplica la resta de conjuntos del álgebra relacional: A - B.",
-        "Elimina duplicados automáticamente en el conjunto resultante.",
+        "Resta el segundo conjunto al primero, eliminando cualquier valor presente en la segunda consulta.",
+        "Ambas consultas deben proyectar el mismo número de columnas y de tipos compatibles.",
+        "Es una alternativa limpia y matemática a los anti-joins basados en `NOT IN` o `IS NULL`."
       ],
-      execution_order_note: "⚡ Se generan los dos conjuntos $\to$ EXCEPT sustrae los elementos de B presentes en A $\to$ ORDER BY.",
+      execution_order_note: "💡 `EXCEPT` elimina duplicados en el conjunto resultante por definición del estándar relacional.",
     },
     objectives: [
-      "1. Seleccionar 'ciudad' de 'clientes'.",
-      "2. Aplicar 'EXCEPT' seleccionando 'ciudad' de 'almacenes'.",
-      "3. Ordenar por 'ciudad ASC'.",
-    ],
+      "1. Obtener el conjunto de ciudades residenciales de los clientes.",
+      "2. Restar las ciudades que ya disponen de almacén logístico propio.",
+      "3. Generar la lista de territorios con clientes desprovistos de centro logístico."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_ALMACENES],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000044',
     module_id: 'b0000000-0000-0000-0000-000000000008',
     title: "Matriz de Cobertura Almacén-Categoría (CROSS JOIN)",
-    prompt: "Para la auditoría de cobertura de almacenamiento, el equipo directivo requiere generar la matriz completa de combinaciones posibles entre cada almacén y cada categoría de producto registrada. Escribe una consulta mediante un producto cartesiano explícito (CROSS JOIN) entre las tablas almacenes y categorias, devolviendo nombre_almacen y nombre_categoria. Ordena por nombre_almacen ASC y nombre_categoria ASC.",
+    prompt: "Genera todas las combinaciones posibles entre cada almacén y cada categoría de productos. Usa un `CROSS JOIN` entre `almacenes` y `categorias`, mostrando `nombre_almacen` y `nombre_categoria`, ordenando por almacén y por categoría.",
     initial_code: "-- Genera el producto cartesiano con CROSS JOIN\nSELECT ",
-    solution_query: "SELECT a.nombre_almacen, c.nombre_categoria FROM almacenes a CROSS JOIN categorias c ORDER BY a.nombre_almacen ASC, c.nombre_categoria ASC;",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 39,
     hints: [
-      "Usa CROSS JOIN entre almacenes a y categorias c.",
-      "Ordena el resultado por a.nombre_almacen ASC, c.nombre_categoria ASC;",
-    ],
+      "FROM almacenes a CROSS JOIN categorias c (sin ON).",
+      "Ordena por a.nombre_almacen ASC, c.nombre_categoria ASC."
+],
     concept: {
-      summary: "CROSS JOIN genera el producto cartesiano completo entre dos conjuntos: cada tupla de la primera tabla se combina con cada una de las tuplas de la segunda tabla (N x M).",
-      syntax: "SELECT a.nombre_almacen, c.nombre_categoria\nFROM almacenes a\nCROSS JOIN categorias c\nORDER BY a.nombre_almacen ASC, c.nombre_categoria ASC;",
+      summary: "`CROSS JOIN` calcula el producto cartesiano: combina cada fila de la primera tabla con cada fila de la segunda tabla.",
+      syntax: "SELECT t1.nombre_a, t2.nombre_b\nFROM tabla_1 t1\nCROSS JOIN tabla_2 t2\nORDER BY t1.nombre_a ASC, t2.nombre_b ASC;",
       key_points: [
-        "No requiere cláusula ON porque no impone restricción de claves.",
-        "Es la técnica canónica para generar grillas de combinaciones, matrices de prueba o calendarios.",
+        "No utiliza cláusula `ON`: el resultado tendrá `M * N` filas (filas de tabla 1 multiplicadas por filas de tabla 2).",
+        "Es la herramienta clásica para generar matrices completas de cobertura, combinaciones o calendarios base.",
+        "Debe usarse con cautela sobre tablas grandes para evitar explosión volumétrica de filas."
       ],
-      execution_order_note: "⚡ Se computa el producto cartesiano de cardinalidad |A| * |B| $\to$ SELECT $\to$ ORDER BY.",
+      execution_order_note: "💡 No requiere índices al no haber condición de emparejamiento; simplemente genera todas las combinaciones posibles.",
     },
     objectives: [
-      "1. Aplicar CROSS JOIN entre 'almacenes a' y 'categorias c'.",
-      "2. Proyectar 'nombre_almacen' y 'nombre_categoria'.",
-      "3. Ordenar por nombre_almacen ASC, nombre_categoria ASC.",
-    ],
+      "1. Cruzar todas las instalaciones logísticas contra todas las familias comerciales.",
+      "2. Generar la matriz completa de combinaciones posibles sin condiciones de enlace.",
+      "3. Presentar la cuadrícula de cobertura ordenada por almacén y familia."
+],
     sample_tables: [SAMPLE_TABLE_ALMACENES, SAMPLE_TABLE_CATEGORIAS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000045',
     module_id: 'b0000000-0000-0000-0000-000000000008',
     title: "Pares de Productos de la Misma Categoría (SELF JOIN)",
-    prompt: "El motor de recomendaciones busca sugerir productos alternativos de la misma categoría. Escribe una consulta mediante un auto-cruce (SELF JOIN) sobre la tabla productos (p1 y p2) que empareje artículos que compartan la misma categoria_id, asegurando que p1.producto_id < p2.producto_id (para evitar pares simétricos y descartar emparejamientos consigo mismo). Proyecta p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b, p1.precio AS precio_a y p2.precio AS precio_b. Ordena por p1.categoria_id ASC, producto_a ASC y producto_b ASC.",
+    prompt: "Genera sugerencias de productos emparejados dentro de la misma categoría. Cruza la tabla `productos` consigo misma (`p1` y `p2`) para emparejar artículos con la misma `categoria_id`, asegurando que `p1.producto_id < p2.producto_id` para no emparejar un producto consigo mismo ni repetir la pareja al revés. Muestra `categoria_id`, los nombres como `producto_a` y `producto_b`, y los precios como `precio_a` y `precio_b`. Ordena por categoría y nombres.",
     initial_code: "-- Auto-cruce de productos con condición de desigualdad\nSELECT ",
-    solution_query: "SELECT p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b, p1.precio AS precio_a, p2.precio AS precio_b FROM productos p1 INNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id ORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 40,
     hints: [
-      "Une productos p1 con productos p2 en ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id.",
-      "Ordena por p1.categoria_id ASC, producto_a ASC, producto_b ASC;",
-    ],
+      "ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id.",
+      "Ordena con ORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC."
+],
     concept: {
-      summary: "Un SELF JOIN relaciona una tabla consigo misma tratándola como dos instancias relacionales separadas mediante alias distintos. La desigualdad estricta (<) previene pares espejo (A,B y B,A) y auto-emparejamientos (A,A).",
-      syntax: "SELECT p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b\nFROM productos p1\nINNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id\nORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC;",
+      summary: "Un `SELF JOIN` une una tabla consigo misma usando alias diferenciados, permitiendo comparar o emparejar filas del mismo conjunto.",
+      syntax: "SELECT a.nombre AS item_1, b.nombre AS item_2, a.clasificacion_id\nFROM tabla a\nINNER JOIN tabla b\n  ON a.clasificacion_id = b.clasificacion_id AND a.id < b.id\nORDER BY a.id ASC, b.id ASC;",
       key_points: [
-        "Los alias p1 y p2 son indispensables para que el motor distinga a cuál instancia corresponde cada atributo.",
-        "El filtro 'p1.id < p2.id' es el patrón matemático clásico para combinaciones sin repetición.",
+        "Es obligatorio asignar alias distintos (ej. `a` y `b`) a cada instancia de la misma tabla.",
+        "La condición `a.id < b.id` es un patrón clave para evitar que un elemento se empareje consigo mismo (`a.id = b.id`) y descartar pares duplicados invertidos.",
+        "La igualdad en la clave de clasificación (`a.cat_id = b.cat_id`) garantiza que pertenezcan al mismo grupo."
       ],
-      execution_order_note: "⚡ La tabla se instancia virtualmente dos veces y se filtra por categoría idéntica y clave menor estricta.",
+      execution_order_note: "💡 `a.id < b.id` reduce el espacio de búsqueda a la mitad de combinaciones respecto a `a.id <> b.id`.",
     },
     objectives: [
-      "1. Realizar SELF JOIN sobre 'productos' usando alias p1 y p2.",
-      "2. Unir por 'p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id'.",
-      "3. Proyectar categoria_id, producto_a, producto_b, precio_a, precio_b.",
-      "4. Ordenar por categoria_id ASC, producto_a ASC, producto_b ASC.",
-    ],
+      "1. Cruzar la tabla de artículos consigo misma para comparar productos hermanos.",
+      "2. Emparejar artículos pertenecientes a la misma familia comercial.",
+      "3. Evitar emparejamientos con el mismo producto y suprimir duplicados simétricos."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000015',
     module_id: 'c0000000-0000-0000-0000-000000000009',
     title: "Productos sobre el Promedio de Precio",
-    prompt: "Estrategia de precios necesita listar los productos que se venden por encima de la media del catálogo completo. Escribe una consulta que devuelva el nombre_producto y su precio para aquellos artículos cuyo precio sea estrictamente superior al promedio global de precios de la tabla productos. Ordena por precio de mayor a menor.",
+    prompt: "¿Qué productos se venden por encima del precio promedio de toda la tienda? Muestra el `nombre_producto` y su `precio` para aquellos artículos cuyo precio sea mayor al promedio general de precios de la tabla `productos`. Ordena de mayor a menor precio.",
     initial_code: "-- Usa una subconsulta para comparar con el promedio global\nSELECT ",
-    solution_query: "SELECT nombre_producto, precio FROM productos WHERE precio > (SELECT AVG(precio) FROM productos) ORDER BY precio DESC;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 41,
     hints: [
-      "En la cláusula WHERE, escribe precio > (SELECT AVG(precio) FROM productos).",
-      "No olvides ordenar con ORDER BY precio DESC.",
-    ],
+      "WHERE precio > (SELECT AVG(precio) FROM productos).",
+      "Ordena al final con ORDER BY precio DESC."
+],
     concept: {
-      summary: "Una subconsulta escalar retorna un único valor (una fila, una columna) que puede utilizarse en cualquier lugar donde se admita un literal o expresión, como operandos en condiciones WHERE.",
-      syntax: "SELECT columna_1, columna_2\nFROM tabla\nWHERE columna > (SELECT AVG(columna) FROM tabla)\nORDER BY columna DESC;",
+      summary: "Una subconsulta escalar retorna un único valor (1 fila y 1 columna) que puede usarse como comparador dinámico en el `WHERE`.",
+      syntax: "SELECT columna_1, columna_precio\nFROM nombre_tabla\nWHERE columna_precio > (SELECT AVG(columna_precio) FROM nombre_tabla)\nORDER BY columna_precio DESC;",
       key_points: [
-        "La subconsulta se ejecuta primero y su valor resultante se compara contra cada tupla externa.",
-        "Permite filtros dinámicos que no dependen de constantes hardcodeadas.",
+        "La subconsulta se encierra obligatoriamente entre paréntesis `(...)`.",
+        "Al retornar un único valor escalar, puedes compararlo con operadores estándar como `>`, `<`, `=`, `>=` o `<=`.",
+        "Se evalúa primero la subconsulta interna y su valor resultante se inyecta como filtro en la consulta externa."
       ],
-      execution_order_note: "⚡ PostgreSQL calcula la subconsulta una sola vez (o la optimiza como constante) antes de evaluar el filtro WHERE.",
+      execution_order_note: "💡 El motor calcula la subconsulta una sola vez al inicio y reutiliza la constante para evaluar cada fila de la tabla externa.",
     },
     objectives: [
-      "1. Calcular el promedio de precio en una subconsulta escalar con AVG(precio).",
-      "2. Filtrar en WHERE con 'precio > (subconsulta)'.",
-      "3. Ordenar por 'precio DESC'.",
-    ],
+      "1. Calcular dinámicamente el precio de referencia promedio del catálogo completo.",
+      "2. Comparar el precio de cada artículo contra dicho valor medio en el filtro.",
+      "3. Proyectar los artículos de precio superior ordenados del más caro al más barato."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000046',
     module_id: 'c0000000-0000-0000-0000-000000000009',
     title: "Clientes con Pedidos de Alto Monto (IN Subquery)",
-    prompt: "El equipo de cuentas VIP necesita identificar a todos los clientes que han realizado al menos una orden de compra de alto valor (total >= 1000). Escribe una consulta sobre la tabla clientes que proyecte cliente_id, nombre, apellido y email, filtrando con una subconsulta no correlacionada mediante el operador IN sobre la tabla pedidos. Ordena por cliente_id ASC.",
+    prompt: "Identifica a nuestros clientes VIP: aquellos que han hecho al menos un pedido importante (de 1000€ o más). Consulta la tabla `clientes` y muestra `cliente_id`, `nombre`, `apellido` y `email`, filtrando con una subconsulta usando el operador `IN` sobre la tabla `pedidos`. Ordena por `cliente_id` ascendente.",
     initial_code: "-- Filtra clientes con una subconsulta en IN\nSELECT ",
-    solution_query: "SELECT cliente_id, nombre, apellido, email FROM clientes WHERE cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000) ORDER BY cliente_id ASC;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 42,
     hints: [
-      "En la cláusula WHERE usa: cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000).",
-      "Proyecta cliente_id, nombre, apellido y email.",
-      "Ordena los resultados con ORDER BY cliente_id ASC;",
-    ],
+      "Usa WHERE cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000).",
+      "Ordena con ORDER BY cliente_id ASC."
+],
     concept: {
-      summary: "El operador IN combinado con una subconsulta evalúa si el valor de un atributo pertenece al conjunto de valores devuelto por la subconsulta interna.",
-      syntax: "SELECT cliente_id, nombre, email\nFROM clientes\nWHERE cliente_id IN (\n    SELECT cliente_id FROM pedidos WHERE total >= 1000\n)\nORDER BY cliente_id ASC;",
+      summary: "Una subconsulta en la cláusula `IN` retorna una lista dinámica de IDs sobre la cual la consulta principal aplica el filtrado.",
+      syntax: "SELECT id, nombre, email\nFROM tabla_maestra\nWHERE id IN (\n    SELECT clave_foranea\n    FROM tabla_transaccional\n    WHERE monto > umbral_valor\n);",
       key_points: [
-        "La subconsulta interna se ejecuta una sola vez y genera un conjunto estático de identificadores en memoria.",
-        "Es equivalente a una lista fija de valores pero generada dinámicamente según el estado de la base de datos.",
+        "La subconsulta interna debe proyectar exactamente una sola columna, coincidente con la columna evaluada en el `IN`.",
+        "Filtra en la consulta interna para generar únicamente el subconjunto de IDs de interés.",
+        "Es una alternativa declarativa a los joins cuando no necesitas proyectar columnas de la tabla transaccional."
       ],
-      execution_order_note: "⚡ La subconsulta interna genera el conjunto de cliente_id $\to$ WHERE evalúa la pertenencia para cada cliente.",
+      execution_order_note: "💡 PostgreSQL optimiza consultas `IN (SELECT ...)` convirtiéndolas internamente en un Semi-Join indexado.",
     },
     objectives: [
-      "1. Construir la subconsulta para pedidos con total >= 1000.",
-      "2. Filtrar clientes usando WHERE cliente_id IN (subconsulta).",
-      "3. Proyectar cliente_id, nombre, apellido, email y ordenar por cliente_id ASC.",
-    ],
+      "1. Obtener el conjunto de compradores con compras de gran volumen mediante una consulta interna.",
+      "2. Utilizar dicho conjunto como criterio de pertenencia para filtrar la tabla de clientes.",
+      "3. Proyectar los datos de contacto de los clientes clasificados en orden."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000047',
     module_id: 'c0000000-0000-0000-0000-000000000009',
     title: "Comprobación de Existencia Eficiente (EXISTS)",
-    prompt: "Marketing busca premiar a los usuarios activos con compras confirmadas. Escribe una consulta sobre la tabla clientes que obtenga cliente_id, nombre y apellido para aquellos usuarios que tengan al menos una orden registrada con estado_pedido = 'completado'. Emplea una subconsulta correlacionada con el operador EXISTS (comprobando p.cliente_id = c.cliente_id) y ordena por cliente_id ASC.",
+    prompt: "Premia a los clientes activos que tengan al menos una compra completada. Muestra el `cliente_id`, `nombre` y `apellido` de aquellos clientes para los que exista al menos un pedido con `estado_pedido = 'completado'`, usando una subconsulta con `EXISTS`. Ordena por `cliente_id` ascendente.",
     initial_code: "-- Subconsulta correlacionada con EXISTS\nSELECT ",
-    solution_query: "SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado') ORDER BY c.cliente_id ASC;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 43,
     hints: [
-      "Usa WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado').",
-      "Proyecta c.cliente_id, c.nombre, c.apellido.",
-      "Finaliza con ORDER BY c.cliente_id ASC;",
-    ],
+      "WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado').",
+      "Ordena con ORDER BY c.cliente_id ASC."
+],
     concept: {
-      summary: "El operador EXISTS evalúa si una subconsulta correlacionada devuelve al menos una fila. Posee cortocircuito booleano (short-circuit), deteniendo la búsqueda en cuanto encuentra la primera coincidencia.",
-      syntax: "SELECT c.cliente_id, c.nombre\nFROM clientes c\nWHERE EXISTS (\n    SELECT 1 FROM pedidos p\n    WHERE p.cliente_id = c.cliente_id AND p.estado = 'completado'\n)\nORDER BY c.cliente_id ASC;",
+      summary: "`EXISTS` comprueba si una subconsulta correlacionada devuelve al menos una fila; en cuanto encuentra una coincidencia, detiene la búsqueda.",
+      syntax: "SELECT t1.id, t1.nombre\nFROM tabla_a t1\nWHERE EXISTS (\n    SELECT 1\n    FROM tabla_b t2\n    WHERE t2.a_id = t1.id AND t2.condicion = 'valor'\n);",
       key_points: [
-        "SELECT 1 en la subconsulta es la convención canónica porque a EXISTS solo le importa la existencia de filas, no los valores de columnas.",
-        "En grandes volúmenes de datos con índices adecuados, EXISTS suele superar el rendimiento de IN y JOIN cuando no se requieren columnas de la tabla relacionada.",
+        "Dentro del `SELECT` de `EXISTS` se acostumbra colocar `SELECT 1`, ya que al motor solo le interesa la existencia de filas, no sus valores.",
+        "La subconsulta está correlacionada: hace referencia a la clave de la fila actual de la consulta externa (`t2.a_id = t1.id`).",
+        "`NOT EXISTS` realiza la operación inversa, comprobando la no existencia de registros subordinados."
       ],
-      execution_order_note: "⚡ Por cada fila de clientes externa, el motor evalúa la subconsulta y se detiene tan pronto como encuentra una coincidencia.",
+      execution_order_note: "💡 `EXISTS` se detiene tan pronto como encuentra la primera fila coincidente, siendo muy eficiente.",
     },
     objectives: [
-      "1. Emplear EXISTS con SELECT 1.",
-      "2. Correlacionar 'p.cliente_id = c.cliente_id' y filtrar 'p.estado_pedido = 'completado' '.",
-      "3. Proyectar cliente_id, nombre, apellido y ordenar por cliente_id ASC.",
-    ],
+      "1. Evaluar de forma conectada si existe al menos una compra confirmada por cliente.",
+      "2. Detener la búsqueda en cuanto se encuentre la primera coincidencia por usuario.",
+      "3. Listar a los clientes activos ordenados secuencialmente."
+],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000016',
     module_id: 'c0000000-0000-0000-0000-000000000010',
     title: "Segmentación de Pedidos por Monto",
-    prompt: "Finanzas desea clasificar los pedidos según su cuantía para priorizar la logística. Escribe una consulta que devuelva el pedido_id, el total del pedido y una columna llamada segmento calculada de la siguiente forma: si total >= 1000 asigna 'Alto Valor', si total >= 300 asigna 'Medio Valor', y en cualquier otro caso 'Bajo Valor'. Ordena por total descendente.",
+    prompt: "Clasifica los pedidos según su valor para organizar la entrega. Muestra el `pedido_id`, el `total` y una nueva columna llamada `segmento` que diga: si el total es de 1000€ o más asigna `'Alto Valor'`, si es de 300€ o más asigna `'Medio Valor'`, y para el resto `'Bajo Valor'`. Ordena de mayor a menor total.",
     initial_code: "-- Clasifica los pedidos en tres segmentos según su monto\nSELECT ",
-    solution_query: "SELECT pedido_id, total, CASE WHEN total >= 1000 THEN 'Alto Valor' WHEN total >= 300 THEN 'Medio Valor' ELSE 'Bajo Valor' END AS segmento FROM pedidos ORDER BY total DESC;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 44,
     hints: [
-      "Usa la sintaxis: CASE WHEN condicion1 THEN valor1 WHEN condicion2 THEN valor2 ELSE valor_defecto END AS segmento.",
-      "Recuerda ordenar con ORDER BY total DESC.",
-    ],
+      "CASE WHEN total >= 1000 THEN 'Alto Valor' WHEN total >= 300 THEN 'Medio Valor' ELSE 'Bajo Valor' END AS segmento.",
+      "Ordena al final por total DESC."
+],
     concept: {
-      summary: "La expresión CASE permite incorporar bifurcaciones condicionales 'if-then-else' directamente dentro de una consulta SQL, categorizando tuplas dinámicamente sin alterar la base de datos.",
-      syntax: "SELECT col1, col2,\n       CASE\n         WHEN valor >= lim1 THEN 'Cat A'\n         WHEN valor >= lim2 THEN 'Cat B'\n         ELSE 'Cat C'\n       END AS clasificacion\nFROM tabla;",
+      summary: "La estructura `CASE WHEN ... THEN ... ELSE ... END` implementa lógica condicional (if-else) para transformar o clasificar valores.",
+      syntax: "SELECT columna_id, columna_monto,\n       CASE\n         WHEN columna_monto >= lim_alto THEN 'Segmento A'\n         WHEN columna_monto >= lim_medio THEN 'Segmento B'\n         ELSE 'Segmento Base'\n       END AS nivel_clasificacion\nFROM nombre_tabla;",
       key_points: [
-        "Las ramas WHEN se evalúan en orden secuencial; la primera que cumple detiene la evaluación.",
-        "La cláusula ELSE es opcional pero recomendada para evitar valores nulos inesperados.",
+        "Se evalúa secuencialmente de arriba hacia abajo; la primera cláusula `WHEN` que resulte verdadera asigna el valor y sale del `CASE`.",
+        "El operador mayor o igual se escribe `>=` en el teclado con los símbolos `>` e `=` consecutivos.",
+        "La estructura siempre se abre con `CASE` y se cierra con `END` (generalmente acompañada de un alias con `AS`)."
       ],
-      execution_order_note: "⚡ CASE se evalúa para cada fila durante la fase de proyección SELECT.",
+      execution_order_note: "💡 Si ninguna regla `WHEN` coincide y no existe cláusula `ELSE`, el resultado asignado será `NULL`.",
     },
     objectives: [
-      "1. Proyectar 'pedido_id' y 'total'.",
-      "2. Construir la expresión CASE con las condiciones >= 1000, >= 300 y ELSE.",
-      "3. Nombrar la columna resultante como 'segmento' y ordenar por 'total DESC'.",
-    ],
+      "1. Evaluar las reglas de cuantía económica para cada orden individual.",
+      "2. Asignar la etiqueta correspondiente según los umbrales de valor comercial.",
+      "3. Bautizar la nueva dimensión calculada y ordenar por importe descendente."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000018',
     module_id: 'c0000000-0000-0000-0000-000000000012',
     title: "Ranking Relativo por Categoría (DENSE_RANK)",
-    prompt: "Análisis de surtido necesita clasificar los artículos dentro de cada categoría según su precio. Escribe una consulta que devuelva categoria_id, nombre_producto, precio y una columna analítica llamada ranking_categoria usando DENSE_RANK() con partición por categoria_id y orden descendente de precio. Ordena el resultado final por categoria_id ASC y ranking_categoria ASC.",
+    prompt: "Clasifica los productos dentro de cada categoría del más caro al más barato. Muestra `categoria_id`, `nombre_producto`, `precio` y una columna con el puesto que ocupa llamada `ranking_categoria` usando `DENSE_RANK()`, dividiendo por categoría y ordenando de mayor a menor precio. Ordena por `categoria_id ASC` y `ranking_categoria ASC`.",
     initial_code: "-- Usa DENSE_RANK() particionado por categoria_id\nSELECT ",
-    solution_query: "SELECT categoria_id, nombre_producto, precio, DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria FROM productos ORDER BY categoria_id ASC, ranking_categoria ASC;",
     xp_reward: 65,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 45,
     hints: [
       "Usa DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria.",
-      "Ordena al final por categoria_id ASC, ranking_categoria ASC.",
-    ],
+      "Ordena por categoria_id ASC, ranking_categoria ASC al final."
+],
     concept: {
-      summary: "La cláusula PARTITION BY dentro de OVER() divide las tuplas en particiones independientes antes de aplicar la función de ventana. A diferencia de ROW_NUMBER(), DENSE_RANK() asigna el mismo rango a valores iguales sin dejar huecos en la numeración.",
-      syntax: "SELECT categoria_id, nombre_producto, precio,\n       DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria\nFROM productos\nORDER BY categoria_id ASC, ranking_categoria ASC;",
+      summary: "`DENSE_RANK()` numera filas en orden de clasificación sin dejar huecos en la secuencia numérica en caso de empates.",
+      syntax: "SELECT grupo_id, item_nombre, columna_metrica,\n       DENSE_RANK() OVER (PARTITION BY grupo_id ORDER BY columna_metrica DESC) AS posicion_ranking\nFROM nombre_tabla\nORDER BY grupo_id ASC, posicion_ranking ASC;",
       key_points: [
-        "PARTITION BY restablece el cálculo analítico para cada categoría de producto de forma aislada.",
-        "DENSE_RANK() maneja empates elegantemente (1, 2, 2, 3...) sin saltar posiciones numéricas.",
+        "`PARTITION BY columna_grupo` reinicia la numeración ordinal del ranking para cada partición independiente.",
+        "`ORDER BY columna DESC` define el criterio de clasificación (del mayor al menor valor).",
+        "A diferencia de `GROUP BY`, las funciones de ventana preservan todas las filas individuales sin colapsarlas."
       ],
-      execution_order_note: "⚡ Se particionan los datos en memoria antes de evaluar la ordenación interna de la ventana.",
+      execution_order_note: "💡 En empates, `DENSE_RANK()` asigna el mismo número y continúa inmediatamente con el siguiente (ej. 1, 2, 2, 3), a diferencia de `RANK()` (1, 2, 2, 4).",
     },
     objectives: [
-      "1. Proyectar 'categoria_id', 'nombre_producto' y 'precio'.",
-      "2. Construir 'DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC)' con alias 'ranking_categoria'.",
-      "3. Ordenar la salida final por 'categoria_id ASC, ranking_categoria ASC'.",
-    ],
+      "1. Segmentar los artículos por familia comercial sin colapsar el listado.",
+      "2. Calcular la posición relativa de cada artículo según su precio descendente.",
+      "3. Garantizar que valores idénticos compartan posición sin saltos en la correlación."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CATEGORIAS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000048',
     module_id: 'c0000000-0000-0000-0000-000000000010',
     title: "Pivoteo Manual de Ventas por Estado (Conditional Aggregation)",
-    prompt: "Control de gestión necesita un cuadro de mando que desglose el importe monetario acumulado de cada cliente según el estado de la compra. Escribe una consulta sobre la tabla pedidos que devuelva cliente_id, la suma de compras completadas bajo el alias ventas_completadas (sumando total cuando estado_pedido = 'completado', de lo contrario 0) y la suma de compras pendientes bajo ventas_pendientes (sumando total cuando estado_pedido = 'pendiente', de lo contrario 0). Agrupa por cliente_id y ordena por cliente_id ASC.",
+    prompt: "Crea una tabla resumen que muestre cuánto dinero tiene cada cliente en compras completadas y cuánto en compras pendientes. Muestra el `cliente_id`, la suma de compras completadas bajo el nombre `ventas_completadas` (sumando el total cuando el estado sea `'completado'` y 0 si no) y la suma de compras pendientes bajo `ventas_pendientes` (sumando el total cuando sea `'pendiente'` y 0 si no). Agrupa y ordena por `cliente_id` ascendente.",
     initial_code: "-- Agregación condicional con CASE dentro de SUM\nSELECT ",
-    solution_query: "SELECT cliente_id, SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas, SUM(CASE WHEN estado_pedido = 'pendiente' THEN total ELSE 0 END) AS ventas_pendientes FROM pedidos GROUP BY cliente_id ORDER BY cliente_id ASC;",
     xp_reward: 60,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 45,
     hints: [
-      "Escribe SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas.",
-      "Escribe SUM(CASE WHEN estado_pedido = 'pendiente' THEN total ELSE 0 END) AS ventas_pendientes.",
-      "Agrupa por cliente_id y ordena por cliente_id ASC;",
-    ],
+      "Usa SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas.",
+      "Haz lo mismo para pendientes y agrupa por cliente_id."
+],
     concept: {
-      summary: "La agregación condicional (Conditional Aggregation) anida expresiones CASE dentro de funciones agregadas como SUM() o COUNT(), transformando valores categóricos en columnas métricas independientes (técnica clásica de pivoteo).",
-      syntax: "SELECT cliente_id,\n       SUM(CASE WHEN estado = 'A' THEN monto ELSE 0 END) AS total_a,\n       SUM(CASE WHEN estado = 'B' THEN monto ELSE 0 END) AS total_b\nFROM pedidos\nGROUP BY cliente_id\nORDER BY cliente_id ASC;",
+      summary: "Combinar `SUM(CASE WHEN ... THEN monto ELSE 0 END)` permite transformar valores de filas en columnas métricas independientes (pivoteo).",
+      syntax: "SELECT entidad_id,\n       SUM(CASE WHEN estado = 'tipo_a' THEN monto ELSE 0 END) AS total_a,\n       SUM(CASE WHEN estado = 'tipo_b' THEN monto ELSE 0 END) AS total_b\nFROM nombre_tabla\nGROUP BY entidad_id\nORDER BY entidad_id ASC;",
       key_points: [
-        "Permite transponer filas a columnas sin depender de extensiones propietarias como tablefunc/crosstab.",
-        "La cláusula ELSE 0 previene la propagación de nulos al acumular sumas numéricas.",
+        "El `CASE` evalúa el estado fila por fila; si coincide devuelve el monto, y si no, devuelve 0 para no alterar la suma.",
+        "Cada expresión agregada genera una columna horizontal diferenciada en el reporte.",
+        "El `GROUP BY entidad_id` agrupa las transacciones condensándolas por cada entidad."
       ],
-      execution_order_note: "⚡ Por cada fila se evalúa el CASE $\to$ SUM acumula el valor condicional para el grupo.",
+      execution_order_note: "💡 Esta técnica es el estándar SQL portátil para pivotar datos sin depender de extensiones propietarias.",
     },
     objectives: [
-      "1. Anidar CASE dentro de SUM para 'completado' y 'pendiente'.",
-      "2. Asignar los alias 'ventas_completadas' y 'ventas_pendientes'.",
-      "3. Agrupar por 'cliente_id' y ordenar por 'cliente_id ASC'.",
-    ],
+      "1. Evaluar condicionalmente el monto transaccionado según el estado del pedido.",
+      "2. Acumular las ventas confirmadas y las pendientes en columnas independientes.",
+      "3. Condensar los importes por cada cliente y ordenar por ID."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000017',
     module_id: 'c0000000-0000-0000-0000-000000000011',
     title: "Facturación por Categoría mediante CTE",
-    prompt: "Para la junta directiva, prepara un informe de facturación por categoría usando una Common Table Expression (CTE). Define una expresión WITH llamada ventas_por_categoria que sume (cantidad * precio_unitario) agrupando por el nombre_categoria, y luego selecciona nombre_categoria y facturacion ordenados de mayor a menor facturación.",
+    prompt: "Prepara un reporte ordenado de facturación por categoría usando una expresión `WITH` (CTE). Crea una tabla temporal llamada `ventas_por_categoria` que sume las ventas (`SUM(dp.cantidad * dp.precio_unitario)`) como `facturacion` agrupando por `nombre_categoria`. Luego, consulta esa tabla temporal para mostrar `nombre_categoria` y `facturacion` ordenados de mayor a menor facturación.",
     initial_code: "-- Estructura la consulta analítica usando WITH ... AS\nWITH ",
-    solution_query: "WITH ventas_por_categoria AS (SELECT c.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS facturacion FROM categorias c INNER JOIN productos pr ON c.categoria_id = pr.categoria_id INNER JOIN detalle_pedidos dp ON pr.producto_id = dp.producto_id GROUP BY c.nombre_categoria) SELECT nombre_categoria, facturacion FROM ventas_por_categoria ORDER BY facturacion DESC;",
     xp_reward: 60,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 46,
     hints: [
-      "Inicia con WITH ventas_por_categoria AS ( ... )",
-      "Dentro del CTE, cruza categorias, productos y detalle_pedidos y agrupa por c.nombre_categoria.",
-      "En la consulta principal, haz SELECT nombre_categoria, facturacion FROM ventas_por_categoria ORDER BY facturacion DESC;",
-    ],
+      "WITH ventas_por_categoria AS (SELECT c.nombre_categoria, SUM(...) AS facturacion FROM ... GROUP BY c.nombre_categoria) SELECT ...",
+      "Ordena por facturacion DESC."
+],
     concept: {
-      summary: "Las Common Table Expressions (CTEs) crean tablas de resultados temporales nombradas dentro del alcance de una única consulta, mejorando drásticamente la legibilidad y modularidad de queries complejas.",
-      syntax: "WITH nombre_cte AS (\n    SELECT clave, SUM(monto) AS total\n    FROM tabla\n    GROUP BY clave\n)\nSELECT clave, total\nFROM nombre_cte\nORDER BY total DESC;",
+      summary: "Una CTE (`WITH ... AS (...)`) define una tabla temporal con nombre dentro de la consulta, organizando análisis complejos por fases.",
+      syntax: "WITH cte_resumen AS (\n    SELECT columna_clave,\n           SUM(columna_monto) AS monto_total\n    FROM nombre_tabla\n    GROUP BY columna_clave\n)\nSELECT columna_clave, monto_total\nFROM cte_resumen\nORDER BY monto_total DESC;",
       key_points: [
-        "Reemplazan subconsultas anidadas difíciles de leer por pasos analíticos secuenciales.",
-        "En PostgreSQL moderno, los CTEs pueden ser optimizados e inlined de forma transparente.",
+        "Se declara al inicio con `WITH nombre_cte AS (...)` conteniendo una subconsulta completa entre paréntesis.",
+        "La consulta principal posterior puede consultar la CTE como si fuera una tabla física real del esquema.",
+        "Aumenta significativamente la legibilidad, mantenimiento y modularidad de consultas extensas."
       ],
-      execution_order_note: "⚡ El CTE se evalúa y su conjunto intermedio queda disponible para la consulta principal que le sigue.",
+      execution_order_note: "💡 En PostgreSQL moderno, las CTEs no recursivas se integran directamente en el optimizador sin penalización de rendimiento.",
     },
     objectives: [
-      "1. Declarar 'WITH ventas_por_categoria AS (...)' con la agregación de facturación.",
-      "2. Cruzar 'categorias', 'productos' y 'detalle_pedidos' agrupando por 'nombre_categoria'.",
-      "3. Consumir el CTE en la consulta final ordenando por 'facturacion DESC'.",
-    ],
+      "1. Estructurar el cálculo de facturación por familia en una tabla temporal nombrada.",
+      "2. Consultar la tabla temporal como origen para la selección final de datos.",
+      "3. Ordenar el resultado final de mayor a menor recaudación."
+],
     sample_tables: [SAMPLE_TABLE_CATEGORIAS, SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_DETALLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000049',
     module_id: 'c0000000-0000-0000-0000-000000000011',
     title: "CTEs Múltiples Encadenadas (Pipeline de Datos)",
-    prompt: "Dirección comercial requiere un pipeline analítico para identificar clientes que superen el gasto medio global. Define dos Common Table Expressions (CTEs): la primera, llamada gasto_clientes, debe calcular cliente_id y SUM(total) AS total_gastado agrupando por cliente_id en pedidos. La segunda, llamada promedio_general, debe calcular AVG(total_gastado) AS gasto_medio a partir de gasto_clientes. Finalmente, consulta gasto_clientes y promedio_general para proyectar cliente_id y total_gastado de aquellos clientes con total_gastado estrictamente superior a gasto_medio. Ordena por total_gastado DESC.",
+    prompt: "Construye un análisis por pasos usando dos CTEs encadenadas para encontrar a los clientes que gastan más que el promedio de todos los clientes. Primero crea `gasto_clientes` con el `cliente_id` y su gasto total (`SUM(total) AS total_gastado`). Luego crea `promedio_general` que calcule el promedio (`AVG(total_gastado) AS gasto_medio`) a partir de la primera. Finalmente, muestra `cliente_id` y `total_gastado` de aquellos clientes cuyo gasto supere el promedio general, ordenados de mayor a menor gasto.",
     initial_code: "-- Encadena dos CTEs separadas por coma\nWITH ",
-    solution_query: "WITH gasto_clientes AS (SELECT cliente_id, SUM(total) AS total_gastado FROM pedidos GROUP BY cliente_id), promedio_general AS (SELECT AVG(total_gastado) AS gasto_medio FROM gasto_clientes) SELECT g.cliente_id, g.total_gastado FROM gasto_clientes g, promedio_general p WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC;",
     xp_reward: 60,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 47,
     hints: [
-      "Declara WITH gasto_clientes AS (...), promedio_general AS (...) separadas por coma sin repetir la palabra WITH.",
-      "En la segunda CTE calcula AVG(total_gastado) AS gasto_medio a partir de gasto_clientes.",
-      "En la consulta final filtra WHERE g.total_gastado > p.gasto_medio y ordena por g.total_gastado DESC;",
-    ],
+      "Separa las dos CTEs con una coma: WITH gasto_clientes AS (...), promedio_general AS (...).",
+      "En la consulta final filtra WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC."
+],
     concept: {
-      summary: "Es posible encadenar múltiples CTEs separadas por comas bajo una única cláusula WITH. Cada CTE puede referenciar a las CTEs declaradas previamente, creando un pipeline analítico limpio y modular.",
-      syntax: "WITH cte_1 AS (\n    SELECT ...\n),\ncte_2 AS (\n    SELECT ... FROM cte_1\n)\nSELECT ... FROM cte_1, cte_2 WHERE ...;",
+      summary: "Puedes encadenar múltiples CTEs separándolas por coma bajo una sola cláusula `WITH` para crear pipelines analíticos por etapas.",
+      syntax: "WITH etapa_1 AS (\n    SELECT entidad_id, SUM(monto) AS acumulado\n    FROM tabla_transacciones\n    GROUP BY entidad_id\n),\netapa_2 AS (\n    SELECT AVG(acumulado) AS umbral_medio\n    FROM etapa_1\n)\nSELECT e1.entidad_id, e1.acumulado\nFROM etapa_1 e1, etapa_2 e2\nWHERE e1.acumulado > e2.umbral_medio\nORDER BY e1.acumulado DESC;",
       key_points: [
-        "Las CTEs encadenadas se evalúan secuencialmente en el alcance léxico de la consulta.",
-        "Evitan anidamientos ilegibles de subconsultas profundas y facilitan la depuración paso a paso.",
+        "Las CTEs subsiguientes se separan por comas `,` sin repetir la palabra clave `WITH`.",
+        "Cada CTE puede hacer referencia a cualquiera de las CTEs definidas previamente en la secuencia.",
+        "La consulta final combina o filtra los resultados de las etapas anteriores mediante condiciones lógicas."
       ],
-      execution_order_note: "⚡ cte_1 calcula los totales por cliente $\to$ cte_2 calcula el promedio $\to$ query principal filtra y ordena.",
+      execution_order_note: "💡 Estructurar consultas en pasos CTE permite depurar cada etapa de forma aislada antes de ensamblar la consulta final.",
     },
     objectives: [
-      "1. Declarar 'gasto_clientes' con el total gastado por cliente.",
-      "2. Declarar 'promedio_general' calculando el promedio a partir de la primera CTE.",
-      "3. Filtrar en la consulta final 'total_gastado > gasto_medio' y ordenar DESC.",
-    ],
+      "1. Encadenar la primera etapa de acumulación de gasto por cliente.",
+      "2. Calcular el promedio general tomando como entrada la etapa previa.",
+      "3. Filtrar en la consulta final a los clientes que superen dicho promedio general."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000007',
     module_id: 'c0000000-0000-0000-0000-000000000012',
     title: "Ranking de Productos por Precio (ROW_NUMBER)",
-    prompt: "El área de pricing desea clasificar los productos del más caro al más económico. Devuelve el producto_id, nombre_producto, precio y una columna llamada ranking con la posición de cada producto del más caro al más barato.",
+    prompt: "Crea una lista clasificada de productos del más caro al más económico. Muestra `producto_id`, `nombre_producto`, `precio` y una columna llamada `ranking` con la posición consecutiva (1, 2, 3...) de cada producto usando `ROW_NUMBER()` ordenado por precio descendente.",
     initial_code: "-- Emplea ROW_NUMBER() OVER (...)\nSELECT ",
-    solution_query: "SELECT producto_id, nombre_producto, precio, ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking FROM productos;",
     xp_reward: 55,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 48,
     hints: [
-      "Usa la función ventana ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking.",
-    ],
+      "Escribe: ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking en tu lista de columnas."
+],
     concept: {
-      summary: "Las funciones ventana (Window Functions) realizan cálculos a través de particiones de tuplas sin colapsar el resultado en una sola fila. ROW_NUMBER() numera secuencialmente cada registro según la cláusula OVER (ORDER BY ...).",
-      syntax: "SELECT producto_id, nombre_producto, precio,\n       ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking\nFROM productos;",
+      summary: "`ROW_NUMBER()` numera correlativamente cada fila (1, 2, 3...) según el orden estricto indicado en su cláusula `OVER`.",
+      syntax: "SELECT columna_id, columna_nombre, columna_criterio,\n       ROW_NUMBER() OVER (ORDER BY columna_criterio DESC) AS posicion\nFROM nombre_tabla;",
       key_points: [
-        "La cláusula OVER() determina el marco de la ventana analítica.",
-        "Permite calcular clasificaciones, acumulados y diferencias entre filas consecutivas.",
+        "`ROW_NUMBER()` garantiza una numeración secuencial estricta y única sin duplicar posiciones, incluso ante valores idénticos.",
+        "`OVER (ORDER BY columna DESC)` define la dirección y prioridad con la que se asignan los números de posición.",
+        "No reduce ni colapsa filas; conserva la totalidad de los registros de la tabla original."
       ],
-      execution_order_note: "⚡ Las funciones ventana se evalúan después de WHERE, GROUP BY y HAVING, pero antes del ORDER BY de salida final.",
+      execution_order_note: "💡 Las funciones de ventana se ejecutan después de `WHERE`, `GROUP BY` y `HAVING`, sobre el conjunto ya filtrado.",
     },
     objectives: [
-      "1. Proyectar 'producto_id', 'nombre_producto' y 'precio'.",
-      "2. Utilizar 'ROW_NUMBER() OVER (ORDER BY precio DESC)' con alias 'ranking'.",
-      "3. Comprobar que el producto más costoso ocupe la posición 1.",
-    ],
+      "1. Enumerar correlativamente cada producto según su valor comercial.",
+      "2. Distribuir las posiciones del artículo más costoso al más económico.",
+      "3. Mantener todas las filas del catálogo sin agrupar."
+],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000050',
     module_id: 'c0000000-0000-0000-0000-000000000012',
     title: "Análisis de Intervalo Temporal entre Pedidos (LAG)",
-    prompt: "El equipo de retención de clientes desea estudiar el comportamiento de recompra. Escribe una consulta sobre la tabla pedidos que proyecte pedido_id, cliente_id, fecha_pedido y el valor del pedido cronológicamente anterior del mismo cliente bajo el alias fecha_pedido_anterior, calculado mediante la función de ventana LAG(fecha_pedido) particionando por cliente_id y ordenando por fecha_pedido ASC. Ordena los resultados finales por cliente_id ASC y fecha_pedido ASC.",
+    prompt: "Analiza cuánto tiempo pasa entre una compra y otra para cada cliente. Muestra el `pedido_id`, `cliente_id`, la `fecha_pedido` y el valor de la fecha del pedido inmediatamente anterior bajo el nombre `fecha_pedido_anterior`, usando la función de ventana `LAG(fecha_pedido)` dividiendo por cliente y ordenando cronológicamente. Ordena los resultados finales por `cliente_id ASC` y `fecha_pedido ASC`.",
     initial_code: "-- Emplea LAG() OVER (PARTITION BY ... ORDER BY ...)\nSELECT ",
-    solution_query: "SELECT pedido_id, cliente_id, fecha_pedido, LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior FROM pedidos ORDER BY cliente_id ASC, fecha_pedido ASC;",
     xp_reward: 60,
     difficulty: 'Intermedio',
     check_order: true,
     sort_order: 50,
     hints: [
       "Usa LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior.",
-      "Proyecta pedido_id, cliente_id, fecha_pedido y fecha_pedido_anterior.",
-      "Ordena la salida con ORDER BY cliente_id ASC, fecha_pedido ASC;",
-    ],
+      "Ordena al final por cliente_id ASC, fecha_pedido ASC."
+],
     concept: {
-      summary: "La función analítica de ventana LAG() permite acceder a los datos de una fila anterior dentro de la misma partición sin necesidad de recurrir a costosos auto-cruces (SELF JOINs).",
-      syntax: "SELECT pedido_id, cliente_id, fecha_pedido,\n       LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_anterior\nFROM pedidos\nORDER BY cliente_id ASC, fecha_pedido ASC;",
+      summary: "`LAG()` accede a los datos de una fila anterior dentro de la misma partición sin necesidad de recurrir a auto-uniones (`SELF JOIN`).",
+      syntax: "SELECT entidad_id, fecha_evento,\n       LAG(fecha_evento) OVER (PARTITION BY entidad_id ORDER BY fecha_evento ASC) AS fecha_evento_anterior\nFROM nombre_tabla\nORDER BY entidad_id ASC, fecha_evento ASC;",
       key_points: [
-        "PARTITION BY cliente_id reinicia la ventana para cada comprador, evitando comparar fechas de clientes distintos.",
-        "Para el primer pedido de cada cliente, LAG() devuelve NULL al no existir un antecesor.",
+        "`LAG(columna)` obtiene el valor de la fila inmediatamente precedente en el orden especificado.",
+        "`PARTITION BY entidad_id` reinicia la ventana para cada entidad, evitando mezclar fechas o eventos de diferentes sujetos.",
+        "Para el primer registro de cada partición, al no existir fila previa, `LAG()` retorna naturalmente `NULL`."
       ],
-      execution_order_note: "⚡ Se particionan los pedidos por cliente $\to$ se ordenan temporalmente $\to$ LAG proyecta la fecha anterior.",
+      execution_order_note: "💡 `LAG(columna, N, valor_default)` permite especificar cuántas filas mirar hacia atrás y qué valor devolver si es nulo.",
     },
     objectives: [
-      "1. Emplear LAG(fecha_pedido) con PARTITION BY cliente_id y ORDER BY fecha_pedido ASC.",
-      "2. Nombrar el cálculo como 'fecha_pedido_anterior'.",
-      "3. Ordenar el resultado final por cliente_id ASC, fecha_pedido ASC.",
-    ],
+      "1. Dividir las transacciones por cliente ordenándolas en secuencia temporal.",
+      "2. Recuperar el valor cronológico de la compra inmediatamente anterior.",
+      "3. Proyectar la fecha previa y ordenar adecuadamente."
+],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
   },
 ];
@@ -2066,7 +2112,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
   {
     tableName: 'proveedores',
     schema: 'public',
-    rowCount: 6,
+    rowCount: 5,
     columns: [
       { name: 'proveedor_id', type: 'SERIAL', isPrimary: true },
       { name: 'nombre_proveedor', type: 'VARCHAR(80)' },
@@ -2077,7 +2123,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
   {
     tableName: 'productos',
     schema: 'public',
-    rowCount: 20,
+    rowCount: 15,
     columns: [
       { name: 'producto_id', type: 'SERIAL', isPrimary: true },
       { name: 'categoria_id', type: 'INT', isForeign: true },
@@ -2090,7 +2136,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
   {
     tableName: 'pedidos',
     schema: 'public',
-    rowCount: 30,
+    rowCount: 15,
     columns: [
       { name: 'pedido_id', type: 'SERIAL', isPrimary: true },
       { name: 'cliente_id', type: 'INT', isForeign: true },
@@ -2102,7 +2148,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
   {
     tableName: 'detalle_pedidos',
     schema: 'public',
-    rowCount: 60,
+    rowCount: 24,
     columns: [
       { name: 'detalle_id', type: 'SERIAL', isPrimary: true },
       { name: 'pedido_id', type: 'INT', isForeign: true },
@@ -2114,7 +2160,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
   {
     tableName: 'almacenes',
     schema: 'public',
-    rowCount: 4,
+    rowCount: 3,
     columns: [
       { name: 'almacen_id', type: 'SERIAL', isPrimary: true },
       { name: 'nombre_almacen', type: 'VARCHAR(80)' },
@@ -2125,7 +2171,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
   {
     tableName: 'inventario',
     schema: 'public',
-    rowCount: 25,
+    rowCount: 19,
     columns: [
       { name: 'almacen_id', type: 'INT', isPrimary: true, isForeign: true },
       { name: 'producto_id', type: 'INT', isPrimary: true, isForeign: true },
@@ -2136,7 +2182,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
   {
     tableName: 'facturas',
     schema: 'public',
-    rowCount: 30,
+    rowCount: 13,
     columns: [
       { name: 'factura_id', type: 'SERIAL', isPrimary: true },
       { name: 'pedido_id', type: 'INT', isForeign: true },
@@ -2148,7 +2194,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
   {
     tableName: 'pagos',
     schema: 'public',
-    rowCount: 30,
+    rowCount: 11,
     columns: [
       { name: 'pago_id', type: 'SERIAL', isPrimary: true },
       { name: 'factura_id', type: 'INT', isForeign: true },
@@ -2168,10 +2214,10 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     icon: 'Terminal',
     category: 'progreso',
     xp_reward: 50,
-    unlocked_at: '2026-11-08T18:24:00Z',
-    progress: 100,
+    unlocked_at: null,
+    progress: 0,
     required_threshold: 1,
-    current_value: 1,
+    current_value: 0,
     unit: 'query',
   },
   {
@@ -2181,10 +2227,10 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     icon: 'GitBranch',
     category: 'habilidad',
     xp_reward: 75,
-    unlocked_at: '2026-11-08T19:15:00Z',
-    progress: 100,
+    unlocked_at: null,
+    progress: 0,
     required_threshold: 1,
-    current_value: 1,
+    current_value: 0,
     unit: 'ejercicio',
   },
   {
@@ -2195,7 +2241,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     category: 'habilidad',
     xp_reward: 100,
     unlocked_at: null,
-    progress: 60,
+    progress: 0,
     required_threshold: 1,
     current_value: 0,
     unit: 'ejercicio',
@@ -2208,9 +2254,9 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     category: 'constancia',
     xp_reward: 100,
     unlocked_at: null,
-    progress: 66,
+    progress: 0,
     required_threshold: 3,
-    current_value: 2,
+    current_value: 0,
     unit: 'días',
   },
   {
@@ -2221,9 +2267,9 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     category: 'constancia',
     xp_reward: 250,
     unlocked_at: null,
-    progress: 28,
+    progress: 0,
     required_threshold: 7,
-    current_value: 2,
+    current_value: 0,
     unit: 'días',
   },
   {
@@ -2233,10 +2279,10 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     icon: 'Zap',
     category: 'habilidad',
     xp_reward: 120,
-    unlocked_at: '2026-11-09T09:30:00Z',
-    progress: 100,
+    unlocked_at: null,
+    progress: 0,
     required_threshold: 1,
-    current_value: 1,
+    current_value: 0,
     unit: 'query',
   },
   {
@@ -2260,12 +2306,99 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     category: 'progreso',
     xp_reward: 500,
     unlocked_at: null,
-    progress: 24,
+    progress: 0,
     required_threshold: 50,
-    current_value: 12,
+    current_value: 0,
     unit: 'ejercicios',
   },
 ];
+
+/**
+ * Evalúa reactiva y autoritativamente las medallas del usuario en base a sus métricas reales.
+ */
+export function evaluateUserAchievements(
+  catalog: Achievement[],
+  userProfile: UserProfile | null,
+  completedExerciseIds: Set<string>,
+  totalAttemptsCount: number,
+  bestExecutionTimeMs?: number
+): Achievement[] {
+  const completedCount = completedExerciseIds.size;
+  const maxStreak = userProfile?.max_streak_days ?? 0;
+
+  return catalog.map((ach) => {
+    let currentValue = 0;
+    let unlocked = false;
+
+    switch (ach.id) {
+      case 'first-query':
+        currentValue = Math.min(1, Math.max(totalAttemptsCount, completedCount));
+        unlocked = currentValue >= ach.required_threshold;
+        break;
+
+      case 'join-apprentice':
+        unlocked = Array.from(completedExerciseIds).some(
+          (id) => id.includes('m05') || id.includes('join')
+        );
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'null-detective':
+        unlocked = Array.from(completedExerciseIds).some(
+          (id) => id.includes('m06') || id.includes('null')
+        );
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'streak-3':
+        currentValue = maxStreak;
+        unlocked = maxStreak >= 3;
+        break;
+
+      case 'streak-7':
+        currentValue = maxStreak;
+        unlocked = maxStreak >= 7;
+        break;
+
+      case 'speed-runner':
+        unlocked =
+          completedCount > 0 &&
+          bestExecutionTimeMs !== undefined &&
+          bestExecutionTimeMs > 0 &&
+          bestExecutionTimeMs <= 5.0;
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'window-wizard':
+        unlocked = Array.from(completedExerciseIds).some(
+          (id) => id.includes('m09') || id.includes('m10') || id.includes('window')
+        );
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'master-sql':
+        currentValue = completedCount;
+        unlocked = completedCount >= ach.required_threshold;
+        break;
+
+      default:
+        currentValue = ach.current_value;
+        unlocked = !!ach.unlocked_at;
+    }
+
+    const progress = Math.min(
+      100,
+      Math.max(0, Math.round((currentValue / (ach.required_threshold || 1)) * 100))
+    );
+
+    return {
+      ...ach,
+      current_value: currentValue,
+      progress,
+      unlocked_at: unlocked ? (ach.unlocked_at || new Date().toISOString()) : null,
+    };
+  });
+}
 
 export const DEFAULT_QUERY_HISTORY: QueryHistoryItem[] = [
   {

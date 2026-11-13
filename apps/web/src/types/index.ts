@@ -1,6 +1,6 @@
 export type Difficulty = 'Principiante' | 'Intermedio' | 'Avanzado';
 
-export type EvaluationStatus = 'PASSED' | 'FAILED' | 'ERROR';
+export type EvaluationStatus = 'PASSED' | 'FAILED' | 'ERROR' | 'AUTH_REQUIRED';
 
 export interface ColumnInfo {
   name: string;
@@ -37,6 +37,14 @@ export interface EvaluationResponse {
   message: string;
 }
 
+export interface RevealSolutionResponse {
+  exercise_id: string;
+  solution_query: string;
+  title: string;
+  explanation?: string;
+  telemetry_recorded: boolean;
+}
+
 export interface ExerciseHint {
   id: string;
   exercise_id: string;
@@ -64,7 +72,6 @@ export interface Exercise {
   title: string;
   prompt: string;
   initial_code: string;
-  solution_query?: string;
   xp_reward: number;
   difficulty: Difficulty;
   check_order: boolean;
@@ -97,7 +104,9 @@ export interface Track {
   sort_order: number;
   modules?: Module[];
   total_exercises?: number;
-  completed_exercises?: number;
+  completed_exercises?: number | null;
+  progress_percent?: number | null;
+  is_progress_loading?: boolean;
 }
 
 export interface UserProfile {
@@ -159,3 +168,14 @@ export interface QueryHistoryItem {
   execution_time_ms: number;
   row_count: number;
 }
+
+export type AppPath =
+  | 'dashboard'
+  | 'playground'
+  | 'tracks'
+  | 'achievements'
+  | 'profile'
+  | 'exercise'
+  | 'auth-confirm'
+  | 'reset-password'
+  | 'not-found';

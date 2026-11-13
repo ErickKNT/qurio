@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Terminal, Database, Sparkles, Table as TableIcon, ShieldCheck, Clock } from 'lucide-react';
 import { TableSchemaInfo, ExecutionResult } from '@/types';
 import { MonacoEditorPanel } from '@/components/organisms/MonacoEditorPanel/MonacoEditorPanel';
@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 
 export interface SqlPlaygroundViewProps {
   tables: TableSchemaInfo[];
+  initialQuery?: string;
   className?: string;
 }
 
@@ -38,10 +39,19 @@ const STARTER_QUERIES = [
 
 export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
   tables,
+  initialQuery,
 }) => {
+  const [isResultsExpanded, setIsResultsExpanded] = useState(false);
   const [query, setQuery] = useState<string>(
+    initialQuery ||
     '-- SQL Playground — Qurio\n-- Escribe cualquier consulta libre contra el schema public de Ecommerce_Production_DB\nSELECT cliente_id, nombre, apellido, email, ciudad\nFROM clientes\nLIMIT 10;'
   );
+
+  useEffect(() => {
+    if (initialQuery) {
+      setQuery(initialQuery);
+    }
+  }, [initialQuery]);
   const [sidebarTab, setSidebarTab] = useState<'tables' | 'templates'>('tables');
   const [filterTable, setFilterTable] = useState('');
   const [isExecuting, setIsExecuting] = useState(false);
@@ -208,7 +218,7 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
         {/* Panel Derecho: Editor Monaco + Resultados de DataGrid */}
         <div className="lg:col-span-9 flex flex-col gap-3 h-full min-h-0 overflow-hidden">
           {/* Arriba: Editor Monaco */}
-          <div className="h-[40%] min-h-[190px]">
+          <div className={cn(isResultsExpanded ? 'h-[22%] min-h-[140px]' : 'h-[40%] min-h-[190px]', 'transition-[height] duration-150 ease-out')}>
             <MonacoEditorPanel
               value={query}
               onChange={(val) => setQuery(val)}
@@ -230,6 +240,8 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
               rows={executionResult?.rows || []}
               error={executionResult?.error}
               isPlayground={true}
+              isExpanded={isResultsExpanded}
+              onToggleExpand={() => setIsResultsExpanded((prev) => !prev)}
               className="h-full"
             />
           </div>

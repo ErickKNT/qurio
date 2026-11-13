@@ -3,11 +3,13 @@ import { ChevronDown, ChevronRight, CheckCircle2, Circle, ArrowRight } from 'luc
 import { Module, Exercise } from '@/types';
 import { Badge, Button } from '@/components/atoms';
 import { cn } from '@/lib/utils';
+import { formatInlineCode } from '@/lib/format';
 
 export interface ModuleAccordionProps {
   module: Module;
   moduleIndex: number;
   exercises: Exercise[];
+  completedExerciseIds?: Set<string>;
   onSelectExercise: (exercise: Exercise) => void;
   defaultOpen?: boolean;
   className?: string;
@@ -17,15 +19,23 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
   module,
   moduleIndex,
   exercises,
+  completedExerciseIds,
   onSelectExercise,
   defaultOpen = false,
   className,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
-  const totalExercises = exercises.length;
-  const completedExercises = exercises.filter((e) => e.is_completed).length;
-  const isModuleFinished = totalExercises > 0 && completedExercises === totalExercises;
+  const isExerciseDone = (ex: Exercise) => {
+    if (completedExerciseIds) {
+      return completedExerciseIds.has(ex.id);
+    }
+    return Boolean(ex.is_completed);
+  };
+
+  const totalExercises = exercises.length || module.exercises_count || 0;
+  const completedExercises = exercises.filter(isExerciseDone).length;
+  const isModuleFinished = totalExercises > 0 && completedExercises >= totalExercises;
 
   return (
     <div
@@ -90,33 +100,33 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
             </div>
           ) : (
             exercises.map((exercise, idx) => {
-              const isDone = exercise.is_completed;
+              const isDone = isExerciseDone(exercise);
               return (
                 <div
                   key={exercise.id}
                   onClick={() => onSelectExercise(exercise)}
-                  className="flex items-center justify-between py-3 px-5 hover:bg-surface/50 cursor-pointer transition-colors group"
+                  className="flex items-center justify-between py-3 px-4 sm:px-5 hover:bg-surface/50 cursor-pointer transition-colors group gap-3"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="shrink-0">
                       {isDone ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald shrink-0" />
                       ) : (
-                        <Circle className="w-4 h-4 text-content-muted group-hover:text-cyan-accent transition-colors" />
+                        <Circle className="w-4 h-4 text-content-muted group-hover:text-cyan-accent transition-colors shrink-0" />
                       )}
                     </div>
 
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium text-content-primary group-hover:text-cyan-accent transition-colors">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-medium text-content-primary group-hover:text-cyan-accent transition-colors truncate">
                         {idx + 1}. {exercise.title}
                       </span>
-                      <span className="text-[11px] font-mono text-content-muted line-clamp-1">
-                        {exercise.prompt}
+                      <span className="text-[11px] font-sans text-content-muted line-clamp-1">
+                        {formatInlineCode(exercise.prompt)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 whitespace-nowrap">
                     <Badge variant="mono" size="sm">
                       {exercise.difficulty}
                     </Badge>
@@ -126,10 +136,10 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-xs py-1 px-2.5 opacity-80 group-hover:opacity-100"
+                      rightIcon={<ArrowRight className="w-3.5 h-3.5 shrink-0" />}
+                      className="text-xs py-1 px-2.5 opacity-80 group-hover:opacity-100 whitespace-nowrap shrink-0"
                     >
-                      <span>{isDone ? 'Repasar' : 'Resolver'}</span>
-                      <ArrowRight className="w-3 h-3 ml-1" />
+                      {isDone ? 'Repasar' : 'Resolver'}
                     </Button>
                   </div>
                 </div>

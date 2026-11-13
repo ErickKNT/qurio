@@ -6,15 +6,17 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Expansión Curricular Piramidal a 50 Retos (Fase 10) — Concluida**  
-* **Próxima Fase:** **Operación, Métricas en Vivo y Nuevas Prácticas**  
-* **Rama Git Activa:** `feat/curriculum-expansion-50-exercises` (sincronizada en GitHub)  
-* **Infraestructura Activa:**
-  * Contenedor Docker `qurio-postgres-sandbox` corriendo en `localhost:5433` (saludable y verificado).
-  * API FastAPI corriendo en `http://localhost:8000` con pool `asyncpg` y evaluador semántico (26/26 tests pasando).
-  * Frontend React 18 + Vite corriendo en `http://localhost:5173` con soporte dinámico de tema claro/oscuro, Monaco Editor con temas `qurio-dark`/`qurio-light` y DataGrid (Build de producción 100% verificado).
-  * Proyecto Supabase en la nube con esquemas DDL `01_schema.sql` y catálogo semilla `02_seed_curriculum.sql` desplegados.
-  * Documentación completa `README.md` en la raíz del repositorio.
+* **Fase Actual:** **Fase 11.3: Auditoría Final del Procedimiento de Rollback y Continuidad Operativa (`QURIO-PHASE-11.3-ROLLBACK-AUDIT`) — Concluida**  
+* **Próxima Fase:** **Aprobación Formal del Piloto (Gate G-07) y Despliegue Controlado con Usuarios**  
+* **Rama Git Activa:** `feat/phase-11-pilot-readiness`  
+* **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
+  * Contenedores Docker (`qurio-api` en 8000, `qurio-postgres-sandbox` en 5433): Operativos y verificados de forma exhaustiva; apagados de forma controlada (`docker compose down`) tras concluir las pruebas.
+  * API FastAPI: **100% Verificado** — Suite de **80 pruebas automatizadas pasando limpiamente en 61.50s** en `apps/api/tests/`. Incluye **15 pruebas de infraestructura de seguridad/migración** y **10 escenarios críticos de regresión/contingencia** (idempotencia de RPC v6.1, rollback v4.0 con preservación estricta de CLS/RLS, modo de contingencia en FastAPI sin adjudicación falsa de XP y recuperación íntegra de recompensas tras restablecimiento).
+  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` limpio (**2,171 módulos en 5.38s, 0 errores, 0 ocurrencias de `solution_query`**) y suite de **17 pruebas automatizadas en Vitest** (`npm run test`) pasando en 861ms (`progress.test.ts`, `persistence.test.ts`, `routing.test.ts`).
+  * E2E en Navegador Real: **19 de 19 pruebas pasadas al 100% en Google Chrome real** vía Playwright (`pilot_e2e_suite.mjs`), con verificación indeleble de **0 XP oficial para invitados** en T06 y bloqueo en 4º reto en T07.
+  * Continuidad Operativa (Alternativa B): Si la RPC no existe o falla, el Sandbox de PostgreSQL continúa evaluando las consultas con éxito, pero la API otorga estrictamente 0 XP oficial y notifica el modo contingencia sin falsificar progreso oficial.
+  * Integridad de Supabase Cloud: **Zero Cloud Mutations** cumplido al 100% (0 escrituras en `bfvgqxfzftumwrleacof`). Scripts `03_security_hardening.sql` v6.1 y `rollback_security_hardening.sql` v4.0 reconciliados, probados y listos para aplicación administrativa por el propietario.
+  * Veredicto Final: **APROBADO CON RESTRICCIONES**.
 
 ---
 
@@ -24,7 +26,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | :---: | :--- | :---: | :---: | :--- |
 | **0** | **Definición y Especificación** | ✅ Concluida | `main` | Declaración de intención, PRD, SAD, Sistema de Diseño y Reglas. |
 | **1** | **Cimientos de Datos & Docker** | ✅ Concluida | `feat/database-and-docker-infra` | Sandbox PostgreSQL aislado, dataset de 10 tablas, esquemas Supabase y docker-compose. |
-| **2** | **Motor de Ejecución y Evaluación** | ✅ Concluida | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y 26 tests automatizados. |
+| **2** | **Motor de Ejecución y Evaluación** | ✅ Concluida | `feat/fastapi-runner-evaluator` | API FastAPI, pool seguro con asyncpg, evaluador semántico y pruebas iniciales. |
 | **3** | **Frontend Base & Atomic Design** | ✅ Concluida | `feat/web-atomic-design` | React + Vite + Tailwind, árbol de componentes (átomos/moléculas/organismos/plantillas), auth y build validado. |
 | **4** | **Flujo Principal End-to-End** | ✅ Concluida | `feat/exercise-ide-flow` | Monaco Editor, DataGrid tabular con tipos de datos, especificación del ejercicio con pistas, cliente API FastAPI y modal de recompensa XP. |
 | **5** | **Catálogo, Playground & Gamificación** | ✅ Concluida | `feat/curriculum-and-gamification` | Rutas con syllabus interactivo, SQL Playground libre con explorador de esquemas, Logros con filtros y Mi Perfil con mapa de calor. |
@@ -32,7 +34,10 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **+** | **Temas (Claro/Oscuro) & README** | ✅ Concluida | `feat/theme-support-and-readme` | Tokens Tailwind CSS dinámicos, toggle sol/luna, temas Monaco reactivos y README.md exhaustivo. |
 | **7** | **Expansión Curricular (3 Rutas)** | ✅ Concluida | `feat/curriculum-expansion-3-tracks` | 18 ejercicios completos, didáctica SQLBolt, checklist de sub-objetivos interactiva. |
 | **9** | **Hardening de Seguridad & AST** | ✅ Concluida | `main` (vía `security/phase-9-hardening`) | SQLGlot AST, defensa en profundidad, ES256 JWKS, Rate Limiting, RPC certified progress en Supabase Cloud. |
-| **10** | **Expansión Curricular Piramidal (50 Retos)** | ✅ Concluida | `feat/curriculum-expansion-50-exercises` | Pirámide completa de 50 retos fundamentados en ISO/IEC 9075:2016 y PostgreSQL 16, 12 módulos, 10 tablas de muestra, 100% verificado en sandbox. |
+| **8/9+** | **Expansión Curricular Piramidal (50 Retos)** | ✅ Concluida | `main` (vía `feat/curriculum-expansion-50-exercises`) | Pirámide completa de 50 retos fundamentados en ISO/IEC 9075:2016 y PostgreSQL 16, 12 módulos, 10 tablas de muestra, 100% verificado en sandbox. |
+| **10 (Doc)** | **Blueprint v1.2 & Plan de Estabilización v1.2** | ✅ Concluida | `docs/product-business-blueprint-v1` | `QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` v1.2 y `PHASE_10_STABILIZATION_PLAN.md` v1.2 sincronizados. |
+| **10 (Base)** | **Auditoría Operativa y Línea Base de Desarrollo** | ✅ Concluida | `docs/operational-baseline-v1` | `QURIO_OPERATIONAL_AUDIT.md` (diagnóstico forense) y `QURIO_OPERATIONAL_BASELINE.md` (prioridades de grupo piloto). |
+| **10 (Ejec)** | **Estabilización Técnica Integral (Bloques A, B, C, D)** | ✅ Concluida | `feat/phase-10-stabilization` | Resolución de brechas `C-01` a `C-05`, suites de pruebas 100% exitosas (69 backend / 8 frontend), build limpio y sandbox apagado. |
 
 ---
 
@@ -41,7 +46,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 ### [2026-11-07] — Entrada 01: Inicio, Inspección y Setup de Skills
 * **Objetivo:** Explorar la propuesta inicial y dotar al entorno de las habilidades necesarias para desarrollo riguroso.
 * **Actividades:**
-  * Lectura e inspección del documento fundacional [`docs/SQL_Academy_Propuesta_Arquitectura_MVP.md`](file:///c:/Desarrollo/Qurio/docs/SQL_Academy_Propuesta_Arquitectura_MVP.md).
+  * Lectura e inspección del documento fundacional [`docs/SQL_Academy_Propuesta_Arquitectura_MVP.md`](SQL_Academy_Propuesta_Arquitectura_MVP.md).
   * Instalación de 33 skills en `.agents/skills/` provenientes de Dietrich Gebert (Ponytail), Addy Osmani (Agent Skills), Vercel Labs (Find Skills) y Graphify Labs.
   * Versionado del gestor de habilidades en `skills-lock.json`.
 
@@ -51,7 +56,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Objetivo:** Analizar los mockups de interfaz generados en Google Stitch.
 * **Actividades:**
   * Inspección de las 10 subcarpetas en `docs/stitch_qurio_interactive_sql_platform/`.
-  * Adopción formal del sistema de diseño [`Terminal Glow Minimal`](file:///c:/Desarrollo/Qurio/docs/stitch_qurio_interactive_sql_platform/stitch_qurio_interactive_sql_platform/terminal_glow_minimal/DESIGN.md): paleta `#0B1020`, tipografía `Inter` + `JetBrains Mono`, bordes luminescentes sutiles y ergonomía de estación de trabajo.
+  * Adopción formal del sistema de diseño [`Terminal Glow Minimal`](stitch_qurio_interactive_sql_platform/stitch_qurio_interactive_sql_platform/terminal_glow_minimal/DESIGN.md): paleta `#0B1020`, tipografía `Inter` + `JetBrains Mono`, bordes luminescentes sutiles y ergonomía de estación de trabajo.
 
 ---
 
@@ -62,7 +67,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Alcance del MVP:** Rutas guiadas + evaluación semántica + Playground analítico. Laboratorios DDL complejos con contenedores efímeros quedan explícitamente fuera del MVP para evitar sobrecoste y riesgo operativo.
   * **Acceso:** Registro obligatorio liviano desde el inicio para vincular progreso y seguridad al `user_id`.
   * **Arquitectura Híbrida:** Supabase para Auth y datos de aplicación + Docker aislado para el runner de PostgreSQL.
-* **Entregable:** [`docs/intent/qurio-mvp.md`](file:///c:/Desarrollo/Qurio/docs/intent/qurio-mvp.md).
+* **Entregable:** [`docs/intent/qurio-mvp.md`](intent/qurio-mvp.md).
 
 ---
 
@@ -72,8 +77,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * Distribución de los 50 retos en pirámide: **22** en *SQL Foundations* (44%), **18** en *Relational SQL* (36%) y **10** en *Advanced Queries* (20%).
   * Diagramas de secuencia y flujo para el motor de evaluación semántica.
 * **Entregables:**
-  * [`docs/PRD.md`](file:///c:/Desarrollo/Qurio/docs/PRD.md): Requerimientos funcionales, no funcionales e historias de usuario en Gherkin.
-  * [`docs/SAD.md`](file:///c:/Desarrollo/Qurio/docs/SAD.md): Arquitectura de software, modelo de datos ER, seguridad del runner y estructura monorepo.
+  * [`docs/PRD.md`](PRD.md): Requerimientos funcionales, no funcionales e historias de usuario en Gherkin.
+  * [`docs/SAD.md`](SAD.md): Arquitectura de software, modelo de datos ER, seguridad del runner y estructura monorepo.
 
 ---
 
@@ -82,7 +87,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Decisiones Acordadas:**
   * **Anti-AI Slop:** Manejo riguroso de errores inline en formularios (sin `alert()`), favicon SVG propio, 404 temática SQL, títulos dinámicos y cero banners de cookies o páginas de gracias artificiales.
   * **Atomic Design Pragmático:** Obligatoriedad estricta de organizar la UI en `atoms/`, `molecules/`, `organisms/` y `templates/` (prohibido crear componentes visuales huérfanos). Rechazo de átomos envoltorios triviales innecesarios (anti-dogma).
-* **Entregable:** [`AGENTS.md`](file:///c:/Desarrollo/Qurio/AGENTS.md) actualizado con estas reglas como contrato del repositorio.
+* **Entregable:** [`AGENTS.md`](../AGENTS.md) actualizado con estas reglas como contrato del repositorio.
 
 ---
 
@@ -99,11 +104,11 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 ### [2026-11-07] — Entrada 07: Fase 1 — Cimientos de Datos & Docker Sandbox
 * **Rama:** `feat/database-and-docker-infra` → Fusionada en `main`.
 * **Entregables de Base de Datos:**
-  * [`database/sandbox/init.sql`](file:///c:/Desarrollo/Qurio/database/sandbox/init.sql): Rol `readonly_student`, `statement_timeout = 2000ms`, `work_mem = 16MB`, permisos exclusivos de lectura.
-  * [`database/sandbox/ecommerce_seed.sql`](file:///c:/Desarrollo/Qurio/database/sandbox/ecommerce_seed.sql): 10 tablas relacionales del dataset `Ecommerce_Production_DB` con 15 clientes, pedidos, facturas, productos, inventario y almacenes.
-  * [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql): DDL completo con políticas RLS para Supabase.
-  * [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql): Semillas de rutas, módulos, pistas y primeros retos.
-  * [`docker-compose.yml`](file:///c:/Desarrollo/Qurio/docker-compose.yml): Orquestación del servicio `postgres-sandbox` en el puerto `5433`.
+  * [`database/sandbox/init.sql`](../database/sandbox/init.sql): Rol `readonly_student`, `statement_timeout = 2000ms`, `work_mem = 16MB`, permisos exclusivos de lectura.
+  * [`database/sandbox/ecommerce_seed.sql`](../database/sandbox/ecommerce_seed.sql): 10 tablas relacionales del dataset `Ecommerce_Production_DB` con 15 clientes, pedidos, facturas, productos, inventario y almacenes.
+  * [`database/supabase/01_schema.sql`](../database/supabase/01_schema.sql): DDL completo con políticas RLS para Supabase.
+  * [`database/supabase/02_seed_curriculum.sql`](../database/supabase/02_seed_curriculum.sql): Semillas de rutas, módulos, pistas y primeros retos.
+  * [`docker-compose.yml`](../docker-compose.yml): Orquestación del servicio `postgres-sandbox` en el puerto `5433`.
 * **Verificación Práctica:**
   * Contenedor levantado y saludable.
   * Pruebas de consulta exitosas con el rol restringido.
@@ -116,14 +121,14 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 ### [2026-11-07] — Entrada 08: Fase 2 — Motor de Ejecución y Evaluación en FastAPI
 * **Rama:** `feat/fastapi-runner-evaluator`
 * **Entregables de Backend:**
-  * [`apps/api/app/core/config.py`](file:///c:/Desarrollo/Qurio/apps/api/app/core/config.py): Gestión de variables de entorno y configuración para el Sandbox y Supabase vía `pydantic-settings`.
-  * [`apps/api/app/modules/runner/security.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/security.py): Filtro AST/Regex de seguridad estricta para bloquear inyecciones, sentencias múltiples, DDL (`DROP`, `ALTER`, `TRUNCATE`), DML destructivo (`INSERT`, `UPDATE`, `DELETE`) y funciones peligrosas (`pg_sleep`). Limitador automático de filas a 1,000 registros.
-  * [`apps/api/app/modules/runner/service.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/service.py): Manejador de pool asíncrono con `asyncpg`, timeouts estrictos por sentencia (`statement_timeout = 2000ms`), transacciones `readonly=True` y serialización de tipos PostgreSQL (Decimal, DateTime, UUID).
-  * [`apps/api/app/modules/runner/evaluator.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/evaluator.py): Evaluador semántico completo que compara cardinalidad, nombres/cantidad de columnas, tolerancia a flotantes y nulos, multiconjuntos (frecuencias con `Counter` cuando el orden no importa) y secuencial estricto (cuando `check_order=True`). Cálculo dinámico de XP con penalizaciones progresivas por pistas.
-  * [`apps/api/app/modules/curriculum/repository.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/repository.py): Repositorio resiliente que consulta Supabase REST y cuenta con respaldo offline de datos semilla.
-  * [`apps/api/app/modules/runner/router.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/router.py): Endpoints REST para salud (`/health`), ejecución libre en playground (`/playground/execute`), listado/detalle de ejercicios (`/exercises`) y envío/evaluación semántica (`/exercises/{id}/submit`).
-  * [`apps/api/app/main.py`](file:///c:/Desarrollo/Qurio/apps/api/app/main.py): Aplicación principal FastAPI con ciclo de vida asíncrono (`lifespan`), middleware CORS y documentación interactiva Swagger/Redoc.
-  * [`apps/api/Dockerfile`](file:///c:/Desarrollo/Qurio/apps/api/Dockerfile) & [`docker-compose.yml`](file:///c:/Desarrollo/Qurio/docker-compose.yml): Contenerización y orquestación unificada en Docker del sandbox y de la API.
+  * [`apps/api/app/core/config.py`](../apps/api/app/core/config.py): Gestión de variables de entorno y configuración para el Sandbox y Supabase vía `pydantic-settings`.
+  * [`apps/api/app/modules/runner/security.py`](../apps/api/app/modules/runner/security.py): Filtro AST/Regex de seguridad estricta para bloquear inyecciones, sentencias múltiples, DDL (`DROP`, `ALTER`, `TRUNCATE`), DML destructivo (`INSERT`, `UPDATE`, `DELETE`) y funciones peligrosas (`pg_sleep`). Limitador automático de filas a 1,000 registros.
+  * [`apps/api/app/modules/runner/service.py`](../apps/api/app/modules/runner/service.py): Manejador de pool asíncrono con `asyncpg`, timeouts estrictos por sentencia (`statement_timeout = 2000ms`), transacciones `readonly=True` y serialización de tipos PostgreSQL (Decimal, DateTime, UUID).
+  * [`apps/api/app/modules/runner/evaluator.py`](../apps/api/app/modules/runner/evaluator.py): Evaluador semántico completo que compara cardinalidad, nombres/cantidad de columnas, tolerancia a flotantes y nulos, multiconjuntos (frecuencias con `Counter` cuando el orden no importa) y secuencial estricto (cuando `check_order=True`). Cálculo dinámico de XP con penalizaciones progresivas por pistas.
+  * [`apps/api/app/modules/curriculum/repository.py`](../apps/api/app/modules/curriculum/repository.py): Repositorio resiliente que consulta Supabase REST y cuenta con respaldo offline de datos semilla.
+  * [`apps/api/app/modules/runner/router.py`](../apps/api/app/modules/runner/router.py): Endpoints REST para salud (`/health`), ejecución libre en playground (`/playground/execute`), listado/detalle de ejercicios (`/exercises`) y envío/evaluación semántica (`/exercises/{id}/submit`).
+  * [`apps/api/app/main.py`](../apps/api/app/main.py): Aplicación principal FastAPI con ciclo de vida asíncrono (`lifespan`), middleware CORS y documentación interactiva Swagger/Redoc.
+  * [`apps/api/Dockerfile`](../apps/api/Dockerfile) & [`docker-compose.yml`](../docker-compose.yml): Contenerización y orquestación unificada en Docker del sandbox y de la API.
 * **Pruebas y Verificación:**
   * 26 pruebas automáticas implementadas con `pytest` y `pytest-asyncio`:
     * 10 pruebas de seguridad y límite de filas (`test_security.py`).
@@ -172,26 +177,26 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Rama:** `feat/exercise-ide-flow`
 * **Entregables de Flujo de Interacción:**
   * **Integración de Monaco Editor:**
-    * Componente organismo [`MonacoEditorPanel`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx) con tema oscuro oficial `qurio-dark` (fondo `#0B1020`, cursor cyan `#38BDF8`, keywords cyan, strings esmeralda, números ámbar).
+    * Componente organismo [`MonacoEditorPanel`](../apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx) con tema oscuro oficial `qurio-dark` (fondo `#0B1020`, cursor cyan `#38BDF8`, keywords cyan, strings esmeralda, números ámbar).
     * Tipografía `JetBrains Mono` con numeración limpia y padding técnico.
     * Atajo de teclado nativo `⌘ + Enter` / `Ctrl + Enter` mapeado directamente a la función de ejecución/envío.
     * Barra de herramientas con formateador automático de palabras reservadas SQL y restablecimiento de código.
   * **Visualizador Tabular de Resultados de Alta Fidelidad:**
-    * Componente organismo [`DataGridResults`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx).
+    * Componente organismo [`DataGridResults`](../apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx).
     * Cabeceras con nombre de columna y tipo de dato inferido (`VARCHAR`, `INT`, `DECIMAL`) en `JetBrains Mono`.
     * Celdas de datos con gutters numerados, formateo condicional de valores numéricos, booleanos y chips tenues cursivos para `NULL`.
     * Visualizador descriptivo de discrepancias semánticas (`DiffResult`) cuando la consulta del estudiante difiere de la solución esperada.
     * Mensajes de error del motor de base de datos o bloqueos de seguridad del sandbox presentados en caja de terminal inline (cero alertas del navegador).
   * **Panel de Especificación y Pistas Progresivas:**
-    * Componente organismo [`ExerciseSpecPanel`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx).
+    * Componente organismo [`ExerciseSpecPanel`](../apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx).
     * Enunciado narrativo y objetivos técnicos del reto.
     * Acordeón interactivo con el esquema relacional (`clientes`, `pedidos`, `productos`, `categorias`).
     * Sistema de pistas progresivas con cálculo y visualización transparente de penalización de XP (-15% por pista).
   * **Modal de Recompensa y Avance:**
-    * Componente molécula [`SuccessModal`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/SuccessModal/SuccessModal.tsx).
+    * Componente molécula [`SuccessModal`](../apps/web/src/components/molecules/SuccessModal/SuccessModal.tsx).
     * Notificación instantánea de reto superado, medalla esmeralda, XP ganado, tiempo de ejecución en sandbox y botón de avance inmediato al siguiente reto del currículum.
   * **Cliente de Integración API:**
-    * Módulo [`apps/web/src/lib/api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts) conectando el frontend con los endpoints de FastAPI (`POST /api/v1/exercises/{id}/submit`, `POST /api/v1/playground/execute`, `GET /api/v1/exercises`, `GET /api/v1/health`).
+    * Módulo [`apps/web/src/lib/api.ts`](../apps/web/src/lib/api.ts) conectando el frontend con los endpoints de FastAPI (`POST /api/v1/exercises/{id}/submit`, `POST /api/v1/playground/execute`, `GET /api/v1/exercises`, `GET /api/v1/health`).
     * Fallback resiliente offline con los ejercicios semilla.
 * **Pruebas y Verificación del Ciclo Completo:**
   * Build de producción Vite completado exitosamente en **6.91s** con cero errores de TypeScript.
@@ -220,19 +225,19 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Rama:** `feat/curriculum-and-gamification`
 * **Entregables de la Fase 5:**
   * **Rutas Formativas & Syllabus Interactivo (`/tracks`):**
-    * Componente molécula [`TrackCard`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/TrackCard/TrackCard.tsx): tarjetas de rutas (*SQL Foundations*, *Relational SQL*, *Advanced Queries*) con porcentaje de completitud, horas estimadas y badges.
-    * Componente molécula [`ModuleAccordion`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/ModuleAccordion/ModuleAccordion.tsx): módulos colapsables con listado de retos, estados de resolución, dificultad y botón de acción directa.
-    * Componente organismo [`TracksView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/TracksView/TracksView.tsx): catálogo completo que permite explorar y saltar directamente al IDE de cualquier reto del currículum.
+    * Componente molécula [`TrackCard`](../apps/web/src/components/molecules/TrackCard/TrackCard.tsx): tarjetas de rutas (*SQL Foundations*, *Relational SQL*, *Advanced Queries*) con porcentaje de completitud, horas estimadas y badges.
+    * Componente molécula [`ModuleAccordion`](../apps/web/src/components/molecules/ModuleAccordion/ModuleAccordion.tsx): módulos colapsables con listado de retos, estados de resolución, dificultad y botón de acción directa.
+    * Componente organismo [`TracksView`](../apps/web/src/components/organisms/TracksView/TracksView.tsx): catálogo completo que permite explorar y saltar directamente al IDE de cualquier reto del currículum.
   * **SQL Playground Libre (`/playground`):**
-    * Componente molécula [`SchemaTableItem`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/SchemaTableItem/SchemaTableItem.tsx): explorador de esquemas con 10 tablas relacionales (`clientes`, `pedidos`, `productos`, etc.), recuento de filas, claves primarias/foráneas y botón de consulta rápida (`SELECT * LIMIT 10`).
-    * Componente organismo [`SqlPlaygroundView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx): estación de experimentación con plantillas SQL, Monaco Editor con atajo `⌘ + Enter`, ejecución contra el sandbox Docker y visualizador tabular [`DataGridResults`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx).
+    * Componente molécula [`SchemaTableItem`](../apps/web/src/components/molecules/SchemaTableItem/SchemaTableItem.tsx): explorador de esquemas con 10 tablas relacionales (`clientes`, `pedidos`, `productos`, etc.), recuento de filas, claves primarias/foráneas y botón de consulta rápida (`SELECT * LIMIT 10`).
+    * Componente organismo [`SqlPlaygroundView`](../apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx): estación de experimentación con plantillas SQL, Monaco Editor con atajo `⌘ + Enter`, ejecución contra el sandbox Docker y visualizador tabular [`DataGridResults`](../apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx).
   * **Logros & Rangos de Ingeniería (`/achievements`):**
-    * Componente molécula [`AchievementCard`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/AchievementCard/AchievementCard.tsx): medallas técnicas con iconos temáticos, cálculo de XP, barras de progreso y estado desbloqueado/bloqueado.
-    * Componente organismo [`AchievementsView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/AchievementsView/AchievementsView.tsx): filtrado por pestañas (*Todos*, *Progreso*, *Habilidad*, *Constancia*) y resumen de insignias.
+    * Componente molécula [`AchievementCard`](../apps/web/src/components/molecules/AchievementCard/AchievementCard.tsx): medallas técnicas con iconos temáticos, cálculo de XP, barras de progreso y estado desbloqueado/bloqueado.
+    * Componente organismo [`AchievementsView`](../apps/web/src/components/organisms/AchievementsView/AchievementsView.tsx): filtrado por pestañas (*Todos*, *Progreso*, *Habilidad*, *Constancia*) y resumen de insignias.
   * **Perfil del Estudiante & Auditoría (`/profile`):**
-    * Componente organismo [`UserProfileView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx): tarjeta técnica de usuario, barra de nivel (progreso hacia Nivel 3), mapa de calor de práctica de 30 días y log de auditoría con historial de consultas locales persistentes.
+    * Componente organismo [`UserProfileView`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx): tarjeta técnica de usuario, barra de nivel (progreso hacia Nivel 3), mapa de calor de práctica de 30 días y log de auditoría con historial de consultas locales persistentes.
   * **Integración y Títulos Dinámicos:**
-    * Cableado completo en [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx) manteniendo estricto cumplimiento de **Atomic Design Pragmático** y **Anti-AI Slop** (títulos dinámicos de pestaña, manejo de errores en terminal y cero dependencias huérfanas).
+    * Cableado completo en [`App.tsx`](../apps/web/src/App.tsx) manteniendo estricto cumplimiento de **Atomic Design Pragmático** y **Anti-AI Slop** (títulos dinámicos de pestaña, manejo de errores en terminal y cero dependencias huérfanas).
 * **Verificación de Calidad:**
   * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.38s`, 0 errores).
 
@@ -242,7 +247,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Rama:** `fix/sql-playground-ux-polish`
 * **Diagnóstico de los Problemas Visuales:**
   * **Botón Duplicado:** Existía un botón morado `[Ejecutar Consulta ⌘↵]` en la cabecera superior y otro idéntico `[Ejecutar Query ⌘↵]` en la barra de herramientas del editor Monaco a escasos píxeles de distancia.
-  * **Mensaje Inapropiado de Reto Superado:** En una consulta ad-hoc de exploración, [`DataGridResults`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx) mostraba `SOLUCIÓN VÁLIDA` y un banner verde festivo de `¡Reto Superado con Éxito!`, lo cual no tiene sentido en un Playground libre donde no hay un reto que evaluar.
+  * **Mensaje Inapropiado de Reto Superado:** En una consulta ad-hoc de exploración, [`DataGridResults`](../apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx) mostraba `SOLUCIÓN VÁLIDA` y un banner verde festivo de `¡Reto Superado con Éxito!`, lo cual no tiene sentido en un Playground libre donde no hay un reto que evaluar.
   * **Tablas Cortadas & Scroll Anidado:** La lista de tablas en la barra lateral izquierda tenía un `max-h-64` y el bloque `Plantillas Rápidas` le cortaba el paso visual a la mitad de `pedidos` y `detalle_pedidos`.
   * **Doble Scroll de Ventana:** La vista estaba restringida por `max-w-7xl` con `pt-20` y `pb-12`, generando barras de scroll tanto a nivel del navegador como dentro de los paneles.
 * **Soluciones Implementadas:**
@@ -257,21 +262,21 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ### [2026-11-09] — Entrada 14: Fase 6 — Autenticidad, Calidad & Estándares Anti-AI Slop
 * **Rama:** `feat/authenticity-and-polish`
-* **Cumplimiento Integral de Directrices de Ingeniería ([`AGENTS.md`](file:///c:/Desarrollo/Qurio/AGENTS.md)):**
+* **Cumplimiento Integral de Directrices de Ingeniería ([`AGENTS.md`](../AGENTS.md)):**
   * **Página 404 Personalizada con Metáfora SQL:**
-    * Componente organismo [`NotFoundView`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/NotFoundView/NotFoundView.tsx) estilizado bajo *Terminal Glow Minimal*.
+    * Componente organismo [`NotFoundView`](../apps/web/src/components/organisms/NotFoundView/NotFoundView.tsx) estilizado bajo *Terminal Glow Minimal*.
     * Simula una consola interactiva de PostgreSQL con código de error estándar `SQLSTATE 42P01: relation does not exist in schema public` y sugerencia de ayuda (`HINT`).
     * Proporciona botones de acción inmediata para volver al Dashboard, explorar Rutas o abrir el SQL Playground.
   * **Favicon e Identidad de Marca Oficial SVG:**
-    * Creado el isotipo matemático puro [`apps/web/public/favicon.svg`](file:///c:/Desarrollo/Qurio/apps/web/public/favicon.svg) (cilindro relacional en capas con núcleo verde esmeralda activo) y vinculado en `apps/web/index.html`.
+    * Creado el isotipo matemático puro [`apps/web/public/favicon.svg`](../apps/web/public/favicon.svg) (cilindro relacional en capas con núcleo verde esmeralda activo) y vinculado en `apps/web/index.html`.
   * **Open Graph (OG Tags) & Previsualización Social:**
-    * Creado el activo vectorial oficial [`apps/web/public/og-preview.svg`](file:///c:/Desarrollo/Qurio/apps/web/public/og-preview.svg) en estética oscura `#0B1020` con el lema institucional: *«Aprende SQL. Piensa en queries.»*.
+    * Creado el activo vectorial oficial [`apps/web/public/og-preview.svg`](../apps/web/public/og-preview.svg) en estética oscura `#0B1020` con el lema institucional: *«Aprende SQL. Piensa en queries.»*.
     * Etiquetas `og:title`, `og:description`, `og:image`, `theme-color: #0B1020` y tarjetas Twitter configuradas en `index.html`.
   * **Contacto Transparente y Términos Claros (Cero Relleno):**
-    * Integrado el modal molécula [`PrivacyModal`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/PrivacyModal/PrivacyModal.tsx) explicando de forma transparente y humana la ausencia de cookies de rastreo y el aislamiento en sandbox.
-    * Pie de página técnico en [`DashboardLayout`](file:///c:/Desarrollo/Qurio/apps/web/src/components/templates/DashboardLayout/DashboardLayout.tsx) con enlace directo al repositorio oficial `https://github.com/ErickKNT/qurio` (sin direcciones postales ficticias).
+    * Integrado el modal molécula [`PrivacyModal`](../apps/web/src/components/molecules/PrivacyModal/PrivacyModal.tsx) explicando de forma transparente y humana la ausencia de cookies de rastreo y el aislamiento en sandbox.
+    * Pie de página técnico en [`DashboardLayout`](../apps/web/src/components/templates/DashboardLayout/DashboardLayout.tsx) con enlace directo al repositorio oficial `https://github.com/ErickKNT/qurio` (sin direcciones postales ficticias).
   * **Adaptabilidad Responsiva Móvil y Accesibilidad (a11y):**
-    * Verificado el sistema de pestañas apiladas (*Consigna*, *Editor SQL*, *Resultados*) en [`WorkspaceLayout`](file:///c:/Desarrollo/Qurio/apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx) para pantallas móviles y tablets.
+    * Verificado el sistema de pestañas apiladas (*Consigna*, *Editor SQL*, *Resultados*) en [`WorkspaceLayout`](../apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx) para pantallas móviles y tablets.
     * Textos alternativos (`alt`) descriptivos en el 100% de avatares e imágenes y atajos de teclado documentados (`⌘ + Enter`).
 * **Verificación de Calidad:**
   * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 6.23s`, 0 errores).
@@ -282,20 +287,20 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Rama:** `feat/theme-support-and-readme`
 * **Entregables de Temas y Documentación:**
   * **Tokens Dinámicos y Variables CSS para Tailwind:**
-    * Re-arquitectura de [`apps/web/src/index.css`](file:///c:/Desarrollo/Qurio/apps/web/src/index.css) con variables en canales RGB (`--color-canvas`, `--color-surface`, `--color-surface-subtle`, `--color-border-subtle`, `--color-border-focus`, `--color-text-main`, `--color-text-muted`, etc.) para `:root` (tema claro) y `.dark` (tema oscuro).
-    * Actualización de [`apps/web/tailwind.config.js`](file:///c:/Desarrollo/Qurio/apps/web/tailwind.config.js) para utilizar `rgb(var(--color-...) / <alpha-value>)`, permitiendo compatibilidad total con modificadores de opacidad de Tailwind (ej. `bg-surface/70`, `border-border-subtle/50`).
+    * Re-arquitectura de [`apps/web/src/index.css`](../apps/web/src/index.css) con variables en canales RGB (`--color-canvas`, `--color-surface`, `--color-surface-subtle`, `--color-border-subtle`, `--color-border-focus`, `--color-text-main`, `--color-text-muted`, etc.) para `:root` (tema claro) y `.dark` (tema oscuro).
+    * Actualización de [`apps/web/tailwind.config.js`](../apps/web/tailwind.config.js) para utilizar `rgb(var(--color-...) / <alpha-value>)`, permitiendo compatibilidad total con modificadores de opacidad de Tailwind (ej. `bg-surface/70`, `border-border-subtle/50`).
   * **Hook Reactivo y Persistencia (`useTheme`):**
-    * Módulo [`apps/web/src/hooks/useTheme.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/hooks/useTheme.ts) con almacenamiento en `localStorage` (`qurio_theme`), detección de `prefers-color-scheme`, eventos custom `qurio-theme-change` y listeners a cambios del sistema operativo.
+    * Módulo [`apps/web/src/hooks/useTheme.ts`](../apps/web/src/hooks/useTheme.ts) con almacenamiento en `localStorage` (`qurio_theme`), detección de `prefers-color-scheme`, eventos custom `qurio-theme-change` y listeners a cambios del sistema operativo.
   * **Controles Visuales de Alternancia (Toggle Sol / Luna):**
-    * Botón integrado en la barra de herramientas superior [`TopHeader`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/TopHeader/TopHeader.tsx).
-    * Botón integrado en la cabecera del espacio de trabajo [`WorkspaceLayout`](file:///c:/Desarrollo/Qurio/apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx) en [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx).
+    * Botón integrado en la barra de herramientas superior [`TopHeader`](../apps/web/src/components/organisms/TopHeader/TopHeader.tsx).
+    * Botón integrado en la cabecera del espacio de trabajo [`WorkspaceLayout`](../apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx) en [`App.tsx`](../apps/web/src/App.tsx).
   * **Temas Reactivos en Monaco Editor:**
-    * Actualización de [`MonacoEditorPanel`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx) definiendo el tema claro oficial `qurio-light` (fondo `#F8FAFC`, cursor cyan `#0284C7`, palabras reservadas azul/índigo, strings verde oscuro, comentarios grises).
+    * Actualización de [`MonacoEditorPanel`](../apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx) definiendo el tema claro oficial `qurio-light` (fondo `#F8FAFC`, cursor cyan `#0284C7`, palabras reservadas azul/índigo, strings verde oscuro, comentarios grises).
     * Cambio reactivo del editor mediante `monaco.editor.setTheme()` cuando cambia `isDark`.
   * **Script Anti-Parpadeo (Anti-FOUC):**
-    * Script embebido en `<head>` de [`apps/web/index.html`](file:///c:/Desarrollo/Qurio/apps/web/index.html) para inyectar la clase `dark` antes del primer render del DOM.
+    * Script embebido en `<head>` de [`apps/web/index.html`](../apps/web/index.html) para inyectar la clase `dark` antes del primer render del DOM.
   * **README.md Oficial y Exhaustivo:**
-    * Documentación técnica completa en [`README.md`](file:///c:/Desarrollo/Qurio/README.md) con badges oficiales, diagramas Mermaid de arquitectura global y flujo de evaluación semántica, resumen del dataset de 10 tablas, guía de instalación paso a paso, suite de pruebas y estándares de ingeniería.
+    * Documentación técnica completa en [`README.md`](../README.md) con badges oficiales, diagramas Mermaid de arquitectura global y flujo de evaluación semántica, resumen del dataset de 10 tablas, guía de instalación paso a paso, suite de pruebas y estándares de ingeniería.
 * **Verificación de Calidad:**
   * Compilación TypeScript estricta y empaquetado de producción con Vite (`built in 5.96s`, 0 errores).
 
@@ -308,9 +313,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * En React 18 con `StrictMode` en desarrollo, el ciclo de montaje/desmontaje generaba desincronización de estados y desenganche de escuchadores.
   * No existía un `ThemeProvider` unificado como único origen de la verdad en el árbol de componentes.
 * **Soluciones Implementadas:**
-  * **`ThemeProvider` y `ThemeContext` Reactivo:** Creado [`apps/web/src/hooks/useTheme.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/hooks/useTheme.tsx) y envuelto en [`apps/web/src/main.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/main.tsx), garantizando un único estado global para toda la aplicación.
+  * **`ThemeProvider` y `ThemeContext` Reactivo:** Creado [`apps/web/src/hooks/useTheme.tsx`](../apps/web/src/hooks/useTheme.tsx) y envuelto en [`apps/web/src/main.tsx`](../apps/web/src/main.tsx), garantizando un único estado global para toda la aplicación.
   * **Mutación Síncrona del DOM:** `toggleTheme` y `setTheme` ejecutan inmediatamente la mutación de `document.documentElement` (`classList.toggle('dark')`, `classList.toggle('light')`, `style.colorScheme`), actualizando tanto el CSS nativo como Tailwind y persistiendo en `localStorage` sin condiciones de carrera.
-  * **Tokens CSS con Alta Especificidad:** Añadidas reglas explícitas `html.light, :root` y `html.dark, .dark` en [`apps/web/src/index.css`](file:///c:/Desarrollo/Qurio/apps/web/src/index.css) con transición suave (`transition: background-color 0.2s ease, color 0.2s ease`).
+  * **Tokens CSS con Alta Especificidad:** Añadidas reglas explícitas `html.light, :root` y `html.dark, .dark` en [`apps/web/src/index.css`](../apps/web/src/index.css) con transición suave (`transition: background-color 0.2s ease, color 0.2s ease`).
   * **Atributos de Botón y Clases de Color:** Añadido `type="button"` a los botones de alternancia en `TopHeader` y `WorkspaceLayout`, corrigiendo la clase inexistente `text-amber-accent` a `text-amber-streak`.
 * **Verificación de Calidad:**
   * Compilación TypeScript y empaquetado de producción Vite verificado exitosamente (`built in 5.99s`, 0 errores).
@@ -388,9 +393,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Objetivo:** Incorporar las mejores lecciones de diseño instruccional y pedagógico de la plataforma de referencia **SQLBolt**, elevando la experiencia de resolución de retos en Qurio con micro-teoría contextualizada, previsualización de datos de muestra y checklists de sub-objetivos progresivos.
 * **Entregables Técnicos:**
   * **Ampliación de Esquemas y Modelos:**
-    * Backend FastAPI: Creados `ExerciseConcept` y `SampleTableData` en [`apps/api/app/modules/curriculum/seed_data.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/seed_data.py), enriqueciendo todos los ejercicios con explicaciones conceptuales, bloques de sintaxis formateados, notas de orden de ejecución en PostgreSQL y tablas de datos de muestra.
-    * Frontend React: Agregados los tipos correspondientes en [`apps/web/src/types/index.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/types/index.ts) y catálogo enriquecido en [`apps/web/src/lib/api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts).
-  * **Re-arquitectura de `ExerciseSpecPanel` ([`apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx)):**
+    * Backend FastAPI: Creados `ExerciseConcept` y `SampleTableData` en [`apps/api/app/modules/curriculum/seed_data.py`](../apps/api/app/modules/curriculum/seed_data.py), enriqueciendo todos los ejercicios con explicaciones conceptuales, bloques de sintaxis formateados, notas de orden de ejecución en PostgreSQL y tablas de datos de muestra.
+    * Frontend React: Agregados los tipos correspondientes en [`apps/web/src/types/index.ts`](../apps/web/src/types/index.ts) y catálogo enriquecido en [`apps/web/src/lib/api.ts`](../apps/web/src/lib/api.ts).
+  * **Re-arquitectura de `ExerciseSpecPanel` ([`apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx`](../apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx)):**
     * **Pestaña `Guía & Reto`:**
       * Tarjeta de **Concepto Clave & Sintaxis**: Micro-aprendizaje directo al grano con caja de código en `JetBrains Mono`, puntos clave y píldora explicativa de orden de ejecución (`FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY`).
       * Consigna de negocio clara con enlace directo a la previsualización de datos.
@@ -421,7 +426,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
     * `extractTableAliases`: Analizador léxico ligero que examina las cláusulas `FROM` y `JOIN` del búfer SQL para construir un mapa dinámico de alias (`Map<alias, tableName>`), filtrando palabras reservadas.
     * **Autocompletado con Punto (`alias.` / `tabla.`):** Al escribir `c.` o `clientes.`, detecta el alias, busca la tabla en `ECOMMERCE_TABLES_SCHEMA` y sugiere exclusivamente sus columnas (`cliente_id`, `nombre`, `apellido`, `email`, etc.) con sus tipos PostgreSQL e indicadores `[PK]` y `[FK]`.
     * **Autocompletado General:** Sugiere palabras clave SQL (`SELECT`, `FROM`, `WHERE`, `INNER JOIN`, `GROUP BY`, `COUNT`, `ROW_NUMBER`, etc.), nombres de tablas con número de filas y columnas del esquema con priorización según las tablas mencionadas en la consulta.
-  * **Configuración del Editor ([`MonacoEditorPanel.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx)):**
+  * **Configuración del Editor ([`MonacoEditorPanel.tsx`](../apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx)):**
     * Activación de `quickSuggestions` (other: true), `suggestOnTriggerCharacters`, `acceptSuggestionOnEnter: 'smart'` y `tabCompletion: 'on'` para que las sugerencias aparezcan de forma fluida a medida que el usuario escribe sin necesidad de presionar `Ctrl + Espacio`.
 * **Verificación de Calidad:**
   * Compilación TypeScript estricta y build de producción con Vite (`built in 5.53s`, 0 errores).
@@ -437,16 +442,16 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Objetivo:** Perfeccionar la experiencia de usuario en autenticación incorporando alternancia interactiva para ver y ocultar contraseñas, flujo de recuperación de contraseña ("¿Olvidaste tu contraseña?"), y páginas temáticas del sistema para la confirmación de correo y restablecimiento de contraseña en Supabase Cloud.
 * **Entregables Técnicos:**
   * **Toggle de Visibilidad de Contraseña:**
-    * Integrado botón de acción con iconos `Eye` / `EyeOff` en [`AuthModal.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/molecules/AuthModal/AuthModal.tsx) sobre el átomo `FormField`, permitiendo inspeccionar la contraseña tecleada tanto en registro como en login.
+    * Integrado botón de acción con iconos `Eye` / `EyeOff` en [`AuthModal.tsx`](../apps/web/src/components/molecules/AuthModal/AuthModal.tsx) sobre el átomo `FormField`, permitiendo inspeccionar la contraseña tecleada tanto en registro como en login.
   * **Flujo de Recuperación de Contraseña (`forgot` mode):**
     * Enlace *"¿Olvidaste tu contraseña?"* en la pestaña de inicio de sesión de `AuthModal`.
     * Vista dedicada para solicitar restablecimiento con botón *"Enviar Enlace de Recuperación"* conectado a `supabase.auth.resetPasswordForEmail`.
-  * **Página Temática del Sistema para Verificación de Correo ([`AuthConfirmView.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/AuthConfirmView/AuthConfirmView.tsx)):**
+  * **Página Temática del Sistema para Verificación de Correo ([`AuthConfirmView.tsx`](../apps/web/src/components/organisms/AuthConfirmView/AuthConfirmView.tsx)):**
     * Al hacer clic en el enlace del correo de Supabase, el usuario aterriza en una vista nativa de Qurio con diseño *Terminal Glow Minimal*.
     * Isotipo animado con pulso esmeralda, ficha técnica de auditoría (`email_confirmed: TRUE`, sesión JWT firmada, rol `readonly_student`) y acceso directo al Dashboard.
-  * **Página Temática para Restablecer Contraseña ([`ResetPasswordView.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/ResetPasswordView/ResetPasswordView.tsx)):**
+  * **Página Temática para Restablecer Contraseña ([`ResetPasswordView.tsx`](../apps/web/src/components/organisms/ResetPasswordView/ResetPasswordView.tsx)):**
     * Formulario nativo con nueva contraseña y confirmación (ambas con toggle `Eye/EyeOff`), validación de coincidencia y actualización de credenciales vía `supabase.auth.updateUser`.
-  * **Enrutamiento y Detección de Redirecciones en [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx):**
+  * **Enrutamiento y Detección de Redirecciones en [`App.tsx`](../apps/web/src/App.tsx):**
     * Listener reactivo a `hashchange` y parámetros de URL para capturar automáticamente `type=signup`, `auth-confirm`, `type=recovery` y `reset-password`.
     * Títulos dinámicos de navegador actualizados (`Verificación de Cuenta | Qurio`, `Restablecer Contraseña | Qurio`).
 * **Verificación de Calidad:**
@@ -460,8 +465,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Fecha:** 2026-11-09
 * **Objetivo:** Eliminar por completo el componente `SuccessModal` del flujo de ejecución del ejercicio para asegurar que la tabla de resultados de la consulta permanezca 100% visible sin ningún backdrop opaco. Consolidar todas las mejoras de autenticación en `main`.
 * **Cambios Clave:**
-  * Removido el estado `successModalOpen` y el nodo `<SuccessModal>` en [`apps/web/src/App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx).
-  * Todo el feedback de victoria se delega exclusivamente al banner inline de [`DataGridResults.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx) con badge verde esmeralda, ganancia de XP y botón interactivo "Siguiente Reto", preservando la tabla de datos intacta e interactiva.
+  * Removido el estado `successModalOpen` y el nodo `<SuccessModal>` en [`apps/web/src/App.tsx`](../apps/web/src/App.tsx).
+  * Todo el feedback de victoria se delega exclusivamente al banner inline de [`DataGridResults.tsx`](../apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx) con badge verde esmeralda, ganancia de XP y botón interactivo "Siguiente Reto", preservando la tabla de datos intacta e interactiva.
   * Verificación de build de producción con Vite (`built in 5.62s`) y 26/26 pruebas de backend pasando en 0.13s.
 * **Control de Versiones:**
   * Commits consolidados y fusionados con `git merge --no-ff feat/auth-experience-and-custom-redirects` hacia `main`.
@@ -471,14 +476,14 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Fecha:** 2026-11-09
 * **Objetivo:** Implementar un flujo 100% funcional y reactivo de inicio (`signIn`) y cierre de sesión (`signOut`) con Supabase Cloud, eliminando perfiles simulados estáticos y permitiendo a los usuarios autenticarse y desautenticarse con reflejo instantáneo en toda la interfaz.
 * **Cambios Clave:**
-  * **Migración a React Context (`AuthProvider`):** En [`apps/web/src/hooks/useAuth.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/hooks/useAuth.tsx) se creó el contexto canónico de autenticación envolviendo la aplicación en [`main.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/main.tsx). Todos los componentes comparten una única fuente de verdad reactiva sin escuchas duplicadas.
+  * **Migración a React Context (`AuthProvider`):** En [`apps/web/src/hooks/useAuth.tsx`](../apps/web/src/hooks/useAuth.tsx) se creó el contexto canónico de autenticación envolviendo la aplicación en [`main.tsx`](../apps/web/src/main.tsx). Todos los componentes comparten una única fuente de verdad reactiva sin escuchas duplicadas.
   * **Flujo de Inicio de Sesión (`signIn`):** Validación real con `supabase.auth.signInWithPassword`, traducción de errores frecuentes (credenciales erróneas, cuenta sin verificar) y sincronización del perfil real desde `public.user_profiles`.
   * **Flujo de Cierre de Sesión (`signOut`):** Llamada real a `supabase.auth.signOut()`, purga de tokens JWT de sesión y limpieza de almacenamiento local (`clearLocalProfile()`), regresando instantáneamente al estado de Invitado.
   * **Estado de Invitado vs Autenticado en UI:**
-    * [`TopHeader.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/TopHeader/TopHeader.tsx): Muestra botón explícito "Iniciar Sesión" para invitados. Si está autenticado, muestra avatar con halo activo esmeralda y menú desplegable interactivo con nombre, correo, XP y botón rojo "Cerrar Sesión".
-    * [`SidebarNav.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/SidebarNav/SidebarNav.tsx): Presenta tarjeta de "Modo Invitado" con botón de login, o tarjeta de progreso del usuario autenticado con botón de cerrar sesión.
-    * [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx): Cabecera del IDE adaptada con botón de login y botón de cierre de sesión dinámicos.
-    * [`UserProfileView.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx): Eliminado el valor cableado `Erick KNT` y `480 XP`, conectando los datos reales del perfil autenticado o del estado de invitado.
+    * [`TopHeader.tsx`](../apps/web/src/components/organisms/TopHeader/TopHeader.tsx): Muestra botón explícito "Iniciar Sesión" para invitados. Si está autenticado, muestra avatar con halo activo esmeralda y menú desplegable interactivo con nombre, correo, XP y botón rojo "Cerrar Sesión".
+    * [`SidebarNav.tsx`](../apps/web/src/components/organisms/SidebarNav/SidebarNav.tsx): Presenta tarjeta de "Modo Invitado" con botón de login, o tarjeta de progreso del usuario autenticado con botón de cerrar sesión.
+    * [`App.tsx`](../apps/web/src/App.tsx): Cabecera del IDE adaptada con botón de login y botón de cierre de sesión dinámicos.
+    * [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx): Eliminado el valor cableado `Erick KNT` y `480 XP`, conectando los datos reales del perfil autenticado o del estado de invitado.
   * Verificación de build de producción con Vite (`built in 5.50s`) y suite de pruebas pasando al 100%.
 * **Control de Versiones:**
   * Commit `5d3b1ff` en la rama `main` y sincronizado en GitHub.
@@ -493,9 +498,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Ciclos de importación:** 0 (arquitectura limpia y desacoplada).
   * **Nodos centrales ("God Nodes"):** `cn()`, `react`, `Button`, `Badge()`, `App()`, `evaluate_solution()`, `validate_sql_security()`, `EvaluationStatus`.
 * **Artefactos Entregados:**
-  * [`graphify-out/graph.html`](file:///c:/Desarrollo/Qurio/graphify-out/graph.html): Visualizador interactivo autocontenido ejecutable en cualquier navegador sin servidor.
-  * [`graphify-out/graph.json`](file:///c:/Desarrollo/Qurio/graphify-out/graph.json): Grafo estructurado listo para GraphRAG.
-  * [`graphify-out/GRAPH_REPORT.md`](file:///c:/Desarrollo/Qurio/graphify-out/GRAPH_REPORT.md): Informe ejecutivo de comunidades, métricas de cohesión y conexiones del sistema.
+  * [`graphify-out/graph.html`](../graphify-out/graph.html): Visualizador interactivo autocontenido ejecutable en cualquier navegador sin servidor.
+  * [`graphify-out/graph.json`](../graphify-out/graph.json): Grafo estructurado listo para GraphRAG.
+  * [`graphify-out/GRAPH_REPORT.md`](../graphify-out/GRAPH_REPORT.md): Informe ejecutivo de comunidades, métricas de cohesión y conexiones del sistema.
 * **Control de Versiones:**
   * Commit `576edbb` en la rama `main` y sincronizado en GitHub.
 
@@ -531,36 +536,38 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Rama:** `security/phase-9-hardening` (aislada de `main`, lista para revisión).
 * **Objetivo:** Implementar el plan de remediación integral de seguridad derivado de la auditoría técnica (`SECURITY_AUDIT.md`), cubriendo validación sintáctica mediante AST, soporte controlado de consultas avanzadas (`WITH RECURSIVE`), autenticación asimétrica ES256 (JWKS), Rate Limiting desacoplado y arquitectura de progreso certificado en el backend.
 * **Componentes Implementados y Modificados:**
-  * **SQL Runner & AST con SQLGlot ([`apps/api/app/modules/runner/security.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/runner/security.py)):**
+  * **SQL Runner & AST con SQLGlot ([`apps/api/app/modules/runner/security.py`](../apps/api/app/modules/runner/security.py)):**
     * Sustitución de regex por análisis sintáctico formal del AST (`sqlglot.parse` con dialecto `postgres`).
     * Allowlist estricta de raíces de lectura (`exp.Query`, `exp.Subquery`).
     * Denylist profunda en todo el árbol (`walk()`) para neutralizar mutaciones DDL/DML camufladas dentro de CTEs o subconsultas.
     * Bloqueo de funciones peligrosas del sistema (`pg_sleep`, `pg_terminate_backend`, `dblink`, `pg_read_file`, etc.) y tablas internas de credenciales (`pg_shadow`, `pg_authid`).
     * Soporte seguro para `WITH RECURSIVE` delegando la contención de recursiones infinitas al motor PostgreSQL (`statement_timeout = 2000ms`, `lock_timeout = 1000ms`).
     * Cláusula `LIMIT` forzada y manipulada de forma nativa en el AST (`enforce_row_limit`).
-  * **Autenticación Asimétrica ES256 ([`apps/api/app/core/auth.py`](file:///c:/Desarrollo/Qurio/apps/api/app/core/auth.py)):**
+  * **Autenticación Asimétrica ES256 ([`apps/api/app/core/auth.py`](../apps/api/app/core/auth.py)):**
     * Verificación contra el endpoint JWKS público de Supabase (`/.well-known/jwks.json`) con rotación automática de claves y caché en memoria.
     * Validación estricta de claims (`aud = authenticated`, `iss`, `sub`, expiración).
     * Modo invitado con fallback desacoplado que no bloquea la práctica local pero impide la persistencia no autorizada.
-  * **Rate Limiting y Guardia de Concurrencia ([`apps/api/app/core/rate_limit.py`](file:///c:/Desarrollo/Qurio/apps/api/app/core/rate_limit.py)):**
+  * **Rate Limiting y Guardia de Concurrencia ([`apps/api/app/core/rate_limit.py`](../apps/api/app/core/rate_limit.py)):**
     * Límite diferenciado: 20 req/min por IP para invitados, 120 req/min por UID para autenticados.
     * Semáforo de concurrencia (`asyncio.Semaphore(10)`) para blindar el pool `asyncpg` ante avalanchas.
-  * **Cabeceras de Seguridad ([`apps/api/app/main.py`](file:///c:/Desarrollo/Qurio/apps/api/app/main.py)):**
+  * **Cabeceras de Seguridad ([`apps/api/app/main.py`](../apps/api/app/main.py)):**
     * Middleware con `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy`.
-  * **Infraestructura Sandbox ([`docker-compose.yml`](file:///c:/Desarrollo/Qurio/docker-compose.yml) y [`database/sandbox/init.sql`](file:///c:/Desarrollo/Qurio/database/sandbox/init.sql)):**
+  * **Infraestructura Sandbox ([`docker-compose.yml`](../docker-compose.yml) y [`database/sandbox/init.sql`](../database/sandbox/init.sql)):**
     * Vinculación de PostgreSQL a `127.0.0.1:5433:5432` impidiendo exposición innecesaria a interfaces de red externas.
     * `lock_timeout = '1000ms'` y `temp_file_limit = '32MB'` sobre el rol `readonly_student`.
 
 ---
 
-### Entrada 27 — Cierre Definitivo de Fase 9: Hardening de Seguridad y Ajustes Finales (v5.0)
+### Entrada 27 (Reconciliación Cronológica: Cierre de Fase 9) — Hardening de Seguridad y Ajustes Finales (v5.0)
+> [!NOTE]
+> **Nota de Trazabilidad Histórica:** Esta entrada fue numerada como 27 en el historial de trabajo preliminar, pero cronológicamente antecede a la Entrada 20 (Expansión Curricular) y Entrada 22 (Blueprint v1.2). Se conserva íntegra sin reescribir para preservar la veracidad del historial.
 * **Fecha:** 2026-11-09
 * **Rama:** `security/phase-9-hardening` (aislada de `main`, protegida sin despliegue automático).
 * **Objetivo:** Ejecutar los dos ajustes finales requeridos para cerrar formalmente la Fase 9:
   1. Revocación explícita de `SELECT` por columna en `public.exercise_attempts` para `PUBLIC` y `anon`.
   2. Conservación del índice condicional único parcial `idx_single_awarded_passed_attempt` durante el rollback como salvaguarda estructural independiente.
 * **Refactorizaciones Entregadas:**
-  * **Script DDL Supabase v5.0 ([`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql)):**
+  * **Script DDL Supabase v5.0 ([`database/supabase/03_security_hardening.sql`](../database/supabase/03_security_hardening.sql)):**
     * Validación anti-NULL explícita en cada parámetro de `record_verified_attempt()`.
     * Eliminación definitiva del mínimo artificial de 10 XP; cálculo autoritativo proporcional (0, 5, 10, 20, 100 XP) y validación de `e.xp_reward`.
     * Sustitución de `search_path = public, pg_temp` por `SET search_path = ''` para neutralizar secuestro de esquemas.
@@ -571,15 +578,15 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
     * Bloqueo físico `SELECT ... FOR UPDATE` sobre `public.user_profiles` e índice condicional único `idx_single_awarded_passed_attempt`.
     * Preservación de la consistencia auditada de `public.user_progress` en intentos fallidos (`FAILED`, `ERROR`).
     * Consulta diagnóstica de conciliación multi-fuente de XP sin alteración automática de datos.
-  * **Script de Reversión Seguro v3.0 ([`database/supabase/rollback_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/rollback_security_hardening.sql)):**
+  * **Script de Reversión Seguro v3.0 ([`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql)):**
     * Conservación del índice único parcial `idx_single_awarded_passed_attempt` (eliminado el `DROP INDEX`).
     * Mantiene blindados `xp`, `level` e inserciones en `exercise_attempts` para clientes incluso tras revertir la RPC.
     * Procedimiento de contingencia operacional documentado.
-  * **Script de Diagnóstico de Privilegios v3.0 ([`database/supabase/diagnose_privileges.sql`](file:///c:/Desarrollo/Qurio/database/supabase/diagnose_privileges.sql)):**
+  * **Script de Diagnóstico de Privilegios v3.0 ([`database/supabase/diagnose_privileges.sql`](../database/supabase/diagnose_privileges.sql)):**
     * Inspección de ACL mediante `aclexplode` demostrando que `PUBLIC` (grantee 0) no tiene acceso a la RPC.
     * Comprobación de `SELECT` por columna distinguiendo entre permisos de tabla y de columna para `PUBLIC`, `anon` y `authenticated`.
     * Consulta no destructiva de conciliación multi-fuente de XP.
-  * **Suite Automatizada de Migración Supabase ([`apps/api/tests/test_supabase_migration.py`](file:///c:/Desarrollo/Qurio/apps/api/tests/test_supabase_migration.py)):**
+  * **Suite Automatizada de Migración Supabase ([`apps/api/tests/test_supabase_migration.py`](../apps/api/tests/test_supabase_migration.py)):**
     * 9 pruebas integrales en Docker con roles, RLS y esquemas reales:
       1. Matriz de privilegios efectivos CLS a nivel de tabla y columna (`PUBLIC` y `anon` sin `SELECT`).
       2. Rechazo explícito de parámetros nulos.
@@ -604,7 +611,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 ### [2026-11-09] — Entrada 20: Fase 10 — Expansión Curricular Integral a 50 Retos (Rutas 1, 2 y 3)
 * **Rama:** `feat/curriculum-expansion-50-exercises`.
 * **Fundamentación Formal & Anti-AI Slop:**
-  * Redacción y publicación de la especificación pedagógica integral en [`docs/CURRICULUM_SPEC.md`](file:///c:/Desarrollo/Qurio/docs/CURRICULUM_SPEC.md).
+  * Redacción y publicación de la especificación pedagógica integral en [`docs/CURRICULUM_SPEC.md`](CURRICULUM_SPEC.md).
   * Todos los 50 retos sustentados en el estándar **ISO/IEC 9075:2016 (SQL Core)**, la documentación oficial de **PostgreSQL 16** y la **Taxonomía de Bloom**.
   * Cada reto cuenta con `concept` (resumen, sintaxis formal, puntos clave y nota de orden lógico de procesamiento), `objectives` (lista de comprobación interactiva), `hints` (1 a 3 pistas progresivas con penalización porcentual decreciente) y `sample_tables` (10 tablas pedagógicas compartidas).
 * **Distribución Piramidal Entregada:**
@@ -624,9 +631,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * Módulo 11: Common Table Expressions (CTEs con WITH) (2 retos: facturación modular por categoría, pipeline encadenado de 2 pasos).
      * Módulo 12: Funciones de Ventana Analíticas (Window Functions) (3 retos: ranking absoluto con `ROW_NUMBER`, ranking relativo particionado con `DENSE_RANK`, análisis cronológico con `LAG`).
 * **Sincronización de Componentes y Código:**
-  * **Backend ([`apps/api/app/modules/curriculum/seed_data.py`](file:///c:/Desarrollo/Qurio/apps/api/app/modules/curriculum/seed_data.py)):** Catálogo completo de 50 ejercicios tipados en Pydantic con 10 tablas de muestra y 112 pistas.
-  * **Base de Datos ([`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql)):** DDL de inserción de 3 rutas, 12 módulos, 50 ejercicios y 112 pistas.
-  * **Frontend ([`apps/web/src/lib/api.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/lib/api.ts)):** Soporte offline completo con las 10 tablas de muestra, 50 ejercicios en `FALLBACK_EXERCISES` y contadores de módulos en `FALLBACK_TRACKS`.
+  * **Backend ([`apps/api/app/modules/curriculum/seed_data.py`](../apps/api/app/modules/curriculum/seed_data.py)):** Catálogo completo de 50 ejercicios tipados en Pydantic con 10 tablas de muestra y 112 pistas.
+  * **Base de Datos ([`database/supabase/02_seed_curriculum.sql`](../database/supabase/02_seed_curriculum.sql)):** DDL de inserción de 3 rutas, 12 módulos, 50 ejercicios y 112 pistas.
+  * **Frontend ([`apps/web/src/lib/api.ts`](../apps/web/src/lib/api.ts)):** Soporte offline completo con las 10 tablas de muestra, 50 ejercicios en `FALLBACK_EXERCISES` y contadores de módulos en `FALLBACK_TRACKS`.
 * **Garantía de Calidad y Resultados de Verificación:**
   * **Ejecución en Sandbox Docker:** 50/50 consultas ejecutadas contra PostgreSQL Sandbox en el puerto 5433 arrojando cardinalidades no degeneradas ($>0$ filas).
   * **Validación AST de Seguridad:** 50/50 consultas validadas contra `validate_sql_security` sin falsos positivos.
@@ -634,14 +641,813 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Compilación Frontend Vite:** **0 errores TypeScript** (`tsc && vite build` completado exitosamente).
   * **Grafo de Conocimiento (Graphify):** Actualizado conforme a la regla del proyecto (`python -m graphify update .`), indexando **1,540 nodos, 2,365 aristas y 93 comunidades**.
 
+---
+
+### [2026-11-10] — Entrada 22: Revisión Final de Consistencia Técnica Documental (Blueprint v1.2 y Plan de Fase 10 v1.2)
+* **Rama:** `docs/product-business-blueprint-v1`.
+* **Objetivo:** Actualizar `docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` y `docs/roadmap/PHASE_10_STABILIZATION_PLAN.md` a la **versión 1.2**, cerrando las 4 precisiones técnicas de la revisión documental (C-03 fuente autoritativa y skeleton de carga, D-05 recuperación ante interrupciones e idempotencia en migración de invitados, C-01 fuente maestra única de currículo y paridad en 7 atributos, trazabilidad de diffs completos y matriz de pruebas). Tarea 100% documental sin cambios en código ni infraestructura.
+* **Artefactos Documentales Actualizados:**
+  1. [`docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`](product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md) (**Versión `1.2`**).
+  2. [`docs/roadmap/PHASE_10_STABILIZATION_PLAN.md`](roadmap/PHASE_10_STABILIZATION_PLAN.md) (**Versión `1.2`**).
+* **Estado de Código e Infraestructura:** **Cero modificaciones en código, SQL, migraciones ni infraestructura. No se ha iniciado la implementación de PR-10.1.**
+
+---
+
+### [2026-11-10] — Entrada 23: Auditoría del Estado Operativo y Definición de la Nueva Línea Base (`QURIO-OPERATIONAL-BASELINE-01`)
+* **Rama:** `docs/operational-baseline-v1` (ramificada desde `main` / `add8b6d` tras sincronizar documentación v1.2).
+* **Objetivo:** Ejecutar una auditoría técnica y forense integral del repositorio Qurio para contrastar afirmaciones documentales contra el estado real del código, evaluar el flujo de 21 pasos de aceptación del estudiante y establecer una nueva línea base operativa orientada estrictamente al éxito del primer grupo piloto.
+* **Resultados de la Auditoría Forense:**
+  * **Verificación de Git:** Rama `main` en commit `add8b6d`. Las 17 ramas de características históricas están 100% fusionadas a `main`. `origin/main` sincronizado.
+  * **Verificación de Currículo (50 Retos):** Paridad comprobada 1:1 en los 7 atributos entre `seed_data.py`, `02_seed_curriculum.sql` y `api.ts`. Se detectó que la variable se llama `SEED_EXERCISES` (no `EXERCISES_SEED`) y que `TRACKS_SEED`/`MODULES_SEED` no existen en backend.
+  * **Verificación de Seguridad (Brecha C-01, P0):** Se confirmó que `solution_query` está expuesta en 50 ocurrencias en el bundle JS compilado (`dist/assets/index-*.js`), en `FALLBACK_EXERCISES`, en respuestas de la API (`GET /exercises`) y en PostgREST (`SELECT * FROM exercises`).
+  * **Verificación de Persistencia (Brecha C-02, P1):** Confirmada la doble escritura en el frontend (`persistence.ts`) que es rechazada con `42501` y silenciada en consola, bloqueando la edición de perfil.
+  * **Verificación de Progreso (Brecha C-03, P1):** Confirmado que `App.tsx` asigna el total global a todas las rutas simultáneamente y suma `+1` a todas al resolver cualquier reto.
+  * **Verificación de Esquema (Brecha C-04, P2):** Confirmada la discrepancia `pagos` vs `metodos_pago`, conteos de filas ficticios en `api.ts` y que `ExerciseSpecPanel` solo muestra 4 de las 10 tablas del sandbox.
+  * **Verificación de Navegación (Brecha C-05, P1):** Confirmada la ausencia de React Router: estado en memoria con `useState`, sin URLs para retos (`/exercises/:id`) y pérdida de vista en recarga (`F5`).
+  * **Verificación de Infraestructura y Pruebas:** Docker Sandbox apagado conforme a solicitud previa; suite de 64 pruebas en FastAPI bloqueada si Docker no corre debido al fixture global en `conftest.py`; frontend sin test runner configurado (`package.json`).
+* **Artefactos Entregados:**
+  1. [`docs/audits/QURIO_OPERATIONAL_AUDIT.md`](audits/QURIO_OPERATIONAL_AUDIT.md) (**Informe Forense de Auditoría v1.0**).
+  2. [`docs/roadmap/QURIO_OPERATIONAL_BASELINE.md`](roadmap/QURIO_OPERATIONAL_BASELINE.md) (**Nueva Línea Base Operativa v1.0**).
+* **Estado de Código e Infraestructura:** **Cero modificaciones en código de aplicación (`apps/web`, `apps/api`), cero cambios en esquemas SQL (`database/`), cero cambios en Supabase Cloud. No se inició `PR-10.1`.**
+
+
+### [2026-11-10] — Entrada 24: Cierre de Auditoría Operativa, Validación Ejecutable y Consolidación de la Línea Base (`QURIO-OPERATIONAL-BASELINE-02`)
+* **Rama:** `feat/phase-10-stabilization` (ramificada desde `docs/operational-baseline-v1`).
+* **Objetivo:** Ejecutar la resolución integral de las 5 brechas prioritarias de la auditoría operativa (`C-01` a `C-05`) organizadas en 4 bloques funcionales coherentes, validar mediante pruebas automatizadas locales en backend y frontend, verificar el empaquetado de producción y consolidar la nueva línea base técnica para el grupo piloto.
+* **Entregables por Bloque Funcional:**
+  1. **Bloque A — Seguridad Curricular (`C-01`):**
+     * **Backend:** Implementación de `ExercisePublicDTO` en `seed_data.py` (omitiendo `solution_query`) y método `to_public_dto()`. `ExerciseRepository` expone `list_public()` y `get_public_by_id()` retornando DTOs públicos, mientras que `get_internal_for_evaluation()` reserva el acceso a `solution_query` exclusivamente para el evaluador interno.
+     * **Frontend:** Eliminación de `solution_query` en la interfaz `Exercise` (`types/index.ts`) y purga completa de las 50 soluciones en `FALLBACK_EXERCISES` de `api.ts`.
+     * **Verificación:** `npm run build` genera un bundle en `dist/assets/*.js` con **cero apariciones** de `solution_query`. Pruebas en FastAPI (`test_public_exercises_never_expose_solution_query`) certifican que ni el catálogo ni el detalle exponen soluciones.
+  2. **Bloque B — Persistencia y Experiencia de Usuario Autenticado e Invitado (`C-02` + `D-05`):**
+     * **Frontend (`persistence.ts`):** Eliminación total de llamadas directas a `.from('exercise_attempts').insert`, `.from('user_profiles').update({ xp, level })` y `.from('user_daily_activity').update`.
+     * **Restricción de Perfil:** `persistence.updateProfile` restringido estrictamente a campos visuales (`display_name`, `avatar_url`, `username`), impidiendo errores `42501`.
+     * **Límite de Prueba de Invitado:** En backend (`router.py`), usuarios sin sesión (`user.is_guest`) son rechazados con HTTP 401 `REGISTRATION_REQUIRED_AFTER_TRIAL` si intentan evaluar retos fuera de los 3 de prueba del M01.
+     * **Almacén Temporal de Invitados (`qurio_guest_progress_v1`):** Protocolo de migración idempotente (`syncGuestProgress`) con recuperación de bloqueos stale en `syncing` (>30s) y descarte de duplicados ya existentes en la nube.
+     * **Aislamiento de Progreso:** `getCompletedExerciseIds` para usuarios autenticados lee exclusivamente de Supabase Cloud, sin mezclar datos de `localStorage`.
+  3. **Bloque C — Integridad del Currículo y Progreso (`C-03` + `C-04`):**
+     * **Funciones Puras (`progress.ts`):** Implementación de `computeOfficialTracksProgress` (calcula avance por ruta cruzando módulos con `authoritativeCompletedIds`) y `computeGuestTrialTracksProgress` (aislado para prueba).
+     * **Tratamiento de `isLoading`:** Cuando `isLoading` es true, devuelve `completed_exercises: null`, `progress_percent: null` e `is_progress_loading: true`, renderizando un badge pulsante y skeleton shimmer en `TrackCard.tsx` para evitar parpadeos en 0%.
+     * **Aislamiento de Rutas:** Se erradicó el bug que sumaba progreso a todas las rutas. Completar retos en Ruta 1 solo incrementa Ruta 1.
+     * **Esquema Relacional Canónico:** `ExerciseSpecPanel.tsx` actualizado para mostrar las **10 tablas completas** del sandbox relacional. `ECOMMERCE_TABLES_SCHEMA` (`api.ts`) y `README.md` alineados con los conteos reales de filas de `ecommerce_seed.sql` y tabla `pagos` con columna `metodo_pago`. `docs/CURRICULUM_SPEC.md` alineado en reto #27.
+  4. **Bloque D — Navegación y Autenticación (`C-05`):**
+     * **Enrutamiento Web Real con History API:** URLs navegables y limpias (`/`, `/tracks`, `/tracks/:slug`, `/exercises/:id`, `/playground`, `/achievements`, `/profile`, `/auth/confirm`, `/reset-password`).
+     * **Preservación en F5:** Recargar el navegador dentro de un reto conserva el ejercicio activo y el estado del IDE mediante deep linking y sincronización con `exercises`.
+     * **Soporte de Navegación:** Botones Atrás y Adelante sincronizados con listener `popstate`.
+     * **Detección Auth Segura:** Detección de parámetros PKCE `code`, `token_hash`, `type=recovery` y `type=signup` en search y hash, con limpieza de URL mediante `replaceState`.
+* **Resultados de la Validación Automatizada:**
+  * **Backend Pytest:** **69/69 pruebas pasando en 44.20s** (100% éxito), incluyendo 13 pruebas de integración, 3 pruebas unitarias de consistencia de esquemas (`test_schema_consistency.py`) y 53 pruebas de seguridad/migración/evaluador. Conexión de pool desacoplada con timeout de 3.0s.
+  * **Frontend Vitest:** **8/8 pruebas pasando en 848ms** en `apps/web` (`progress.test.ts` y `persistence.test.ts`), verificando no-inflación por `is_completed`, estados `isLoading`, aislamiento entre rutas, recuperación ante interrupciones de 30s e idempotencia de migración.
+  * **Frontend Build:** Empaquetado de producción `tsc && vite build` completado en 5.47s con **0 errores TypeScript** y **0 fugas** de `solution_query`.
+  * **Infraestructura:** Contenedores de prueba de Docker apagados limpiamente (`docker compose down`).
+* **Estado de la Línea Base:** La línea base operativa de Qurio queda **100% estabilizada, verificada y lista para la apertura del grupo piloto de estudiantes**.
+
+---
+
+### [2026-11-10] — Entrada 25: Revisión Correctiva, Certificación Técnica y Cierre Definitivo de Fase 10 (`QURIO-PHASE-10-CORRECTIVE-VALIDATION-01`)
+* **Rama:** `feat/phase-10-stabilization`
+* **Objetivo:** Ejecutar una revisión correctiva integral, certificación técnica y cierre definitivo de la Fase 10 actuando como equipo multidisciplinario senior (Arquitectura, Backend/Seguridad, Frontend/UX, PostgreSQL/Supabase, QA Automation/E2E y DevOps).
+* **Entregables y Remediaciones Ejecutadas:**
+  1. **Rendimiento y Code Splitting (Bloque 10):**
+     * Configuración de `manualChunks` en Vite (`apps/web/vite.config.ts`) separando `vendor-monaco`, `vendor-supabase`, `vendor-react` y `vendor-lucide`.
+     * Carga diferida (`React.lazy()` y `<Suspense>`) de vistas secundarias (`SqlPlaygroundView`, `AchievementsView`, `UserProfileView`, `NotFoundView`, `AuthConfirmView`, `ResetPasswordView`).
+     * **Resultado cuantitativo:** Reducción del bundle principal de 689.56 kB a **247.68 kB** (disminución del **64.1%**), eliminando permanentemente la advertencia de Rollup >500 kB con 0 errores TypeScript.
+  2. **Preservación del Borrador del Editor (C-05 Refinado):**
+     * Implementación de `persistence.saveExerciseDraft`, `persistence.getExerciseDraft` y `persistence.clearExerciseDraft`.
+     * Preservación del código SQL no enviado tecleado por el estudiante ante recargas (`F5`) y navegación de deep links.
+     * Limpieza automática del borrador al resolver el reto con éxito (`PASSED`) o al pulsar "Restablecer".
+     * Blindaje comprobado: la clave `qurio_draft_sql_${id}` contiene estrictamente texto SQL sin tokens ni credenciales.
+  3. **Corrección de Migración de Invitados y Respuesta HTTP Perdida (D-05):**
+     * Corrección del defecto de persistencia en `syncGuestProgress`: guardado local obligatorio al detectar aciertos previos en la nube antes de ejecutar `continue`.
+     * Implementación de mutex de concurrencia (`isSyncInProgress`) para neutralizar invocaciones solapadas simultáneas.
+     * Certificación automatizada del Escenario 6 y 8 de D-05 (respuesta HTTP perdida / reconexión): al detectar el reto en la nube, se marca `'synced'` y se purga el almacenamiento local sin invocar a la API ni duplicar XP.
+  4. **Desacoplamiento Arquitectónico de Pruebas (Bloque E):**
+     * Refactorización de `apps/api/tests/conftest.py`: eliminación de `autouse=True` en `init_sandbox_pool` e incorporación del fixture explícito `sandbox_db` requerido por `client`.
+     * Las pruebas de integración fallan con mensaje descriptivo de infraestructura si Docker no está activo.
+     * Las 40 pruebas unitarias corren de forma 100% offline sin levantar sockets ni depender de Docker.
+  5. **Ampliación de Pruebas Automatizadas:**
+     * **Backend (Pytest):** **69/69 pruebas pasando al 100% en 44.39s** con Docker activo.
+     * **Frontend (Vitest):** Suite ampliada de 8 a **17 pruebas pasando al 100% en 919ms** distribuidas en `progress.test.ts`, `persistence.test.ts` y `routing.test.ts`.
+  6. **Validación Funcional en Vivo con Docker:**
+     * Contenedor `qurio-api` reconstruido y verificado.
+     * `curl` a `/api/v1/exercises` y `/api/v1/exercises/{id}` confirma **0 `solution_query`** en respuestas HTTP.
+     * Límite de prueba de invitados verificado: Retos 1-3 aprobados; Reto 4 rechazado con HTTP 401 `REGISTRATION_REQUIRED_AFTER_TRIAL`.
+  7. **Higiene Documental y Enlaces Relativos:**
+     * Sustitución de **145 enlaces locales absolutos `file:///c:...`** por rutas relativas portables en todos los documentos Markdown del proyecto.
+* **Artefacto Entregado:** [`docs/audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md`](audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md) (Informe Final de Certificación de Fase 10).
+* **Control de Versiones:** Rama `feat/phase-10-stabilization` lista para revisión ejecutiva. Docker apagado (`docker compose down`). Zero push a origin, zero merge a main.
+
+---
+
+### [2026-11-10] — Entrada 26: Conciliación Final de Seguridad, XP de Invitados y Autorizaciones (`QURIO-PHASE-10-FINAL-RECONCILIATION`)
+* **Rama:** `feat/phase-10-stabilization`
+* **Objetivo:** Realizar la conciliación final del informe de certificación de Fase 10, aclarando con evidencia forense el uso de Supabase Cloud, garantizando la política de XP para invitados (D-05), delimitando la certificación de C-01 y formalizando la trazabilidad Git.
+* **Actividades y Resoluciones Técnicas:**
+  1. **Aclaración Obligatoria sobre Supabase Cloud (Auditoría Forense):**
+     * Se auditó el historial íntegro de llamadas HTTP emitidas durante las pruebas.
+     * **Resultado definitivo:** Se certifica que el proyecto en la nube (`bfvgqxfzftumwrleacof`) **no sufrió escrituras, modificaciones ni inserciones de prueba** (0 registros afectados, 0 XP otorgado).
+     * Los únicos intentos de escritura ejecutados contra la nube fueron bloqueados por RLS y revocación de funciones (códigos 401 y 400).
+     * Las pruebas automatizadas de RPC y migración (`test_supabase_migration.py`, 16 tests) se ejecutaron **estrictamente contra el PostgreSQL Sandbox local en Docker (puerto 5433)**.
+     * La sección 6 del informe de certificación fue corregida para transparentar que describe la arquitectura funcional validada en local y mocks, sin escrituras en Cloud de producción.
+  2. **Corrección de XP y Progreso de Invitados (Decisión D-05):**
+     * En `apps/api/app/modules/runner/router.py`, se corrigió la respuesta para invitados forzando taxativamente `evaluation.xp_awarded = 0` y mensaje educativo para registrarse al superar un reto.
+     * Un invitado no puede alterar XP oficial, nivel oficial ni estadísticas en la base de datos de producción.
+     * El progreso de invitado permanece en `qurio_guest_progress_v1` en `localStorage` exclusivamente como buffer transitorio para su canje posterior.
+     * La migración posterior a una cuenta es idempotente y no duplica XP (`cloudPassedSet` en frontend y `already_passed` en RPC).
+     * Suite de integración ampliada a **70 pruebas en backend**, validando con éxito tanto `test_submit_exercise_success_guest` (`xp_awarded == 0`) como `test_submit_exercise_success_authenticated` (`xp_awarded == 30`).
+  3. **Delimitación de la Certificación de C-01:**
+     * **Nivel 1 (Código):** 100% certificado. `ExercisePublicDTO`, DTOs en repositorio/router, interfaz TypeScript y 0 coincidencias en bundle JS (247.68 kB).
+     * **Nivel 2 (PostgreSQL Local):** 100% certificado en Docker (puerto 5433). Script `03_security_hardening.sql` probado con roles `anon`, `authenticated` (bloqueados en `solution_query`) y `service_role` (autorizado).
+     * **Nivel 3 (Supabase Cloud Producción):** Declarado con total transparencia. No se ejecutó en caliente en el dashboard de producción; queda documentado para aplicación manual por parte del propietario.
+  4. **Trazabilidad y Contención Git:**
+     * Rama de trabajo: `feat/phase-10-stabilization`.
+     * Cero modificaciones en `main`, cero push a `origin`, cero despliegue público.
+* **Documentación Actualizada:** [`docs/audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md`](audits/QURIO_PHASE_10_CERTIFICATION_FINAL.md) y [`docs/BITACORA.md`](BITACORA.md).
+* **Decisiones Preservadas:** `D-01` a `D-07` permanecen 100% intactas.
 
 ---
 
 ## 4. Estado de la Integración con Supabase Cloud
 
-* El usuario confirmó la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](file:///c:/Desarrollo/Qurio/database/supabase/01_schema.sql), [`database/supabase/02_seed_curriculum.sql`](file:///c:/Desarrollo/Qurio/database/supabase/02_seed_curriculum.sql) y [`database/supabase/03_security_hardening.sql`](file:///c:/Desarrollo/Qurio/database/supabase/03_security_hardening.sql) en el panel de Supabase Cloud.
+* El usuario confirmó la ejecución exitosa de los scripts [`database/supabase/01_schema.sql`](../database/supabase/01_schema.sql), [`database/supabase/02_seed_curriculum.sql`](../database/supabase/02_seed_curriculum.sql) y [`database/supabase/03_security_hardening.sql`](../database/supabase/03_security_hardening.sql) en el panel de Supabase Cloud.
 * **Verificación en Vivo Confirmada:**
   * La RPC protegida `record_verified_attempt` está activa en la nube con `SET search_path = ''` y validaciones anti-NULL.
   * Invocaciones autorizadas mediante `service_role` (backend) responden correctamente.
   * Invocaciones no autorizadas mediante `anon` (cliente público) son rechazadas por PostgreSQL con código de error `42501: permission denied for function record_verified_attempt`.
 * Las credenciales se encuentran configuradas de forma segura: `SUPABASE_SERVICE_ROLE_KEY` reside exclusivamente en `apps/api/.env`, mientras que `apps/web/.env` opera únicamente con `VITE_SUPABASE_ANON_KEY`.
+
+---
+
+### Entrada 27: Fase 11 — Preparación y Validación Controlada del Piloto
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (creada a partir de `feat/phase-10-stabilization` en commit `bba65c2`).
+* **Objetivo:** Ejecutar la preparación y validación técnica integral previa al despliegue del piloto controlado con estudiantes reales, cubriendo auditoría de código, auditoría de seguridad perimetral de Supabase Cloud en modo solo lectura, remediación de vulnerabilidades y pruebas E2E en Google Chrome real.
+* **Actividades y Logros Clave:**
+  1. **Auditoría Técnica y Remediación de Vulnerabilidades:**
+     * Se auditó la cadena de suministro de dependencias de frontend: `npm audit` detectó una vulnerabilidad crítica en `dompurify <=3.4.16` (CVE de Cross-Site Scripting y manipulación de anidamientos).
+     * Se aplicó la remediación mediante override en `apps/web/package.json` fijando `dompurify: "^3.4.17"`.
+     * Se verificó con `npm audit --registry=https://registry.npmjs.org`: **0 vulnerabilidades encontradas** sobre 175 paquetes.
+     * En backend, las dependencias en `apps/api/requirements.txt` (FastAPI 0.162, Starlette 1.10, Pydantic 2.14, asyncpg 0.32, sqlglot 30.30, PyJWT 2.15, cryptography 50.0) fueron validadas y certificadas libres de vulnerabilidades.
+  2. **Auditoría de Solo Lectura de Supabase Cloud (`bfvgqxfzftumwrleacof`):**
+     * Se comprobó de forma no invasiva la API REST pública de Cloud utilizando la clave `anon`:
+       * La RPC `record_verified_attempt` está debidamente bloqueada para llamadas directas anónimas (`HTTP 401: 42501 permission denied for function`).
+       * La tabla `exercise_attempts` rechaza lecturas anónimas (`HTTP 401: permission denied for table`).
+       * **Hallazgo Alto (H-01):** La tabla `exercises` en Supabase Cloud aún expone la columna `solution_query` a consultas anónimas directas (`HTTP 200`), dado que el script `03_security_hardening.sql` no ha sido ejecutado por el propietario en el panel en la nube.
+       * Se generó la guía detallada de aplicación en [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md) para que el propietario aplique el script en el SQL Editor de Supabase antes del ingreso de estudiantes.
+  3. **Suite Completa de Pruebas E2E en Navegador Real (Google Chrome):**
+     * Se implementó el banco de pruebas automatizado con Playwright (`apps/web/e2e/pilot_e2e_suite.mjs`) e infraestructura de servidor SPA local (`apps/web/e2e/spa_server.mjs`).
+     * Se levantó la pila completa (FastAPI en 8000, PostgreSQL Sandbox en 5433, SPA en 5173).
+     * Se ejecutaron 19 pruebas de integración en Google Chrome real cubriendo:
+       * Carga de Dashboard y metatítulos dinámicos (`T01`, `T01.1`).
+       * Navegación y deep links (`T02`, `T03`, `T03.1`).
+       * Preservación de borradores SQL ante recargas (F5) con purga tras éxito (`T04`, `T06.1`).
+       * Evaluación semántica con fallo pedagógico y comparativa de diff (`T05`).
+       * Evaluación correcta en modo invitado con registro local y 0 XP oficial (`T06`).
+       * Enforce de límite de cuota trial (HTTP 401 en 4º reto para invitados) (`T07`).
+       * Formularios de registro y recuperación de contraseña sin alerts nativos (`T08`, `T08.1`, `T09`).
+       * Consola interactiva de SQL Playground (`T10`, `T10.1`).
+       * Página 404 temática SQL (`T11`, `T11.1`).
+       * Perfil de usuario autenticado (`T12`).
+       * Resiliencia ante caídas de red y errores 500 (`T13`).
+     * **Resultado E2E:** **19 de 19 pruebas pasadas al 100%**.
+  4. **Corrección de UX en Navegación React (`App.tsx` & `AuthModal.tsx`):**
+     * Se corrigió la condición de enrutamiento en `App.tsx` para evitar que las actualizaciones del array de ejercicios en memoria reinicien el estado `executionStatus` a `'IDLE'` al resolver un reto.
+     * Se añadió un hook `useEffect` en `AuthModal.tsx` para garantizar que cada apertura del modal inicie de forma limpia en el modo solicitado (`signin` por defecto) y restablezca cualquier mensaje transitorio.
+  5. **Baterías Automatizadas Consolidadas:**
+     * Backend Pytest: **70/70 pruebas pasadas** (44.63s).
+     * Frontend Vitest: **17/17 pruebas pasadas** (507ms).
+     * Compilación de producción Vite: **Limpia (0 errores)** en 5.41s.
+  6. **Contención Git y Veredicto:**
+     * Rama: `feat/phase-11-pilot-readiness`.
+     * Zero Push, Zero Merge, cero modificaciones en `main`.
+     * **Veredicto:** **LISTO PARA PILOTO CON RESTRICCIÓN ADMINISTRATIVA PREVIA** (aplicación de `03_security_hardening.sql` en Supabase Cloud).
+* **Entregables Documentales Generados:**
+  * [`docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md`](audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md)
+  * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
+  * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)
+  * [`docs/audits/QURIO_PHASE_11_PILOT_READINESS.md`](audits/QURIO_PHASE_11_PILOT_READINESS.md)
+
+---
+
+### Entrada 28: Fase 11.1 — Conciliación Final, Cierre de Hallazgos y Certificación del Piloto
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (mantenida estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver definitivamente las discrepancias detectadas en los informes preliminares de Fase 11, subsanar la caché desactualizada del contenedor Docker en la evaluación de invitados, blindar `03_security_hardening.sql` con nombres canónicos de columnas, restaurar las decisiones D-01 a D-07 del Blueprint v1.2 y generar evidencia reproducible al 100%.
+* **Actividades y Logros Clave:**
+  1. **Resolución de la Discrepancia Crítica de XP en Invitados (C-03 & D-05):**
+     * **Causa Raíz:** El código en `apps/api/app/modules/runner/router.py` ya contaba con la cota `xp_awarded = 0`, pero `docker-compose.yml` carecía de un volumen montado para `apps/api/app`, ejecutando una imagen desfasada previa al commit `bba65c2` que devolvía `xp_awarded: 30`.
+     * **Corrección:** Se agregó el volumen `./apps/api/app:/app/app:ro` en `docker-compose.yml`, se reconstruyó la imagen con `docker compose build api` y se reinició la pila.
+     * **Validación Empírica:** La llamada HTTP al endpoint `/submit` como invitado devuelve taxativamente `"xp_awarded": 0`.
+     * **Regresiones:** Se añadieron 2 pruebas en `apps/api/tests/test_integration.py` (`test_regression_guest_xp_strictly_zero_and_no_rpc_called` y `test_regression_authenticated_user_passes_exercise_4_and_receives_xp`). Total Pytest: **72 pruebas pasadas**.
+  2. **Endurecimiento Riguroso de `03_security_hardening.sql` (v6.0):**
+     * Se auditaron las columnas físicas de `public.exercises` (`id, module_id, title, prompt, initial_code, target_database, xp_reward, difficulty, check_order, sort_order, created_at`), eliminando referencias erróneas a columnas ficticias (`track_id`, `description`).
+     * Se implementó Column-Level Security (CLS) sobre `exercises`: `solution_query` queda completamente denegada para `anon` y `authenticated`, siendo accesible únicamente por `service_role`.
+     * Se blindó `public.user_progress` contra modificaciones directas de estudiantes, delegando actualizaciones exclusivamente a la RPC `record_verified_attempt`.
+     * Se corrigió la firma exacta de 8 parámetros de la RPC: `record_verified_attempt(UUID, UUID, TEXT, VARCHAR, INT, TEXT, INT, INT)`.
+     * Se verificó en `test_supabase_migration.py`: 9 pruebas de privilegios efectivos y transacciones aprobadas al 100%.
+  3. **Reconciliación Conceptual de Decisiones D-01 a D-07:**
+     * Se restauraron las definiciones de producto del Blueprint v1.2 (D-01: Free/Plus, D-02: Marca y eslogan, D-03: Stripe diferido, D-04: Python diferido, D-05: Invitados 3 retos con 0 XP, D-06: Teams diferido, D-07: Estabilidad prioritaria).
+     * Se formalizaron identificadores técnicos desacoplados: `REQ-SANDBOX-01`, `REQ-EVAL-01`, `REQ-AUTH-01`, `REQ-XP-01`, `REQ-MIGRATION-01`, `REQ-DESIGN-01`, `REQ-ANTISLOP-01`.
+  4. **Clasificación Honesta y Transparente de la Suite E2E:**
+     * Se clasificaron las 19 pruebas de `pilot_e2e_suite.mjs` en 4 niveles de fidelidad:
+       * **Tier A (12 pruebas):** Navegador real contra API local y Docker PostgreSQL Sandbox real.
+       * **Tier B (3 pruebas):** Intercepción de rutas de red (`page.route()`) para proteger la nube.
+       * **Tier C (3 pruebas):** Pruebas de almacenamiento local (`localStorage`).
+       * **Tier D:** Flujos que requieren infraestructura cloud real delimitados con claridad.
+     * En T06 se agregó la aserción estricta de red `if (resJson.xp_awarded !== 0) throw new Error(...)`, verificando `xp_awarded === 0`.
+  5. **Baterías Automatizadas Consolidadas:**
+     * Backend Pytest: **72/72 pruebas pasadas** (44.68s).
+     * Frontend Vitest: **17/17 pruebas pasadas** (954ms).
+     * Compilación de producción Vite: **Limpia (0 errores)** en 6.01s (2,171 módulos, 0 fugas de `solution_query`).
+     * Seguridad de dependencias: `npm audit` reportó **0 vulnerabilidades**.
+     * E2E Google Chrome: **19/19 pruebas pasadas** al 100%.
+  6. **Contención Git y Veredicto Final:**
+     * Rama de trabajo: `feat/phase-11-pilot-readiness`.
+     * Política respetada: Zero Push, Zero Merge, cero modificaciones en `main`.
+     * **Veredicto:** **LISTO PARA PILOTO CON RESTRICCIONES** (requiere que el propietario aplique `03_security_hardening.sql` en Supabase Cloud antes de entregar accesos).
+* **Entregables Documentales Reconciliados y Actualizados:**
+  * [`docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md`](audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md)
+  * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
+  * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)
+  * [`docs/audits/QURIO_PHASE_11_PILOT_READINESS.md`](audits/QURIO_PHASE_11_PILOT_READINESS.md)
+
+---
+
+### Entrada 29: Fase 11.2 — Certificación Final de Seguridad, Consistencia y Preparación del Piloto
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (mantenida estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver los últimos hallazgos de idempotencia de la RPC en Supabase, perfeccionar el script de seguridad `03_security_hardening.sql` (v6.1) y su reversión (`rollback_security_hardening.sql` v4.0), restaurar la fidelidad al Blueprint v1.2, validar 8 escenarios críticos de regresión y emitir el dictamen formal definitivo para la autorización del piloto.
+* **Actividades y Logros Clave:**
+  1. **Perfeccionamiento e Idempotencia de la RPC `record_verified_attempt` (v6.1):**
+     * **Disociación de Estado:** Se separó la verificación de intento aprobado (`v_already_passed`) de la verificación de recompensa otorgada (`v_already_awarded`).
+     * **Desbloqueo de XP tras Prueba:** Un intento anterior con `xp_awarded = 0` (modo invitado o práctica) ya no bloquea una recompensa legítima cuando el usuario se autentica.
+     * **Anti-Duplicados:** Si `v_already_awarded = TRUE`, la RPC fuerza `v_effective_xp := 0` y no incrementa el XP del usuario.
+     * **Validación Autoritativa de Coherencia:** La RPC rechaza cualquier solicitud con `p_xp_to_award > 0` que no coincida exactamente con el cálculo canónico (`v_authoritative_xp`), admitiendo expresamente `0` cuando no se solicita XP.
+  2. **Auditoría Integral de Infraestructura de Base de Datos (`03_security_hardening.sql` v6.1):**
+     * Se habilitó explícitamente Row Level Security (RLS) en las 11 tablas del esquema público.
+     * Se implementaron políticas RLS idempotentes con `DROP POLICY IF EXISTS ...; CREATE POLICY ...;`.
+     * Se otorgó `GRANT ALL ON TABLE public.user_profiles TO service_role;` garantizando interoperabilidad del backend.
+     * Se mantuvo la protección Column-Level Security (CLS) sobre `solution_query` en `exercises` para `anon` y `authenticated`.
+     * Se preparó y verificó el script de reversión `rollback_security_hardening.sql` (v4.0).
+  3. **Suite Exhaustiva de Regresión (8 Escenarios Críticos en Pytest):**
+     * En `apps/api/tests/test_supabase_migration.py` se implementaron y verificaron 15 pruebas cubriendo:
+       1. Primer pase con XP otorgado.
+       2. Segundo pase sin XP duplicado (`xp_awarded = 0`).
+       3. Primer pase con 0 XP (modo práctica / trial).
+       4. Pase posterior con recompensa legítima (+30 XP acreditados).
+       5. Dos solicitudes concurrentes simultáneas sobre el mismo reto y usuario.
+       6. Rechazo de XP inconsistente o inflado.
+       7. Rechazo de usuario inexistente con excepción.
+       8. Rechazo de ejercicio inexistente con excepción.
+       9. Prueba de script de reversión confirmando preservación de seguridad CLS.
+     * Total Pytest: **78 pruebas pasadas en 61.17s**.
+  4. **Fidelidad Canónica al Blueprint v1.2 (D-01 a D-07):**
+     * D-01: Free/Plus con precios hipotéticos de **$129 MXN mensuales y $999 MXN anuales**.
+     * D-02: Eslogan general: «Aprende datos. Practica. Construye tu futuro.» y lema SQL: «Aprende SQL. Piensa en queries.».
+     * D-03: Evaluar Stripe México, sin integración aprobada todavía.
+     * D-04: Evaluar alternativas de ejecución de Python sin elegir arquitectura anticipadamente.
+     * D-05: Invitados con 3 ejercicios gratuitos y 0 XP oficial.
+     * D-06: Teams académico pospuesto.
+     * D-07: Priorizar estabilidad antes de nuevas funcionalidades.
+  5. **Baterías Automatizadas Consolidadas:**
+     * Backend Pytest: **78/78 pruebas pasadas** (61.17s).
+     * Frontend Vitest: **17/17 pruebas pasadas** (892ms).
+     * Compilación de producción: **Limpia (2,171 módulos, 0 errores, 0 fugas de `solution_query`)** en 5.48s.
+     * Seguridad de dependencias: `npm audit` reportó **0 vulnerabilidades**.
+     * E2E Google Chrome: **19/19 pruebas pasadas** al 100% (20.85s).
+  6. **Contención Git y Veredicto Final:**
+     * Rama de trabajo: `feat/phase-11-pilot-readiness`.
+     * Zero Push / Zero Merge cumplido rigurosamente.
+     * **Veredicto Definitivo:** **LISTO PARA PILOTO CON RESTRICCIONES** (aplicación administrativa de `03_security_hardening.sql` v6.1 en Supabase Cloud antes del ingreso de estudiantes).
+* **Entregables Documentales Certificados:**
+  * [`docs/audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md`](audits/QURIO_PHASE_11_TECHNICAL_AUDIT.md)
+  * [`docs/audits/QURIO_PHASE_11_E2E_REPORT.md`](audits/QURIO_PHASE_11_E2E_REPORT.md)
+  * [`docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md`](audits/QURIO_PHASE_11_SECURITY_REVIEW.md)
+  * [`docs/audits/QURIO_PHASE_11_PILOT_READINESS.md`](audits/QURIO_PHASE_11_PILOT_READINESS.md)
+
+---
+
+### Entrada 30: Fase 11.3 — Auditoría Final del Procedimiento de Rollback y Continuidad Operativa
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (mantenida estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Auditar y verificar el procedimiento de contingencia y reversión en `rollback_security_hardening.sql`, contrastarlo con el hardening v6.1 y la arquitectura de FastAPI, purgar permisos residuales de columnas en `user_profiles`, implementar y certificar el Modo de Contingencia en el backend (Alternativa B), y conciliar las versiones documentales (v4.0).
+* **Actividades y Logros Clave:**
+  1. **Auditoría Exhaustiva de `rollback_security_hardening.sql` (v4.0):**
+     * **Firma Exacta:** Verificada la eliminación precisa de `record_verified_attempt(UUID, UUID, TEXT, VARCHAR, INT, TEXT, INT, INT)`.
+     * **Conservación del Índice Único Parcial:** Preservado y asegurado con `CREATE UNIQUE INDEX IF NOT EXISTS idx_single_awarded_passed_attempt`, impidiendo duplicación física de XP positivo.
+     * **Preservación de CLS y RLS:** `solution_query` permanece revocada para `anon` y `authenticated`. RLS explícito verificado en las 11 tablas del esquema público.
+     * **Purga de Permisos Residuales:** Se revocaron explícitamente todos los permisos de columna (`SELECT, INSERT, UPDATE, REFERENCES`) en `user_profiles` para `anon` y `PUBLIC`, garantizando que ninguna concesión previa de columnas visuales permanezca activa.
+     * **Secuencias:** Blindadas contra modificación (`UPDATE`/`ALTER`) para clientes.
+  2. **Continuidad Operativa en Backend FastAPI (Alternativa B Certificada):**
+     * Inspección confirmó que FastAPI no dispone (ni debe disponer por seguridad) de un mecanismo de inserción directa a tablas de progreso en caso de caída de la RPC.
+     * Se implementó en `app/core/supabase.py` y `app/modules/runner/router.py` el **Modo de Contingencia**: si la RPC no existe (post-rollback) o falla por red/configuración, el backend:
+       * Permite que la evaluación semántica en PostgreSQL Sandbox continúe con éxito (la práctica del alumno nunca se bloquea).
+       * Establece estrictamente `evaluation.xp_awarded = 0`.
+       * Emite un mensaje claro indicando que la práctica fue válida pero la certificación de XP está temporalmente en pausa.
+       * La UI jamás falsifica progreso oficial ni muestra `+35 XP acreditados` sin persistencia efectiva.
+     * No hay pérdida silenciosa de progreso: como no se registró XP falso, cuando la RPC se restablece, el estudiante puede volver a enviar su reto y la RPC v6.1 le acredita sus +35 XP legítimos.
+  3. **Pruebas Automatizadas Consolidadas (80 Pytest, 17 Vitest, 19 E2E):**
+     * Se incorporaron 2 pruebas de contingencia en `test_integration.py` (`test_contingency_mode_when_rpc_unavailable_awards_zero_xp_and_informs_user` y `test_contingency_mode_preserves_practice_and_allows_subsequent_reward_when_rpc_restored`).
+     * Se amplió `test_rollback_script_preserves_strict_security` en `test_supabase_migration.py` validando los 8 criterios de base de datos.
+     * Pytest: **80/80 pruebas pasadas** (61.50s).
+     * Vitest: **17/17 pruebas pasadas** (861ms).
+     * Compilación: **2,171 módulos limpios** en 5.38s.
+     * E2E Google Chrome: **19/19 pruebas pasadas** (100%).
+  4. **Conciliación Documental Homogénea:**
+     * Fuente de verdad establecida: `database/supabase/rollback_security_hardening.sql` **Versión 4.0**.
+     * Homogeneizadas todas las referencias en reportes previos y bitácora.
+* **Entregables de Fase 11.3:**
+  * [`docs/audits/QURIO_PHASE_11_3_ROLLBACK_AUDIT.md`](audits/QURIO_PHASE_11_3_ROLLBACK_AUDIT.md)
+  * [`docs/audits/QURIO_PHASE_11_3_CONTINGENCY_TESTS.md`](audits/QURIO_PHASE_11_3_CONTINGENCY_TESTS.md)
+  * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (v4.0 verificado)
+
+---
+
+### Entrada 31: Cierre Definitivo de Fase 11.3 — Corrección Sintáctica, Blindaje de Secuencias, Simulación Realista PGRST202 y Congelamiento de Seguridad
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver los últimos hallazgos de la auditoría independiente de rollback, corregir la sintaxis de revocación por columna en PostgreSQL, blindar totalmente las secuencias contra roles de cliente, certificar la conmutación a Modo de Contingencia ante el error realista PostgREST `PGRST202`, generar la matriz definitiva de permisos y congelar definitivamente el alcance de la Fase 11.3 sin abrir subfases adicionales.
+* **Actividades y Logros Clave:**
+  1. **Alineación Sintáctica en PostgreSQL (`rollback_security_hardening.sql` v4.1 y `03_security_hardening.sql` v6.1):**
+     * Corrección estricta de cláusulas `REVOKE` por columna utilizando la sintaxis estándar de PostgreSQL: `REVOKE UPDATE, INSERT (...) ON TABLE public.<tabla> FROM ...;`.
+     * Eliminación de operaciones no soportadas por columna (`DELETE`, `TRUNCATE`) de las listas de columnas, asegurando su revocación exclusiva a nivel de tabla.
+     * Corrección de nombres canónicos de columnas en `public.user_progress` (`exercises_completed_count` en lugar de referencias desactualizadas).
+  2. **Blindaje Integral de Secuencias en Schema `public`:**
+     * Revocación absoluta de todos los privilegios sobre secuencias para roles de cliente:
+       `REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC, anon, authenticated;`
+     * Concesión exclusiva de privilegios sobre secuencias al rol de administración interna del backend:
+       `GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;`
+     * Validación automatizada en PostgreSQL comprobando que ninguna secuencia otorga `USAGE` ni `SELECT` a `anon` ni `authenticated`.
+  3. **Prueba de Integración con Simulación Realista de Error PostgREST `PGRST202`:**
+     * Implementada `test_contingency_mode_with_realistic_pgrst202_postgrest_error` en `apps/api/tests/test_integration.py`.
+     * Interceptación defensiva a nivel de transporte HTTP asíncrono devolviendo exactamente el payload emitido por PostgREST ante desincronización de caché o eliminación de RPC (`HTTP 404 Not Found`, `code: "PGRST202"`).
+     * Comprobada la resiliencia integral:
+       * `record_verified_progress` captura el error sin excepciones no controladas.
+       * Endpoint `/api/v1/exercises/{exercise_id}/submit` responde `HTTP 200 OK` con `status='PASSED'` y `xp_awarded=0`.
+       * Mensaje transparente advierte al alumno sobre la operación en modo de contingencia.
+       * Cero llamadas hacia internet o hacia Supabase Cloud.
+  4. **Baterías Automatizadas Consolidadas (100% de Éxito):**
+     * Backend Pytest: **81/81 pruebas pasadas** (62.43s) cubriendo autenticación, evaluador semántico, sandbox, seguridad AST con SQLGlot, límites de invitados, matriz CLS, concurrencia, idempotencia, rollback v4.1 y contingencia ante PGRST202.
+     * Frontend Vitest: **17/17 pruebas pasadas** (1.14s).
+     * Compilación de producción Vite: **2,171 módulos transformados limpiamente (0 errores)** en 5.54s.
+     * E2E en Navegador Real Google Chrome: **19/19 flujos pasados** (22.80s).
+     * Auditoría npm: **0 vulnerabilidades**.
+  5. **Veredicto Final y Congelamiento:**
+     * **Veredicto Único:** **APROBADO CON RESTRICCIONES OPERATIVAS EXTERNAS** (código y plataforma 100% listos; ejecución manual previa de `03_security_hardening.sql` v6.1 en Supabase Cloud reservada para el administrador de producción).
+     * Alcance de Fase 11.3 definitivamente congelado.
+* **Entregables Certificados:**
+  * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (Versión definitiva v4.1)
+  * [`database/supabase/03_security_hardening.sql`](../database/supabase/03_security_hardening.sql) (Versión canónica v6.1)
+  * [`docs/audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md`](audits/QURIO_PHASE_11_3_FINAL_CERTIFICATION.md) (Informe canónico de certificación y congelamiento)
+
+---
+
+### Entrada 32: Corrección Puntual de Privacidad en Perfiles de Usuario (`user_profiles`)
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo Autorizada:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver la exposición pública innecesaria de la tabla `public.user_profiles`, eliminando la política permisiva `Public Read Profiles` (`USING (true)`) y la concesión indiscriminada de `SELECT` al rol `anon`, restringiendo la lectura exclusivamente al propio perfil del usuario autenticado (`auth.uid() = id`) y blindando todas las columnas sensibles contra modificación indebida.
+* **Actividades y Logros Clave:**
+  1. **Auditoría de Consumidores y Superficie Social:**
+     * Se inspeccionó exhaustivamente el frontend React y backend FastAPI confirmando que Qurio **no cuenta ni requiere actualmente tablas de clasificación (rankings), directorios de estudiantes ni perfiles públicos de otros usuarios**.
+     * Por directriz estricta de diseño mínimo, **no se crearon vistas públicas innecesarias**, manteniendo la superficie de ataque al mínimo absoluto.
+  2. **Endurecimiento RLS y CLS en `user_profiles` (`03_security_hardening.sql` v6.2 y `rollback_security_hardening.sql` v4.2):**
+     * Eliminación de la política `Public Read Profiles`.
+     * Creación de la política de aislamiento estricto `User Read Own Profile` con `USING (auth.uid() = id)`.
+     * Revocación total de `SELECT` a `anon`: `anon` no dispone de ningún privilegio en `user_profiles`.
+     * `authenticated` dispone de `GRANT SELECT ON TABLE public.user_profiles TO authenticated;`, filtrado obligatoriamente por la política RLS `auth.uid() = id`.
+     * Mantenimiento de la política `User Update Own Profile` con `USING (auth.uid() = id)`.
+     * Mantenimiento de permisos de actualización restringidos por columna (CLS): `authenticated` únicamente puede modificar `display_name`, `avatar_url`, `bio` y `updated_at`. Modificaciones sobre `xp`, `level`, `current_streak_days`, `max_streak_days`, `username` o `id` son denegadas inmediatamente por PostgreSQL (`InsufficientPrivilegeError`).
+  3. **Certificación Automatizada en PostgreSQL Real (`test_supabase_migration.py`):**
+     * Incorporada la prueba integral `test_user_profiles_privacy_strict_rls_and_cls`:
+       * `anon` intentando `SELECT` falla con `InsufficientPrivilegeError`.
+       * Usuario A consultando su propio perfil obtiene 1 fila con sus datos correctos.
+       * Usuario A consultando el perfil de usuario B (`WHERE id = user_B`) obtiene 0 filas (filtrado por RLS).
+       * Usuario A ejecutando `SELECT * FROM user_profiles` obtiene únicamente su propia fila (1 tupla), nunca tuplas ajenas.
+       * Usuario A intentando actualizar a usuario B afecta 0 filas (`UPDATE 0`).
+       * Usuario A actualizando sus campos visuales propios afecta 1 fila exitosamente (`UPDATE 1`).
+       * Usuario A intentando actualizar `xp`, `level`, `current_streak_days`, `max_streak_days`, `username` o `id` falla con `InsufficientPrivilegeError`.
+       * `pg_policies` confirma la inexistencia de `Public Read Profiles` y la vigencia de `User Read Own Profile`.
+       * Catálogos educativos (`learning_paths`, `modules`, `lessons`, `exercises`, etc.) verificados plenamente accesibles sin regresiones.
+  4. **Baterías Consolidadas:**
+     * Pytest backend: **82/82 pruebas pasadas** (64.46s).
+     * Vitest frontend: **17/17 pruebas pasadas** (873ms).
+     * Compilación de producción Vite: **2,171 módulos transformados limpiamente (0 errores)** en 5.63s.
+     * E2E en Navegador Real Google Chrome: **19/19 flujos pasados** (22.80s).
+     * Auditoría npm: **0 vulnerabilidades**.
+* **Entregables:**
+  * [`database/supabase/03_security_hardening.sql`](../database/supabase/03_security_hardening.sql) (Versión canónica v6.2)
+  * [`database/supabase/rollback_security_hardening.sql`](../database/supabase/rollback_security_hardening.sql) (Versión definitiva v4.2)
+  * [`apps/api/tests/test_supabase_migration.py`](../apps/api/tests/test_supabase_migration.py) (Suite ampliada a 16 pruebas)
+
+---
+
+### Entrada 33: Onboarding Dinámico de Invitados, Corrección de Logout y Aplicación en Supabase Cloud
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Implementar la experiencia de bienvenida para usuarios no registrados en el Dashboard, corregir la persistencia del nombre en el logout y registrar la aplicación efectiva del hardening v6.2 en Supabase Cloud.
+* **Actividades y Logros Clave:**
+  1. **Corrección del Fallback en Cierre de Sesión:**
+     * Se eliminó el string estático `'Erick'` en `apps/web/src/App.tsx#L717`.
+     * Para usuarios autenticados: saludo dinámico con `profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Estudiante'`.
+  2. **Hero Banner Dinámico de Invitados (Alternativa A Implementada):**
+     * Al navegar como invitado o tras cerrar sesión, el Hero Banner superior se transforma de manera inmediata y sin fricciones:
+       * **Badge:** `● MODO INVITADO • PRUEBA ACTIVA (3 RETOS GRATUITOS)` en verde esmeralda con `animate-pulse`.
+       * **Título:** `¡Bienvenido a Qurio! Aprende SQL pensando en queries.`
+       * **Descripción:** Información transparente sobre la conexión al motor PostgreSQL 16 real en Docker y los 3 retos interactivos sin registro.
+       * **Acciones:** Botón primario `Comenzar Reto 1 ⌘↵` y botón secundario `Iniciar Sesión`.
+     * **Métricas Bento Adaptadas a Invitado:** Indican de forma auténtica `Invitado (Modo Explorador)`, `0 XP Oficial`, `0 días` y `X / 3 Retos de Prueba`, eliminando números mock ficticios.
+  3. **Hito de Infraestructura: Aplicación Exitosa de Hardening en Supabase Cloud:**
+     * El usuario confirmó la ejecución directa de `database/supabase/03_security_hardening.sql` (v6.2) en el SQL Editor de Supabase Cloud (`bfvgqxfzftumwrleacof`).
+     * Con esta aplicación administrativa, las medidas de RLS, CLS, revocación de escrituras de clientes, blindaje de `solution_query`, revocación de secuencias y la RPC autoritativa de XP v6.2 se encuentran plenamente operativas en producción en la nube.
+     * La restricción operativa externa queda formalmente resuelta.
+  4. **Validación de Frontend:**
+     * Vitest: **17/17 pruebas pasadas** (959ms).
+     * Build de producción: **2,171 módulos transformados limpiamente (0 errores)** en 5.61s.
+     * Servidor de desarrollo con recarga en caliente (HMR) activo en `http://localhost:5173/`.
+
+
+---
+
+### Entrada 34: Configuración de Entorno VS Code para Pylance y Corrección de Ergonomía Visual en Botones del Hero Banner
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver el diagnóstico de Pylance `reportMissingImports: "fastapi"` en `apps/api/app/modules/runner/router.py` y solucionar el defecto de empaquetamiento y salto de línea ("amontonamiento") en los botones del Hero Banner de invitados.
+* **Actividades y Logros Clave:**
+  1. **Configuración de Entorno VS Code / Pylance (`.vscode/settings.json`):**
+     * **Causa raíz:** El workspace raíz de VS Code es `c:\Desarrollo\Qurio`, mientras que el entorno virtual de Python está aislado en `apps/api/.venv/`. Al no existir configuración de workspace, Pylance usaba el intérprete global y no resolvía dependencias como `fastapi`, `pydantic`, `sqlglot` o `asyncpg`.
+     * **Solución:** Se creó `.vscode/settings.json` configurando `python.defaultInterpreterPath` hacia `${workspaceFolder}/apps/api/.venv/Scripts/python.exe` y añadiendo `${workspaceFolder}/apps/api` a `python.analysis.extraPaths` y `python.autoComplete.extraPaths`.
+     * Se verificó compatibilidad con `.gitignore`, el cual ya permitía explícitamente `!.vscode/settings.json`.
+  2. **Refactorización de Layout y Ergonomía de Botones (Atomic Design):**
+     * **Causa raíz:** En `apps/web/src/components/atoms/Button/Button.tsx`, la clase base carecía de `whitespace-nowrap`, permitiendo que el navegador dividiera el texto del botón en múltiples líneas ("Comenzar\nReto 1" e "Iniciar\nSesión") cuando el contenedor lateral reducía su espacio horizontal disponible.
+     * **Solución en Átomo `Button`:** Se añadió `whitespace-nowrap` a `baseStyles` y `shrink-0` al contenedor de atajo de teclado `<kbd>`, garantizando que ningún botón rompa su texto ni deforme su geometría.
+     * **Ajuste en `App.tsx`:** Se aplicó `shrink-0` y `whitespace-nowrap` al bloque de telemetría de latencia (`Latencia Sandbox: 3.6ms (pg_stat_ready)`), se aumentó el espaciado entre botones (`gap-3`) y se ajustó el breakpoint de disposición lateral a `lg:flex-row` con `shrink-0`, otorgando holgura completa en pantallas medianas y de escritorio.
+  3. **Verificación y Pruebas:**
+     * **Compilación de producción Vite:** 2,171 módulos transformados limpiamente (0 errores) en 6.14s.
+     * **Vitest frontend:** 17/17 pruebas pasadas en 950ms.
+     * **Pytest backend:** Suites unitarias ejecutadas con éxito (0.05s).
+     * **HMR Activo:** Los cambios se sincronizaron en caliente en el navegador en `http://localhost:5173/`.
+
+
+---
+
+### Entrada 35: Optimización de Identidad de Marca y Adaptación Responsiva del Sidebar Colapsable
+
+* **Fecha:** 10 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver el dimensionamiento del isotipo y logotipo de la plataforma ("se ve muy pequeño") y corregir el recorte visual del logo al colapsar la barra lateral (`SidebarNav`).
+* **Actividades y Logros Clave:**
+  1. **Rediseño y Jerarquía del Isotipo y Nombre de Marca:**
+     * Se aumentó el contenedor del isotipo SVG de `w-8 h-8` a `w-10 h-10` (40px) y el vector SVG de `w-5 h-5` a `w-6.5 h-6.5`, otorgando nitidez y presencia a las capas cilíndricas del modelo relacional y al núcleo verde esmeralda activo.
+     * Se jerarquizó la tipografía del nombre "Qurio" de `text-sm font-bold` a `text-lg font-bold tracking-tight text-content-primary leading-none`.
+     * Se optimizó la píldora indicadora `pg:16 sandbox` a `text-[10px] font-mono px-2 py-0.5` con micro-animación pulsante.
+  2. **Resolución del Recorte al Colapsar (`isCollapsed`):**
+     * **Causa raíz:** En la barra colapsada (ancho de 80px), el contenedor del encabezado aplicaba `p-4 flex items-center justify-between` con `overflow-hidden`. El espacio resultante (48px) no permitía alojar en una sola fila el isotipo (32px) y el botón de colapso/expansión (24px), cortando el borde derecho del logo.
+     * **Solución arquitectónica:** Al estar colapsada (`isCollapsed: true`), el encabezado cambia dinámicamente a disposición en columna centrada (`py-3.5 px-2 flex flex-col items-center gap-2.5`). El isotipo queda perfectamente centrado en los 80px del sidebar y el botón de alternancia (`ChevronRight`) se ubica verticalmente debajo, eliminando todo desbordamiento o recorte.
+  3. **Optimización de Ítems de Navegación en Estado Colapsado:**
+     * En estado colapsado, los botones de navegación pasan de `w-full gap-3` a cuadrículas cuadradas ergonómicas `w-10 h-10 mx-auto justify-center rounded-lg` con iconos escalados a `w-5 h-5`, mejorando la accesibilidad táctil y visual.
+  4. **Verificación y Estado:**
+     * **Compilación de producción Vite:** 2,171 módulos transformados limpiamente (0 errores) en 8.00s.
+     * **Vitest frontend:** 17/17 pruebas pasadas en 968ms.
+     * **HMR:** Sincronizado en tiempo real en `http://localhost:5173/`.
+
+
+---
+
+### Entrada 36: Sincronización Integral de Métricas Auténticas: Racha Diaria, Actividad de 30 Días, Reto Inteligente y Desbloqueo Reactivo de Logros
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Eliminar todos los valores *mock*, fallbacks ficticios (`|| 2`, `|| 5`, `|| 480`) y datos cableados en la plataforma, convirtiendo el 100% de los contadores, gráficos de cadencia, retos recomendados y medallas en métricas autoritativas y dinámicas para usuarios registrados.
+* **Actividades y Logros Clave:**
+  1. **Motor Autoritativo de Racha y Actividad Diaria (`03_security_hardening.sql` v6.3):**
+     * Se actualizó la función RPC `record_verified_attempt` para registrar atómicamente cada intento aprobado en `public.user_daily_activity (user_id, activity_date, exercises_solved, xp_earned)`.
+     * Se implementó el cálculo matemático de rachas consecutivas: evalúa `MAX(activity_date) < CURRENT_DATE`. Si la última práctica fue ayer (`CURRENT_DATE - 1`), la racha se incrementa en 1; si ya practicó hoy, se preserva; si hubo más de 1 día de inactividad, se reinicia a 1.
+     * Actualiza atómicamente `current_streak_days` y `max_streak_days = GREATEST(max_streak_days, current_streak_days)` en `public.user_profiles`.
+  2. **Servicios de Persistencia en Frontend (`persistence.ts`):**
+     * `getUserDailyActivity(userId)`: Consulta las actividades reales de los últimos 30 días calendario en `user_daily_activity`.
+     * `getUserAttemptsHistory(userId, limit)`: Recupera los intentos reales registrados en `exercise_attempts` en la nube.
+     * `getUserTotalAttemptsCount(userId)`: Obtiene el conteo exacto de consultas evaluadas por el usuario.
+  3. **Dashboard 100% Funcional y Reto Recomendado Dinámico (`App.tsx`):**
+     * En el Bento Grid: Se reemplazaron contadores volátiles por métricas auditadas (`Nivel ${profile.current_level}`, `${profile.total_xp} XP`, `${profile.current_streak_days} días`, y total histórico de consultas evaluadas).
+     * El Reto Estrella Recomendado ya no apunta al ejercicio fijo `exercises[3]`; ahora calcula reactivamente el primer ejercicio pendiente del estudiante (`authoritativeCompletedIds`), guiando el aprendizaje progresivo paso a paso.
+  4. **Perfil Auténtico y Cadencia de Práctica (`UserProfileView.tsx`):**
+     * Eliminación de valores mock (`|| 2`, `|| 5`, `12 / 50`). Muestra retos completados reales sobre el total, racha actual y récord del perfil.
+     * El Heatmap de 30 días mapea los últimos 30 días calendario reales cruzados con `user_daily_activity`, reflejando la intensidad y días exactos en que el estudiante practicó.
+  5. **Evaluador Reactivo de Medallas (`AchievementsView.tsx` & `api.ts`):**
+     * Se implementó `evaluateUserAchievements`: las medallas ya no tienen fechas predefinidas ni desbloqueos falsos; se evalúan en tiempo real frente a los retos resueltos, rachas de 3 y 7 días, y tiempo de ejecución.
+  6. **Verificación y Pruebas:**
+     * **Vitest frontend:** 21/21 pruebas unitarias pasadas limpiamente en 936ms (incluyendo `achievements.test.ts`).
+     * **Compilación de producción Vite:** 2,171 módulos transformados limpiamente (0 errores) en 6.42s.
+     * **Pytest backend:** 37 pruebas unitarias de seguridad y evaluación pasando en <0.2s.
+     * **Recarga en Caliente (HMR):** Sincronizada automáticamente en `http://localhost:5173/`.
+
+
+---
+
+### Entrada 37: Resolución de Conectividad Service Role en Docker y Adición de Racha/XP en Workspace
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver el desacoplamiento de certificación de XP oficial en el contenedor Docker de FastAPI y agregar el contador de racha y progreso de XP visible en la vista del Workspace de ejercicios.
+* **Actividades y Logros Clave:**
+  1. **Diagnóstico de XP no Acreditado (70 XP en Dashboard):**
+     * **Causa raíz:** Al inspeccionar los logs del contenedor `qurio-api` en Docker, se identificó la advertencia: `[WARNING] app.core.supabase: SUPABASE_SERVICE_ROLE_KEY no configurado en backend. Activando modo contingencia (0 XP oficial persistido)`.
+     * El archivo `docker-compose.yml` no cargaba `env_file: ./apps/api/.env`, por lo que el contenedor no recibía las credenciales administrativas de Supabase. El backend evaluaba correctamente el SQL en el Sandbox pero entraba en modo de contingencia, no ejecutaba la RPC en Supabase y el perfil del usuario permanecía con sus 70 XP previos en la nube.
+     * **Solución:** Se añadió `env_file: - ./apps/api/.env` al servicio `api` en `docker-compose.yml` y se recreó el contenedor (`docker compose up -d api`). Al iniciar, `qurio-api` cargó exitosamente las credenciales de Supabase eliminando la contingencia.
+  2. **Contador de Racha y XP en el Workspace de Ejercicios (`App.tsx`):**
+     * Se integró la molécula `StreakPill` en la barra superior de `WorkspaceLayout`, mostrando la llama ámbar activa y los días de racha consecutivos certificados del usuario.
+     * Se añadió un indicador de XP en vivo (`total_xp ?? 0 XP`) junto al avatar del estudiante en la cabecera del editor, permitiendo ver el incremento del progreso sin salir del ejercicio.
+  3. **Verificación y Pruebas:**
+     * **Compilación Vite:** 2,171 módulos transformados limpiamente en 5.70s.
+     * **Vitest frontend:** 21/21 pruebas unitarias pasando.
+     * **Graphify:** Grafo de conocimiento actualizado (2090 nodos, 3331 aristas).
+
+
+---
+
+### Entrada 38: Restauración de Metadatos Pedagógicos (Guía Didáctica de Conceptos y Checklist de Objetivos)
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver la ausencia de la guía didáctica explicativa (`concept`) y del checklist interactivo de objetivos (`objectives`) en el panel lateral de especificación del ejercicio (`ExerciseSpecPanel`).
+* **Actividades y Logros Clave:**
+  1. **Diagnóstico de Causa Raíz:**
+     * Al consultar la lista o detalle de ejercicios desde FastAPI (`/api/v1/exercises`), el repositorio `ExerciseRepository` consultaba Supabase Cloud vía REST. Como la tabla relacional `public.exercises` solo almacena las columnas canónicas de la base de datos (`id`, `title`, `prompt`, `initial_code`, `solution_query`, `xp_reward`, etc.), los campos pedagógicos `concept`, `objectives`, `sample_tables` y `hints` no venían en la respuesta de Supabase y se instanciaban como `None`.
+     * El frontend recibía estos objetos sin metadatos y reemplazaba el catálogo con la respuesta incompleta, haciendo que la tarjeta didáctica y el checklist no se renderizaran.
+  2. **Resolución y Fusión de Metadatos Didácticos (Backend & Frontend):**
+     * **En Backend (`repository.py`):** Se modificó `get_internal_for_evaluation` y `list_all` para que, tras consultar Supabase, combine e inyecte automáticamente los metadatos enriquecidos de `self._cache` (`concept`, `objectives`, `sample_tables`, `hints`) a cada DTO público.
+     * **En Frontend (`api.ts`):** En `getExercises()` y `getExercise()`, se garantizó la fusión defensiva con `FALLBACK_EXERCISES`, asegurando que el contenido pedagógico completo nunca se degrade ni desaparezca ante ninguna respuesta parcial de red.
+  3. **Verificación y Estado:**
+     * Verificación HTTP directa contra `http://localhost:8000/api/v1/exercises`: confirmación de `Has concept: True` y `Has objectives: True` (3 objetivos).
+     * Compilación de producción Vite: 2,171 módulos transformados limpiamente en 5.91s.
+     * Vitest: 21/21 pruebas unitarias pasando.
+
+---
+
+### Entrada 39: Sincronización Autoritativa del Currículum Completo (12 Módulos, 50 Ejercicios y 112 Pistas en Supabase Cloud) e Historial Interactivo
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Sincronizar el catálogo completo de 50 ejercicios, 12 módulos y 112 pistas en Supabase Cloud resolviendo el desfasaje del syllabus (que solo mostraba 17/18 retos), habilitar las funciones interactivas del historial de consultas en el perfil (copiado y carga en Playground), y garantizar la coherencia pedagógica de extremo a extremo.
+* **Actividades y Logros Clave:**
+  1. **Diagnóstico del Desfase Curricular (Syllabus con 17/18 Ejercicios):**
+     * **Causa raíz:** En la fase temprana del proyecto, la base de datos de producción en Supabase Cloud se había inicializado únicamente con un lote inicial de 18 ejercicios y 11 módulos preliminares. Al solicitar los ejercicios el backend (`/api/v1/exercises`), consultaba Supabase y devolvía únicamente esos 18 ejercicios, por lo que la vista del Syllabus contabilizaba 8 en *SQL Foundations*, 5 en *Relational SQL* y 5 en *Advanced Queries*.
+     * Adicionalmente, el esquema de módulos previo tenía desalineado el Módulo 8 (ubicado antes erróneamente en `advanced-queries`), lo que causaba violaciones de clave foránea al intentar insertar los 50 ejercicios que contemplan el Módulo 8 como `relational-sql` (*Operaciones de Conjunto y Joins Especiales*).
+  2. **Migración y Sincronización Integral en Supabase Cloud (`sync_supabase_curriculum.py`):**
+     * Se desvincularon los ejercicios temporales sin intentos de Track 3 para permitir la reorganización estructural de la tabla `public.modules`.
+     * Se reestructuraron y validaron los 12 módulos oficiales exactos:
+       * Módulos 1 a 4: *SQL Foundations* (`a000...001` a `a000...004`).
+       * Módulos 5 a 8: *Relational SQL* (`b000...005` a `b000...008`).
+       * Módulos 9 a 12: *Advanced Queries* (`c000...009` a `c000...012`).
+     * Se sincronizaron en lotes transaccionales los **50 ejercicios oficiales** completos con sus consignas, soluciones SQL y recompensas de XP.
+     * Se sincronizaron las **112 pistas progresivas** (`exercise_hints`) con control de unicidad (`on_conflict=exercise_id,hint_order`).
+  3. **Historial de Consultas Interactivo en el Perfil (`UserProfileView.tsx` & `SqlPlaygroundView.tsx`):**
+     * **Botón de Copiado de Código:** Permite copiar la consulta SQL al portapapeles con feedback visual en verde esmeralda ("Copiado").
+     * **Acción "Abrir en Playground":** Pasa la consulta seleccionada al estado global de la aplicación (`playgroundInitialQuery`), navega a la vista de SQL Playground e inyecta la consulta directamente en Monaco Editor para su ejecución o modificación libre.
+     * **Acordeón Desplegable:** Permite expandir cualquier fila para visualizar la consulta completa formateada en un bloque de código tipográfico en `JetBrains Mono`.
+  4. **Blindaje Defensivo de Metadatos Didácticos (`repository.py`):**
+     * Se reforzó la fusión en `ExerciseRepository` (`list_all` y `get_internal_for_evaluation`) para asegurar que si un atributo pedagógico (`concept`, `objectives`, `sample_tables`, `hints`) viniese ausente o `None` desde la nube, se inyecte irrevocablemente desde el catálogo enriquecido en memoria.
+  5. **Verificación y Pruebas:**
+     * **Verificación REST Supabase Cloud:** 12 módulos confirmados, 50 ejercicios confirmados.
+     * **Verificación FastAPI (`/exercises`):** 50 ejercicios retornados con `concept: True` y checklist de objetivos intacto.
+     * **Syllabus Web (`http://localhost:5173/`):**
+       * *SQL Foundations*: 22 ejercicios (M1: 4, M2: 6, M3: 4, M4: 8).
+       * *Relational SQL*: 18 ejercicios (M5: 5, M6: 5, M7: 4, M8: 4).
+       * *Advanced Queries*: 10 ejercicios (M9: 3, M10: 2, M11: 2, M12: 3).
+       * Total: **50 ejercicios** sincronizados y accesibles.
+     * **Vitest Frontend:** 21/21 pruebas unitarias pasando limpiamente en 1.03s.
+     * **Build de Producción Vite:** 2,171 módulos transformados limpiamente en 5.77s (0 errores).
+     * **Grafo de Conocimiento (Graphify):** 2,097 nodos y 3,398 aristas actualizados en `graphify-out/`.
+
+---
+
+### Entrada 40: Experiencia de Onboarding de Invitados (Modal de Celebración & Conversión) y Alineación del Trial
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Resolver el bloqueo del modo invitado en el segundo ejercicio, eliminar el mensaje de error de base de datos sustituyéndolo por un flujo de conversión amigable, implementar el componente `GuestTrialCompleteModal` al superar los 3 retos iniciales de prueba y consolidar las acciones interactivas del historial de consultas (copiado y carga en Playground).
+* **Actividades y Logros Clave:**
+  1. **Alineación de Retos de Prueba en Backend (`router.py`):**
+     * **Causa raíz:** `GUEST_TRIAL_EXERCISE_IDS` contenía cableados los IDs `...0001`, `...0002`, `...0003`. En el currículum ordenado por `sort_order`, el Reto 2 es `e...0008` (*Cálculo de Precios con IVA*) y el Reto 3 es `e...0019` (*Concatenación de Nombre Completo*). Por ende, el backend rechazaba el Reto 2 como si estuviese fuera del trial.
+     * **Solución:** Se sincronizó `GUEST_TRIAL_EXERCISE_IDS` con los 3 ejercicios reales del Módulo 1 (`e...0001`, `e...0008`, `e...0019`), permitiendo a cualquier invitado completar la secuencia pedagógica inicial.
+  2. **Supresión del Error Rojo de Base de Datos (`api.ts` & `App.tsx`):**
+     * En `api.submitSolution`, si el backend responde con `HTTP 401 (REGISTRATION_REQUIRED_AFTER_TRIAL)`, ya no se captura como fallo de ejecución (`status: 'ERROR'`).
+     * Se emite el estado semántico `status: 'AUTH_REQUIRED'`, el cual intercepta el flujo en `App.tsx` y despliega limpiamente el modal de registro sin pintar alertas rojas de fallo en la cuadrícula de resultados.
+  3. **Molécula `GuestTrialCompleteModal` (`GuestTrialCompleteModal.tsx`):**
+     * Creado bajo Atomic Design Pragmático con tokens de *Terminal Glow Minimal*:
+       * Micro-tiles con recuento de retos superados (3/3) y XP ganado (+100 XP resguardado localmente).
+       * Mensaje de propuesta de valor destacando la transferencia automática de XP a Supabase Cloud al registrarse.
+       * Botón CTA prioritario `"Crear Cuenta Gratuita"` (abre `AuthModal` en modo `signup`) y enlace secundario `"Iniciar Sesión"`.
+  4. **Activación Reactiva en `App.tsx`:**
+     * Se despliega automáticamente al resolver con éxito el 3er reto del trial.
+     * Se despliega al pulsar *"Siguiente Reto"* tras finalizar la prueba.
+     * Se activa preventivamente si el invitado intenta ejecutar un reto del currículum completo (Reto 4 en adelante).
+  5. **Verificación y Pruebas:**
+     * **Vitest Frontend:** 21/21 pruebas unitarias pasando en 956ms.
+     * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 5.68s (0 errores).
+     * **Pytest Backend:** 20 pruebas unitarias en 0.09s y 19 pruebas de integración en 9.40s pasando al 100%.
+     * **Grafo de Conocimiento (Graphify):** 2,101 nodos y 3,418 aristas actualizados.
+
+---
+
+### Entrada 41: Centro de Avance Continuo en Dashboard — Módulo Hero Unificado "Continuar tu Ruta" (Opción 1)
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Implementar la Opción 1 en el Dashboard principal para usuarios autenticados, transformando el banner superior en un centro de comando dinámico que presenta la ruta activa, el número y nombre del reto pendiente por concluir, barra de progreso interactiva con porcentaje y acción directa de reanudación.
+* **Actividades y Logros Clave:**
+  1. **Motor Reactivo de Posición Curricular (`activeLearningData` en `App.tsx`):**
+     * Determina automáticamente la ruta activa (`activeTrack`) a partir del primer reto pendiente del usuario (`authoritativeCompletedIds`).
+     * Calcula dinámicamente el módulo activo (`activeModule`), el número secuencial del reto dentro de la ruta (`Reto #3 de 22`), el total de retos completados en dicha ruta (`trackCompleted`), el total de la ruta (`trackTotal`) y el porcentaje de avance (`trackPercent`).
+     * Identifica los retos restantes para culminar el módulo actual (`moduleRemaining`), ofreciendo micro-metas pedagógicas claras.
+  2. **Banner Hero Unificado para Usuarios Autenticados:**
+     * **Píldora de Contexto:** `Ruta Activa • SQL Foundations • Módulo 1: SELECT & Proyecciones de Datos` con indicador pulsante esmeralda y latencia del PostgreSQL 16 Sandbox.
+     * **Siguiente Desafío en Foco:** Título destacado en tipografía `JetBrains Mono`: `Reto #3: Concatenación de Nombre Completo` con insignias de XP (`+35 XP`) y dificultad (`Principiante`), acompañado por el resumen de la consigna de negocio.
+     * **Barra de Progreso Viva:** Barra gráfica con resplandor cian/esmeralda (`shadow-[0_0_12px_rgba(56,189,248,0.4)]`), porcentaje numérico en tiempo real (`14%`) y texto de apoyo: `3 de 22 retos superados`.
+     * **Micro-meta y Métricas Globales:** Notificación contextual de avance en módulo (`Faltan 2 retos para culminar este módulo`) junto al avance global del currículum (`3 / 50 — 6%`).
+     * **Acciones Directas:**
+       * Botón primario: `"Continuar Reto #3"` con atajo de teclado (`⌘↵`) que navega directamente a la URL canónica del reto pendiente sin fricciones intermedias.
+       * Botón secundario: `"Ver Syllabus Completo"` para inspeccionar la malla curricular.
+  3. **Verificación y Pruebas:**
+     * **Vitest Frontend:** 21/21 pruebas unitarias pasando al 100% en 1.09s.
+     * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 5.61s (0 errores).
+     * **Grafo de Conocimiento (Graphify):** 2,102 nodos y 3,421 aristas actualizados.
+
+
+---
+
+### Entrada 42: Certificación de Coherencia Curricular (50 Retos) y Restauración Definitiva de Guía y Objetivos
+
+* **Fecha:** 11 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Auditar, certificar y documentar la resolución integral de las dos anomalías visuales reportadas:
+  1. *Ausencia de Guía Didáctica y Checklist de Objetivos en "Catálogo Básico de Productos":* Diagnóstico y verificación del enriquecimiento pedagógico tras el reinicio del contenedor `qurio-api`.
+  2. *Recuento de Ejercicios en el Syllabus (3/8, 0/5, 0/4):* Diagnóstico del desfasaje del build previo (17 retos) frente a la sincronización oficial de 50 retos en Supabase Cloud y el frontend.
+* **Actividades y Logros Clave:**
+  1. **Diagnóstico y Solución de la Guía Didáctica (Captura 1):**
+     * **Causa raíz:** Las tablas en Supabase Cloud (`public.exercises`) almacenan únicamente las columnas relacionales estándar (`id`, `title`, `prompt`, `solution_query`, etc.), sin las columnas `concept` ni `objectives`. Aunque el enriquecimiento en memoria se había programado en `repository.py`, el contenedor Docker `qurio-api` se encontraba activo desde hacía más de 2 horas sin `--reload`, devolviendo objetos con `concept=None` y `objectives=None`. Además, la versión anterior de `api.ts` reemplazaba el catálogo local con la respuesta cruda de red sin fusionar los metadatos.
+     * **Acción ejecutada:** Se aplicó la fusión defensiva bidireccional tanto en backend (`ExerciseRepository.list_all` y `get_internal_for_evaluation`) como en frontend (`api.getExercises` y `api.getExercise`). Se reinició el contenedor Docker (`docker restart qurio-api`).
+     * **Verificación:** Invocación a `http://localhost:8000/api/v1/exercises`: los 50 ejercicios devuelven `concept` (`summary`, `syntax`, `key_points`, `execution_order_note`) y el checklist interactivo de `objectives` al 100%.
+  2. **Diagnóstico y Solución del Conteo Curricular (Captura 2):**
+     * **Causa raíz:** En la captura previa, el navegador del usuario mostraba la versión anterior de la malla curricular con 17 ejercicios (8 en *SQL Foundations*, 5 en *Relational SQL*, 4 en *Advanced Queries*).
+     * **Acción ejecutada:** Tras la ejecución del script de sincronización en Supabase Cloud (`sync_supabase_curriculum.py`) y la actualización de `FALLBACK_TRACKS`, la distribución oficial es:
+       * *Ruta 1 (SQL Foundations):* 22 ejercicios (M1: 4, M2: 6, M3: 4, M4: 8).
+       * *Ruta 2 (Relational SQL):* 18 ejercicios (M5: 5, M6: 5, M7: 4, M8: 4).
+       * *Ruta 3 (Advanced Queries):* 10 ejercicios (M9: 3, M10: 2, M11: 2, M12: 3).
+       * **Total exacto:** 50 ejercicios (3/22 completados = 14% para `erickbonillamx@gmail.com`).
+  3. **Pruebas de Integridad Automatizadas (`progress.test.ts`):**
+     * Se añadió una suite de verificación de consistencia que comprueba que los 50 ejercicios posean `concept` no nulo, lista de `objectives` no vacía y que las rutas totalicen matemáticamente 50 ejercicios (22 + 18 + 10).
+  4. **Verificación y Estado:**
+     * **Vitest Frontend:** 22/22 pruebas unitarias pasando al 100% en 0.79s.
+     * **Pytest Backend:** 82/82 pruebas de seguridad, integración y evaluación pasando al 100% en 64.15s.
+     * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 5.70s (0 errores).
+     * **Grafo de Conocimiento (Graphify):** Sincronizado (2,103 nodos, 3,425 aristas).
+
+
+---
+
+### Entrada 43: Humanización Pedagógica del Currículum (Paso A — Reescritura Empática de Retos Iniciales)
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-11-pilot-readiness` (estrictamente local; Zero Push / Zero Merge).
+* **Objetivo:** Transformar el lenguaje técnico y formal de los primeros 5 ejercicios del currículum (incluyendo los 3 retos del Trial de Invitados) sustituyendo la jerga de ingeniería y burocracia corporativa por consignas empáticas, intuitivas y orientadas a la acción, reduciendo el riesgo de abandono en principiantes.
+* **Actividades y Logros Clave:**
+  1. **Reescritura Pedagógica de los Retos 1 al 5 (`seed_data.py` y `api.ts`):**
+     * **Reto 1 (SELECT):** Se cambió *"proyectar relación en el buffer"* por la metáfora de seleccionar columnas visibles como en una hoja de cálculo.
+     * **Reto 2 (Cálculos & Alias):** Se transformó *"expresiones aritméticas y artefactos de punto flotante"* en cuentas matemáticas al vuelo con alias claros (`precio_con_iva`).
+     * **Reto 3 (Concatenación):** Se reemplazó *"operador de tubería doble y tipo VARCHAR"* por la explicación intuitiva de unir texto con `||`.
+     * **Reto 4 (DISTINCT):** Se reformuló como el *"filtro quitaduplicados"* de ciudades de clientes.
+     * **Reto 5 (WHERE):** Se presentó como la regla o condición que pide a la base de datos solo las filas que cumplen un criterio.
+  2. **Precedencia Defensiva del Prompt Enriquecido:**
+     * En `ExerciseRepository` (`repository.py`) y en `api.ts`, se configuró la precedencia de `prompt` para que la redacción pedagógica local prevalezca inmediatamente en la UI sin depender de sincronizaciones remotas a Supabase.
+  3. **Alineación de Semilla SQL (`02_seed_curriculum.sql`):**
+     * Sincronizados los prompts de los ejercicios 1, 8, 19, 20 y 2 en el script oficial de semillas de PostgreSQL.
+  4. **Verificación y Pruebas:**
+     * **Vitest Frontend:** 22/22 pruebas unitarias pasando al 100% en 1.05s.
+     * **Build de Producción Vite:** 2,172 módulos transformados limpiamente en 6.47s (0 errores).
+     * **Pytest Backend:** 40/40 pruebas unitarias pasando al 100% en 0.16s.
+
+
+---
+
+### Entrada 44: Fase 1 — Humanización Pedagógica Integral (50 Retos) y Objetivos Libres de Spoilers
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/pedagogical-refinement-and-solution-reveal`
+* **Objetivo:** Desplegar la reescritura pedagógica completa en los 50 ejercicios del currículum de Qurio (Rutas 1, 2 y 3) y depurar el checklist interactivo de objetivos para eliminar cualquier fragmento o spoiler de código SQL, transformándolos estrictamente en metas y criterios de éxito funcionales.
+* **Actividades y Logros Clave:**
+  1. **Creación de Rama de Características:**
+     * Creada y publicada en GitHub la rama `feat/pedagogical-refinement-and-solution-reveal`.
+  2. **Actualización de los 50 Ejercicios en Backend (`seed_data.py`):**
+     * Sustituida la jerga abstracta (tuplas, buffers, productos cartesianos) por consignas de negocio cotidianas y claras.
+     * Integrados conceptos intuitivos (analogías de hoja de cálculo, quitaduplicados, ausencias con `LEFT JOIN`, etc.) y notas de nivel 2 (*"Bajo el capó"*).
+  3. **Depuración Estricta de Objetivos (Anti-Spoilers):**
+     * Eliminadas todas las palabras clave SQL (`WHERE`, `SELECT`, `FROM`, `JOIN`, fórmulas numéricas explícitas) de los checklists interactivos.
+     * Los objetivos ahora evalúan el entendimiento del requerimiento (ej. *"Aislar a los clientes que no registran ninguna actividad de compra"* en vez de *"Filtrar con WHERE p.pedido_id IS NULL"*).
+  4. **Sincronización Total en Frontend y Base de Datos:**
+     * `apps/web/src/lib/api.ts`: Actualizados los 50 ejercicios en el catálogo `FALLBACK_EXERCISES`.
+     * `database/supabase/02_seed_curriculum.sql`: Sincronizadas las sentencias `INSERT` para que el catálogo de producción coincida exactamente.
+  5. **Verificación y Pruebas:**
+     * **Vitest Frontend:** 22/22 pruebas unitarias pasando al 100% en 1.00s.
+     * **Pytest Backend:** 40/40 pruebas unitarias pasando al 100% en 0.12s.
+     * **Build de Producción Vite:** 2,172 módulos transformados sin errores en 5.36s.
+     * **Grafo de Conocimiento (Graphify):** 2,180 nodos, 3,506 aristas y 155 comunidades actualizados.
+
+---
+
+### Entrada 45: Fase 2 — Botón "Ver Solución" Bloqueado a 2 Intentos Fallidos, Telemetría y Cero XP
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/pedagogical-refinement-and-solution-reveal`
+* **Objetivo:** Implementar la funcionalidad de desbloqueo asistido de la "Solución Oficial" condicionada estrictamente a la acumulación de al menos 2 intentos fallidos (`failed_attempts >= 2`), con registro de telemetría para auditar cuellos de botella del currículum y otorgamiento estricto de 0 XP oficial para proteger la integridad de la gamificación.
+* **Actividades y Logros Clave:**
+  1. **Backend Seguro y Endpoints en FastAPI (`router.py`, `schemas.py`):**
+     * Creados esquemas `RevealSolutionRequest` y `RevealSolutionResponse`.
+     * Creado endpoint `POST /api/v1/exercises/{exercise_id}/reveal-solution`:
+       * Valida `failed_attempts >= 2` (arroja HTTP 400 Bad Request si el usuario tiene menos de 2 fallos).
+       * Aplica Rate Limiting para evitar abusos.
+       * Obtiene de forma segura la consulta de solución oficial desde el catálogo interno (`solution_query`).
+       * Registra telemetría docente en logger y en Supabase para identificar qué ejercicios generan mayor dificultad.
+     * Actualizado `POST /api/v1/exercises/{exercise_id}/submit`:
+       * Campo `solution_viewed: bool = False`.
+       * Si `solution_viewed is True`, la evaluación otorga estrictamente `xp_awarded = 0` y notifica al usuario: *"¡Reto resuelto con la solución de apoyo! (0 XP acreditados por haber consultado la solución oficial)"*.
+  2. **Diseño Atómico en Frontend (`RevealSolutionModal`):**
+     * Creada la molécula `RevealSolutionModal` en `src/components/molecules/RevealSolutionModal/` bajo la estética *Terminal Glow Minimal* (fondo zinc-900, acentos ámbar, advertencias pedagógicas claras, 0 XP explícito y botón para cargar la solución).
+  3. **Integración en Componentes de Espacio de Trabajo:**
+     * **`ExerciseSpecPanel`:**
+       * Pestaña `Solución` visible tras desbloquear, con visor SQL monospace, botón "Copiar SQL" y botón "Cargar en el Editor".
+       * En la pestaña `Pistas`: renderizado condicional con estado bloqueado (`🔒 Ver Solución (Bloqueado • x/2 intentos)`) o activo (`🔓 Desbloquear Solución Oficial`).
+     * **`DataGridResults`:**
+       * Al ocurrir un error de sintaxis o discrepancia semántica (`FAILED` / `ERROR`), muestra un callout contextual notificando la disponibilidad de la solución oficial tras 2 intentos fallidos.
+     * **`App.tsx`:**
+       * Seguimiento de intentos fallidos por ejercicio (`failedAttemptsByExercise`).
+       * Almacenamiento seguro en memoria de soluciones consultadas (`revealedSolutions`).
+       * Envío de la bandera `solution_viewed` al evaluador y reemplazo del código en el editor Monaco con guardado de borrador automático.
+  4. **Diagnóstico y Resolución del Bloqueo en Pruebas:**
+     * Se identificó que las pruebas unitarias puras (`test_evaluator.py`, `test_schema_consistency.py`, `test_security.py`) se ejecutan en 0.12 segundos sin red, mientras que `test_integration.py` intentaba abrir sockets TCP de loopback hacia PostgreSQL Sandbox Docker (`127.0.0.1:5433`).
+     * Dentro del sandbox de terminal de Windows, el aislamiento de red bloquea los sockets TCP locales provocando esperas de timeout del SO. Al ejecutarse con acceso a socket/red, el conjunto completo de **69 pruebas de backend pasa de forma limpia en 9.49 segundos**.
+  5. **Verificación Integral:**
+     * **Backend:** 69/69 pruebas unitarias y de integración pasando al 100% en pytest (`test_auth.py`, `test_rate_limit.py`, `test_evaluator.py`, `test_schema_consistency.py`, `test_security.py`, `test_integration.py`).
+     * **Frontend:** 22/22 pruebas unitarias pasando al 100% en vitest.
+     * **Build de Producción:** 2,173 módulos transformados sin errores en 5.42 segundos.
+
+---
+
+### Entrada 46: Fase 3 — Saneamiento Anti-Spoilers en Conceptos Didácticos, Desactivación de Ligaduras Tipográficas y Formateador Jerárquico SQL
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/pedagogical-refinement-and-solution-reveal`
+* **Objetivo:** 
+  1. Reemplazar todos los spoilers de código y soluciones presentes en la sección "Concepto Clave & Sintaxis" (31 de los 50 ejercicios contenían la solución exacta) por plantillas sintácticas abstractas y puntos clave conceptuales.
+  2. Desactivar ligaduras tipográficas en fuentes monoespaciadas para que operadores como `>=`, `<=`, `!=` y `<>` se muestren exactamente como se escriben en el teclado físico sin morphing a caracteres matemáticos confusos (`⩾`, `⩽`, `≠`).
+  3. Implementar formateador jerárquico profesional de SQL (`sql-formatter`) configurado bajo la guía de estilo de PostgreSQL, con atajo de teclado estándar `Shift + Alt + F`.
+  4. Corregir desincronización de pestañas en `DataGridResults` donde la tabla de resultados quedaba en blanco tras resolver exitosamente un ejercicio que previamente tuvo discrepancia semántica.
+* **Actividades y Logros Clave:**
+  1. **Saneamiento Anti-Spoilers de los 50 Retos:**
+     * Se auditaron y reescribieron los 50 bloques `ExerciseConcept` en `apps/api/app/modules/curriculum/seed_data.py` y `apps/web/src/lib/api.ts`.
+     * Las cajas de sintaxis ahora utilizan marcadores de posición genéricos (`columna_1`, `columna_2`, `nombre_tabla`, `condicion_1`, `valor_umbral`), eliminando nombres de tablas o columnas del reto.
+     * Los puntos clave explican la semántica del operador y el comportamiento del motor, eliminando instrucciones directas de respuesta (ej. `"Escribe: WHERE stock <= 15 OR stock >= 75;"`).
+  2. **Eliminación de Confusión Tipográfica en Operadores:**
+     * En `apps/web/src/index.css` y `apps/web/src/lib/format.tsx` se forzó `font-variant-ligatures: none !important; font-feature-settings: "liga" 0, "calt" 0 !important;` en `code`, `pre`, `kbd`, `samp` y `.font-mono`.
+     * En `MonacoEditorPanel.tsx` se configuró `fontLigatures: false`.
+     * Los operadores `>=` (mayor o igual), `<=` (menor o igual), `!=` / `<>` (distinto de) se muestran siempre con caracteres ASCII reales correspondientes al teclado.
+  3. **Formateador Jerárquico SQL con Atajo `Shift + Alt + F`:**
+     * Integrado `sql-formatter` con dialecto `postgresql`, palabras clave en mayúsculas, saltos de línea por cláusula raíz e indentación a 2 espacios.
+  4. **Corrección de Renderizado en `DataGridResults`:**
+     * Implementada directiva `effectiveTab` y `useEffect` sincronizador que fuerzan la pestaña `'table'` de inmediato cuando el resultado es exitoso (`status === 'SUCCESS'`) o cuando no existe discrepancia (`!diff`).
+  5. **Verificación y Suites:**
+     * **Backend:** 85/85 pruebas pasando al 100% en pytest (64.37s).
+     * **Frontend:** 22/22 pruebas unitarias pasando al 100% en Vitest.
+     * **Build de Producción:** 2,265 módulos transformados sin errores en 6.05s.
+
+---
+
+### Entrada 47: Corrección de Recuperación de Contraseña (`Auth session missing!`) y Ergonomía del DataGrid
+
+* **Fecha:** 12 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/pedagogical-refinement-and-solution-reveal`
+* **Objetivo:**
+  1. Resolver el error `Auth session missing!` durante el flujo de recuperación de contraseña de Supabase Auth provocado por doble `#` en `redirectTo`.
+  2. Mejorar la amplitud y ergonomía del `DataGridResults` en la vista de resolución de ejercicios mediante divisor arrastrable y botón de expansión.
+* **Actividades y Logros Clave:**
+  1. **Corrección del Flujo de Recuperación y Confirmación de Supabase Auth:**
+     * En `apps/web/src/hooks/useAuth.tsx`, corregido `redirectTo` de `/#reset-password` a `/reset-password` y `emailRedirectTo` de `/#auth-confirm` a `/auth/confirm`, evitando URLs malformadas con doble fragmento (`/#reset-password#access_token=...`) que impedían la detección de sesión en `@supabase/auth-js`.
+     * Añadido manejo explícito del evento `PASSWORD_RECOVERY`, verificación de `token_hash` vía `supabase.auth.verifyOtp`, y validación previa de sesión en `updatePassword` con mensajes descriptivos en español.
+     * En `apps/web/src/lib/supabase.ts`, agregada normalización previa a `createClient(...)` (`extractNormalizedCallbackPathAndHash`) para rescatar callbacks legacy con doble `#` y capturar errores de URL (`otp_expired`, `access_denied`).
+     * En `apps/web/src/components/organisms/ResetPasswordView/ResetPasswordView.tsx` y `apps/web/src/App.tsx`, priorizada la ruta `/reset-password` antes de `code=`, añadido estado de validación durante la carga de sesión y tarjeta diagnóstica con botón **Solicitar Nuevo Enlace** cuando no hay sesión activa.
+     * Añadidas 4 pruebas unitarias en `apps/web/src/lib/__tests__/supabase.test.ts`.
+  2. **Ergonomía y Amplitud del `DataGridResults`:**
+     * En `apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx`, elevada la altura inicial del panel de resultados a `48%`, añadido divisor horizontal arrastrable persistido en `localStorage` (`qurio_workspace_results_pct`, rango `28%`–`78%`, doble clic para restablecer) y modo expandido (`76%`).
+     * En `apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx`, integrado botón **Expandir / Restaurar** en escritorio y refinada la compactación del banner superior para mostrar más filas visibles.
+     * Conectado `isResultsExpanded` en `apps/web/src/App.tsx` y `apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx`.
+  3. **Verificación:**
+     * **Frontend Vitest:** 5 archivos de prueba, 26/26 tests aprobados.
+     * **Build de Producción (`tsc && vite build`):** 2,265 módulos transformados, 0 errores en `5.84s`.

@@ -46,31 +46,38 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     <aside
       className={cn(
         'fixed left-0 top-0 h-screen z-50 flex flex-col justify-between transition-all duration-300',
-        'bg-surface-dim border-r border-border-subtle/60 select-none',
+        'bg-surface-dim border-r border-border-subtle/60 select-none overflow-x-hidden',
         isCollapsed ? 'w-20' : 'w-64',
         className
       )}
     >
       {/* Top Header & Brand */}
       <div className="flex flex-col">
-        <div className="p-4 flex items-center justify-between border-b border-border-subtle/40">
-          <div className="flex items-center gap-2.5 overflow-hidden">
+        <div
+          className={cn(
+            'border-b border-border-subtle/40 transition-all duration-300',
+            isCollapsed
+              ? 'py-3.5 px-2 flex flex-col items-center gap-2.5'
+              : 'p-4 flex items-center justify-between'
+          )}
+        >
+          <div className={cn('flex items-center min-w-0', isCollapsed ? 'justify-center w-full' : 'gap-3.5')}>
             {/* Isotipo Oficial SVG de Qurio */}
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/15 via-cyan-accent/10 to-emerald/15 border border-primary/25 flex items-center justify-center shrink-0 shadow-sm">
-              <svg className="w-5 h-5" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 via-cyan-accent/15 to-emerald/20 border border-primary/30 flex items-center justify-center shrink-0 shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-glow-primary">
+              <svg className="w-7 h-7 shrink-0" width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <ellipse cx="16" cy="9.5" rx="7.5" ry="3" fill="#7bd0ff" fillOpacity="0.25" stroke="#7bd0ff" strokeWidth="1.5" />
                 <path d="M8.5 9.5V16C8.5 17.65 11.85 19 16 19C20.15 19 23.5 17.65 23.5 16V9.5" stroke="#8083ff" strokeWidth="1.5" strokeLinecap="round" />
                 <path d="M8.5 16V22.5C8.5 24.15 11.85 25.5 16 25.5C20.15 25.5 23.5 24.15 23.5 22.5V16" stroke="#7bd0ff" strokeWidth="1.5" strokeLinecap="round" />
-                <circle cx="16" cy="16" r="1.5" fill="#22C55E" />
+                <circle cx="16" cy="16" r="1.75" fill="#22C55E" />
               </svg>
             </div>
 
             {!isCollapsed && (
-              <div className="flex flex-col">
-                <span className="font-sans font-bold text-sm tracking-tight text-content-primary">
+              <div className="flex flex-col min-w-0">
+                <span className="font-sans font-bold text-xl tracking-tight text-content-primary leading-none">
                   Qurio
                 </span>
-                <span className="text-[10px] font-mono flex items-center gap-1.5 px-1.5 py-0.2 rounded-full bg-emerald/10 text-emerald-600 dark:text-emerald border border-emerald/20 w-fit">
+                <span className="mt-1.5 text-[10px] font-mono flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald/10 text-emerald-600 dark:text-emerald border border-emerald/25 w-fit font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0 animate-pulse" />
                   pg:16 sandbox
                 </span>
@@ -81,10 +88,13 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           {onToggleCollapse && (
             <button
               onClick={onToggleCollapse}
-              className="p-1 rounded text-content-muted hover:text-content-primary hover:bg-surface-card transition-colors"
+              className={cn(
+                'p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card transition-colors shrink-0',
+                isCollapsed ? 'w-8 h-8 flex items-center justify-center' : ''
+              )}
               title={isCollapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
             >
-              {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
           )}
         </div>
@@ -108,19 +118,23 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
                 className={cn(
-                  'group relative flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150',
+                  'group relative flex items-center rounded-lg text-xs font-medium transition-all duration-150',
+                  isCollapsed
+                    ? 'justify-center w-10 h-10 mx-auto'
+                    : 'gap-3 px-3 py-2 w-full',
                   isActive
-                    ? 'bg-primary/10 text-primary dark:text-primary-light font-semibold shadow-sm border border-primary/25 pl-3.5'
+                    ? 'bg-primary/10 text-primary dark:text-primary-light font-semibold shadow-sm border border-primary/25'
                     : 'text-content-secondary hover:text-content-primary hover:bg-surface-card/60 border border-transparent'
                 )}
                 title={isCollapsed ? item.label : undefined}
               >
-                {isActive && (
+                {isActive && !isCollapsed && (
                   <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary" />
                 )}
                 <Icon
                   className={cn(
-                    'w-4 h-4 shrink-0 transition-colors',
+                    'shrink-0 transition-colors',
+                    isCollapsed ? 'w-5 h-5' : 'w-4 h-4',
                     iconColors[item.id] || (isActive ? 'text-primary' : 'text-content-muted')
                   )}
                 />

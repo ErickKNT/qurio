@@ -42,6 +42,12 @@
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
+  /* Desactivar ligaduras en fuentes monoespaciadas para que >=, <=, != y <> se muestren exactamente como se escriben en teclado */
+  code, kbd, samp, pre, .font-mono {
+    font-variant-ligatures: none !important;
+    font-feature-settings: "liga" 0, "calt" 0 !important;
+  }
+
   /* Custom scrollbars */
   ::-webkit-scrollbar {
     width: 6px;

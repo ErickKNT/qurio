@@ -79,9 +79,11 @@ async def setup_mock_supabase_environment():
         hardening_sql = (ROOT_DIR / "database" / "supabase" / "03_security_hardening.sql").read_text(encoding="utf-8")
         await conn.execute(hardening_sql)
 
-        # F. Permisos complementarios sobre secuencias
+        # F. Blindaje estricto de secuencias (cero privilegios para clientes)
         await conn.execute("""
-            GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+            CREATE SEQUENCE IF NOT EXISTS public.test_pilot_seq;
+            REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC, anon, authenticated;
+            GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
         """)
 
     finally:
@@ -159,6 +161,12 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
     assert await db_conn.fetchval(
         "SELECT has_table_privilege('anon', 'public.user_profiles', 'UPDATE');"
     ) is False
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('anon', 'public.user_profiles', 'SELECT');"
+    ) is False, "anon NO debe tener SELECT sobre public.user_profiles (privacidad estricta)"
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.user_profiles', 'SELECT');"
+    ) is True, "authenticated debe tener SELECT sobre public.user_profiles (filtrado por RLS auth.uid() = id)"
 
     # --------------------------------------------------------------------------
     # B. Privilegios de Columna (CLS) sobre public.user_profiles
@@ -176,6 +184,39 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
             f"SELECT has_column_privilege('authenticated', 'public.user_profiles', '{col}', 'UPDATE');"
         )
         assert can_up is True, f"Columna {col} en user_profiles debe permitir UPDATE a authenticated"
+
+    # --------------------------------------------------------------------------
+    # B.2 Privilegios de Columna (CLS) sobre public.exercises (Anti-Exfiltración)
+    # --------------------------------------------------------------------------
+    assert await db_conn.fetchval(
+        "SELECT has_column_privilege('anon', 'public.exercises', 'solution_query', 'SELECT');"
+    ) is False, "anon NO debe tener SELECT sobre solution_query"
+    assert await db_conn.fetchval(
+        "SELECT has_column_privilege('authenticated', 'public.exercises', 'solution_query', 'SELECT');"
+    ) is False, "authenticated NO debe tener SELECT sobre solution_query"
+    assert await db_conn.fetchval(
+        "SELECT has_column_privilege('service_role', 'public.exercises', 'solution_query', 'SELECT');"
+    ) is True, "service_role SÍ debe tener SELECT sobre solution_query"
+
+    public_cols = ["id", "module_id", "title", "prompt", "initial_code", "target_database", "xp_reward", "difficulty"]
+    for col in public_cols:
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('anon', 'public.exercises', '{col}', 'SELECT');"
+        ) is True, f"anon debe tener SELECT educativo sobre columna {col}"
+        assert await db_conn.fetchval(
+            f"SELECT has_column_privilege('authenticated', 'public.exercises', '{col}', 'SELECT');"
+        ) is True, f"authenticated debe tener SELECT educativo sobre columna {col}"
+
+    # Privilegios sobre public.user_progress: Solo mutable por RPC (service_role / postgres)
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.user_progress', 'INSERT');"
+    ) is False, "authenticated no debe tener INSERT directo sobre user_progress"
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('authenticated', 'public.user_progress', 'UPDATE');"
+    ) is False, "authenticated no debe tener UPDATE directo sobre user_progress"
+    assert await db_conn.fetchval(
+        "SELECT has_table_privilege('anon', 'public.user_progress', 'SELECT');"
+    ) is False, "anon no debe tener SELECT sobre user_progress"
 
     # --------------------------------------------------------------------------
     # C. Privilegios de Tabla y Columna sobre public.exercise_attempts
@@ -235,6 +276,12 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
     # --------------------------------------------------------------------------
     # D. Intentos Reales de Ejecución Bloqueados (Inspección Defensiva en Transacción)
     # --------------------------------------------------------------------------
+    # 0. Intento de SELECT en user_profiles por anon (Privacidad Estricta)
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE anon;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("SELECT * FROM public.user_profiles;")
+
     # 1. Intento de INSERT directo por authenticated
     async with db_conn.transaction():
         await db_conn.execute("SET LOCAL ROLE authenticated;")
@@ -263,6 +310,31 @@ async def test_effective_privileges_matrix(db_conn, create_test_user):
         await db_conn.execute("SET LOCAL ROLE authenticated;")
         with pytest.raises(InsufficientPrivilegeError):
             await db_conn.execute("DELETE FROM public.exercise_attempts;")
+
+    # 4. Intento de SELECT solution_query en exercises por authenticated
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("SELECT solution_query FROM public.exercises;")
+
+    # 5. Intento de SELECT solution_query en exercises por anon
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE anon;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("SELECT solution_query FROM public.exercises;")
+
+    # 6. Intento de INSERT directo en user_progress por authenticated
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        await db_conn.execute(f"SET LOCAL request.jwt.claim.sub = '{user_id}';")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute(
+                """
+                INSERT INTO public.user_progress (user_id, module_id, exercises_completed_count)
+                VALUES ($1::UUID, 'a0000000-0000-0000-0000-000000000001'::UUID, 10);
+                """,
+                user_id
+            )
 
     # --------------------------------------------------------------------------
     # E. Inspección Estricta de ACL en la RPC mediante aclexplode
@@ -686,43 +758,223 @@ async def test_user_progress_consistency_on_failed_and_error(db_conn, create_tes
 
 
 # ==============================================================================
-# 6. REGLAS FUNCIONALES DE XP: APROBACIÓN CON 0 XP
+# 6. REGLAS FUNCIONALES DE XP E IDEMPOTENCIA DESACOPLADA (FASE 11.2)
 # ==============================================================================
 
 @pytest.mark.asyncio
-async def test_first_pass_with_zero_xp_counts_as_passed(db_conn, create_test_user):
+async def test_regression_scenario_1_first_pass_with_xp(db_conn, create_test_user):
+    """Escenario 1: Primera aprobación legítima con XP."""
+    user_id = await create_test_user("scen1_user")
+    ex1 = "e0000000-0000-0000-0000-000000000001"  # xp_reward = 30
+
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        row = await db_conn.fetchrow(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30) AS res;",
+            user_id, ex1
+        )
+        res = json.loads(row["res"])
+        assert res["success"] is True
+        assert res["already_passed"] is False
+        assert res["already_awarded"] is False
+        assert res["xp_awarded"] == 30
+        assert res["total_xp"] == 30
+
+    # Verificar BD física
+    attempts = await db_conn.fetch(
+        "SELECT status, xp_awarded FROM public.exercise_attempts WHERE user_id = $1 AND exercise_id = $2;",
+        user_id, ex1
+    )
+    assert len(attempts) == 1
+    assert attempts[0]["status"] == "PASSED"
+    assert attempts[0]["xp_awarded"] == 30
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_2_second_pass_no_duplicate_xp(db_conn, create_test_user):
+    """Escenario 2: Segunda aprobación del mismo reto no otorga XP adicional (Idempotencia)."""
+    user_id = await create_test_user("scen2_user")
+    ex1 = "e0000000-0000-0000-0000-000000000001"
+
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        # Primer intento: cobra 30 XP
+        await db_conn.execute(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30);",
+            user_id, ex1
+        )
+        # Segundo intento: solicita 30 XP pero ya fue premiado
+        row2 = await db_conn.fetchrow(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 12, NULL, 0, 30) AS res;",
+            user_id, ex1
+        )
+        res2 = json.loads(row2["res"])
+        assert res2["success"] is True
+        assert res2["already_passed"] is True
+        assert res2["already_awarded"] is True
+        assert res2["xp_awarded"] == 0
+        assert res2["total_xp"] == 30
+
+        # Tercer intento: modo práctica con 0 XP solicitado
+        row3 = await db_conn.fetchrow(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 15, NULL, 0, 0) AS res;",
+            user_id, ex1
+        )
+        res3 = json.loads(row3["res"])
+        assert res3["xp_awarded"] == 0
+        assert res3["total_xp"] == 30
+
+    profile_xp = await db_conn.fetchval("SELECT xp FROM public.user_profiles WHERE id = $1;", user_id)
+    assert profile_xp == 30
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_3_and_4_first_pass_zero_xp_then_legitimate_reward(db_conn, create_test_user):
     """
-    Demuestra la regla funcional canónica de Qurio:
-    Si un ejercicio es aprobado con 0 XP (p_xp_to_award = 0), el ejercicio queda
-    registrado como PASSED. Intentos posteriores reconocen que ya fue superado
-    (already_passed = TRUE) y no duplican ni otorgan XP tardío.
+    Escenarios 3 y 4:
+    3. Primera aprobación con cero XP (ej. práctica o migración).
+    4. Aprobación posterior donde el usuario reclama la recompensa legítima,
+       verificando que un intento previo con 0 XP no impida recibir el XP oficial.
     """
-    user_id = await create_test_user("zero_xp_user")
+    user_id = await create_test_user("scen34_user")
     ex1 = "e0000000-0000-0000-0000-000000000001"
 
     async with db_conn.transaction():
         await db_conn.execute("SET LOCAL ROLE service_role;")
 
-        # Primer intento aprobado pero con 0 XP
+        # Escenario 3: Primera aprobación con 0 XP
         row1 = await db_conn.fetchrow(
-            "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 0) AS res;",
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 0) AS res;",
             user_id, ex1
         )
         res1 = json.loads(row1["res"])
         assert res1["success"] is True
         assert res1["already_passed"] is False
+        assert res1["already_awarded"] is False
         assert res1["xp_awarded"] == 0
+        assert res1["total_xp"] == 0
 
-        # Segundo intento aprobado solicitando 30 XP
+        # Escenario 4: Aprobación posterior reclamando la recompensa autorizada
         row2 = await db_conn.fetchrow(
-            "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 30) AS res;",
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30) AS res;",
             user_id, ex1
         )
         res2 = json.loads(row2["res"])
         assert res2["success"] is True
-        assert res2["already_passed"] is True  # Reconoce que ya fue aprobado previamente
-        assert res2["xp_awarded"] == 0         # No permite canje tardío de XP
-        assert res2["total_xp"] == 0
+        assert res2["already_passed"] is True     # Ya había aprobado antes
+        assert res2["already_awarded"] is False   # Pero no había recibido XP
+        assert res2["xp_awarded"] == 30          # Ahora SÍ recibe su recompensa legítima
+        assert res2["total_xp"] == 30
+
+        # Intento subsiguiente: Ahora already_awarded es TRUE y ya no recibe XP adicional
+        row3 = await db_conn.fetchrow(
+            "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30) AS res;",
+            user_id, ex1
+        )
+        res3 = json.loads(row3["res"])
+        assert res3["already_awarded"] is True
+        assert res3["xp_awarded"] == 0
+        assert res3["total_xp"] == 30
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_5_concurrent_requests_same_user_and_exercise(create_test_user):
+    """
+    Escenario 5: Dos solicitudes concurrentes intentando cobrar XP sobre el mismo ejercicio.
+    El bloqueo transaccional y el índice condicional garantizan que solo una cobre el XP.
+    """
+    user_id = await create_test_user("scen5_concurrent_user")
+    ex1 = "e0000000-0000-0000-0000-000000000001"
+
+    conn1 = await asyncpg.connect(**DB_CONFIG, database=TEST_DB_NAME)
+    conn2 = await asyncpg.connect(**DB_CONFIG, database=TEST_DB_NAME)
+
+    try:
+        await conn1.execute("SET ROLE service_role;")
+        await conn2.execute("SET ROLE service_role;")
+
+        async def exec_attempt(conn):
+            row = await conn.fetchrow(
+                "SELECT public.record_verified_attempt($1, $2, 'SELECT 1;', 'PASSED', 10, NULL, 0, 30) AS res;",
+                user_id, ex1
+            )
+            return json.loads(row["res"])
+
+        res1, res2 = await asyncio.gather(exec_attempt(conn1), exec_attempt(conn2))
+
+        # Uno debió cobrar 30 y el otro 0
+        xp_awarded_sum = res1["xp_awarded"] + res2["xp_awarded"]
+        assert xp_awarded_sum == 30, f"La suma de XP acreditado debe ser exactamente 30, obtuvo {xp_awarded_sum}"
+
+        # Verificar perfil en BD
+        final_xp = await conn1.fetchval("SELECT xp FROM public.user_profiles WHERE id = $1;", user_id)
+        assert final_xp == 30
+    finally:
+        await conn1.close()
+        await conn2.close()
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_6_reject_inconsistent_and_exceeding_xp(db_conn, create_test_user):
+    """
+    Escenario 6: Rechazo estricto de XP superior al cálculo autoritativo
+    o de valores positivos arbitrarios inconsistentes con el cálculo.
+    """
+    user_id = await create_test_user("scen6_inconsistent_user")
+    ex1 = "e0000000-0000-0000-0000-000000000001"  # xp_reward = 30
+
+    # A. Intentar otorgar más XP del base (31 > 30)
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        with pytest.raises(PostgresError) as exc_info:
+            await db_conn.execute(
+                "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 31);",
+                user_id, ex1
+            )
+        assert "exceeds authoritative calculated XP" in str(exc_info.value)
+
+    # B. Intentar pasar un valor positivo arbitrariamente menor (15 != 30)
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        with pytest.raises(PostgresError) as exc_info:
+            await db_conn.execute(
+                "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 15);",
+                user_id, ex1
+            )
+        assert "is inconsistent with authoritative calculated XP" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_7_nonexistent_user(db_conn):
+    """Escenario 7: Rechazo de usuario inexistente."""
+    fake_user = "00000000-0000-0000-0000-000000000000"
+    ex1 = "e0000000-0000-0000-0000-000000000001"
+
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        with pytest.raises(PostgresError) as exc_info:
+            await db_conn.execute(
+                "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 30);",
+                fake_user, ex1
+            )
+        assert "User profile with id" in str(exc_info.value)
+        assert "does not exist" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_regression_scenario_8_nonexistent_exercise(db_conn, create_test_user):
+    """Escenario 8: Rechazo de ejercicio inexistente."""
+    user_id = await create_test_user("scen8_user")
+    fake_ex = "00000000-0000-0000-0000-000000000000"
+
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE service_role;")
+        with pytest.raises(PostgresError) as exc_info:
+            await db_conn.execute(
+                "SELECT public.record_verified_attempt($1, $2, 'SQL', 'PASSED', 10, NULL, 0, 30);",
+                user_id, fake_ex
+            )
+        assert "not found in public.exercises" in str(exc_info.value)
 
 
 # ==============================================================================
@@ -746,6 +998,10 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
 
     # Ejecutar rollback dentro de una transacción aislada para no destruir el setup del suite
     async with db_conn.transaction():
+        # Crear una secuencia de prueba para asegurar que el blindaje de secuencias del rollback opere sobre secuencias reales
+        await db_conn.execute("CREATE SEQUENCE IF NOT EXISTS public.test_pilot_seq;")
+        # Otorgar temporalmente permisos para comprobar que el script los revoca efectivamente
+        await db_conn.execute("GRANT USAGE, SELECT ON SEQUENCE public.test_pilot_seq TO authenticated, anon;")
         await db_conn.execute(rollback_sql)
 
         # 1. Verificar eliminación de la RPC
@@ -833,3 +1089,253 @@ async def test_rollback_script_preserves_strict_security(db_conn, create_test_us
         with pytest.raises(InsufficientPrivilegeError):
             async with db_conn.transaction():
                 await db_conn.execute("UPDATE public.user_profiles SET level = 99 WHERE id = $1::UUID;", user_id)
+
+        # 7. Blindaje de solution_query: anon y authenticated NO pueden consultar solution_query
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('anon', 'public.exercises', 'solution_query', 'SELECT');"
+        ) is False
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.exercises', 'solution_query', 'SELECT');"
+        ) is False
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('service_role', 'public.exercises', 'solution_query', 'SELECT');"
+        ) is True
+
+        # 8. Ausencia total de permisos residuales de actualización para anon y PUBLIC en user_profiles
+        for col in ["display_name", "avatar_url", "bio", "updated_at", "xp", "level", "username"]:
+            assert await db_conn.fetchval(
+                f"SELECT has_column_privilege('anon', 'public.user_profiles', '{col}', 'UPDATE');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"""
+                SELECT EXISTS(
+                    SELECT 1 FROM information_schema.column_privileges
+                    WHERE table_schema = 'public'
+                      AND table_name = 'user_profiles'
+                      AND column_name = '{col}'
+                      AND grantee = 'PUBLIC'
+                      AND privilege_type = 'UPDATE'
+                );
+                """
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_column_privilege('anon', 'public.user_profiles', '{col}', 'INSERT');"
+            ) is False
+
+        # 9. authenticated solo puede modificar campos visuales seguros
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'display_name', 'UPDATE');"
+        ) is True
+        assert await db_conn.fetchval(
+            "SELECT has_column_privilege('authenticated', 'public.user_profiles', 'avatar_url', 'UPDATE');"
+        ) is True
+
+        # 10. RLS explícitamente habilitado en las 11 tablas tras rollback
+        all_11_tables = [
+            "user_profiles", "learning_paths", "modules", "lessons", "exercises",
+            "exercise_hints", "exercise_attempts", "user_progress", "achievements",
+            "user_achievements", "user_daily_activity"
+        ]
+        for tbl in all_11_tables:
+            rls_on = await db_conn.fetchval(
+                f"SELECT rowsecurity FROM pg_tables WHERE schemaname = 'public' AND tablename = '{tbl}';"
+            )
+            assert rls_on is True, f"RLS debe continuar habilitado en {tbl} tras rollback"
+
+        # 11. Escritura denegada a authenticated en tablas educativas y de progreso
+        for tbl in ["learning_paths", "modules", "lessons", "exercise_hints", "achievements", "user_progress", "user_achievements", "user_daily_activity"]:
+            assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'INSERT');") is False
+            assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'UPDATE');") is False
+            assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'DELETE');") is False
+
+        # 12. Secuencias en esquema public: revocadas para anon y authenticated, accesibles por service_role
+        sequences = await db_conn.fetch("""
+            SELECT sequencename AS sequence_name
+            FROM pg_sequences
+            WHERE schemaname = 'public';
+        """)
+        assert len(sequences) > 0, "Debe existir al menos una secuencia en public para verificar el blindaje"
+        for seq_row in sequences:
+            seq_name = seq_row["sequence_name"]
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('anon', 'public.{seq_name}', 'USAGE');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('anon', 'public.{seq_name}', 'SELECT');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('authenticated', 'public.{seq_name}', 'USAGE');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('authenticated', 'public.{seq_name}', 'SELECT');"
+            ) is False
+            assert await db_conn.fetchval(
+                f"SELECT has_sequence_privilege('service_role', 'public.{seq_name}', 'USAGE');"
+            ) is True
+
+        # 13. Privacidad en user_profiles tras rollback: anon sin SELECT y RLS estricto auth.uid() = id
+        assert await db_conn.fetchval(
+            "SELECT has_table_privilege('anon', 'public.user_profiles', 'SELECT');"
+        ) is False, "anon NO debe tener SELECT sobre user_profiles tras el rollback"
+        assert await db_conn.fetchval(
+            "SELECT has_table_privilege('authenticated', 'public.user_profiles', 'SELECT');"
+        ) is True, "authenticated debe conservar SELECT sobre user_profiles filtrado por RLS"
+
+        public_read_exists = await db_conn.fetchval("""
+            SELECT EXISTS (
+                SELECT 1 FROM pg_policies
+                WHERE schemaname = 'public'
+                  AND tablename = 'user_profiles'
+                  AND policyname = 'Public Read Profiles'
+            );
+        """)
+        assert public_read_exists is False, "Public Read Profiles NO debe existir tras rollback"
+
+        user_read_own_exists = await db_conn.fetchval("""
+            SELECT EXISTS (
+                SELECT 1 FROM pg_policies
+                WHERE schemaname = 'public'
+                  AND tablename = 'user_profiles'
+                  AND policyname = 'User Read Own Profile'
+            );
+        """)
+        assert user_read_own_exists is True, "User Read Own Profile DEBE existir tras rollback"
+
+
+# ==============================================================================
+# 9. PRUEBA DE PRIVACIDAD ESTRICTA EN PERFILES DE USUARIO (FASE 11.3 CORRECCIÓN)
+# ==============================================================================
+
+@pytest.mark.asyncio
+async def test_user_profiles_privacy_strict_rls_and_cls(db_conn, create_test_user):
+    """
+    Certificación de Privacidad en user_profiles (Fase 11.3 - Corrección Puntual):
+    1. anon NO tiene SELECT en user_profiles (bloqueado con InsufficientPrivilegeError).
+    2. authenticated usuario A solo puede leer su propio perfil (1 fila).
+    3. authenticated usuario A NO puede leer el perfil de usuario B (0 filas por RLS).
+    4. authenticated usuario A consultando SELECT * solo recibe su fila (1 fila de 2 en la tabla).
+    5. authenticated usuario A intentando modificar el perfil de usuario B afecta 0 filas (RLS).
+    6. authenticated usuario A puede modificar sus campos visuales (display_name, avatar_url, bio, updated_at).
+    7. authenticated usuario A NO puede modificar xp, level, rachas, username ni id (CLS bloquea).
+    8. authenticated usuario A NO puede hacer INSERT ni DELETE en user_profiles.
+    9. Políticas RLS: 'Public Read Profiles' eliminada; 'User Read Own Profile' activa.
+    10. Catálogos educativos permanecen legibles para anon y authenticated sin regresiones.
+    """
+    user_a = await create_test_user("student_alice")
+    user_b = await create_test_user("student_bob")
+
+    # Inicializar bio para comprobar persistencia
+    await db_conn.execute("UPDATE public.user_profiles SET bio = 'Bio inicial Alice' WHERE id = $1::UUID;", user_a)
+    await db_conn.execute("UPDATE public.user_profiles SET bio = 'Bio inicial Bob' WHERE id = $1::UUID;", user_b)
+
+    # 1. Consulta como anon denegada a nivel de tabla
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE anon;")
+        with pytest.raises(InsufficientPrivilegeError):
+            await db_conn.execute("SELECT * FROM public.user_profiles;")
+
+    # 2. Consulta como authenticated usuario A: solo ve su propio perfil
+    async with db_conn.transaction():
+        await db_conn.execute("SET LOCAL ROLE authenticated;")
+        await db_conn.execute(f"SET LOCAL request.jwt.claim.sub = '{user_a}';")
+
+        # A. Consulta de su propio perfil por ID
+        own_row = await db_conn.fetchrow(
+            "SELECT id, username, display_name, xp, level FROM public.user_profiles WHERE id = $1::UUID;",
+            user_a
+        )
+        assert own_row is not None
+        assert str(own_row["id"]) == user_a
+        assert own_row["username"] == "student_alice"
+
+        # B. Consulta del perfil de usuario B por ID -> RLS retorna 0 filas
+        other_row = await db_conn.fetchrow(
+            "SELECT id, username, display_name, xp, level FROM public.user_profiles WHERE id = $1::UUID;",
+            user_b
+        )
+        assert other_row is None, "RLS debe ocultar completamente el perfil de otro usuario (0 filas)"
+
+        # C. Consulta general SELECT * -> Solo devuelve su propia fila
+        all_rows = await db_conn.fetch("SELECT id, username FROM public.user_profiles;")
+        assert len(all_rows) == 1, "authenticated solo debe ver su propia tupla en consultas abiertas"
+        assert str(all_rows[0]["id"]) == user_a
+
+        # 3. Intento de modificar el perfil de usuario B -> RLS impide afectar filas (0 rows updated)
+        res_update_other = await db_conn.execute(
+            "UPDATE public.user_profiles SET display_name = 'Hacked Bob' WHERE id = $1::UUID;",
+            user_b
+        )
+        assert res_update_other == "UPDATE 0", "RLS debe impedir modificar filas ajenas"
+
+        # 4. Modificación de campos visuales autorizados propios -> Permitido
+        res_update_own = await db_conn.execute(
+            """
+            UPDATE public.user_profiles
+            SET display_name = 'Alice Renombrada',
+                avatar_url = 'https://example.com/alice.png',
+                bio = 'Nueva bio de Alice',
+                updated_at = NOW()
+            WHERE id = $1::UUID;
+            """,
+            user_a
+        )
+        assert res_update_own == "UPDATE 1", "authenticated debe poder actualizar sus campos visuales propios"
+
+        # 5. Modificación de campos protegidos propios -> Bloqueado por CLS (InsufficientPrivilegeError)
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET xp = 50000 WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET level = 10 WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET current_streak_days = 99 WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET max_streak_days = 99 WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET username = 'super_alice' WHERE id = $1::UUID;", user_a)
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("UPDATE public.user_profiles SET id = $1::UUID WHERE id = $1::UUID;", user_b)
+
+        # 6. Intentos de INSERT o DELETE por authenticated -> Bloqueados por privilegios de tabla
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute(
+                    "INSERT INTO public.user_profiles (id, username) VALUES ($1::UUID, 'new_user');",
+                    str(uuid.uuid4())
+                )
+
+        with pytest.raises(InsufficientPrivilegeError):
+            async with db_conn.transaction():
+                await db_conn.execute("DELETE FROM public.user_profiles WHERE id = $1::UUID;", user_a)
+
+    # 7. Verificación del estado en pg_policies
+    policies = await db_conn.fetch("""
+        SELECT policyname, permissive, cmd, qual
+        FROM pg_policies
+        WHERE schemaname = 'public' AND tablename = 'user_profiles';
+    """)
+    policy_names = [p["policyname"] for p in policies]
+    assert "Public Read Profiles" not in policy_names, "Public Read Profiles NO debe existir en pg_policies"
+    assert "User Read Own Profile" in policy_names, "User Read Own Profile DEBE existir en pg_policies"
+    assert "User Update Own Profile" in policy_names, "User Update Own Profile DEBE existir en pg_policies"
+
+    # 8. Verificación de catálogo educativo: accesible sin regresiones para anon y authenticated
+    for tbl in ["learning_paths", "modules", "lessons", "exercise_hints", "achievements"]:
+        assert await db_conn.fetchval(f"SELECT has_table_privilege('anon', 'public.{tbl}', 'SELECT');") is True
+        assert await db_conn.fetchval(f"SELECT has_table_privilege('authenticated', 'public.{tbl}', 'SELECT');") is True
+
+    # exercises accesible en columnas públicas (excluyendo solution_query)
+    assert await db_conn.fetchval("SELECT has_column_privilege('anon', 'public.exercises', 'title', 'SELECT');") is True
+    assert await db_conn.fetchval("SELECT has_column_privilege('anon', 'public.exercises', 'solution_query', 'SELECT');") is False
+    assert await db_conn.fetchval("SELECT has_column_privilege('authenticated', 'public.exercises', 'title', 'SELECT');") is True
+    assert await db_conn.fetchval("SELECT has_column_privilege('authenticated', 'public.exercises', 'solution_query', 'SELECT');") is False
