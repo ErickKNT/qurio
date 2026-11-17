@@ -415,3 +415,251 @@ async def test_04_admin_rbac_sql_idempotent_and_enforces_app_metadata():
             await cleanup.execute(f"DROP DATABASE IF EXISTS {test_db};")
         finally:
             await cleanup.close()
+
+
+@pytest.mark.asyncio
+async def test_list_users_requires_admin_rbac(client: AsyncClient, admin_ec_keys, mock_jwks):
+    private_key, _ = admin_ec_keys
+    student_token = _build_es256_token(private_key, sub="student-1", app_metadata={"role": "student"})
+
+    unauth_resp = await client.get("/api/v1/admin/users")
+    assert unauth_resp.status_code == 401
+
+    forbidden_resp = await client.get(
+        "/api/v1/admin/users",
+        headers={"Authorization": f"Bearer {student_token}"},
+    )
+    assert forbidden_resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_list_users_merges_auth_profiles_attempts_and_filters(
+    client: AsyncClient, admin_ec_keys, mock_jwks, monkeypatch
+):
+    private_key, _ = admin_ec_keys
+    token = _build_es256_token(private_key, app_metadata={"role": "admin"})
+    recent_iso = "2099-01-01T12:00:00Z"
+
+    auth_users = [
+        {
+            "id": "u-admin",
+            "email": "erick@qurio.dev",
+            "email_confirmed_at": "2026-01-01T00:00:00Z",
+            "last_sign_in_at": recent_iso,
+            "created_at": "2026-01-01T00:00:00Z",
+            "banned_until": None,
+            "app_metadata": {"role": "admin"},
+        },
+        {
+            "id": "u-student-active",
+            "email": "ana@qurio.dev",
+            "email_confirmed_at": "2026-02-01T00:00:00Z",
+            "last_sign_in_at": recent_iso,
+            "created_at": "2026-02-01T00:00:00Z",
+            "banned_until": None,
+            "app_metadata": {},
+        },
+        {
+            "id": "u-student-banned",
+            "email": "bot@qurio.dev",
+            "email_confirmed_at": None,
+            "last_sign_in_at": "2025-01-01T00:00:00Z",
+            "created_at": "2025-01-01T00:00:00Z",
+            "banned_until": "2099-12-31T23:59:59Z",
+            "app_metadata": {"role": "student"},
+        },
+    ]
+    profiles = [
+        {
+            "id": "u-admin",
+            "username": "erick_admin",
+            "display_name": "Erick Admin",
+            "level": 5,
+            "xp": 1200,
+            "current_streak_days": 9,
+            "max_streak_days": 14,
+            "created_at": "2026-01-01T00:00:00Z",
+        },
+        {
+            "id": "u-student-active",
+            "username": "ana_sql",
+            "display_name": "Ana López",
+            "level": 3,
+            "xp": 480,
+            "current_streak_days": 4,
+            "max_streak_days": 6,
+            "created_at": "2026-02-01T00:00:00Z",
+        },
+        {
+            "id": "u-student-banned",
+            "username": "spam_bot",
+            "display_name": "Spam Bot",
+            "level": 1,
+            "xp": 0,
+            "current_streak_days": 0,
+            "max_streak_days": 0,
+            "created_at": "2025-01-01T00:00:00Z",
+        },
+    ]
+    attempts = [
+        {"user_id": "u-student-active", "exercise_id": "ex-1", "status": "FAILED", "created_at": "2099-01-01T10:00:00Z"},
+        {"user_id": "u-student-active", "exercise_id": "ex-1", "status": "PASSED", "created_at": "2099-01-01T11:00:00Z"},
+        {"user_id": "u-student-active", "exercise_id": "ex-2", "status": "PASSED", "created_at": recent_iso},
+    ]
+    progress = [
+        {"user_id": "u-student-active", "exercises_completed_count": 1, "updated_at": "2099-01-01T11:00:00Z"},
+    ]
+
+    async def fake_auth_users():
+        return auth_users
+
+    async def fake_table(table: str, params=None, prefer_count: bool = False):
+        if table == "user_profiles":
+            return profiles, len(profiles)
+        if table == "exercise_attempts":
+            return attempts, len(attempts)
+        if table == "user_progress":
+            return progress, len(progress)
+        return [], 0
+
+    monkeypatch.setattr(admin_service, "_fetch_supabase_auth_users", fake_auth_users)
+    monkeypatch.setattr(admin_service, "_fetch_supabase_table", fake_table)
+
+    resp = await client.get(
+        "/api/v1/admin/users",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 3
+    assert data["summary"]["total_users"] == 3
+    assert data["summary"]["admins_count"] == 1
+    assert data["summary"]["banned_count"] == 1
+    assert data["summary"]["confirmed_count"] == 2
+    assert data["summary"]["active_7d_count"] == 2
+
+    by_id = {item["id"]: item for item in data["items"]}
+    assert by_id["u-student-active"]["completed_exercises"] == 2
+    assert by_id["u-student-active"]["total_attempts"] == 3
+    assert by_id["u-student-active"]["passed_attempts"] == 2
+    assert by_id["u-student-active"]["total_exercises"] >= 60
+    assert by_id["u-student-banned"]["is_banned"] is True
+    assert by_id["u-admin"]["role"] == "admin"
+
+    # Filtros por búsqueda, rol y estado
+    filtered_resp = await client.get(
+        "/api/v1/admin/users?search=ana&role=student&status=active",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert filtered_resp.status_code == 200
+    assert filtered_resp.json()["total"] == 1
+    assert filtered_resp.json()["items"][0]["id"] == "u-student-active"
+
+    banned_resp = await client.get(
+        "/api/v1/admin/users?status=banned",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert banned_resp.status_code == 200
+    assert [u["id"] for u in banned_resp.json()["items"]] == ["u-student-banned"]
+
+
+@pytest.mark.asyncio
+async def test_moderation_role_preserves_app_metadata_and_blocks_self_demotion(
+    client: AsyncClient, admin_ec_keys, mock_jwks, monkeypatch
+):
+    private_key, _ = admin_ec_keys
+    admin_sub = "00000000-0000-0000-0000-00000000a001"
+    token = _build_es256_token(private_key, sub=admin_sub, app_metadata={"role": "admin"})
+
+    # 1. Bloquear auto-degradación
+    self_resp = await client.post(
+        f"/api/v1/admin/users/{admin_sub}/role",
+        json={"role": "student"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert self_resp.status_code == 400
+
+    captured = {}
+
+    async def fake_get_user(user_id: str):
+        return {
+            "id": user_id,
+            "app_metadata": {"provider": "email", "providers": ["email"], "tier": "pro"},
+            "banned_until": None,
+        }
+
+    async def fake_update_user(user_id: str, body: dict):
+        captured["user_id"] = user_id
+        captured["body"] = body
+        return {
+            "id": user_id,
+            "app_metadata": body["app_metadata"],
+            "banned_until": None,
+        }
+
+    monkeypatch.setattr(admin_service, "_get_supabase_auth_user", fake_get_user)
+    monkeypatch.setattr(admin_service, "_update_supabase_auth_user", fake_update_user)
+
+    promo_resp = await client.post(
+        "/api/v1/admin/users/u-student-target/role",
+        json={"role": "admin"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert promo_resp.status_code == 200
+    payload = promo_resp.json()
+    assert payload["role"] == "admin"
+    assert payload["updated_by"] == admin_sub
+    assert captured["body"]["app_metadata"] == {
+        "provider": "email",
+        "providers": ["email"],
+        "tier": "pro",
+        "role": "admin",
+    }
+
+
+@pytest.mark.asyncio
+async def test_moderation_ban_suspends_reactivates_and_blocks_self_ban(
+    client: AsyncClient, admin_ec_keys, mock_jwks, monkeypatch
+):
+    private_key, _ = admin_ec_keys
+    admin_sub = "00000000-0000-0000-0000-00000000a001"
+    token = _build_es256_token(private_key, sub=admin_sub, app_metadata={"role": "admin"})
+
+    # 1. Bloquear auto-suspensión
+    self_ban = await client.post(
+        f"/api/v1/admin/users/{admin_sub}/ban",
+        json={"banned": True},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert self_ban.status_code == 400
+
+    calls = []
+
+    async def fake_update_user(user_id: str, body: dict):
+        calls.append((user_id, body))
+        is_ban = body.get("ban_duration") != "none"
+        return {
+            "id": user_id,
+            "app_metadata": {"role": "student"},
+            "banned_until": "2099-12-31T23:59:59Z" if is_ban else None,
+        }
+
+    monkeypatch.setattr(admin_service, "_update_supabase_auth_user", fake_update_user)
+
+    ban_resp = await client.post(
+        "/api/v1/admin/users/u-bad-actor/ban",
+        json={"banned": True, "reason": "Abuso de sandbox"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert ban_resp.status_code == 200
+    assert ban_resp.json()["is_banned"] is True
+    assert calls[-1][1] == {"ban_duration": "876000h"}
+
+    unban_resp = await client.post(
+        "/api/v1/admin/users/u-bad-actor/ban",
+        json={"banned": False},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert unban_resp.status_code == 200
+    assert unban_resp.json()["is_banned"] is False
+    assert calls[-1][1] == {"ban_duration": "none"}

@@ -181,3 +181,55 @@ export interface AdminPoolRecycleResponse {
   pool: AdminPoolMetrics;
   message: string;
 }
+
+export type AdminUserRole = 'admin' | 'student';
+
+export interface AdminUserRecord {
+  id: string;
+  email: string | null;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  role: AdminUserRole;
+  email_confirmed_at: string | null;
+  last_sign_in_at: string | null;
+  created_at: string | null;
+  banned_until: string | null;
+  is_banned: boolean;
+  level: number;
+  xp: number;
+  current_streak_days: number;
+  max_streak_days: number;
+  completed_exercises: number;
+  total_exercises: number;
+  total_attempts: number;
+  passed_attempts: number;
+  last_activity_at: string | null;
+}
+
+export interface AdminUsersSummary {
+  total_users: number;
+  admins_count: number;
+  active_7d_count: number;
+  banned_count: number;
+  confirmed_count: number;
+}
+
+export interface AdminUsersPageResponse {
+  items: AdminUserRecord[];
+  total: number;
+  limit: number;
+  offset: number;
+  data_source: string;
+  summary: AdminUsersSummary;
+}
+
+export interface AdminUserModerationResponse {
+  user_id: string;
+  role: AdminUserRole;
+  is_banned: boolean;
+  banned_until: string | null;
+  updated_at: string;
+  updated_by: string;
+  message: string;
+}

@@ -15,6 +15,7 @@ import {
   Sliders,
   Terminal,
   Trash2,
+  Users,
   X,
 } from 'lucide-react';
 import { Button } from '@/components/atoms/Button/Button';
@@ -24,7 +25,9 @@ import { AdminMetricTile } from '@/components/molecules/AdminMetricTile/AdminMet
 import { ConnectionGauge } from '@/components/molecules/ConnectionGauge/ConnectionGauge';
 import { KillswitchToggle } from '@/components/molecules/KillswitchToggle/KillswitchToggle';
 import { SqlDiffViewer } from '@/components/molecules/SqlDiffViewer/SqlDiffViewer';
+import { AdminUsersPanel } from '@/components/organisms/AdminUsersPanel/AdminUsersPanel';
 import { DataGridResults } from '@/components/organisms/DataGridResults/DataGridResults';
+import { useAuth } from '@/hooks/useAuth';
 import { adminApi, AttemptFilters } from '@/lib/adminApi';
 import {
   AdminAttemptsPageResponse,
@@ -32,24 +35,26 @@ import {
   AdminLiveOpsResponse,
   AdminReplayAttemptResponse,
   AdminSecurityAuditResponse,
+  AdminUserRole,
+  AdminUsersPageResponse,
   ExerciseOperationalStatus,
 } from '@/types/admin';
 import { cn } from '@/lib/utils';
 
-type AdminTab = 'live-ops' | 'curriculum' | 'forensics' | 'security' | 'system';
+type AdminTab = 'live-ops' | 'users' | 'curriculum' | 'forensics' | 'security' | 'system';
 
 const TRACK_INFO_BY_ORDER = (sortOrder: number): { trackName: string; moduleNumber: number } => {
   if (sortOrder <= 4) return { trackName: '1. Fundamentos de SQL', moduleNumber: 1 };
-  if (sortOrder <= 10) return { trackName: '1. Fundamentos de SQL', moduleNumber: 2 };
-  if (sortOrder <= 14) return { trackName: '1. Fundamentos de SQL', moduleNumber: 3 };
-  if (sortOrder <= 22) return { trackName: '1. Fundamentos de SQL', moduleNumber: 4 };
-  if (sortOrder <= 27) return { trackName: '2. SQL Relacional', moduleNumber: 5 };
-  if (sortOrder <= 32) return { trackName: '2. SQL Relacional', moduleNumber: 6 };
-  if (sortOrder <= 36) return { trackName: '2. SQL Relacional', moduleNumber: 7 };
-  if (sortOrder <= 40) return { trackName: '2. SQL Relacional', moduleNumber: 8 };
-  if (sortOrder <= 43) return { trackName: '3. Consultas Avanzadas', moduleNumber: 9 };
-  if (sortOrder <= 45) return { trackName: '3. Consultas Avanzadas', moduleNumber: 10 };
-  if (sortOrder <= 47) return { trackName: '3. Consultas Avanzadas', moduleNumber: 11 };
+  if (sortOrder <= 11) return { trackName: '1. Fundamentos de SQL', moduleNumber: 2 };
+  if (sortOrder <= 15) return { trackName: '1. Fundamentos de SQL', moduleNumber: 3 };
+  if (sortOrder <= 24) return { trackName: '1. Fundamentos de SQL', moduleNumber: 4 };
+  if (sortOrder <= 29) return { trackName: '2. SQL Relacional', moduleNumber: 5 };
+  if (sortOrder <= 35) return { trackName: '2. SQL Relacional', moduleNumber: 6 };
+  if (sortOrder <= 39) return { trackName: '2. SQL Relacional', moduleNumber: 7 };
+  if (sortOrder <= 44) return { trackName: '2. SQL Relacional', moduleNumber: 8 };
+  if (sortOrder <= 48) return { trackName: '3. Consultas Avanzadas', moduleNumber: 9 };
+  if (sortOrder <= 51) return { trackName: '3. Consultas Avanzadas', moduleNumber: 10 };
+  if (sortOrder <= 55) return { trackName: '3. Consultas Avanzadas', moduleNumber: 11 };
   return { trackName: '3. Consultas Avanzadas', moduleNumber: 12 };
 };
 
@@ -62,9 +67,21 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onBackToDashboard,
   className,
 }) => {
+  const { user: currentAdminUser } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('live-ops');
   const [bannerError, setBannerError] = useState<string | null>(null);
   const [bannerSuccess, setBannerSuccess] = useState<string | null>(null);
+
+  // Estado Usuarios & Moderación
+  const [usersPage, setUsersPage] = useState<AdminUsersPageResponse | null>(null);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [usersSearch, setUsersSearch] = useState('');
+  const [usersAppliedFilters, setUsersAppliedFilters] = useState({
+    search: '',
+    role: '',
+    status: '',
+    offset: 0,
+  });
 
   // Estado Live Ops
   const [liveOps, setLiveOps] = useState<AdminLiveOpsResponse | null>(null);
@@ -169,11 +186,36 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     }
   }, []);
 
+  const fetchUsers = useCallback(
+    async (filters: { search: string; role: string; status: string; offset: number }) => {
+      setLoadingUsers(true);
+      try {
+        const data = await adminApi.listUsers({
+          search: filters.search,
+          role: filters.role,
+          status: filters.status,
+          limit: 50,
+          offset: filters.offset,
+        });
+        setUsersPage(data);
+        setBannerError(null);
+      } catch (err) {
+        setBannerError(err instanceof Error ? err.message : 'No se pudo cargar el directorio de usuarios.');
+      } finally {
+        setLoadingUsers(false);
+      }
+    },
+    []
+  );
+
   // Carga reactiva según pestaña activa
   useEffect(() => {
     clearBanners();
     if (activeTab === 'live-ops' || activeTab === 'system') {
       fetchLiveOps();
+    }
+    if (activeTab === 'users') {
+      fetchUsers(usersAppliedFilters);
     }
     if (activeTab === 'curriculum' || activeTab === 'system') {
       fetchCurriculum();
@@ -184,7 +226,16 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     if (activeTab === 'security') {
       fetchSecurityAudit();
     }
-  }, [activeTab, fetchLiveOps, fetchCurriculum, fetchAttempts, fetchSecurityAudit, attemptFilters]);
+  }, [
+    activeTab,
+    fetchLiveOps,
+    fetchUsers,
+    usersAppliedFilters,
+    fetchCurriculum,
+    fetchAttempts,
+    fetchSecurityAudit,
+    attemptFilters,
+  ]);
 
   // Auto-polling opcional en Live Ops
   useEffect(() => {
@@ -218,6 +269,35 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       setBannerError(err instanceof Error ? err.message : `No se pudo cancelar el PID ${pid}.`);
     } finally {
       setCancellingPid(null);
+    }
+  };
+
+  const handleInspectUserAttempts = useCallback((userId: string) => {
+    setAttemptFilters((prev) => ({ ...prev, user_id: userId, page: 1 }));
+    setActiveTab('forensics');
+  }, []);
+
+  const handleModerateUserRole = async (userId: string, nextRole: AdminUserRole) => {
+    clearBanners();
+    try {
+      const res = await adminApi.updateUserRole(userId, nextRole);
+      setBannerSuccess(res.message);
+      await fetchUsers(usersAppliedFilters);
+    } catch (err) {
+      setBannerError(err instanceof Error ? err.message : 'No se pudo actualizar el rol del usuario.');
+      throw err;
+    }
+  };
+
+  const handleModerateUserBan = async (userId: string, banned: boolean, reason?: string) => {
+    clearBanners();
+    try {
+      const res = await adminApi.updateUserBan(userId, banned, reason);
+      setBannerSuccess(res.message);
+      await fetchUsers(usersAppliedFilters);
+    } catch (err) {
+      setBannerError(err instanceof Error ? err.message : 'No se pudo moderar el estado de la cuenta.');
+      throw err;
     }
   };
 
@@ -354,7 +434,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Navegación por 5 pestañas técnicas */}
+        {/* Navegación por 6 pestañas técnicas */}
         <nav
           aria-label="Secciones de administración"
           className="max-w-7xl mx-auto mt-4 flex items-center gap-1.5 overflow-x-auto pb-1"
@@ -364,6 +444,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             active={activeTab === 'live-ops'}
             onClick={() => setActiveTab('live-ops')}
             icon={<Activity className="w-3.5 h-3.5" />}
+          />
+          <RadioTab
+            label="[Usuarios]"
+            active={activeTab === 'users'}
+            onClick={() => setActiveTab('users')}
+            icon={<Users className="w-3.5 h-3.5" />}
           />
           <RadioTab
             label="[Analítica Pedagógica]"
@@ -429,6 +515,36 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
+        )}
+
+        {/* =================================================================== */}
+        {/* TAB 2: USUARIOS & MODERACIÓN */}
+        {/* =================================================================== */}
+        {activeTab === 'users' && (
+          <AdminUsersPanel
+            usersPage={usersPage}
+            loading={loadingUsers}
+            search={usersSearch}
+            roleFilter={usersAppliedFilters.role}
+            statusFilter={usersAppliedFilters.status}
+            currentAdminId={currentAdminUser?.id}
+            onSearchChange={setUsersSearch}
+            onRoleFilterChange={(role) =>
+              setUsersAppliedFilters((prev) => ({ ...prev, search: usersSearch, role, offset: 0 }))
+            }
+            onStatusFilterChange={(statusVal) =>
+              setUsersAppliedFilters((prev) => ({ ...prev, search: usersSearch, status: statusVal, offset: 0 }))
+            }
+            onApplyFilters={() =>
+              setUsersAppliedFilters((prev) => ({ ...prev, search: usersSearch, offset: 0 }))
+            }
+            onPageChange={(offset) =>
+              setUsersAppliedFilters((prev) => ({ ...prev, offset }))
+            }
+            onInspectAttempts={handleInspectUserAttempts}
+            onModerateRole={handleModerateUserRole}
+            onModerateBan={handleModerateUserBan}
+          />
         )}
 
         {/* =================================================================== */}

@@ -9,6 +9,9 @@ import {
   AdminPoolRecycleResponse,
   AdminReplayAttemptResponse,
   AdminSecurityAuditResponse,
+  AdminUserModerationResponse,
+  AdminUserRole,
+  AdminUsersPageResponse,
 } from '@/types/admin';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -108,6 +111,37 @@ export const adminApi = {
   recyclePool(): Promise<AdminPoolRecycleResponse> {
     return requestAdminJson<AdminPoolRecycleResponse>('/system/pool/recycle', {
       method: 'POST',
+    });
+  },
+
+  listUsers(filters: {
+    search?: string;
+    role?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<AdminUsersPageResponse> {
+    const query = new URLSearchParams();
+    if (filters.search) query.set('search', filters.search);
+    if (filters.role) query.set('role', filters.role);
+    if (filters.status) query.set('status', filters.status);
+    if (filters.limit) query.set('limit', String(filters.limit));
+    if (filters.offset !== undefined && filters.offset > 0) query.set('offset', String(filters.offset));
+    const qs = query.toString();
+    return requestAdminJson<AdminUsersPageResponse>(`/users${qs ? `?${qs}` : ''}`);
+  },
+
+  updateUserRole(userId: string, role: AdminUserRole): Promise<AdminUserModerationResponse> {
+    return requestAdminJson<AdminUserModerationResponse>(`/users/${userId}/role`, {
+      method: 'POST',
+      body: JSON.stringify({ role }),
+    });
+  },
+
+  updateUserBan(userId: string, banned: boolean, reason?: string): Promise<AdminUserModerationResponse> {
+    return requestAdminJson<AdminUserModerationResponse>(`/users/${userId}/ban`, {
+      method: 'POST',
+      body: JSON.stringify({ banned, reason }),
     });
   },
 };

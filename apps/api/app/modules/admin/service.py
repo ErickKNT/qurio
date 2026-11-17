@@ -1,7 +1,7 @@
 import asyncio
 from collections import Counter, defaultdict
 import ctypes
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import logging
 import os
 import statistics
@@ -15,6 +15,9 @@ from app.core.rate_limit import rate_limiter
 from app.core.system_state import ExerciseOperationalStatus, system_state
 from app.modules.admin.schemas import (
     ActiveQueryInfo,
+    AdminUserRecord,
+    AdminUsersPageResponse,
+    AdminUsersSummary,
     AttemptRecord,
     AttemptsPageResponse,
     CancelQueryResponse,
@@ -33,6 +36,7 @@ from app.modules.admin.schemas import (
     ReplayTablePayload,
     SecurityAuditEntry,
     SecurityAuditResponse,
+    UserModerationResponse,
 )
 from app.modules.curriculum.repository import exercise_repository
 from app.modules.runner.evaluator import evaluate_solution, row_to_comparable_tuple
@@ -592,6 +596,433 @@ class AdminService:
             recycled=True,
             pool=PoolMetrics(**metrics),
             message="Pool asyncpg hacia PostgreSQL Sandbox reciclado limpiamente.",
+        )
+
+    @staticmethod
+    def _parse_iso_datetime(value: Optional[str]) -> Optional[datetime]:
+        if not value or not isinstance(value, str):
+            return None
+        normalized = value.strip()
+        if not normalized or normalized.lower() == "none":
+            return None
+        if normalized.endswith("Z"):
+            normalized = normalized[:-1] + "+00:00"
+        try:
+            parsed = datetime.fromisoformat(normalized)
+            return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=timezone.utc)
+        except ValueError:
+            return None
+
+    @classmethod
+    def _is_user_banned(cls, banned_until: Optional[str], now: Optional[datetime] = None) -> bool:
+        dt = cls._parse_iso_datetime(banned_until)
+        if dt is None:
+            return False
+        ref_now = now or datetime.now(timezone.utc)
+        return dt > ref_now
+
+    @classmethod
+    def _max_iso_timestamp(cls, *candidates: Optional[str]) -> Optional[str]:
+        best_raw: Optional[str] = None
+        best_dt: Optional[datetime] = None
+        for raw in candidates:
+            dt = cls._parse_iso_datetime(raw)
+            if dt is not None and (best_dt is None or dt > best_dt):
+                best_dt = dt
+                best_raw = raw
+        return best_raw
+
+    async def _fetch_supabase_auth_users(self) -> Optional[List[Dict[str, Any]]]:
+        headers = self._supabase_admin_headers()
+        if not headers:
+            return None
+
+        base_url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/admin/users"
+        collected: List[Dict[str, Any]] = []
+        per_page = 1000
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                for page in range(1, 6):
+                    resp = await client.get(
+                        base_url,
+                        headers=headers,
+                        params={"page": str(page), "per_page": str(per_page)},
+                    )
+                    if resp.status_code != 200:
+                        logger.warning(f"Consulta Auth Admin users devolvió {resp.status_code}")
+                        return None
+                    payload = resp.json()
+                    batch = payload.get("users") if isinstance(payload, dict) else None
+                    if not isinstance(batch, list):
+                        return None
+                    collected.extend(batch)
+                    if len(batch) < per_page:
+                        break
+                return collected
+        except Exception as exc:
+            logger.warning(f"Error consultando Auth Admin users en Supabase: {exc}")
+            return None
+
+    async def _get_supabase_auth_user(self, user_id: str) -> Dict[str, Any]:
+        headers = self._supabase_admin_headers()
+        if not headers:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="SUPABASE_SERVICE_ROLE_KEY no está configurada para moderación de usuarios.",
+            )
+        url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/admin/users/{user_id}"
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.get(url, headers=headers)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Error conectando con Supabase Auth Admin: {exc}",
+            )
+        if resp.status_code == 404:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Usuario '{user_id}' no encontrado en Supabase Auth.",
+            )
+        if resp.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Supabase Auth Admin devolvió estado {resp.status_code} al consultar usuario.",
+            )
+        data = resp.json()
+        if isinstance(data, dict) and isinstance(data.get("user"), dict):
+            return data["user"]
+        return data if isinstance(data, dict) else {}
+
+    async def _update_supabase_auth_user(self, user_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
+        headers = self._supabase_admin_headers()
+        if not headers:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="SUPABASE_SERVICE_ROLE_KEY no está configurada para moderación de usuarios.",
+            )
+        url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/admin/users/{user_id}"
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.put(url, headers=headers, json=body)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Error actualizando usuario en Supabase Auth Admin: {exc}",
+            )
+        if resp.status_code == 404:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Usuario '{user_id}' no encontrado en Supabase Auth.",
+            )
+        if resp.status_code not in (200, 201):
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Supabase Auth Admin devolvió {resp.status_code} al moderar usuario.",
+            )
+        data = resp.json()
+        if isinstance(data, dict) and isinstance(data.get("user"), dict):
+            return data["user"]
+        return data if isinstance(data, dict) else {}
+
+    async def list_users(
+        self,
+        *,
+        search: Optional[str] = None,
+        role: Optional[str] = None,
+        account_status: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> AdminUsersPageResponse:
+        safe_limit = max(1, min(limit, 200))
+        safe_offset = max(0, offset)
+
+        all_exercises = await exercise_repository.list_all()
+        total_catalog_exercises = len(all_exercises) or 60
+
+        auth_users_res, profiles_res, attempts_res, progress_res = await asyncio.gather(
+            self._fetch_supabase_auth_users(),
+            self._fetch_supabase_table(
+                "user_profiles",
+                params={
+                    "select": "id,username,display_name,avatar_url,level,xp,current_streak_days,max_streak_days,created_at",
+                    "limit": "5000",
+                },
+            ),
+            self._fetch_supabase_table(
+                "exercise_attempts",
+                params={
+                    "select": "user_id,exercise_id,status,created_at",
+                    "order": "created_at.desc",
+                    "limit": "10000",
+                },
+            ),
+            self._fetch_supabase_table(
+                "user_progress",
+                params={
+                    "select": "user_id,exercises_completed_count,updated_at",
+                    "limit": "5000",
+                },
+            ),
+        )
+
+        if auth_users_res is None and profiles_res is None:
+            return AdminUsersPageResponse(
+                items=[],
+                total=0,
+                limit=safe_limit,
+                offset=safe_offset,
+                data_source="unavailable",
+                summary=AdminUsersSummary(),
+            )
+
+        auth_by_id: Dict[str, Dict[str, Any]] = {}
+        for u in auth_users_res or []:
+            uid = str(u.get("id") or "")
+            if uid:
+                auth_by_id[uid] = u
+
+        profiles_by_id: Dict[str, Dict[str, Any]] = {}
+        for p in (profiles_res[0] if profiles_res else []):
+            uid = str(p.get("id") or "")
+            if uid:
+                profiles_by_id[uid] = p
+
+        attempts_stats: Dict[str, Dict[str, Any]] = defaultdict(
+            lambda: {
+                "total": 0,
+                "passed": 0,
+                "passed_exercises": set(),
+                "last_attempt_at": None,
+            }
+        )
+        for att in (attempts_res[0] if attempts_res else []):
+            uid = str(att.get("user_id") or "")
+            if not uid:
+                continue
+            bucket = attempts_stats[uid]
+            bucket["total"] += 1
+            if att.get("status") == "PASSED":
+                bucket["passed"] += 1
+                ex_id = str(att.get("exercise_id") or "")
+                if ex_id:
+                    bucket["passed_exercises"].add(ex_id)
+            bucket["last_attempt_at"] = self._max_iso_timestamp(
+                bucket["last_attempt_at"],
+                att.get("created_at"),
+            )
+
+        progress_stats: Dict[str, Dict[str, Any]] = defaultdict(
+            lambda: {"completed_count": 0, "last_updated_at": None}
+        )
+        for prog in (progress_res[0] if progress_res else []):
+            uid = str(prog.get("user_id") or "")
+            if not uid:
+                continue
+            bucket = progress_stats[uid]
+            bucket["completed_count"] += int(prog.get("exercises_completed_count") or 0)
+            bucket["last_updated_at"] = self._max_iso_timestamp(
+                bucket["last_updated_at"],
+                prog.get("updated_at"),
+            )
+
+        all_user_ids = sorted(set(auth_by_id.keys()) | set(profiles_by_id.keys()))
+        now = datetime.now(timezone.utc)
+        seven_days_ago = now - timedelta(days=7)
+
+        records: List[AdminUserRecord] = []
+        admins_count = 0
+        active_7d_count = 0
+        banned_count = 0
+        confirmed_count = 0
+
+        for uid in all_user_ids:
+            auth_u = auth_by_id.get(uid, {})
+            prof = profiles_by_id.get(uid, {})
+            app_meta = auth_u.get("app_metadata") or {}
+            user_meta = auth_u.get("user_metadata") or {}
+            resolved_role = "admin" if app_meta.get("role") == "admin" else "student"
+
+            banned_until = auth_u.get("banned_until")
+            is_banned = self._is_user_banned(banned_until, now=now)
+            email_confirmed_at = auth_u.get("email_confirmed_at")
+
+            att = attempts_stats.get(uid)
+            prog = progress_stats.get(uid)
+            completed_from_attempts = len(att["passed_exercises"]) if att else 0
+            completed_from_progress = int(prog["completed_count"]) if prog else 0
+            completed_exercises = min(
+                total_catalog_exercises,
+                max(completed_from_attempts, completed_from_progress),
+            )
+
+            last_activity_at = self._max_iso_timestamp(
+                att["last_attempt_at"] if att else None,
+                prog["last_updated_at"] if prog else None,
+                auth_u.get("last_sign_in_at"),
+            )
+
+            if resolved_role == "admin":
+                admins_count += 1
+            if is_banned:
+                banned_count += 1
+            if email_confirmed_at:
+                confirmed_count += 1
+            last_act_dt = self._parse_iso_datetime(last_activity_at)
+            if last_act_dt is not None and last_act_dt >= seven_days_ago:
+                active_7d_count += 1
+
+            records.append(
+                AdminUserRecord(
+                    id=uid,
+                    email=auth_u.get("email"),
+                    username=prof.get("username") or user_meta.get("username"),
+                    display_name=prof.get("display_name") or user_meta.get("display_name"),
+                    avatar_url=prof.get("avatar_url") or user_meta.get("avatar_url"),
+                    role=resolved_role,  # type: ignore[arg-type]
+                    email_confirmed_at=email_confirmed_at,
+                    last_sign_in_at=auth_u.get("last_sign_in_at"),
+                    created_at=prof.get("created_at") or auth_u.get("created_at"),
+                    banned_until=banned_until,
+                    is_banned=is_banned,
+                    level=int(prof.get("level") or 1),
+                    xp=int(prof.get("xp") or 0),
+                    current_streak_days=int(prof.get("current_streak_days") or 0),
+                    max_streak_days=int(prof.get("max_streak_days") or 0),
+                    completed_exercises=completed_exercises,
+                    total_exercises=total_catalog_exercises,
+                    total_attempts=int(att["total"]) if att else 0,
+                    passed_attempts=int(att["passed"]) if att else 0,
+                    last_activity_at=last_activity_at,
+                )
+            )
+
+        filtered = records
+        if search and search.strip():
+            needle = search.strip().lower()
+            filtered = [
+                r
+                for r in filtered
+                if needle in r.id.lower()
+                or (r.email and needle in r.email.lower())
+                or (r.username and needle in r.username.lower())
+                or (r.display_name and needle in r.display_name.lower())
+            ]
+
+        if role in ("admin", "student"):
+            filtered = [r for r in filtered if r.role == role]
+
+        if account_status == "banned":
+            filtered = [r for r in filtered if r.is_banned]
+        elif account_status == "active":
+            filtered = [r for r in filtered if not r.is_banned and bool(r.email_confirmed_at)]
+        elif account_status == "unconfirmed":
+            filtered = [r for r in filtered if not r.is_banned and not r.email_confirmed_at]
+
+        filtered.sort(
+            key=lambda r: (
+                self._parse_iso_datetime(r.last_activity_at)
+                or self._parse_iso_datetime(r.created_at)
+                or datetime.min.replace(tzinfo=timezone.utc)
+            ),
+            reverse=True,
+        )
+
+        page_items = filtered[safe_offset : safe_offset + safe_limit]
+        return AdminUsersPageResponse(
+            items=page_items,
+            total=len(filtered),
+            limit=safe_limit,
+            offset=safe_offset,
+            data_source="supabase",
+            summary=AdminUsersSummary(
+                total_users=len(records),
+                admins_count=admins_count,
+                active_7d_count=active_7d_count,
+                banned_count=banned_count,
+                confirmed_count=confirmed_count,
+            ),
+        )
+
+    async def update_user_role(
+        self,
+        *,
+        target_user_id: str,
+        role: str,
+        admin_id: str,
+    ) -> UserModerationResponse:
+        if target_user_id == admin_id and role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No puedes degradar tu propio rol de administrador.",
+            )
+
+        existing_user = await self._get_supabase_auth_user(target_user_id)
+        existing_app_meta = dict(existing_user.get("app_metadata") or {})
+        existing_app_meta["role"] = role
+
+        updated_user = await self._update_supabase_auth_user(
+            target_user_id,
+            {"app_metadata": existing_app_meta},
+        )
+        updated_meta = updated_user.get("app_metadata") or existing_app_meta
+        resolved_role = "admin" if updated_meta.get("role") == "admin" else "student"
+        banned_until = updated_user.get("banned_until") or existing_user.get("banned_until")
+        is_banned = self._is_user_banned(banned_until)
+
+        logger.info(
+            f"Admin {admin_id} actualizó rol de usuario {target_user_id} a '{resolved_role}'."
+        )
+        return UserModerationResponse(
+            user_id=target_user_id,
+            role=resolved_role,  # type: ignore[arg-type]
+            is_banned=is_banned,
+            banned_until=banned_until,
+            updated_at=datetime.now(timezone.utc).isoformat(),
+            updated_by=admin_id,
+            message=f"Rol actualizado a '{resolved_role}' para el usuario {target_user_id}.",
+        )
+
+    async def update_user_ban(
+        self,
+        *,
+        target_user_id: str,
+        banned: bool,
+        admin_id: str,
+        reason: Optional[str] = None,
+    ) -> UserModerationResponse:
+        if target_user_id == admin_id and banned:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No puedes suspender tu propia cuenta de administrador.",
+            )
+
+        ban_duration = "876000h" if banned else "none"
+        updated_user = await self._update_supabase_auth_user(
+            target_user_id,
+            {"ban_duration": ban_duration},
+        )
+        updated_meta = updated_user.get("app_metadata") or {}
+        resolved_role = "admin" if updated_meta.get("role") == "admin" else "student"
+        banned_until = updated_user.get("banned_until")
+        is_banned = banned if banned_until is None else self._is_user_banned(banned_until)
+
+        logger.info(
+            f"Admin {admin_id} {'suspendió' if banned else 'reactivó'} usuario {target_user_id}"
+            + (f" (motivo: {reason})" if reason else "")
+        )
+        return UserModerationResponse(
+            user_id=target_user_id,
+            role=resolved_role,  # type: ignore[arg-type]
+            is_banned=is_banned,
+            banned_until=banned_until,
+            updated_at=datetime.now(timezone.utc).isoformat(),
+            updated_by=admin_id,
+            message=(
+                f"Cuenta {target_user_id} suspendida por moderación administrativa."
+                if banned
+                else f"Cuenta {target_user_id} reactivada correctamente."
+            ),
         )
 
 

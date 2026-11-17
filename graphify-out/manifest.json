@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794944664.535632,
-    "seen": 1794944677.282976,
-    "ast_hash": "2686a80917662b6a683a80d0ca741f37",
+    "mtime": 1794946512.428409,
+    "seen": 1794946530.8477714,
+    "ast_hash": "f688576958cfa615c380efe5d77b0e6e",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1104,27 +1104,27 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/admin/router.py": {
-    "mtime": 1794934414.651187,
-    "seen": 1794935930.4418244,
-    "ast_hash": "82677912ad70677e4889c62d0c045cd2",
+    "mtime": 1794946083.9814625,
+    "seen": 1794946530.8025348,
+    "ast_hash": "f2347906454f8806a9f0a15ada5b972d",
     "semantic_hash": ""
   },
   "apps/api/app/modules/admin/schemas.py": {
-    "mtime": 1794934411.2620084,
-    "seen": 1794935930.4418263,
-    "ast_hash": "a51a1b312e06e5cd9f56e810a93b573d",
+    "mtime": 1794946054.2144158,
+    "seen": 1794946530.8025396,
+    "ast_hash": "cb132f255534d2e7f31df3df632bb8d5",
     "semantic_hash": ""
   },
   "apps/api/app/modules/admin/service.py": {
-    "mtime": 1794934413.0999203,
-    "seen": 1794935930.441828,
-    "ast_hash": "6eadb1e0a080b5076d086a2019a215a3",
+    "mtime": 1794946080.9173932,
+    "seen": 1794946530.802542,
+    "ast_hash": "d6041e516a8cb155e45a9499f65f76af",
     "semantic_hash": ""
   },
   "apps/api/tests/test_admin.py": {
-    "mtime": 1794934450.4355702,
-    "seen": 1794935930.4427931,
-    "ast_hash": "83b67180157db2926594ba14ac661bf1",
+    "mtime": 1794946106.7649593,
+    "seen": 1794946530.806014,
+    "ast_hash": "ed71c32c6c9570e7fbcb37a67f7313af",
     "semantic_hash": ""
   },
   "apps/web/src/components/atoms/AdminBadge/AdminBadge.tsx": {
@@ -1158,15 +1158,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/AdminDashboardView/AdminDashboardView.tsx": {
-    "mtime": 1794938357.237598,
-    "seen": 1794939619.2792587,
-    "ast_hash": "edbba6a12cb0d6efe5a2f0e0c64e91f9",
+    "mtime": 1794946526.0432189,
+    "seen": 1794946530.8204007,
+    "ast_hash": "ff8eeee58fb35a6ecc56d1c975cd256f",
     "semantic_hash": ""
   },
   "apps/web/src/lib/adminApi.ts": {
-    "mtime": 1794934709.2408931,
-    "seen": 1794935930.4517508,
-    "ast_hash": "5d9a37d104ba12f455640cbbf7d9efed",
+    "mtime": 1794946184.23902,
+    "seen": 1794946530.8283813,
+    "ast_hash": "1643f756ccebd3c937654f8e31971a9e",
     "semantic_hash": ""
   },
   "apps/web/src/lib/fallbackCurriculum.ts": {
@@ -1176,15 +1176,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/tests/admin.test.ts": {
-    "mtime": 1794938369.472227,
-    "seen": 1794939619.2841036,
-    "ast_hash": "9c24f0cdec6d024c4f673bf383f7254f",
+    "mtime": 1794946526.2492082,
+    "seen": 1794946530.8312316,
+    "ast_hash": "22768f3d5f801d2ef7fe74194c8b1460",
     "semantic_hash": ""
   },
   "apps/web/src/types/admin.ts": {
-    "mtime": 1794934707.5918193,
-    "seen": 1794935930.452405,
-    "ast_hash": "01dbc4b26d4ed7b1afb08b49c79f9e2e",
+    "mtime": 1794946181.111767,
+    "seen": 1794946530.8312376,
+    "ast_hash": "ded364a98808bcf19c686cb7742f19cf",
     "semantic_hash": ""
   },
   "docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md": {
@@ -1206,8 +1206,8 @@
     "semantic_hash": ""
   },
   "apps/web/src/tests/pedagogy.test.ts": {
-    "mtime": 1794944613.436575,
-    "seen": 1794944677.2733295,
+    "mtime": 1794944692.8227727,
+    "seen": 1794946530.8312352,
     "ast_hash": "2c2893dc96047fb5b9f0c8f5d907560c",
     "semantic_hash": ""
   },
@@ -1218,9 +1218,21 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/LearningRoadmapMap/LearningRoadmapMap.tsx": {
-    "mtime": 1794944611.4075646,
-    "seen": 1794944677.2679284,
+    "mtime": 1794944692.3879383,
+    "seen": 1794946530.821449,
     "ast_hash": "fe43c62144d020c096bb0fd23ee7899c",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/molecules/UserModerationDrawer/UserModerationDrawer.tsx": {
+    "mtime": 1794946341.3067918,
+    "seen": 1794946530.819712,
+    "ast_hash": "0d22ee37dd8f38d6d1cd32cd095311c5",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/organisms/AdminUsersPanel/AdminUsersPanel.tsx": {
+    "mtime": 1794946226.988869,
+    "seen": 1794946530.8204043,
+    "ast_hash": "bedba42267255240cbdf6485cf2bc6bf",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

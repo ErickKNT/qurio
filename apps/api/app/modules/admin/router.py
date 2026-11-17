@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.core.auth import AuthenticatedUser, require_admin
 from app.modules.admin.schemas import (
+    AdminUsersPageResponse,
     AttemptsPageResponse,
     CancelQueryResponse,
     CurriculumMetricsResponse,
@@ -13,6 +14,9 @@ from app.modules.admin.schemas import (
     ReplayAttemptRequest,
     ReplayAttemptResponse,
     SecurityAuditResponse,
+    UpdateUserBanRequest,
+    UpdateUserRoleRequest,
+    UserModerationResponse,
 )
 from app.modules.admin.service import admin_service
 
@@ -88,3 +92,50 @@ async def update_killswitches(
 async def recycle_pool():
     """Cierra limpiamente y reconstruye el pool asyncpg hacia el Sandbox."""
     return await admin_service.recycle_pool()
+
+
+@router.get("/users", response_model=AdminUsersPageResponse)
+async def list_users(
+    search: Optional[str] = Query(default=None),
+    role: Optional[str] = Query(default=None),
+    status: Optional[str] = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+):
+    """Lista consolidada de usuarios (Supabase Auth + perfiles + progreso + actividad)."""
+    return await admin_service.list_users(
+        search=search,
+        role=role,
+        account_status=status,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.post("/users/{user_id}/role", response_model=UserModerationResponse)
+async def update_user_role(
+    user_id: str,
+    payload: UpdateUserRoleRequest,
+    admin_user: AuthenticatedUser = Depends(require_admin),
+):
+    """Promueve o degrada el rol administrativo (app_metadata.role) de un usuario."""
+    return await admin_service.update_user_role(
+        target_user_id=user_id,
+        role=payload.role,
+        admin_id=admin_user.id,
+    )
+
+
+@router.post("/users/{user_id}/ban", response_model=UserModerationResponse)
+async def update_user_ban(
+    user_id: str,
+    payload: UpdateUserBanRequest,
+    admin_user: AuthenticatedUser = Depends(require_admin),
+):
+    """Suspende o reactiva una cuenta de usuario mediante Supabase Auth Admin API."""
+    return await admin_service.update_user_ban(
+        target_user_id=user_id,
+        banned=payload.banned,
+        admin_id=admin_user.id,
+        reason=payload.reason,
+    )

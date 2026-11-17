@@ -178,3 +178,62 @@ class PoolRecycleResponse(BaseModel):
     recycled: bool
     pool: PoolMetrics
     message: str
+
+
+class AdminUserRecord(BaseModel):
+    id: str
+    email: Optional[str] = None
+    username: Optional[str] = None
+    display_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    role: Literal["admin", "student"] = "student"
+    email_confirmed_at: Optional[str] = None
+    last_sign_in_at: Optional[str] = None
+    created_at: Optional[str] = None
+    banned_until: Optional[str] = None
+    is_banned: bool = False
+    level: int = 1
+    xp: int = 0
+    current_streak_days: int = 0
+    max_streak_days: int = 0
+    completed_exercises: int = 0
+    total_exercises: int = 60
+    total_attempts: int = 0
+    passed_attempts: int = 0
+    last_activity_at: Optional[str] = None
+
+
+class AdminUsersSummary(BaseModel):
+    total_users: int = 0
+    admins_count: int = 0
+    active_7d_count: int = 0
+    banned_count: int = 0
+    confirmed_count: int = 0
+
+
+class AdminUsersPageResponse(BaseModel):
+    items: List[AdminUserRecord] = Field(default_factory=list)
+    total: int = 0
+    limit: int = 50
+    offset: int = 0
+    data_source: str = "supabase"
+    summary: AdminUsersSummary = Field(default_factory=AdminUsersSummary)
+
+
+class UpdateUserRoleRequest(BaseModel):
+    role: Literal["admin", "student"]
+
+
+class UpdateUserBanRequest(BaseModel):
+    banned: bool
+    reason: Optional[str] = None
+
+
+class UserModerationResponse(BaseModel):
+    user_id: str
+    role: Literal["admin", "student"]
+    is_banned: bool
+    banned_until: Optional[str] = None
+    updated_at: str
+    updated_by: str
+    message: str

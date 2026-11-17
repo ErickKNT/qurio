@@ -1589,3 +1589,27 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 
 
+
+---
+
+### Entrada 53: Directorio de Usuarios y Moderación en Qurio Admin (`[Usuarios]`)
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-14-admin-users` (aislada sin merge a `main`)
+* **Objetivo:**
+  1. Incorporar la pestaña **`[Usuarios]`** en la consola administrativa (`AdminDashboardView`) con visibilidad completa (perfil, autenticación de Supabase Auth, avance sobre `60` retos, XP, racha y estadísticas de intentos).
+  2. Proveer acciones de moderación administrativa seguras sin diálogos nativos del navegador (`confirm()` / `alert()`), incluyendo protección contra auto-degradación y auto-suspensión.
+  3. Actualizar los umbrales de mapeo curricular en `AdminDashboardView.tsx` (`TRACK_INFO_BY_ORDER`) al catálogo vigente de `60` ejercicios y `12` módulos.
+* **Actividades y Decisiones Técnicas:**
+  1. **Backend FastAPI (`apps/api/app/modules/admin/`):**
+     * **Esquemas (`schemas.py`):** agregados `AdminUserRecord`, `AdminUsersSummary`, `AdminUsersPageResponse`, `UpdateUserRoleRequest`, `UpdateUserBanRequest` y `UserModerationResponse`.
+     * **Servicio (`service.py`):** implementados `list_users` (unifica en paralelo `/auth/v1/admin/users`, `user_profiles`, `exercise_attempts` y `user_progress` usando `SUPABASE_SERVICE_ROLE_KEY`), `update_user_role` (preserva llaves previas en `app_metadata` y bloquea con HTTP `400` la auto-degradación) y `update_user_ban` (`876000h` vs `none`, bloqueando con HTTP `400` la auto-suspensión).
+     * **Endpoints (`router.py`):** `GET /api/v1/admin/users`, `POST /api/v1/admin/users/{user_id}/role` y `POST /api/v1/admin/users/{user_id}/ban` protegidos por `require_admin`.
+  2. **Frontend Atomic Design Pragmático (`apps/web/src/`):**
+     * [`UserModerationDrawer.tsx`](../apps/web/src/components/molecules/UserModerationDrawer/UserModerationDrawer.tsx): cajón lateral accesible (`role="dialog"`, cierre con `Escape`) con trazabilidad de Supabase Auth, métricas de aprendizaje, salto directo **`Ver Intentos en Forense`** y confirmación inline en 2 pasos para rol (`student` $\leftrightarrow$ `admin`) y suspensión/reactivación con motivo opcional.
+     * [`AdminUsersPanel.tsx`](../apps/web/src/components/organisms/AdminUsersPanel/AdminUsersPanel.tsx): 4 KPIs (`AdminMetricTile`), filtros por búsqueda/rol/estado, tabla paginada y conexión con `UserModerationDrawer`.
+     * [`AdminDashboardView.tsx`](../apps/web/src/components/organisms/AdminDashboardView/AdminDashboardView.tsx): añadida la pestaña `[Usuarios]` y calibrados los límites de `TRACK_INFO_BY_ORDER` a `4, 11, 15, 24, 29, 35, 39, 44, 48, 51, 55, 60`.
+  3. **Verificación:**
+     * **Backend (`pytest tests -v`):** **102/102 pruebas aprobadas** en `92.36s` (`15` pruebas en `test_admin.py` cubriendo RBAC, agregación/filtros de usuarios, preservación de `app_metadata` y bloqueos de auto-moderación).
+     * **Frontend (`vitest run`):** **7 archivos / 35 pruebas aprobadas** en `2.96s` (incluida prueba integral del directorio, drawer, salto forense y moderación en 2 pasos en `src/tests/admin.test.ts`).
+     * **Build de producción (`tsc && vite build`):** **2,278 módulos transformados en `6.08s`**, cero errores TypeScript (`vendor-admin` aislado en `130.41 kB`).
