@@ -23,7 +23,7 @@ import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/Module
 import { getModuleGuide } from '@/lib/moduleGuides';
 import { SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CLIENTES } from '@/lib/fallbackCurriculum';
 import { cn } from '@/lib/utils';
-import { formatInlineCode } from '@/lib/format';
+import { formatInlineCode, highlightSqlBlock } from '@/lib/format';
 
 export interface ExerciseSpecPanelProps {
   exercise: Exercise;
@@ -295,9 +295,9 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
 
                 {/* Bloque de Sintaxis */}
                 {exercise.concept.syntax && (
-                  <div className="p-2.5 rounded-lg bg-surface-card border border-border-subtle font-mono text-[11px] text-primary-light overflow-x-auto leading-relaxed shadow-inner">
+                  <div className="p-2.5 rounded-lg bg-surface-card border border-border-subtle font-mono text-[11px] overflow-x-auto leading-relaxed shadow-inner [font-variant-ligatures:none]">
                     <pre className="m-0 font-mono">
-                      <code>{exercise.concept.syntax}</code>
+                      <code>{highlightSqlBlock(exercise.concept.syntax)}</code>
                     </pre>
                   </div>
                 )}

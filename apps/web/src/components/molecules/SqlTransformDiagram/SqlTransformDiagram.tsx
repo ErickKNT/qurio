@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, Layers } from 'lucide-react';
+import { highlightSqlBlock } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 export interface MiniTablePreview {
@@ -100,8 +101,8 @@ export const SqlTransformDiagram: React.FC<SqlTransformDiagramProps> = ({ diagra
 
         {/* Operación SQL */}
         <div className="flex md:flex-col items-center justify-center gap-1.5 py-1 px-2 shrink-0">
-          <span className="px-2.5 py-1 rounded-lg bg-surface-card border border-cyan-accent/35 text-[10px] font-mono font-bold text-cyan-accent text-center whitespace-nowrap">
-            {diagram.operationLabel}
+          <span className="px-2.5 py-1 rounded-lg bg-surface-card border border-cyan-accent/35 text-[10px] font-mono text-center whitespace-nowrap [font-variant-ligatures:none]">
+            {highlightSqlBlock(diagram.operationLabel)}
           </span>
           <ArrowRight className="w-4 h-4 text-cyan-accent rotate-90 md:rotate-0 shrink-0" />
         </div>

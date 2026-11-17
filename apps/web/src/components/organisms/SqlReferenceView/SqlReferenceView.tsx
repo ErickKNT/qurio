@@ -9,6 +9,7 @@ import { SearchInput } from '@/components/molecules/SearchInput/SearchInput';
 import { RadioTab, Badge, Button } from '@/components/atoms';
 import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/ModuleGuideModal';
 import { getModuleGuide } from '@/lib/moduleGuides';
+import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
 
 export interface SqlReferenceViewProps {
   onOpenPlayground?: (query: string) => void;
@@ -88,7 +89,7 @@ export const SqlReferenceView: React.FC<SqlReferenceViewProps> = ({ onOpenPlaygr
                     {item.term}
                   </h2>
                   <p className="text-xs text-content-secondary leading-relaxed">
-                    {item.summary}
+                    {formatSqlProse(item.summary)}
                   </p>
                 </div>
                 <Badge variant={isModelado ? 'amber' : 'mono'} size="sm" className="shrink-0">
@@ -96,8 +97,8 @@ export const SqlReferenceView: React.FC<SqlReferenceViewProps> = ({ onOpenPlaygr
                 </Badge>
               </div>
 
-              <div className="rounded-xl bg-surface-dim border border-border-subtle/60 p-2.5 text-[11px] font-mono text-primary-light overflow-x-auto">
-                <code>{item.syntax}</code>
+              <div className="rounded-xl bg-surface-dim border border-border-subtle/60 p-2.5 text-[11px] font-mono overflow-x-auto [font-variant-ligatures:none]">
+                <code>{highlightSqlBlock(item.syntax)}</code>
               </div>
 
               <div className="rounded-xl bg-canvas border border-border-subtle/50 overflow-hidden">
@@ -121,8 +122,8 @@ export const SqlReferenceView: React.FC<SqlReferenceViewProps> = ({ onOpenPlaygr
                     )}
                   </button>
                 </div>
-                <pre className="p-3 text-[11px] font-mono text-content-primary overflow-x-auto m-0 leading-relaxed">
-                  <code>{item.example}</code>
+                <pre className="p-3 text-[11px] font-mono overflow-x-auto m-0 leading-relaxed [font-variant-ligatures:none]">
+                  <code>{highlightSqlBlock(item.example)}</code>
                 </pre>
               </div>
 

@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { ModuleGuide } from '@/lib/moduleGuides';
+import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
 import { SqlTransformDiagram } from '@/components/molecules/SqlTransformDiagram/SqlTransformDiagram';
 import { Badge, Button } from '@/components/atoms';
 
@@ -91,15 +92,17 @@ export const ModuleGuideModal: React.FC<ModuleGuideModalProps> = ({
           {/* Resumen + Orden lógico */}
           <div className="flex flex-col gap-3">
             <p className="text-sm text-content-secondary leading-relaxed">
-              {guide.summary}
+              {formatSqlProse(guide.summary)}
             </p>
-            <div className="p-3 rounded-xl bg-cyan-accent/10 border border-cyan-accent/25 flex items-start gap-2.5 text-xs font-mono text-cyan-600 dark:text-cyan-accent">
-              <Layers className="w-4 h-4 shrink-0 mt-0.5" />
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] uppercase tracking-wider font-bold opacity-80">
+            <div className="p-3 rounded-xl bg-cyan-accent/10 border border-cyan-accent/25 flex items-start gap-2.5 text-xs text-content-primary">
+              <Layers className="w-4 h-4 shrink-0 mt-0.5 text-cyan-accent" />
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-cyan-600 dark:text-cyan-accent">
                   Orden Lógico de Evaluación (PostgreSQL 16)
                 </span>
-                <span className="leading-relaxed">{guide.executionOrder}</span>
+                <span className="leading-relaxed text-content-secondary">
+                  {formatSqlProse(guide.executionOrder)}
+                </span>
               </div>
             </div>
           </div>
@@ -142,11 +145,11 @@ export const ModuleGuideModal: React.FC<ModuleGuideModalProps> = ({
                       )}
                     </button>
                   </div>
-                  <pre className="p-3.5 bg-canvas text-xs font-mono text-cyan-accent overflow-x-auto leading-relaxed m-0">
-                    <code>{ex.sql}</code>
+                  <pre className="p-3.5 bg-canvas text-xs font-mono overflow-x-auto leading-relaxed m-0 [font-variant-ligatures:none]">
+                    <code>{highlightSqlBlock(ex.sql)}</code>
                   </pre>
                   <p className="px-3.5 py-2.5 text-xs text-content-secondary leading-relaxed border-t border-border-subtle/40">
-                    {ex.explanation}
+                    {formatSqlProse(ex.explanation)}
                   </p>
                 </div>
               ))}
@@ -163,7 +166,7 @@ export const ModuleGuideModal: React.FC<ModuleGuideModalProps> = ({
               {guide.commonMistakes.map((m, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-amber-streak font-bold shrink-0">•</span>
-                  <span>{m}</span>
+                  <span>{formatSqlProse(m)}</span>
                 </li>
               ))}
             </ul>
@@ -174,7 +177,7 @@ export const ModuleGuideModal: React.FC<ModuleGuideModalProps> = ({
             <Lightbulb className="w-4 h-4 text-emerald shrink-0 mt-0.5" />
             <div>
               <span className="font-mono font-bold text-emerald mr-1.5">Consejo de Ingeniería:</span>
-              <span>{guide.productionTip}</span>
+              <span>{formatSqlProse(guide.productionTip)}</span>
             </div>
           </div>
         </div>

@@ -180,9 +180,9 @@
     "semantic_hash": "20d09cbc90e1967fe0f7d6be706e7b5c"
   },
   "apps/web/src/components/molecules/AuthModal/AuthModal.tsx": {
-    "mtime": 1794957994.7303507,
-    "seen": 1794958045.9445212,
-    "ast_hash": "e8b085c35bb3e692c8399339716ec296",
+    "mtime": 1794958868.9973688,
+    "seen": 1794959017.0157287,
+    "ast_hash": "bcf0284eb196dfb496fdd09c1aa8d32a",
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/FormField/FormField.tsx": {
@@ -264,9 +264,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx": {
-    "mtime": 1794957595.3120167,
-    "seen": 1794958045.953215,
-    "ast_hash": "37a333afd56e0be700ff452896e4a585",
+    "mtime": 1794958997.9437168,
+    "seen": 1794959017.0248585,
+    "ast_hash": "5eaa649a484cb84c839cf83556e312c9",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx": {
@@ -1080,9 +1080,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/format.tsx": {
-    "mtime": 1794528796.8007271,
-    "seen": 1794935930.4517584,
-    "ast_hash": "ef4f94335c292fc3fe9ae0013ae6ac82",
+    "mtime": 1794958998.0558972,
+    "seen": 1794959017.0331237,
+    "ast_hash": "605c534868c68ff90b9f9d10feba2783",
     "semantic_hash": ""
   },
   "apps/web/src/lib/__tests__/supabase.test.ts": {
@@ -1242,9 +1242,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/SqlTransformDiagram/SqlTransformDiagram.tsx": {
-    "mtime": 1794957109.0529268,
-    "seen": 1794957519.0766237,
-    "ast_hash": "ff0433d9bb07ee94ab51ec77ededfe46",
+    "mtime": 1794958997.8496177,
+    "seen": 1794959017.0204992,
+    "ast_hash": "94ae2055b8dbe1c491216efb04ec3d75",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/CertificateModal/CertificateModal.tsx": {
@@ -1266,15 +1266,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/ModuleGuideModal/ModuleGuideModal.tsx": {
-    "mtime": 1794957158.687732,
-    "seen": 1794957519.0789719,
-    "ast_hash": "66631416797fc1c454cc9200dadcc99d",
+    "mtime": 1794958997.9723325,
+    "seen": 1794959017.0251787,
+    "ast_hash": "df8b2ddcc9c3a1b01ee7b0c96c6076d8",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/SqlReferenceView/SqlReferenceView.tsx": {
-    "mtime": 1794957240.800371,
-    "seen": 1794957519.0800571,
-    "ast_hash": "615c4c7d926d7c0ed28942f2ab93d440",
+    "mtime": 1794958998.0088024,
+    "seen": 1794959017.0271862,
+    "ast_hash": "b013135e6c54664c8816ee173866cc18",
     "semantic_hash": ""
   },
   "apps/web/src/lib/moduleGuides.ts": {
@@ -1296,9 +1296,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/tests/uxUpgrade.test.tsx": {
-    "mtime": 1794957451.450069,
-    "seen": 1794957519.0867946,
-    "ast_hash": "64aa97c2fcb1351b9be8f2e5fdc1c6a9",
+    "mtime": 1794958977.4313314,
+    "seen": 1794959017.037087,
+    "ast_hash": "89fdeb24174a8db096cb501bbb48817c",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

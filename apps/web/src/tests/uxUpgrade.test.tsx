@@ -10,6 +10,7 @@ import { SQL_REFERENCE_TERMS, searchSqlReference } from '@/lib/sqlReference';
 import { ErDiagramModal } from '@/components/organisms/ErDiagramModal/ErDiagramModal';
 import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/ModuleGuideModal';
 import { CertificateModal } from '@/components/organisms/CertificateModal/CertificateModal';
+import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
 
 describe('Qurio UX, ER, Guías y Referencia SQL', () => {
   it('schemaGraph expone exactamente las 10 tablas canónicas y 9 relaciones FK válidas', () => {
@@ -97,5 +98,27 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     expect(screen.getByText('erick_sql')).toBeInTheDocument();
     expect(screen.getByText('1. Fundamentos de SQL')).toBeInTheDocument();
     expect(screen.getByText(/QURIO-SQL-FO-123456/)).toBeInTheDocument();
+  });
+
+  it('formatSqlProse y highlightSqlBlock resaltan palabras reservadas SQL en JetBrains Mono', () => {
+    const { container } = render(
+      <div>
+        <p data-testid="prose">{formatSqlProse('Usa LEFT JOIN con IS NULL en lugar de = NULL.')}</p>
+        <pre data-testid="block">{highlightSqlBlock("SELECT nombre FROM usuarios WHERE edad >= 18 AND pais = 'España';")}</pre>
+      </div>
+    );
+
+    const proseCodes = container.querySelectorAll('[data-testid="prose"] code');
+    expect(Array.from(proseCodes).map((el) => el.textContent)).toEqual([
+      'LEFT JOIN',
+      'IS NULL',
+      'NULL',
+    ]);
+
+    const selectToken = Array.from(container.querySelectorAll('[data-testid="block"] span')).find(
+      (el) => el.textContent === 'SELECT'
+    );
+    expect(selectToken?.className).toContain('text-cyan-accent');
+    expect(selectToken?.className).toContain('font-bold');
   });
 });
