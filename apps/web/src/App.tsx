@@ -233,8 +233,7 @@ export const App: React.FC = () => {
         hash.includes('type=signup') ||
         hash.includes('auth-confirm') ||
         hash.includes('type=email_change') ||
-        search.includes('type=signup') ||
-        search.includes('code=')
+        search.includes('type=signup')
       ) {
         setCurrentPath('auth-confirm');
         return;

@@ -57,11 +57,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (data) {
+        const oauthUsername =
+          userMetadata?.username ||
+          userMetadata?.user_name ||
+          userMetadata?.preferred_username ||
+          `user_${userId.substring(0, 6)}`;
+        const oauthDisplayName =
+          userMetadata?.display_name || userMetadata?.full_name || userMetadata?.name || data.username;
+        const oauthAvatar =
+          userMetadata?.avatar_url ||
+          userMetadata?.picture ||
+          `https://api.dicebear.com/7.x/bottts/svg?seed=${data.username || userId}`;
+
         const loadedProfile: UserProfile = {
           id: data.id,
-          username: data.username || userMetadata?.username || `user_${userId.substring(0, 6)}`,
-          full_name: data.display_name || userMetadata?.display_name || data.username,
-          avatar_url: data.avatar_url || userMetadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${data.username || userId}`,
+          username: data.username || oauthUsername,
+          full_name: data.display_name || oauthDisplayName,
+          avatar_url: data.avatar_url || oauthAvatar,
           total_xp: data.xp ?? 0,
           current_level: data.level ?? 1,
           current_streak_days: data.current_streak_days ?? 0,
@@ -74,11 +86,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      // Si no existe aún en user_profiles (ej. primer login sin trigger)
+      // Si no existe aún en user_profiles (ej. primer login sin trigger o primer login OAuth)
       if (profileError || !data) {
-        const username = userMetadata?.username || userMetadata?.display_name || `dev_${userId.substring(0, 6)}`;
-        const displayName = userMetadata?.display_name || username;
-        const avatarUrl = userMetadata?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`;
+        const username =
+          userMetadata?.username ||
+          userMetadata?.user_name ||
+          userMetadata?.preferred_username ||
+          userMetadata?.display_name ||
+          userMetadata?.full_name ||
+          userMetadata?.name ||
+          `dev_${userId.substring(0, 6)}`;
+        const displayName =
+          userMetadata?.display_name || userMetadata?.full_name || userMetadata?.name || username;
+        const avatarUrl =
+          userMetadata?.avatar_url ||
+          userMetadata?.picture ||
+          `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`;
 
         const newProfileData = {
           id: userId,
