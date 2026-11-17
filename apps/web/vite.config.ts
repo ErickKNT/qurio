@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   server: {
@@ -15,21 +15,37 @@ export default defineConfig({
     host: true,
   },
   build: {
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('@monaco-editor') || id.includes('monaco-editor')) {
+          const normalizedId = id.replace(/\\/g, '/');
+          if (
+            normalizedId.includes('/AdminDashboardView/') ||
+            normalizedId.includes('/AdminBadge/') ||
+            normalizedId.includes('/AdminMetricTile/') ||
+            normalizedId.includes('/KillswitchToggle/') ||
+            normalizedId.includes('/ConnectionGauge/') ||
+            normalizedId.includes('/SqlDiffViewer/') ||
+            normalizedId.includes('/lib/adminApi') ||
+            normalizedId.includes('/types/admin')
+          ) {
+            return 'vendor-admin';
+          }
+          if (normalizedId.includes('node_modules')) {
+            if (normalizedId.includes('@monaco-editor') || normalizedId.includes('monaco-editor')) {
               return 'vendor-monaco';
             }
-            if (id.includes('@supabase')) {
+            if (normalizedId.includes('sql-formatter')) {
+              return 'vendor-sql-formatter';
+            }
+            if (normalizedId.includes('@supabase')) {
               return 'vendor-supabase';
             }
-            if (id.includes('lucide-react')) {
+            if (normalizedId.includes('lucide-react')) {
               return 'vendor-lucide';
             }
-            if (id.includes('react') || id.includes('react-dom')) {
+            if (normalizedId.includes('react') || normalizedId.includes('react-dom')) {
               return 'vendor-react';
             }
           }

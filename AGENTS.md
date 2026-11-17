@@ -58,6 +58,7 @@ Toda la interfaz visual de Qurio en React debe estructurarse obligatoriamente ba
 * **Backend:** FastAPI (Python 3.12) con tipado Pydantic estricto en todos los esquemas de entrada y salida.
 * **Seguridad de Ejecución (Regla de Oro):** Ninguna consulta introducida por un usuario debe tener conectividad ni ejecutarse jamás contra la base de datos de producción (Supabase). Todas las queries de práctica corren exclusivamente en el PostgreSQL Sandbox aislado en Docker bajo el rol `readonly_student` y con `statement_timeout = 2000ms`.
 * **Evaluación Semántica:** Las aserciones deben evaluar conjuntos de datos (filas, columnas, nulos y tipos), no comparar cadenas de texto SQL.
+* **Normativa Pedagógica y Curricular (Obligatorio):** Todo diseño, edición o auditoría de ejercicios SQL debe cumplir [`docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md`](file:///c:/Desarrollo/Qurio/docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md) y la regla operativa [`.agents/rules/sql-pedagogy.md`](file:///c:/Desarrollo/Qurio/.agents/rules/sql-pedagogy.md), verificando siempre el catálogo con `pytest apps/api/tests/test_schema_consistency.py`.
 * **Flujo Git y Ramas (Obligatorio):**
   * Toda implementación grande o nueva funcionalidad debe trabajarse en su propia rama de características (`feat/...`, `infra/...`, `fix/...`).
   * Solo se fusiona (`merge`) a `main` cuando la funcionalidad esté completada y verificada.

@@ -25,6 +25,7 @@ class ExercisePublicDTO(BaseModel):
     difficulty: str
     check_order: bool
     sort_order: int
+    operational_status: str = "active"
     hints: List[str] = []
     concept: Optional[ExerciseConcept] = None
     objectives: Optional[List[str]] = None
@@ -42,6 +43,7 @@ class ExerciseDetail(BaseModel):
     difficulty: str
     check_order: bool
     sort_order: int
+    operational_status: str = "active"
     hints: List[str] = []
     concept: Optional[ExerciseConcept] = None
     objectives: Optional[List[str]] = None
@@ -58,6 +60,7 @@ class ExerciseDetail(BaseModel):
             difficulty=self.difficulty,
             check_order=self.check_order,
             sort_order=self.sort_order,
+            operational_status=self.operational_status,
             hints=self.hints,
             concept=self.concept,
             objectives=self.objectives,
@@ -177,7 +180,7 @@ SAMPLE_TABLE_PAGOS = SampleTableData(
     ],
 )
 
-# Catálogo completo de 32 ejercicios (Ruta 1 completa con 22 retos + Rutas 2 y 3) enriquecidos con didáctica interactiva estilo SQLBolt
+# Catálogo completo de 60 ejercicios (3 rutas formativas completas) calibrados con didáctica interactiva progresiva
 SEED_EXERCISES: Dict[str, ExerciseDetail] = {
 
     "e0000000-0000-0000-0000-000000000001": ExerciseDetail(
@@ -192,8 +195,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=1,
         hints=[
-            "Usa la sentencia SELECT seguida de las columnas solicitadas separadas por coma: nombre_producto, precio",
-            "La cláusula FROM indica la tabla: FROM productos;"
+            "Identifica la tabla que guarda el catálogo de artículos y qué dos columnas contienen el nombre y el precio.",
+            "Usa SELECT seguido de las columnas separadas por coma y FROM para indicar la tabla.",
+            "SELECT ???, ??? FROM productos;"
         ],
         concept=ExerciseConcept(
             summary='Con `SELECT` eliges exactamente qué columnas quieres ver de una tabla, como si seleccionaras qué columnas mantener a la vista en una hoja de cálculo.',
@@ -225,8 +229,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=2,
         hints=[
-            "Puedes realizar operaciones matemáticas directamente en SELECT, ej: precio * 1.21",
-            "Usa ROUND(precio * 1.21, 2) AS precio_con_iva para limitar a 2 decimales y asignar el alias."
+            "Puedes calcular valores nuevos al vuelo multiplicando la columna numérica por 1.21.",
+            "Combina la multiplicación con ROUND(..., 2) para dejar dos decimales y AS para nombrar la columna.",
+            "SELECT ???, ???, ROUND(??? * 1.21, 2) AS precio_con_iva FROM productos;"
         ],
         concept=ExerciseConcept(
             summary='En SQL puedes realizar cálculos aritméticos directamente en la cláusula `SELECT` (+, -, *, /) y renombrar el resultado con `AS`.',
@@ -258,8 +263,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=3,
         hints=[
-            "Usa el operador de combinación de textos en SQL: '||'.",
-            "Para insertar un espacio en medio escribe: nombre || ' ' || apellido AS cliente_completo."
+            "Necesitas unir dos columnas de texto intercalando un espacio en blanco entre ellas.",
+            "Utiliza el operador || junto con un espacio literal ' ' y asigna el alias cliente_completo con AS.",
+            "SELECT ??? || ' ' || ??? AS cliente_completo, ??? FROM clientes;"
         ],
         concept=ExerciseConcept(
             summary='El operador de concatenación `||` permite unir dos o más valores de texto en una sola columna combinada.',
@@ -291,8 +297,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=4,
         hints=[
-            "La palabra reservada DISTINCT se coloca inmediatamente después de SELECT.",
-            "Escribe: SELECT DISTINCT ciudad FROM clientes;"
+            "Para evitar que una ciudad aparezca varias veces, debes eliminar filas repetidas en el resultado.",
+            "Coloca la palabra clave DISTINCT inmediatamente después de SELECT antes de nombrar la columna.",
+            "SELECT DISTINCT ??? FROM clientes;"
         ],
         concept=ExerciseConcept(
             summary='`DISTINCT` filtra y elimina filas duplicadas, devolviendo únicamente valores únicos en el resultado.',
@@ -324,8 +331,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=5,
         hints=[
-            "Agrega una cláusula WHERE después de FROM productos.",
-            "Utiliza el operador de comparación mayor que (>): WHERE precio > 500;"
+            "Debes proyectar tres columnas del catálogo y conservar solo los artículos cuyo precio supera el umbral.",
+            "Añade la cláusula WHERE después de FROM y compara la columna numérica con el operador >.",
+            "SELECT ???, ???, ??? FROM productos WHERE ??? > 500;"
         ],
         concept=ExerciseConcept(
             summary='`WHERE` es la cláusula de filtrado de SQL: instruye a la base de datos a retornar únicamente aquellas filas que cumplan una condición lógica.',
@@ -357,8 +365,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=6,
         hints=[
-            "Usa la cláusula WHERE con el operador BETWEEN: WHERE precio BETWEEN 100 AND 800;",
-            "Recuerda que BETWEEN siempre conecta el rango con la palabra AND."
+            "Necesitas filtrar artículos que caigan dentro de un rango numérico incluyendo ambos extremos.",
+            "Usa WHERE con el operador BETWEEN conectando el límite inferior y superior mediante AND.",
+            "SELECT ???, ??? FROM productos WHERE ??? BETWEEN 100 AND 800;"
         ],
         concept=ExerciseConcept(
             summary='`BETWEEN` evalúa si un valor se encuentra dentro de un intervalo cerrado (entre un límite inferior y un límite superior).',
@@ -390,8 +399,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=7,
         hints=[
-            "El comodín % colocado al inicio indica que puede haber cualquier texto antes del dominio.",
-            "Escribe: WHERE email LIKE '%@email.com';"
+            "Debes buscar coincidencias parciales al final de la cadena de correo electrónico.",
+            "Usa WHERE con LIKE y el comodín % al principio del patrón entre comillas simples.",
+            "SELECT ???, ???, ??? FROM clientes WHERE ??? LIKE '%@email.com';"
         ],
         concept=ExerciseConcept(
             summary='`LIKE` busca coincidencias en cadenas de texto mediante caracteres comodín como `%` (cualquier secuencia de caracteres).',
@@ -423,8 +433,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=8,
         hints=[
-            "Usa el operador IN seguido de la lista entre paréntesis: IN ('Madrid', 'Barcelona', 'Valencia').",
-            "No olvides las comillas simples en cada ciudad dentro de la lista."
+            "En lugar de escribir varios OR seguidos, conviene comprobar pertenencia a una lista cerrada de valores.",
+            "Emplea WHERE con el operador IN (...) encerrando cada ciudad entre comillas simples.",
+            "SELECT ???, ???, ???, ??? FROM clientes WHERE ??? IN ('Madrid', 'Barcelona', 'Valencia');"
         ],
         concept=ExerciseConcept(
             summary='`IN` comprueba si el valor de una columna coincide con cualquiera de los elementos listados dentro de un conjunto cerrado.',
@@ -456,8 +467,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=9,
         hints=[
-            "Usa OR para unir las dos reglas: stock <= 15 OR stock >= 75.",
-            "Asegúrate de incluir los símbolos de igual (=) junto a < y >."
+            "Un artículo cumple si se encuentra en cualquiera de los dos extremos de existencias (bajo o exceso).",
+            "Combina las dos comparaciones (<= 15 y >= 75) en WHERE usando el operador lógico OR.",
+            "SELECT ???, ???, ??? FROM productos WHERE ??? <= 15 OR ??? >= 75;"
         ],
         concept=ExerciseConcept(
             summary='El operador lógico `OR` permite incluir una fila si satisface al menos una de las condiciones especificadas (o ambas).',
@@ -489,8 +501,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=10,
         hints=[
-            "Combina las condiciones con AND: WHERE monto_total >= 400 AND estado_factura <> 'pagada';",
-            "Recuerda que 'pagada' va entre comillas simples."
+            "Deben cumplirse dos condiciones a la vez: un monto mínimo y un estado distinto a 'pagada'.",
+            "Une en WHERE la comparación >= 400 con el operador de desigualdad <> (o !=) usando AND.",
+            "SELECT ???, ???, ??? FROM facturas WHERE ??? >= 400 AND ??? <> 'pagada';"
         ],
         concept=ExerciseConcept(
             summary="`AND` exige el cumplimiento simultáneo de dos reglas. Para evaluar desigualdad ('distinto de'), SQL utiliza `<>` o `!=`.",
@@ -514,16 +527,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000003",
         module_id="a0000000-0000-0000-0000-000000000003",
         title="Clientes Españoles Ordenados por Apellido",
-        prompt="Organiza la lista de clientes que viven en España por orden alfabético. Muestra su `nombre`, `apellido` y `ciudad` de la tabla `clientes`, ordenando los resultados alfabéticamente por su `apellido` (de la A a la Z).",
+        prompt="Organiza la lista de clientes que viven en España por orden alfabético. Muestra su `nombre`, `apellido` y `ciudad` de la tabla `clientes`, ordenando los resultados alfabéticamente por su `apellido` (de la A a la Z) y, en caso de empate, por `cliente_id` ascendente.",
         initial_code="-- Filtra y ordena los clientes\nSELECT ",
-        solution_query="SELECT nombre, apellido, ciudad FROM clientes WHERE pais = 'Espa\u00f1a' ORDER BY apellido ASC;",
+        solution_query="SELECT nombre, apellido, ciudad FROM clientes WHERE pais = 'Espa\u00f1a' ORDER BY apellido ASC, cliente_id ASC;",
         xp_reward=40,
         difficulty="Principiante",
         check_order=True,
-        sort_order=11,
+        sort_order=12,
         hints=[
-            "Primero filtra el país en el WHERE y luego añade la cláusula ORDER BY al final.",
-            "Escribe: ORDER BY apellido ASC;"
+            "Primero filtra por el país solicitado y luego ordena las filas resultantes de forma alfabética con desempate único.",
+            "Aplica WHERE pais = 'España' y añade ORDER BY apellido ASC, cliente_id ASC al final.",
+            "SELECT ???, ???, ??? FROM clientes WHERE ??? = 'España' ORDER BY ??? ASC, cliente_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='`ORDER BY` controla la ordenación de las filas devueltas, permitiendo clasificar de forma ascendente (`ASC`) o descendente (`DESC`).',
@@ -546,17 +560,18 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     "e0000000-0000-0000-0000-000000000010": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000010",
         module_id="a0000000-0000-0000-0000-000000000003",
-        title="Top 5 Productos Críticos por Stock",
-        prompt="El almacén necesita reponer con urgencia los artículos que están por agotarse. Muestra el `nombre_producto` y el `stock` de los 5 productos con menor cantidad disponible en inventario.",
+        title="Los 5 Productos con Menor Stock",
+        prompt="El almacén necesita reponer con urgencia los artículos que están por agotarse. Muestra el `nombre_producto` y el `stock` de los 5 productos con menor cantidad disponible, ordenando por `stock` ascendente y desempatando por `producto_id` ascendente.",
         initial_code="-- Ordena y limita a los 5 productos con menos stock\nSELECT ",
-        solution_query="SELECT nombre_producto, stock FROM productos ORDER BY stock ASC LIMIT 5;",
+        solution_query="SELECT nombre_producto, stock FROM productos ORDER BY stock ASC, producto_id ASC LIMIT 5;",
         xp_reward=40,
         difficulty="Principiante",
         check_order=True,
-        sort_order=12,
+        sort_order=13,
         hints=[
-            "Ordena por stock en orden ascendente para poner los más bajos primero: ORDER BY stock ASC.",
-            "Agrega LIMIT 5 al final para quedarte solo con los primeros 5."
+            "Para hallar los valores más pequeños primero ordena de menor a mayor con desempate único y luego recorta el resultado.",
+            "Usa ORDER BY stock ASC, producto_id ASC seguido de LIMIT 5.",
+            "SELECT ???, ??? FROM productos ORDER BY ??? ASC, producto_id ASC LIMIT 5;"
         ],
         concept=ExerciseConcept(
             summary='`LIMIT` restringe la cantidad máxima de filas retornadas, permitiendo obtener los primeros `N` registros clasificados.',
@@ -586,10 +601,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=45,
         difficulty="Principiante",
         check_order=True,
-        sort_order=13,
+        sort_order=14,
         hints=[
-            "Separa las dos columnas en ORDER BY con una coma: ORDER BY categoria_id ASC, precio DESC;",
-            "Asegúrate de que categoria_id sea ASC y precio sea DESC."
+            "Primero agrupa visualmente ordenando por categoría y luego desempata los precios de mayor a menor.",
+            "Especifica dos criterios en ORDER BY separados por coma: primero ASC y el segundo DESC.",
+            "SELECT ???, ???, ???, ??? FROM productos ORDER BY ??? ASC, ??? DESC;"
         ],
         concept=ExerciseConcept(
             summary='Puedes ordenar por múltiples columnas separándolas por coma en el `ORDER BY`, estableciendo prioridades de desempate.',
@@ -619,10 +635,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=45,
         difficulty="Principiante",
         check_order=True,
-        sort_order=14,
+        sort_order=15,
         hints=[
-            "El orden es: ORDER BY cliente_id ASC LIMIT 5 OFFSET 5;",
-            "OFFSET 5 salta los primeros 5, y LIMIT 5 toma los 5 siguientes."
+            "Para mostrar la segunda página de 5 elementos debes ordenar primero de forma estable, saltar 5 filas y tomar 5.",
+            "Combina ORDER BY cliente_id ASC con LIMIT 5 y OFFSET 5 al final de la consulta.",
+            "SELECT ???, ???, ??? FROM clientes ORDER BY ??? ASC LIMIT 5 OFFSET 5;"
         ],
         concept=ExerciseConcept(
             summary='`OFFSET` salta un número determinado de filas antes de empezar a devolver resultados, permitiendo implementar paginación junto a `LIMIT`.',
@@ -652,10 +669,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=45,
         difficulty="Principiante",
         check_order=False,
-        sort_order=15,
+        sort_order=22,
         hints=[
-            "Usa GROUP BY categoria_id para agrupar los artículos.",
-            "Usa HAVING COUNT(*) > 2 después de GROUP BY para quedarte solo con categorías con más de 2 productos."
+            "Primero agrupa los productos por su categoría, cuenta cuántos hay en cada grupo y luego descarta los grupos pequeños.",
+            "Usa GROUP BY sobre la categoría y HAVING COUNT(*) > 2 después de agrupar.",
+            "SELECT ???, COUNT(*) AS total_productos FROM productos GROUP BY ??? HAVING COUNT(*) > 2;"
         ],
         concept=ExerciseConcept(
             summary='`GROUP BY` agrupa filas que comparten el mismo valor en una o más columnas, permitiendo calcular agregaciones como `COUNT(*)` por cada grupo.',
@@ -687,8 +705,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=16,
         hints=[
-            "Escribe las tres funciones en el SELECT separadas por coma.",
-            "No necesitas GROUP BY porque quieres un solo resultado global."
+            "Solo debes tomar pedidos completados y calcular tres métricas globales en una única fila resumen (sin GROUP BY).",
+            "Combina WHERE estado_pedido = 'completado' con las funciones COUNT(*), SUM(total) y ROUND(AVG(total), 2).",
+            "SELECT COUNT(*) AS total_pedidos, SUM(???) AS ingresos_totales, ROUND(AVG(???), 2) AS ticket_promedio FROM pedidos WHERE ??? = 'completado';"
         ],
         concept=ExerciseConcept(
             summary='Las funciones de agregación (`COUNT`, `SUM`, `AVG`) condensan todo el conjunto de filas en una sola fila resumen de métricas clave.',
@@ -720,8 +739,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=17,
         hints=[
-            "Selecciona: categoria_id, MIN(precio) AS precio_minimo, MAX(precio) AS precio_maximo.",
-            "No olvides agrupar al final: GROUP BY categoria_id;"
+            "Agrupa el catálogo por categoría para calcular tanto el valor mínimo como el máximo dentro de cada grupo.",
+            "Usa MIN(precio), MAX(precio) en el SELECT y agrupa con GROUP BY categoria_id.",
+            "SELECT ???, MIN(???) AS precio_minimo, MAX(???) AS precio_maximo FROM productos GROUP BY ???;"
         ],
         concept=ExerciseConcept(
             summary='`MIN()` y `MAX()` obtienen el valor más bajo y el valor más alto de una columna dentro de cada grupo o en toda la tabla.',
@@ -745,16 +765,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000028",
         module_id="a0000000-0000-0000-0000-000000000004",
         title="Distribución de Clientes por País",
-        prompt="¿De qué países son nuestros clientes? Muestra la columna `pais` y el número total de clientes en cada país bajo el nombre `total_clientes`, ordenando la lista de mayor a menor número de clientes.",
+        prompt="¿De qué países son nuestros clientes? Muestra la columna `pais` y el número total de clientes en cada país bajo el nombre `total_clientes`, ordenando la lista de mayor a menor número de clientes y, en caso de empate, alfabéticamente por `pais`.",
         initial_code="-- Agrupa clientes por pa\u00eds\nSELECT ",
-        solution_query="SELECT pais, COUNT(*) AS total_clientes FROM clientes GROUP BY pais ORDER BY total_clientes DESC;",
+        solution_query="SELECT pais, COUNT(*) AS total_clientes FROM clientes GROUP BY pais ORDER BY total_clientes DESC, pais ASC;",
         xp_reward=45,
         difficulty="Principiante",
         check_order=True,
         sort_order=18,
         hints=[
-            "Usa COUNT(*) AS total_clientes para contar a los clientes de cada país.",
-            "Agrupa por pais y ordena por total_clientes DESC."
+            "Agrupa los clientes por país, cuenta los registros de cada grupo y ordena poniendo los más numerosos primero.",
+            "Usa GROUP BY pais junto a COUNT(*) AS total_clientes y ORDER BY total_clientes DESC, pais ASC.",
+            "SELECT ???, COUNT(*) AS total_clientes FROM clientes GROUP BY ??? ORDER BY total_clientes DESC, ??? ASC;"
         ],
         concept=ExerciseConcept(
             summary='Combinar `GROUP BY`, `COUNT(*)` y `ORDER BY` permite crear tablas de distribución de frecuencias ordenadas por volumen.',
@@ -786,7 +807,9 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         check_order=False,
         sort_order=19,
         hints=[
-            "Escribe: SELECT proveedor_id, SUM(stock) AS stock_total FROM productos GROUP BY proveedor_id;"
+            "Debes sumar las unidades disponibles agrupando los productos por su identificador de proveedor.",
+            "Usa SUM(stock) AS stock_total en el SELECT y agrupa al final con GROUP BY proveedor_id.",
+            "SELECT ???, SUM(???) AS stock_total FROM productos GROUP BY ???;"
         ],
         concept=ExerciseConcept(
             summary='`SUM()` suma todos los valores de una columna numérica dentro de cada grupo formado por `GROUP BY`.',
@@ -816,10 +839,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Principiante",
         check_order=False,
-        sort_order=20,
+        sort_order=23,
         hints=[
-            "Agrega HAVING SUM(stock) > 100 después de tu GROUP BY proveedor_id.",
-            "Recuerda que no puedes usar WHERE con funciones como SUM o COUNT."
+            "Primero agrupa y suma el stock por proveedor; después filtra los grupos ya agregados que superen las 100 unidades.",
+            "Recuerda que las funciones agregadas como SUM(...) se filtran en HAVING, no en WHERE.",
+            "SELECT ???, SUM(???) AS stock_total FROM productos GROUP BY ??? HAVING SUM(???) > 100;"
         ],
         concept=ExerciseConcept(
             summary='`HAVING` es el filtro de los grupos: se aplica sobre los resultados calculados por funciones de agregación, donde `WHERE` no tiene alcance.',
@@ -842,17 +866,18 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     "e0000000-0000-0000-0000-000000000031": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000031",
         module_id="a0000000-0000-0000-0000-000000000004",
-        title="Clientes con Ticket Promedio Alto (HAVING AVG)",
+        title="Clientes con Compra Promedio Alta (HAVING AVG)",
         prompt="Encuentra a los clientes que hacen compras de alto valor promedio. Muestra el `cliente_id` y su importe promedio de compra redondeado a 2 decimales bajo el nombre `ticket_promedio`, mostrando solo a aquellos clientes cuyo promedio de compras supere los 500€.",
-        initial_code="-- Filtra clientes por ticket promedio\nSELECT ",
+        initial_code="-- Filtra clientes por compra promedio\nSELECT ",
         solution_query="SELECT cliente_id, ROUND(AVG(total), 2) AS ticket_promedio FROM pedidos GROUP BY cliente_id HAVING AVG(total) > 500;",
         xp_reward=50,
         difficulty="Principiante",
         check_order=False,
-        sort_order=21,
+        sort_order=24,
         hints=[
-            "Usa HAVING AVG(total) > 500 después del GROUP BY cliente_id.",
-            "Redondea el promedio con ROUND(AVG(total), 2) en el SELECT."
+            "Calcula el promedio por cliente agrupando sus pedidos y quédate solo con quienes superen 500€ de media.",
+            "Usa ROUND(AVG(total), 2) en SELECT, agrupa con GROUP BY cliente_id y filtra con HAVING AVG(total) > 500.",
+            "SELECT ???, ROUND(AVG(???), 2) AS ticket_promedio FROM pedidos GROUP BY ??? HAVING AVG(???) > 500;"
         ],
         concept=ExerciseConcept(
             summary='`HAVING` con `AVG()` filtra aquellos grupos cuya media aritmética supera o no alcanza un determinado umbral de negocio.',
@@ -876,20 +901,21 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000032",
         module_id="a0000000-0000-0000-0000-000000000004",
         title="Resumen de Pedidos por Estado",
-        prompt="Construye un panel de control de pedidos. Muestra el `estado_pedido`, la cantidad de pedidos bajo el nombre `total_pedidos` y la suma acumulada de dinero bajo `monto_acumulado`, agrupando por estado y ordenando del estado con mayor dinero al de menor dinero.",
+        prompt="Construye un resumen de pedidos por estado. Muestra el `estado_pedido`, la cantidad de pedidos bajo el nombre `total_pedidos` y la suma acumulada de dinero bajo `monto_acumulado`, agrupando por estado y ordenando del estado con mayor dinero al de menor dinero (desempatando por `estado_pedido` ascendente).",
         initial_code="-- Resumen consolidado por estado de pedido\nSELECT ",
-        solution_query="SELECT estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado FROM pedidos GROUP BY estado_pedido ORDER BY monto_acumulado DESC;",
+        solution_query="SELECT estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado FROM pedidos GROUP BY estado_pedido ORDER BY monto_acumulado DESC, estado_pedido ASC;",
         xp_reward=50,
         difficulty="Principiante",
         check_order=True,
-        sort_order=22,
+        sort_order=21,
         hints=[
-            "En el SELECT coloca: estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_acumulado.",
-            "Agrupa por estado_pedido y ordena por monto_acumulado DESC."
+            "Agrupa todos los pedidos por estado para contar cuántos hay y sumar su importe en la misma consulta.",
+            "Combina COUNT(*), SUM(total) y GROUP BY estado_pedido, ordenando por monto_acumulado DESC, estado_pedido ASC.",
+            "SELECT ???, COUNT(*) AS total_pedidos, SUM(???) AS monto_acumulado FROM pedidos GROUP BY ??? ORDER BY monto_acumulado DESC, ??? ASC;"
         ],
         concept=ExerciseConcept(
-            summary='Puedes calcular múltiples agregaciones simultáneas (`COUNT`, `SUM`, `AVG`) en un solo `GROUP BY` para construir dashboards analíticos.',
-            syntax='SELECT columna_estado,\n       COUNT(*) AS total_operaciones,\n       SUM(columna_monto) AS monto_total\nFROM nombre_tabla\nGROUP BY columna_estado\nORDER BY monto_total DESC;',
+            summary='Puedes calcular múltiples agregaciones simultáneas (`COUNT`, `SUM`, `AVG`) en un solo `GROUP BY` para construir resúmenes claros.',
+            syntax='SELECT columna_estado,\n       COUNT(*) AS total_operaciones,\n       SUM(columna_importe) AS suma_acumulada\nFROM nombre_tabla\nGROUP BY columna_estado\nORDER BY suma_acumulada DESC, columna_estado ASC;',
             key_points=[
                 'Un solo `GROUP BY` puede alimentar tantas métricas agregadas en el `SELECT` como requiera el análisis.',
                 'Puedes ordenar la salida final por cualquiera de las métricas agregadas utilizando su alias o la función con `DESC`.',
@@ -915,10 +941,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=45,
         difficulty="Intermedio",
         check_order=False,
-        sort_order=23,
+        sort_order=25,
         hints=[
-            "Usa alias: FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id.",
-            "Indica las columnas deseadas en el SELECT."
+            "Conecta ambas tablas mediante la clave que identifica al cliente en la tabla de pedidos y en el catálogo de clientes.",
+            "Usa INNER JOIN combinando pedidos y clientes con ON sobre cliente_id, asignando alias cortos para evitar ambigüedad.",
+            "SELECT p.pedido_id, c.nombre, c.apellido, p.total FROM pedidos p INNER JOIN clientes c ON p.??? = c.???;"
         ],
         concept=ExerciseConcept(
             summary='`INNER JOIN` combina filas de dos tablas basándose en una condición de coincidencia común (`ON`), preservando solo los registros que existen en ambas.',
@@ -942,16 +969,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000012",
         module_id="b0000000-0000-0000-0000-000000000005",
         title="Gasto Acumulado por Cliente",
-        prompt="Calcula cuánto dinero ha gastado en total cada uno de nuestros clientes. Cruza `clientes` y `pedidos`, y muestra el `cliente_id`, `nombre`, `apellido` y la suma de todas sus compras bajo el nombre `total_gastado`, ordenando de mayor a menor gasto.",
+        prompt="Calcula cuánto dinero ha gastado en total cada uno de nuestros clientes. Cruza `clientes` y `pedidos`, y muestra el `cliente_id`, `nombre`, `apellido` y la suma de todas sus compras bajo el nombre `total_gastado`, ordenando de mayor a menor gasto y, en caso de empate, por `cliente_id` ascendente.",
         initial_code="-- Cruza clientes y pedidos y agrupa para sumar el gasto\nSELECT ",
-        solution_query="SELECT c.cliente_id, c.nombre, c.apellido, SUM(p.total) AS total_gastado FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_gastado DESC;",
+        solution_query="SELECT c.cliente_id, c.nombre, c.apellido, SUM(p.total) AS total_gastado FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_gastado DESC, c.cliente_id ASC;",
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=24,
+        sort_order=29,
         hints=[
-            "Recuerda incluir todas las columnas que no son funciones en el GROUP BY: GROUP BY c.cliente_id, c.nombre, c.apellido.",
-            "Ordena al final por total_gastado DESC."
+            "Une clientes y pedidos por su identificador común e incluye en GROUP BY todas las columnas no agregadas del SELECT.",
+            "Calcula SUM(p.total) AS total_gastado después de agrupar por c.cliente_id, c.nombre y c.apellido, y ordena con desempate único.",
+            "SELECT c.cliente_id, c.nombre, c.apellido, SUM(p.total) AS total_gastado FROM clientes c INNER JOIN pedidos p ON c.??? = p.??? GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_gastado DESC, c.cliente_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='Combinar `INNER JOIN` con `GROUP BY` permite cruzar datos de transacciones con entidades maestras y agregar totales por entidad.',
@@ -981,10 +1009,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=45,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=25,
+        sort_order=26,
         hints=[
-            "FROM productos p INNER JOIN categorias c ON p.categoria_id = c.categoria_id.",
-            "Ordena con ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC."
+            "Reemplaza el identificador numérico de categoría uniendo la tabla de productos con su tabla descriptiva de categorías.",
+            "Usa INNER JOIN categorias c ON p.categoria_id = c.categoria_id y ordena primero por nombre_categoria ASC y luego por nombre_producto ASC.",
+            "SELECT p.producto_id, p.nombre_producto, c.nombre_categoria, p.precio FROM productos p INNER JOIN categorias c ON p.??? = c.??? ORDER BY c.nombre_categoria ASC, p.nombre_producto ASC;"
         ],
         concept=ExerciseConcept(
             summary='`INNER JOIN` permite sustituir códigos numéricos de clasificación (IDs) por nombres descriptivos presentes en tablas maestras.',
@@ -1008,16 +1037,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000034",
         module_id="b0000000-0000-0000-0000-000000000005",
         title="Productos y sus Proveedores Directos",
-        prompt="Compras necesita saber de qué país proviene cada producto. Cruza `productos` con `proveedores` y muestra `producto_id`, `nombre_producto`, `nombre_proveedor` y el país del proveedor bajo el nombre `pais_proveedor`. Ordena los productos alfabéticamente.",
+        prompt="Compras necesita saber de qué país proviene cada producto. Cruza `productos` con `proveedores` y muestra `producto_id`, `nombre_producto`, `nombre_proveedor` y el país del proveedor bajo el nombre `pais_proveedor`. Ordena los productos alfabéticamente y, en caso de empate, por `producto_id` ascendente.",
         initial_code="-- Relaciona productos con sus proveedores\nSELECT ",
-        solution_query="SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor FROM productos pr INNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id ORDER BY pr.nombre_producto ASC;",
+        solution_query="SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor FROM productos pr INNER JOIN proveedores pv ON pr.proveedor_id = pv.proveedor_id ORDER BY pr.nombre_producto ASC, pr.producto_id ASC;",
         xp_reward=45,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=26,
+        sort_order=27,
         hints=[
-            "Usa INNER JOIN entre productos y proveedores conectando proveedor_id.",
-            "No olvides asignar el alias pais_proveedor a la columna pais."
+            "Relaciona el catálogo de artículos con la tabla de fabricantes mediante la clave de proveedor.",
+            "Usa INNER JOIN proveedores pv sobre proveedor_id, renombra el país con AS pais_proveedor y ordena con desempate único.",
+            "SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor FROM productos pr INNER JOIN proveedores pv ON pr.??? = pv.??? ORDER BY pr.nombre_producto ASC, pr.producto_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='Puedes aplicar filtros con `WHERE` sobre cualquiera de las tablas unidas en un `INNER JOIN` para refinar el resultado conjunto.',
@@ -1047,10 +1077,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=27,
+        sort_order=28,
         hints=[
-            "Cruza mediante factura_id y añade la condición WHERE pg.estado_pago = 'aprobado'.",
-            "Ordena con ORDER BY f.factura_id ASC."
+            "Une facturas y pagos por su identificador de factura, y filtra únicamente los pagos con estado aprobado.",
+            "Combina INNER JOIN pagos pg ON f.factura_id = pg.factura_id con WHERE pg.estado_pago = 'aprobado' y ordena por factura_id ascendente.",
+            "SELECT f.factura_id, f.monto_total, pg.metodo_pago, pg.fecha_pago FROM facturas f INNER JOIN pagos pg ON f.??? = pg.??? WHERE pg.estado_pago = 'aprobado' ORDER BY f.factura_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='Encadenar múltiples cláusulas `INNER JOIN` permite trazar relaciones a lo largo de tres o más tablas conectadas en cadena.',
@@ -1080,13 +1111,14 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=False,
-        sort_order=28,
+        sort_order=30,
         hints=[
-            "Usa LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id.",
-            "Filtra los que no tienen compra con WHERE p.pedido_id IS NULL;"
+            "Para conservar a todos los clientes aunque no tengan pedidos, la tabla de clientes debe ir a la izquierda de un LEFT JOIN.",
+            "Cuando un cliente no tiene pedidos asociados, las columnas de pedidos quedan como NULL; filtra con WHERE ... IS NULL.",
+            "SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c LEFT JOIN pedidos p ON c.??? = p.??? WHERE p.pedido_id IS NULL;"
         ],
         concept=ExerciseConcept(
-            summary='`LEFT JOIN` preserva todas las filas de la tabla izquierda; al combinarse con `WHERE clave_derecha IS NULL`, crea un patrón Anti-Join.',
+            summary='`LEFT JOIN` preserva todas las filas de la tabla izquierda; al combinarse con `WHERE clave_derecha IS NULL`, permite detectar registros sin coincidencia.',
             syntax='SELECT t1.id, t1.nombre\nFROM tabla_izquierda t1\nLEFT JOIN tabla_derecha t2 ON t1.id = t2.entidad_id\nWHERE t2.entidad_id IS NULL;',
             key_points=[
                 '`LEFT JOIN` incluye todos los registros de la tabla izquierda, rellenando con `NULL` las columnas de la derecha si no hay coincidencia.',
@@ -1113,12 +1145,14 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=False,
-        sort_order=29,
+        sort_order=31,
         hints=[
-            "Escribe: FROM productos p LEFT JOIN detalle_pedidos dp ON p.producto_id = dp.producto_id WHERE dp.detalle_id IS NULL;"
+            "Mantén todos los productos en el resultado usando LEFT JOIN hacia la tabla donde se registran las líneas de venta.",
+            "Si un artículo nunca se vendió, la clave primaria de la tabla derecha valdrá NULL; evalúa esa ausencia en WHERE.",
+            "SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN detalle_pedidos dp ON p.??? = dp.??? WHERE dp.detalle_id IS NULL;"
         ],
         concept=ExerciseConcept(
-            summary='El patrón Anti-Join (`LEFT JOIN ... WHERE ... IS NULL`) es fundamental para detectar inventario huérfano o elementos sin transacciones.',
+            summary='El patrón de exclusión por ausencia (`LEFT JOIN ... WHERE ... IS NULL`) es fundamental para detectar catálogo sin movimiento o elementos sin transacciones.',
             syntax='SELECT t1.id, t1.nombre\nFROM tabla_catalogo t1\nLEFT JOIN tabla_movimientos t2 ON t1.id = t2.item_id\nWHERE t2.item_id IS NULL\nORDER BY t1.id ASC;',
             key_points=[
                 'La tabla del catálogo va a la izquierda (`FROM`) y la tabla transaccional va a la derecha (`LEFT JOIN`).',
@@ -1138,27 +1172,28 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     "e0000000-0000-0000-0000-000000000036": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000036",
         module_id="b0000000-0000-0000-0000-000000000006",
-        title="Facturas Pendientes de Cobro (Anti-Join)",
+        title="Facturas Pendientes de Cobro (LEFT JOIN)",
         prompt="Tesorería necesita una lista de facturas emitidas que todavía no tienen ningún pago registrado. Haz un `LEFT JOIN` entre `facturas` y `pagos` para obtener `factura_id`, `pedido_id`, `fecha_emision` y `monto_total` de aquellas facturas sin ningún abono. Ordena por `factura_id` ascendente.",
         initial_code="-- Identifica facturas sin pagos registrados\nSELECT ",
         solution_query="SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total FROM facturas f LEFT JOIN pagos p ON f.factura_id = p.factura_id WHERE p.pago_id IS NULL ORDER BY f.factura_id ASC;",
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=30,
+        sort_order=32,
         hints=[
-            "Asegúrate de unir sobre factura_id y filtrar con WHERE p.pago_id IS NULL.",
-            "Ordena al final con ORDER BY f.factura_id ASC."
+            "Une todas las facturas emitidas con sus posibles abonos mediante LEFT JOIN para no perder las que no tienen cobro.",
+            "Filtra en WHERE las facturas cuya clave de pago derecha sea IS NULL y ordena de forma ascendente por factura_id.",
+            "SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total FROM facturas f LEFT JOIN pagos p ON f.??? = p.??? WHERE p.pago_id IS NULL ORDER BY f.factura_id ASC;"
         ],
         concept=ExerciseConcept(
-            summary='Localiza documentos o comprobantes maestros que no registran ningún pago asociado en la tabla de transacciones de pago.',
-            syntax='SELECT t1.documento_id, t1.monto\nFROM tabla_documentos t1\nLEFT JOIN tabla_pagos t2 ON t1.documento_id = t2.documento_id\nWHERE t2.pago_id IS NULL;',
+            summary='Localiza documentos o comprobantes maestros que no registran ningún abono asociado en la tabla de cobros.',
+            syntax='SELECT t1.documento_id, t1.monto\nFROM tabla_documentos t1\nLEFT JOIN tabla_abonos t2 ON t1.documento_id = t2.documento_id\nWHERE t2.abono_id IS NULL;',
             key_points=[
                 'Conecta el encabezado con el detalle mediante `LEFT JOIN ... ON t1.id = t2.fk_id`.',
-                'Aplica `IS NULL` sobre la clave primaria de la tabla de pagos para identificar comprobantes sin abonos.',
+                'Aplica `IS NULL` sobre la clave primaria de la tabla derecha para identificar comprobantes sin abonos.',
                 'El operador de desigualdad para exclusiones explícitas de estado es `<>` o `!=`.'
             ],
-            execution_order_note='💡 PostgreSQL puede convertir internamente este patrón en un Hash Anti Join de alto rendimiento.',
+            execution_order_note='💡 PostgreSQL puede convertir internamente este patrón en una búsqueda hash de exclusión de alto rendimiento.',
         ),
         objectives=[
             "1. Relacionar las facturas emitidas con la tabla de cobros.",
@@ -1171,17 +1206,18 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     "e0000000-0000-0000-0000-000000000037": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000037",
         module_id="b0000000-0000-0000-0000-000000000006",
-        title="Productos Fuera del Almacén Central (Anti-Join Condicional)",
+        title="Productos Fuera del Almacén Central (LEFT JOIN Condicional)",
         prompt="El responsable del almacén central de Madrid (`almacen_id = 1`) quiere saber qué productos del catálogo NO disponen de existencias en ese almacén en particular. Conecta `productos` con `inventario` mediante un `LEFT JOIN` acotado al almacén 1 y muestra el `producto_id` y `nombre_producto` de los artículos ausentes en ese almacén, ordenados por `producto_id` ascendente.",
         initial_code="-- Detecta productos no inventariados en el almac\u00e9n 1\nSELECT ",
         solution_query="SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN inventario i ON p.producto_id = i.producto_id AND i.almacen_id = 1 WHERE i.almacen_id IS NULL ORDER BY p.producto_id ASC;",
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=31,
+        sort_order=33,
         hints=[
-            "Coloca AND i.almacen_id = 1 dentro de la cláusula ON del LEFT JOIN.",
-            "En el WHERE usa: WHERE i.almacen_id IS NULL."
+            "Si filtras el almacén 1 en el WHERE perderás los productos sin inventario; coloca esa restricción dentro de la cláusula ON.",
+            "En el ON del LEFT JOIN combina producto_id con i.almacen_id = 1, y después conserva los ausentes con WHERE i.almacen_id IS NULL.",
+            "SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN inventario i ON p.??? = i.??? AND i.almacen_id = 1 WHERE i.almacen_id IS NULL ORDER BY p.producto_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='Puedes incorporar condiciones adicionales en la cláusula `ON` del `LEFT JOIN` antes de aplicar la exclusión de nulos en `WHERE`.',
@@ -1211,10 +1247,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=32,
+        sort_order=34,
         hints=[
-            "No uses COUNT(*); usa COUNT(p.pedido_id) para que a los que no han comprado les salga 0.",
-            "Ordena con ORDER BY total_pedidos DESC, c.cliente_id ASC."
+            "Para que los clientes sin compras aparezcan con 0 en lugar de desaparecer, usa LEFT JOIN y evita COUNT(*).",
+            "Cuenta explícitamente p.pedido_id con COUNT(p.pedido_id) AS total_pedidos y agrupa por las columnas del cliente.",
+            "SELECT c.cliente_id, c.nombre, c.apellido, COUNT(p.pedido_id) AS total_pedidos FROM clientes c LEFT JOIN pedidos p ON c.??? = p.??? GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY total_pedidos DESC, c.cliente_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='`LEFT JOIN` con `COUNT(columna_derecha)` permite contabilizar ocurrencias preservando en 0 a las entidades sin actividad.',
@@ -1224,7 +1261,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
                 '`LEFT JOIN` asegura que ninguna entidad de la tabla izquierda sea omitida, aunque tenga cero movimientos.',
                 'Agrupa por los campos de la tabla maestra incluidos en el `SELECT`.'
             ],
-            execution_order_note='💡 `COUNT(columna)` ignora nulos automáticamente, garantizando que clientes o productos sin eventos tengan conteo 0.',
+            execution_order_note='💡 `COUNT(columna)` ignora nulos automáticamente, garantizando que entidades o registros sin eventos tengan conteo 0.',
         ),
         objectives=[
             "1. Conectar usuarios y pedidos garantizando que nadie quede fuera de la lista.",
@@ -1244,18 +1281,19 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=33,
+        sort_order=36,
         hints=[
-            "Encadena los JOINs: pedidos -> clientes, pedidos -> detalle_pedidos -> productos -> categorias.",
-            "Usa c.nombre AS cliente_nombre y aplica LIMIT 10 al final."
+            "Traza el camino relacional paso a paso: desde el pedido hacia el cliente por un lado, y hacia sus líneas, productos y categorías por otro.",
+            "Encadena los 4 INNER JOIN con alias cortos, renombra c.nombre AS cliente_nombre y termina con ORDER BY y LIMIT 10.",
+            "SELECT p.pedido_id, c.nombre AS cliente_nombre, pr.nombre_producto, cat.nombre_categoria, dp.cantidad, dp.precio_unitario FROM pedidos p INNER JOIN clientes c ON p.cliente_id = c.cliente_id INNER JOIN detalle_pedidos dp ON p.??? = dp.??? INNER JOIN productos pr ON dp.??? = pr.??? INNER JOIN categorias cat ON pr.??? = cat.??? ORDER BY p.pedido_id ASC, pr.nombre_producto ASC LIMIT 10;"
         ],
         concept=ExerciseConcept(
             summary='Las relaciones maestro-detalle complejas suelen requerir unir la cabecera, las líneas de detalle y los catálogos descriptivos.',
-            syntax='SELECT c.id, d.linea_id, i.nombre, d.cantidad, d.precio_unitario\nFROM cabecera c\nINNER JOIN detalle d ON c.id = d.cabecera_id\nINNER JOIN catalogo i ON d.item_id = i.id\nORDER BY c.id ASC, d.linea_id ASC;',
+            syntax='SELECT c.id, d.linea_id, i.nombre, d.cantidad, d.precio_venta\nFROM cabecera c\nINNER JOIN detalle d ON c.id = d.cabecera_id\nINNER JOIN catalogo i ON d.item_id = i.id\nORDER BY c.id ASC, d.linea_id ASC;',
             key_points=[
                 'La cabecera se une con las líneas de detalle (`cabecera_id`), y cada línea se une con su artículo (`item_id`).',
                 'Los alias de una letra (`c`, `d`, `i`) mantienen la consulta legible y compacta.',
-                'Puedes calcular valores de línea multiplicando columnas: `d.cantidad * d.precio_unitario`.'
+                'Puedes calcular valores de línea multiplicando columnas: `d.cantidad * d.precio_venta`.'
             ],
             execution_order_note='💡 Cada línea de pedido generará una fila en el resultado; un pedido con 3 artículos devolverá 3 filas.',
         ),
@@ -1277,10 +1315,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=34,
+        sort_order=37,
         hints=[
-            "Cruza las tablas necesarias para llegar de clientes a categorías pasando por pedidos y detalle.",
-            "Agrupa por c.ciudad y cat.nombre_categoria."
+            "Necesitas recorrer la cadena completa desde clientes hasta categorías pasando por pedidos, detalle de pedidos y productos.",
+            "Agrupa por c.ciudad y cat.nombre_categoria, suma cantidad * precio_unitario como monto_vendido y ordena por ciudad ASC y monto DESC.",
+            "SELECT c.ciudad, cat.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS monto_vendido FROM clientes c INNER JOIN pedidos p ON c.cliente_id = p.cliente_id INNER JOIN detalle_pedidos dp ON p.pedido_id = dp.pedido_id INNER JOIN productos pr ON dp.producto_id = pr.producto_id INNER JOIN categorias cat ON pr.??? = cat.??? GROUP BY c.ciudad, cat.nombre_categoria ORDER BY c.ciudad ASC, monto_vendido DESC;"
         ],
         concept=ExerciseConcept(
             summary='Unir múltiples tablas antes de agrupar permite construir cubos multidimensionales de agregación geográfica y comercial.',
@@ -1310,20 +1349,21 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=35,
+        sort_order=38,
         hints=[
-            "pedidos p INNER JOIN facturas f ON p.pedido_id = f.pedido_id INNER JOIN pagos pg ON f.factura_id = pg.factura_id.",
-            "Renombra los montos con AS monto_factura y AS monto_pago."
+            "Enlaza tres tablas en secuencia: la orden conecta con su factura y la factura conecta con su pago.",
+            "Asigna los alias monto_factura a f.monto_total y monto_pago a pg.monto, y ordena por p.pedido_id ascendente.",
+            "SELECT p.pedido_id, p.cliente_id, f.monto_total AS monto_factura, pg.monto AS monto_pago, pg.metodo_pago FROM pedidos p INNER JOIN facturas f ON p.??? = f.??? INNER JOIN pagos pg ON f.??? = pg.??? ORDER BY p.pedido_id ASC;"
         ],
         concept=ExerciseConcept(
-            summary='La conciliación transaccional conecta el ciclo de vida comercial completo: orden de pedido, factura emitida y cobro acreditado.',
-            syntax="SELECT p.id, f.numero_factura, pag.metodo_pago, pag.monto\nFROM ordenes p\nINNER JOIN facturas f ON p.id = f.orden_id\nINNER JOIN pagos pag ON f.id = pag.factura_id\nWHERE pag.estado = 'aprobado';",
+            summary='La conciliación transaccional conecta el ciclo de vida comercial completo: orden de compra, comprobante emitido y cobro acreditado.',
+            syntax="SELECT p.id, c.numero_comprobante, ab.medio_abono, ab.monto\nFROM ordenes p\nINNER JOIN comprobantes c ON p.id = c.orden_id\nINNER JOIN abonos ab ON c.id = ab.comprobante_id\nWHERE ab.estado = 'aprobado';",
             key_points=[
-                'Encadena cada relación con su llave natural: la orden vincula a la factura, y la factura vincula al pago.',
+                'Encadena cada relación con su llave natural: la orden vincula al comprobante, y el comprobante vincula al cobro.',
                 'Filtra en el `WHERE` para restringir el análisis a transacciones con estado validado.',
                 'La proyección debe incluir los identificadores necesarios de cada etapa para garantizar trazabilidad.'
             ],
-            execution_order_note='💡 `INNER JOIN` descarta pedidos que no tengan factura o facturas sin pago registrado.',
+            execution_order_note='💡 `INNER JOIN` descarta órdenes que no tengan comprobante emitido o comprobantes sin cobro registrado.',
         ),
         objectives=[
             "1. Enlazar los tres eslabones comerciales: pedido, comprobante fiscal y pago.",
@@ -1343,20 +1383,21 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=36,
+        sort_order=39,
         hints=[
-            "Une productos a inventario y luego inventario a almacenes.",
-            "Filtra con WHERE i.cantidad_disponible > 10."
+            "Conecta productos con almacenes usando la tabla puente de existencias físicas y aplica el filtro de mayor a 10 unidades.",
+            "Filtra con WHERE i.cantidad_disponible > 10 y ordena alfabéticamente por nombre_producto ASC y luego nombre_almacen ASC.",
+            "SELECT pr.nombre_producto, a.nombre_almacen, a.ciudad, i.cantidad_disponible FROM productos pr INNER JOIN inventario i ON pr.??? = i.??? INNER JOIN almacenes a ON i.??? = a.??? WHERE i.cantidad_disponible > 10 ORDER BY pr.nombre_producto ASC, a.nombre_almacen ASC;"
         ],
         concept=ExerciseConcept(
-            summary='Conectar tablas de existencias físicas, artículos y almacenes permite rastrear la distribución geográfica del stock.',
-            syntax='SELECT a.nombre_almacen, p.nombre_item, inv.cantidad_stock\nFROM inventarios inv\nINNER JOIN almacenes a ON inv.almacen_id = a.id\nINNER JOIN productos p ON inv.producto_id = p.id\nWHERE inv.cantidad_stock > 0\nORDER BY a.nombre_almacen ASC, inv.cantidad_stock DESC;',
+            summary='Conectar tablas de existencias físicas, artículos y centros logísticos permite rastrear la distribución geográfica del stock.',
+            syntax='SELECT c.nombre_centro, a.nombre_item, ex.cantidad_stock\nFROM existencias ex\nINNER JOIN centros_logisticos c ON ex.centro_id = c.id\nINNER JOIN articulos a ON ex.articulo_id = a.id\nWHERE ex.cantidad_stock > 0\nORDER BY c.nombre_centro ASC, ex.cantidad_stock DESC;',
             key_points=[
-                'La tabla puente de inventario conecta las entidades de almacén y de producto.',
+                'La tabla puente de existencias conecta las entidades de centro logístico y de artículo.',
                 'Operadores numéricos de teclado: mayor que `>`, menor que `<`, mayor o igual `>=` y menor o igual `<=`.',
                 'El ordenamiento múltiple permite agrupar visualmente por instalación y jerarquizar por volumen de existencias.'
             ],
-            execution_order_note='💡 Las claves foráneas compuestas garantizan que no existan registros duplicados para un mismo par producto-almacén.',
+            execution_order_note='💡 Las claves foráneas compuestas garantizan que no existan registros duplicados para un mismo par artículo-centro.',
         ),
         objectives=[
             "1. Conectar el catálogo con las instalaciones a través de la tabla de existencias.",
@@ -1376,10 +1417,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=37,
+        sort_order=40,
         hints=[
-            "SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes UNION SELECT ciudad, 'almacen' AS tipo_entidad FROM almacenes...",
-            "Coloca el ORDER BY al final de la instrucción."
+            "Construye dos consultas SELECT independientes con la misma estructura de columnas y combínalas verticalmente con UNION.",
+            "En cada SELECT incluye una etiqueta de texto literal con el alias tipo_entidad ('cliente' y 'almacen') y coloca un único ORDER BY al final.",
+            "SELECT ciudad, 'cliente' AS tipo_entidad FROM clientes UNION SELECT ???, 'almacen' AS tipo_entidad FROM almacenes ORDER BY ciudad ASC, tipo_entidad ASC;"
         ],
         concept=ExerciseConcept(
             summary='`UNION` combina verticalmente los resultados de dos consultas `SELECT` independientes en una única lista de filas.',
@@ -1409,9 +1451,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=38,
+        sort_order=42,
         hints=[
-            "Escribe: SELECT ciudad FROM clientes EXCEPT SELECT ciudad FROM almacenes ORDER BY ciudad ASC;"
+            "Para restar un conjunto de resultados de otro sin usar uniones, coloca el operador EXCEPT entre dos consultas SELECT equivalentes.",
+            "Pon primero las ciudades de clientes, luego EXCEPT, luego las ciudades de almacenes y ordena el resultado alfabéticamente.",
+            "SELECT ciudad FROM clientes EXCEPT SELECT ??? FROM almacenes ORDER BY ciudad ASC;"
         ],
         concept=ExerciseConcept(
             summary='`EXCEPT` (o `MINUS`) devuelve los registros de la primera consulta que no existen en el resultado de la segunda consulta.',
@@ -1419,7 +1463,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
             key_points=[
                 'Resta el segundo conjunto al primero, eliminando cualquier valor presente en la segunda consulta.',
                 'Ambas consultas deben proyectar el mismo número de columnas y de tipos compatibles.',
-                'Es una alternativa limpia y matemática a los anti-joins basados en `NOT IN` o `IS NULL`.'
+                'Es una alternativa limpia y matemática a las exclusiones basadas en `NOT IN` o `IS NULL`.'
             ],
             execution_order_note='💡 `EXCEPT` elimina duplicados en el conjunto resultante por definición del estándar relacional.',
         ),
@@ -1441,10 +1485,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=50,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=39,
+        sort_order=43,
         hints=[
-            "FROM almacenes a CROSS JOIN categorias c (sin ON).",
-            "Ordena por a.nombre_almacen ASC, c.nombre_categoria ASC."
+            "Para obtener todas las combinaciones posibles entre dos catálogos independientes, CROSS JOIN no lleva condición ON.",
+            "Conecta almacenes y categorias mediante CROSS JOIN y ordena por nombre_almacen ASC y nombre_categoria ASC.",
+            "SELECT a.nombre_almacen, c.nombre_categoria FROM almacenes a CROSS JOIN categorias c ORDER BY ??? ASC, ??? ASC;"
         ],
         concept=ExerciseConcept(
             summary='`CROSS JOIN` calcula el producto cartesiano: combina cada fila de la primera tabla con cada fila de la segunda tabla.',
@@ -1474,10 +1519,11 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         xp_reward=55,
         difficulty="Intermedio",
         check_order=True,
-        sort_order=40,
+        sort_order=44,
         hints=[
-            "ON p1.categoria_id = p2.categoria_id AND p1.producto_id < p2.producto_id.",
-            "Ordena con ORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC."
+            "Une la tabla de productos consigo misma usando dos alias distintos (p1 y p2) para comparar parejas de la misma categoría.",
+            "Además de igualar categoria_id, agrega p1.producto_id < p2.producto_id en el ON para evitar pares repetidos o consigo mismo.",
+            "SELECT p1.categoria_id, p1.nombre_producto AS producto_a, p2.nombre_producto AS producto_b, p1.precio AS precio_a, p2.precio AS precio_b FROM productos p1 INNER JOIN productos p2 ON p1.categoria_id = p2.categoria_id AND p1.??? < p2.??? ORDER BY p1.categoria_id ASC, producto_a ASC, producto_b ASC;"
         ],
         concept=ExerciseConcept(
             summary='Un `SELF JOIN` une una tabla consigo misma usando alias diferenciados, permitiendo comparar o emparejar filas del mismo conjunto.',
@@ -1501,16 +1547,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000015",
         module_id="c0000000-0000-0000-0000-000000000009",
         title="Productos sobre el Promedio de Precio",
-        prompt="¿Qué productos se venden por encima del precio promedio de toda la tienda? Muestra el `nombre_producto` y su `precio` para aquellos artículos cuyo precio sea mayor al promedio general de precios de la tabla `productos`. Ordena de mayor a menor precio.",
+        prompt="¿Qué productos se venden por encima del precio promedio de toda la tienda? Muestra el `nombre_producto` y su `precio` para aquellos artículos cuyo precio sea mayor al promedio general de precios de la tabla `productos`. Ordena de mayor a menor precio y, en caso de empate, alfabéticamente por `nombre_producto`.",
         initial_code="-- Usa una subconsulta para comparar con el promedio global\nSELECT ",
-        solution_query="SELECT nombre_producto, precio FROM productos WHERE precio > (SELECT AVG(precio) FROM productos) ORDER BY precio DESC;",
+        solution_query="SELECT nombre_producto, precio FROM productos WHERE precio > (SELECT AVG(precio) FROM productos) ORDER BY precio DESC, nombre_producto ASC;",
         xp_reward=55,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=41,
+        sort_order=45,
         hints=[
-            "WHERE precio > (SELECT AVG(precio) FROM productos).",
-            "Ordena al final con ORDER BY precio DESC."
+            "Calcula primero el promedio global de precios dentro de una subconsulta entre paréntesis en la cláusula WHERE.",
+            "Compara precio > (SELECT AVG(precio) FROM productos) y ordena del más caro al más barato desempatando por nombre_producto.",
+            "SELECT nombre_producto, precio FROM productos WHERE precio > (SELECT AVG(???) FROM productos) ORDER BY precio DESC, nombre_producto ASC;"
         ],
         concept=ExerciseConcept(
             summary='Una subconsulta escalar retorna un único valor (1 fila y 1 columna) que puede usarse como comparador dinámico en el `WHERE`.',
@@ -1533,17 +1580,18 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     "e0000000-0000-0000-0000-000000000046": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000046",
         module_id="c0000000-0000-0000-0000-000000000009",
-        title="Clientes con Pedidos de Alto Monto (IN Subquery)",
+        title="Clientes con Pedidos de Alto Monto (Subconsulta con IN)",
         prompt="Identifica a nuestros clientes VIP: aquellos que han hecho al menos un pedido importante (de 1000€ o más). Consulta la tabla `clientes` y muestra `cliente_id`, `nombre`, `apellido` y `email`, filtrando con una subconsulta usando el operador `IN` sobre la tabla `pedidos`. Ordena por `cliente_id` ascendente.",
         initial_code="-- Filtra clientes con una subconsulta en IN\nSELECT ",
         solution_query="SELECT cliente_id, nombre, apellido, email FROM clientes WHERE cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000) ORDER BY cliente_id ASC;",
         xp_reward=55,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=42,
+        sort_order=46,
         hints=[
-            "Usa WHERE cliente_id IN (SELECT cliente_id FROM pedidos WHERE total >= 1000).",
-            "Ordena con ORDER BY cliente_id ASC."
+            "Genera en una subconsulta la lista de identificadores de clientes que tienen al menos un pedido de 1000€ o más.",
+            "Usa WHERE cliente_id IN (...) sobre la subconsulta de pedidos filtrada por total >= 1000 y ordena por cliente_id ascendente.",
+            "SELECT cliente_id, nombre, apellido, email FROM clientes WHERE cliente_id IN (SELECT ??? FROM pedidos WHERE total >= 1000) ORDER BY cliente_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='Una subconsulta en la cláusula `IN` retorna una lista dinámica de IDs sobre la cual la consulta principal aplica el filtrado.',
@@ -1571,12 +1619,13 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         initial_code="-- Subconsulta correlacionada con EXISTS\nSELECT ",
         solution_query="SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado') ORDER BY c.cliente_id ASC;",
         xp_reward=55,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=43,
+        sort_order=47,
         hints=[
-            "WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado').",
-            "Ordena con ORDER BY c.cliente_id ASC."
+            "Para verificar si existe al menos un pedido completado por cada cliente sin duplicar filas, usa una subconsulta correlacionada con EXISTS.",
+            "Dentro de EXISTS (SELECT 1 FROM pedidos p ...), conecta p.cliente_id = c.cliente_id junto con estado_pedido = 'completado'.",
+            "SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c WHERE EXISTS (SELECT 1 FROM pedidos p WHERE p.??? = c.??? AND p.estado_pedido = 'completado') ORDER BY c.cliente_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='`EXISTS` comprueba si una subconsulta correlacionada devuelve al menos una fila; en cuanto encuentra una coincidencia, detiene la búsqueda.',
@@ -1600,16 +1649,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000016",
         module_id="c0000000-0000-0000-0000-000000000010",
         title="Segmentación de Pedidos por Monto",
-        prompt="Clasifica los pedidos según su valor para organizar la entrega. Muestra el `pedido_id`, el `total` y una nueva columna llamada `segmento` que diga: si el total es de 1000€ o más asigna `'Alto Valor'`, si es de 300€ o más asigna `'Medio Valor'`, y para el resto `'Bajo Valor'`. Ordena de mayor a menor total.",
+        prompt="Clasifica los pedidos según su valor para organizar la entrega. Muestra el `pedido_id`, el `total` y una nueva columna llamada `segmento` que diga: si el total es de 1000€ o más asigna `'Alto Valor'`, si es de 300€ o más asigna `'Medio Valor'`, y para el resto `'Bajo Valor'`. Ordena de mayor a menor total y, en caso de empate, por `pedido_id` ascendente.",
         initial_code="-- Clasifica los pedidos en tres segmentos seg\u00fan su monto\nSELECT ",
-        solution_query="SELECT pedido_id, total, CASE WHEN total >= 1000 THEN 'Alto Valor' WHEN total >= 300 THEN 'Medio Valor' ELSE 'Bajo Valor' END AS segmento FROM pedidos ORDER BY total DESC;",
+        solution_query="SELECT pedido_id, total, CASE WHEN total >= 1000 THEN 'Alto Valor' WHEN total >= 300 THEN 'Medio Valor' ELSE 'Bajo Valor' END AS segmento FROM pedidos ORDER BY total DESC, pedido_id ASC;",
         xp_reward=55,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=44,
+        sort_order=49,
         hints=[
-            "CASE WHEN total >= 1000 THEN 'Alto Valor' WHEN total >= 300 THEN 'Medio Valor' ELSE 'Bajo Valor' END AS segmento.",
-            "Ordena al final por total DESC."
+            "Evalúa los rangos de mayor a menor usando una expresión condicional CASE WHEN ... THEN ... ELSE ... END.",
+            "Recuerda poner primero el umbral más alto (>= 1000), luego el intermedio (>= 300) y cerrar con ELSE 'Bajo Valor' END AS segmento.",
+            "SELECT pedido_id, total, CASE WHEN total >= 1000 THEN 'Alto Valor' WHEN total >= 300 THEN 'Medio Valor' ELSE 'Bajo Valor' END AS segmento FROM pedidos ORDER BY total DESC, ??? ASC;"
         ],
         concept=ExerciseConcept(
             summary='La estructura `CASE WHEN ... THEN ... ELSE ... END` implementa lógica condicional (if-else) para transformar o clasificar valores.',
@@ -1633,16 +1683,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000018",
         module_id="c0000000-0000-0000-0000-000000000012",
         title="Ranking Relativo por Categoría (DENSE_RANK)",
-        prompt="Clasifica los productos dentro de cada categoría del más caro al más barato. Muestra `categoria_id`, `nombre_producto`, `precio` y una columna con el puesto que ocupa llamada `ranking_categoria` usando `DENSE_RANK()`, dividiendo por categoría y ordenando de mayor a menor precio. Ordena por `categoria_id ASC` y `ranking_categoria ASC`.",
+        prompt="Clasifica los productos dentro de cada categoría del más caro al más barato. Muestra `categoria_id`, `nombre_producto`, `precio` y una columna con el puesto que ocupa llamada `ranking_categoria` usando `DENSE_RANK()`, dividiendo por categoría y ordenando de mayor a menor precio. Ordena por `categoria_id ASC`, `ranking_categoria ASC` y `nombre_producto ASC`.",
         initial_code="-- Usa DENSE_RANK() particionado por categoria_id\nSELECT ",
-        solution_query="SELECT categoria_id, nombre_producto, precio, DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria FROM productos ORDER BY categoria_id ASC, ranking_categoria ASC;",
+        solution_query="SELECT categoria_id, nombre_producto, precio, DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria FROM productos ORDER BY categoria_id ASC, ranking_categoria ASC, nombre_producto ASC;",
         xp_reward=65,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=45,
+        sort_order=57,
         hints=[
-            "Usa DENSE_RANK() OVER (PARTITION BY categoria_id ORDER BY precio DESC) AS ranking_categoria.",
-            "Ordena por categoria_id ASC, ranking_categoria ASC al final."
+            "Usa DENSE_RANK() con PARTITION BY dentro de OVER (...) para reiniciar el ranking en cada categoría sin dejar huecos ante empates.",
+            "Particiona por categoria_id y ordena internamente por precio DESC; al final ordena por categoria_id, ranking_categoria y nombre_producto.",
+            "SELECT categoria_id, nombre_producto, precio, DENSE_RANK() OVER (PARTITION BY ??? ORDER BY precio DESC) AS ranking_categoria FROM productos ORDER BY categoria_id ASC, ranking_categoria ASC, nombre_producto ASC;"
         ],
         concept=ExerciseConcept(
             summary='`DENSE_RANK()` numera filas en orden de clasificación sin dejar huecos en la secuencia numérica en caso de empates.',
@@ -1665,17 +1716,18 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     "e0000000-0000-0000-0000-000000000048": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000048",
         module_id="c0000000-0000-0000-0000-000000000010",
-        title="Pivoteo Manual de Ventas por Estado (Conditional Aggregation)",
+        title="Resumen de Ventas por Estado (Agregación Condicional)",
         prompt="Crea una tabla resumen que muestre cuánto dinero tiene cada cliente en compras completadas y cuánto en compras pendientes. Muestra el `cliente_id`, la suma de compras completadas bajo el nombre `ventas_completadas` (sumando el total cuando el estado sea `'completado'` y 0 si no) y la suma de compras pendientes bajo `ventas_pendientes` (sumando el total cuando sea `'pendiente'` y 0 si no). Agrupa y ordena por `cliente_id` ascendente.",
         initial_code="-- Agregaci\u00f3n condicional con CASE dentro de SUM\nSELECT ",
         solution_query="SELECT cliente_id, SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas, SUM(CASE WHEN estado_pedido = 'pendiente' THEN total ELSE 0 END) AS ventas_pendientes FROM pedidos GROUP BY cliente_id ORDER BY cliente_id ASC;",
         xp_reward=60,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=45,
+        sort_order=50,
         hints=[
-            "Usa SUM(CASE WHEN estado_pedido = 'completado' THEN total ELSE 0 END) AS ventas_completadas.",
-            "Haz lo mismo para pendientes y agrupa por cliente_id."
+            "Coloca una expresión CASE dentro de cada función SUM() para acumular solo los importes que correspondan a cada estado.",
+            "Cuando el estado no coincida devuelve 0 en el ELSE, agrupa por cliente_id y ordena de forma ascendente.",
+            "SELECT cliente_id, SUM(CASE WHEN estado_pedido = 'completado' THEN ??? ELSE 0 END) AS ventas_completadas, SUM(CASE WHEN estado_pedido = 'pendiente' THEN ??? ELSE 0 END) AS ventas_pendientes FROM pedidos GROUP BY cliente_id ORDER BY cliente_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='Combinar `SUM(CASE WHEN ... THEN monto ELSE 0 END)` permite transformar valores de filas en columnas métricas independientes (pivoteo).',
@@ -1699,20 +1751,21 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000017",
         module_id="c0000000-0000-0000-0000-000000000011",
         title="Facturación por Categoría mediante CTE",
-        prompt="Prepara un reporte ordenado de facturación por categoría usando una expresión `WITH` (CTE). Crea una tabla temporal llamada `ventas_por_categoria` que sume las ventas (`SUM(dp.cantidad * dp.precio_unitario)`) como `facturacion` agrupando por `nombre_categoria`. Luego, consulta esa tabla temporal para mostrar `nombre_categoria` y `facturacion` ordenados de mayor a menor facturación.",
+        prompt="Prepara un reporte ordenado de facturación por categoría usando una expresión `WITH` (CTE). Crea una tabla temporal llamada `ventas_por_categoria` que sume las ventas (`SUM(dp.cantidad * dp.precio_unitario)`) como `facturacion` agrupando por `nombre_categoria`. Luego, consulta esa tabla temporal para mostrar `nombre_categoria` y `facturacion` ordenados de mayor a menor facturación y, en caso de empate, alfabéticamente por `nombre_categoria`.",
         initial_code="-- Estructura la consulta anal\u00edtica usando WITH ... AS\nWITH ",
-        solution_query="WITH ventas_por_categoria AS (SELECT c.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS facturacion FROM categorias c INNER JOIN productos pr ON c.categoria_id = pr.categoria_id INNER JOIN detalle_pedidos dp ON pr.producto_id = dp.producto_id GROUP BY c.nombre_categoria) SELECT nombre_categoria, facturacion FROM ventas_por_categoria ORDER BY facturacion DESC;",
+        solution_query="WITH ventas_por_categoria AS (SELECT c.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS facturacion FROM categorias c INNER JOIN productos pr ON c.categoria_id = pr.categoria_id INNER JOIN detalle_pedidos dp ON pr.producto_id = dp.producto_id GROUP BY c.nombre_categoria) SELECT nombre_categoria, facturacion FROM ventas_por_categoria ORDER BY facturacion DESC, nombre_categoria ASC;",
         xp_reward=60,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=46,
+        sort_order=52,
         hints=[
-            "WITH ventas_por_categoria AS (SELECT c.nombre_categoria, SUM(...) AS facturacion FROM ... GROUP BY c.nombre_categoria) SELECT ...",
-            "Ordena por facturacion DESC."
+            "Define primero el bloque temporal WITH ventas_por_categoria AS (...) cruzando categorias, productos y detalle_pedidos.",
+            "Dentro de la CTE agrupa por c.nombre_categoria calculando SUM(dp.cantidad * dp.precio_unitario) AS facturacion, y luego consulta esa CTE.",
+            "WITH ventas_por_categoria AS (SELECT c.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS facturacion FROM categorias c INNER JOIN productos pr ON c.categoria_id = pr.categoria_id INNER JOIN detalle_pedidos dp ON pr.producto_id = dp.producto_id GROUP BY c.nombre_categoria) SELECT nombre_categoria, facturacion FROM ventas_por_categoria ORDER BY facturacion DESC, ??? ASC;"
         ],
         concept=ExerciseConcept(
             summary='Una CTE (`WITH ... AS (...)`) define una tabla temporal con nombre dentro de la consulta, organizando análisis complejos por fases.',
-            syntax='WITH cte_resumen AS (\n    SELECT columna_clave,\n           SUM(columna_monto) AS monto_total\n    FROM nombre_tabla\n    GROUP BY columna_clave\n)\nSELECT columna_clave, monto_total\nFROM cte_resumen\nORDER BY monto_total DESC;',
+            syntax='WITH cte_resumen AS (\n    SELECT columna_clave,\n           SUM(columna_importe) AS importe_total\n    FROM nombre_tabla\n    GROUP BY columna_clave\n)\nSELECT columna_clave, importe_total\nFROM cte_resumen\nORDER BY importe_total DESC;',
             key_points=[
                 'Se declara al inicio con `WITH nombre_cte AS (...)` conteniendo una subconsulta completa entre paréntesis.',
                 'La consulta principal posterior puede consultar la CTE como si fuera una tabla física real del esquema.',
@@ -1731,20 +1784,21 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
     "e0000000-0000-0000-0000-000000000049": ExerciseDetail(
         id="e0000000-0000-0000-0000-000000000049",
         module_id="c0000000-0000-0000-0000-000000000011",
-        title="CTEs Múltiples Encadenadas (Pipeline de Datos)",
-        prompt="Construye un análisis por pasos usando dos CTEs encadenadas para encontrar a los clientes que gastan más que el promedio de todos los clientes. Primero crea `gasto_clientes` con el `cliente_id` y su gasto total (`SUM(total) AS total_gastado`). Luego crea `promedio_general` que calcule el promedio (`AVG(total_gastado) AS gasto_medio`) a partir de la primera. Finalmente, muestra `cliente_id` y `total_gastado` de aquellos clientes cuyo gasto supere el promedio general, ordenados de mayor a menor gasto.",
+        title="CTEs Múltiples Encadenadas (Análisis por Etapas)",
+        prompt="Construye un análisis por pasos usando dos CTEs encadenadas para encontrar a los clientes que gastan más que el promedio de todos los clientes. Primero crea `gasto_clientes` con el `cliente_id` y su gasto total (`SUM(total) AS total_gastado`). Luego crea `promedio_general` que calcule el promedio (`AVG(total_gastado) AS gasto_medio`) a partir de la primera. Finalmente, muestra `cliente_id` y `total_gastado` de aquellos clientes cuyo gasto supere el promedio general, ordenados de mayor a menor gasto y, en caso de empate, por `cliente_id` ascendente.",
         initial_code="-- Encadena dos CTEs separadas por coma\nWITH ",
-        solution_query="WITH gasto_clientes AS (SELECT cliente_id, SUM(total) AS total_gastado FROM pedidos GROUP BY cliente_id), promedio_general AS (SELECT AVG(total_gastado) AS gasto_medio FROM gasto_clientes) SELECT g.cliente_id, g.total_gastado FROM gasto_clientes g, promedio_general p WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC;",
+        solution_query="WITH gasto_clientes AS (SELECT cliente_id, SUM(total) AS total_gastado FROM pedidos GROUP BY cliente_id), promedio_general AS (SELECT AVG(total_gastado) AS gasto_medio FROM gasto_clientes) SELECT g.cliente_id, g.total_gastado FROM gasto_clientes g, promedio_general p WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC, g.cliente_id ASC;",
         xp_reward=60,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=47,
+        sort_order=53,
         hints=[
-            "Separa las dos CTEs con una coma: WITH gasto_clientes AS (...), promedio_general AS (...).",
-            "En la consulta final filtra WHERE g.total_gastado > p.gasto_medio ORDER BY g.total_gastado DESC."
+            "Declara dos tablas temporales en una sola cláusula WITH separándolas por una coma, donde la segunda lea el resultado de la primera.",
+            "Compara el gasto de cada cliente contra el promedio general calculado en promedio_general y ordena por total_gastado DESC y cliente_id ASC.",
+            "WITH gasto_clientes AS (SELECT cliente_id, SUM(total) AS total_gastado FROM pedidos GROUP BY cliente_id), promedio_general AS (SELECT AVG(total_gastado) AS gasto_medio FROM gasto_clientes) SELECT g.cliente_id, g.total_gastado FROM gasto_clientes g, promedio_general p WHERE g.total_gastado > p.??? ORDER BY g.total_gastado DESC, g.cliente_id ASC;"
         ],
         concept=ExerciseConcept(
-            summary='Puedes encadenar múltiples CTEs separándolas por coma bajo una sola cláusula `WITH` para crear pipelines analíticos por etapas.',
+            summary='Puedes encadenar múltiples CTEs separándolas por coma bajo una sola cláusula `WITH` para crear flujos analíticos por etapas.',
             syntax='WITH etapa_1 AS (\n    SELECT entidad_id, SUM(monto) AS acumulado\n    FROM tabla_transacciones\n    GROUP BY entidad_id\n),\netapa_2 AS (\n    SELECT AVG(acumulado) AS umbral_medio\n    FROM etapa_1\n)\nSELECT e1.entidad_id, e1.acumulado\nFROM etapa_1 e1, etapa_2 e2\nWHERE e1.acumulado > e2.umbral_medio\nORDER BY e1.acumulado DESC;',
             key_points=[
                 'Las CTEs subsiguientes se separan por comas `,` sin repetir la palabra clave `WITH`.',
@@ -1765,15 +1819,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000007",
         module_id="c0000000-0000-0000-0000-000000000012",
         title="Ranking de Productos por Precio (ROW_NUMBER)",
-        prompt="Crea una lista clasificada de productos del más caro al más económico. Muestra `producto_id`, `nombre_producto`, `precio` y una columna llamada `ranking` con la posición consecutiva (1, 2, 3...) de cada producto usando `ROW_NUMBER()` ordenado por precio descendente.",
+        prompt="Crea una lista clasificada de productos del más caro al más económico. Muestra `producto_id`, `nombre_producto`, `precio` y una columna llamada `ranking` con la posición consecutiva (1, 2, 3...) de cada producto usando `ROW_NUMBER()` ordenado por precio descendente (desempatando por `producto_id` ascendente), y ordena el resultado final por `ranking` ascendente.",
         initial_code="-- Emplea ROW_NUMBER() OVER (...)\nSELECT ",
-        solution_query="SELECT producto_id, nombre_producto, precio, ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking FROM productos;",
+        solution_query="SELECT producto_id, nombre_producto, precio, ROW_NUMBER() OVER (ORDER BY precio DESC, producto_id ASC) AS ranking FROM productos ORDER BY ranking ASC;",
         xp_reward=55,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=48,
+        sort_order=56,
         hints=[
-            "Escribe: ROW_NUMBER() OVER (ORDER BY precio DESC) AS ranking en tu lista de columnas."
+            "Utiliza la función de ventana ROW_NUMBER() acompañada de OVER (...) para numerar cada producto sin colapsar las filas.",
+            "Dentro de OVER define ORDER BY precio DESC, producto_id ASC para desempatar precios iguales, y ordena la consulta final por ranking ASC.",
+            "SELECT producto_id, nombre_producto, precio, ROW_NUMBER() OVER (ORDER BY precio DESC, ??? ASC) AS ranking FROM productos ORDER BY ranking ASC;"
         ],
         concept=ExerciseConcept(
             summary='`ROW_NUMBER()` numera correlativamente cada fila (1, 2, 3...) según el orden estricto indicado en su cláusula `OVER`.',
@@ -1797,16 +1853,17 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
         id="e0000000-0000-0000-0000-000000000050",
         module_id="c0000000-0000-0000-0000-000000000012",
         title="Análisis de Intervalo Temporal entre Pedidos (LAG)",
-        prompt="Analiza cuánto tiempo pasa entre una compra y otra para cada cliente. Muestra el `pedido_id`, `cliente_id`, la `fecha_pedido` y el valor de la fecha del pedido inmediatamente anterior bajo el nombre `fecha_pedido_anterior`, usando la función de ventana `LAG(fecha_pedido)` dividiendo por cliente y ordenando cronológicamente. Ordena los resultados finales por `cliente_id ASC` y `fecha_pedido ASC`.",
+        prompt="Analiza cuánto tiempo pasa entre una compra y otra para cada cliente. Muestra el `pedido_id`, `cliente_id`, la `fecha_pedido` y el valor de la fecha del pedido inmediatamente anterior bajo el nombre `fecha_pedido_anterior`, usando la función de ventana `LAG(fecha_pedido)` dividiendo por cliente y ordenando cronológicamente (`fecha_pedido ASC, pedido_id ASC`). Ordena los resultados finales por `cliente_id ASC`, `fecha_pedido ASC` y `pedido_id ASC`.",
         initial_code="-- Emplea LAG() OVER (PARTITION BY ... ORDER BY ...)\nSELECT ",
-        solution_query="SELECT pedido_id, cliente_id, fecha_pedido, LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior FROM pedidos ORDER BY cliente_id ASC, fecha_pedido ASC;",
+        solution_query="SELECT pedido_id, cliente_id, fecha_pedido, LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC, pedido_id ASC) AS fecha_pedido_anterior FROM pedidos ORDER BY cliente_id ASC, fecha_pedido ASC, pedido_id ASC;",
         xp_reward=60,
-        difficulty="Intermedio",
+        difficulty="Avanzado",
         check_order=True,
-        sort_order=50,
+        sort_order=60,
         hints=[
-            "Usa LAG(fecha_pedido) OVER (PARTITION BY cliente_id ORDER BY fecha_pedido ASC) AS fecha_pedido_anterior.",
-            "Ordena al final por cliente_id ASC, fecha_pedido ASC."
+            "La función de ventana LAG() te permite leer la fecha de la fila anterior dentro de la partición de cada cliente.",
+            "Usa PARTITION BY cliente_id y ORDER BY fecha_pedido ASC, pedido_id ASC tanto en la ventana OVER como al final de la consulta.",
+            "SELECT pedido_id, cliente_id, fecha_pedido, LAG(fecha_pedido) OVER (PARTITION BY ??? ORDER BY fecha_pedido ASC, pedido_id ASC) AS fecha_pedido_anterior FROM pedidos ORDER BY cliente_id ASC, fecha_pedido ASC, pedido_id ASC;"
         ],
         concept=ExerciseConcept(
             summary='`LAG()` accede a los datos de una fila anterior dentro de la misma partición sin necesidad de recurrir a auto-uniones (`SELF JOIN`).',
@@ -1822,6 +1879,346 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
             "1. Dividir las transacciones por cliente ordenándolas en secuencia temporal.",
             "2. Recuperar el valor cronológico de la compra inmediatamente anterior.",
             "3. Proyectar la fecha previa y ordenar adecuadamente."
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000051": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000051",
+        module_id="a0000000-0000-0000-0000-000000000002",
+        title="Pedidos de Febrero de 2024 (Fechas con BETWEEN)",
+        prompt="Auditoría quiere revisar todas las compras registradas durante febrero de 2024. Muestra el `pedido_id`, `cliente_id`, `fecha_pedido` y `total` de los pedidos realizados entre `'2024-02-01'` y `'2024-02-29'` (ambos inclusive), ordenados cronológicamente por `fecha_pedido ASC` y, en caso de empate, por `pedido_id ASC`.",
+        initial_code="-- Filtra por rango de fechas en WHERE\nSELECT ",
+        solution_query="SELECT pedido_id, cliente_id, fecha_pedido, total FROM pedidos WHERE fecha_pedido BETWEEN '2024-02-01' AND '2024-02-29' ORDER BY fecha_pedido ASC, pedido_id ASC;",
+        xp_reward=40,
+        difficulty="Principiante",
+        check_order=True,
+        sort_order=11,
+        hints=[
+            "Las fechas en formato estándar se comparan como texto delimitado entre comillas simples ('AAAA-MM-DD') dentro de WHERE.",
+            "Usa BETWEEN '2024-02-01' AND '2024-02-29' sobre fecha_pedido y ordena con fecha_pedido ASC, pedido_id ASC.",
+            "SELECT ???, ???, ???, ??? FROM pedidos WHERE ??? BETWEEN '2024-02-01' AND '2024-02-29' ORDER BY fecha_pedido ASC, pedido_id ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='Las columnas de tipo fecha (`DATE`) admiten rangos inclusivos con `BETWEEN`, escribiendo siempre las fechas en formato ISO `AAAA-MM-DD` entre comillas simples.',
+            syntax="SELECT columna_id, columna_fecha\nFROM nombre_tabla\nWHERE columna_fecha BETWEEN '2024-01-01' AND '2024-01-31'\nORDER BY columna_fecha ASC;",
+            key_points=[
+                "El formato estándar `AAAA-MM-DD` entre comillas simples (`'2024-02-01'`) es interpretado de forma unívoca por PostgreSQL.",
+                '`BETWEEN` incluye tanto la fecha inicial como la fecha final del intervalo.',
+                'Incluir un identificador único como segundo criterio en `ORDER BY` desempata compras realizadas el mismo día.'
+            ],
+            execution_order_note='💡 Nunca omitas las comillas simples en literales de fecha; sin comillas el motor los interpretaría como una resta numérica.',
+        ),
+        objectives=[
+            "1. Filtrar registros temporales mediante un rango cerrado de fechas.",
+            "2. Aplicar el formato ISO de fecha entre comillas simples.",
+            "3. Ordenar cronológicamente con criterio único de desempate."
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000052": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000052",
+        module_id="a0000000-0000-0000-0000-000000000004",
+        title="Compras Completadas por Cliente (WHERE + GROUP BY)",
+        prompt="Analiza únicamente las compras efectivas por cliente sin mezclar pedidos cancelados ni pendientes. Filtra los pedidos con `estado_pedido = 'completado'`, agrupa por `cliente_id` y muestra el `cliente_id`, el número de compras como `compras_completadas` y su suma como `gasto_completado`. Ordena de mayor a menor `gasto_completado` y desempata por `cliente_id` ascendente.",
+        initial_code="-- Filtra filas individuales antes de agrupar\nSELECT ",
+        solution_query="SELECT cliente_id, COUNT(*) AS compras_completadas, SUM(total) AS gasto_completado FROM pedidos WHERE estado_pedido = 'completado' GROUP BY cliente_id ORDER BY gasto_completado DESC, cliente_id ASC;",
+        xp_reward=45,
+        difficulty="Principiante",
+        check_order=True,
+        sort_order=20,
+        hints=[
+            "Primero descarta con WHERE las filas que no están completadas y después agrupa por cliente para contar y sumar.",
+            "Coloca WHERE estado_pedido = 'completado' antes de GROUP BY cliente_id, proyectando COUNT(*) y SUM(total).",
+            "SELECT ???, COUNT(*) AS compras_completadas, SUM(???) AS gasto_completado FROM pedidos WHERE ??? = 'completado' GROUP BY ??? ORDER BY gasto_completado DESC, ??? ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='Combinar `WHERE` con `GROUP BY` permite depurar qué filas individuales entran en cada grupo antes de calcular los resúmenes.',
+            syntax="SELECT columna_entidad,\n       COUNT(*) AS total_registros,\n       SUM(columna_importe) AS suma_filtrada\nFROM nombre_tabla\nWHERE columna_estado = 'valor_valido'\nGROUP BY columna_entidad\nORDER BY suma_filtrada DESC;",
+            key_points=[
+                'El orden sintáctico obligatorio es: `FROM` $\\to$ `WHERE` $\\to$ `GROUP BY` $\\to$ `ORDER BY`.',
+                '`WHERE` filtra filas individuales *antes* de formar los grupos; por eso es más eficiente descartar registros inválidos aquí.',
+                'Toda columna no agregada del `SELECT` debe aparecer en `GROUP BY`.'
+            ],
+            execution_order_note='💡 Al filtrar primero con `WHERE`, el motor procesa menos filas al construir los grupos y calcular `SUM` o `COUNT`.',
+        ),
+        objectives=[
+            "1. Excluir pedidos no completados antes de realizar la agrupación.",
+            "2. Calcular simultáneamente el conteo y el importe total por cliente.",
+            "3. Ordenar el resumen con desempate único por identificador."
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000053": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000053",
+        module_id="b0000000-0000-0000-0000-000000000006",
+        title="Gasto Total de Clientes Incluyendo 0€ (COALESCE)",
+        prompt="Genera un reporte financiero con TODOS los clientes registrados y su gasto total acumulado, asegurando que quienes nunca han comprado muestren `0` en lugar de `NULL`. Haz un `LEFT JOIN` entre `clientes` y `pedidos`, proyecta `cliente_id`, `nombre`, `apellido` y `COALESCE(SUM(p.total), 0)` como `gasto_total`. Ordena de mayor a menor `gasto_total` y desempata por `cliente_id` ascendente.",
+        initial_code="-- Reemplaza valores NULL de la suma con COALESCE\nSELECT ",
+        solution_query="SELECT c.cliente_id, c.nombre, c.apellido, COALESCE(SUM(p.total), 0) AS gasto_total FROM clientes c LEFT JOIN pedidos p ON c.cliente_id = p.cliente_id GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY gasto_total DESC, c.cliente_id ASC;",
+        xp_reward=55,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=35,
+        hints=[
+            "Al unir con LEFT JOIN, SUM() sobre filas sin pedidos devuelve NULL en lugar de cero; envuélvelo en una función de respaldo.",
+            "Usa COALESCE(SUM(p.total), 0) AS gasto_total agrupando por las columnas del cliente y ordenando con desempate único.",
+            "SELECT c.cliente_id, c.nombre, c.apellido, COALESCE(SUM(p.???), 0) AS gasto_total FROM clientes c LEFT JOIN pedidos p ON c.??? = p.??? GROUP BY c.cliente_id, c.nombre, c.apellido ORDER BY gasto_total DESC, c.cliente_id ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='`COALESCE(expresion, valor_por_defecto)` convierte resultados `NULL` en un valor numérico o de texto seguro, indispensable tras un `LEFT JOIN` con `SUM()`.',
+            syntax='SELECT t1.id, t1.nombre,\n       COALESCE(SUM(t2.importe), 0) AS acumulado_seguro\nFROM tabla_maestra t1\nLEFT JOIN tabla_movimientos t2 ON t1.id = t2.entidad_id\nGROUP BY t1.id, t1.nombre\nORDER BY acumulado_seguro DESC, t1.id ASC;',
+            key_points=[
+                'A diferencia de `COUNT(col)` que devuelve `0` ante nulos, `SUM(col)` sobre un grupo sin filas coincidentes devuelve `NULL`.',
+                '`COALESCE(valor, 0)` evalúa el primer argumento y, si resulta `NULL`, devuelve `0`.',
+                'Mantener `LEFT JOIN` y `GROUP BY` sobre las columnas maestras preserva a todas las entidades aunque no tengan movimientos.'
+            ],
+            execution_order_note='💡 En reportes financieros es obligatorio normalizar `NULL` a `0` antes de calcular promedios o ordenar rankings descendentes.',
+        ),
+        objectives=[
+            "1. Conservar la lista completa de entidades mediante LEFT JOIN.",
+            "2. Evitar valores NULL al sumar importes de entidades sin actividad.",
+            "3. Ordenar de mayor a menor gasto con desempate único."
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000054": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000054",
+        module_id="b0000000-0000-0000-0000-000000000008",
+        title="Ciudades con Clientes y Almacenes (INTERSECT)",
+        prompt="Logística quiere identificar en qué ciudades coincidimos teniendo tanto clientes registrados como al menos un almacén físico. Usa el operador de conjuntos `INTERSECT` entre las ciudades de `clientes` y las ciudades de `almacenes`, ordenando el resultado alfabéticamente por `ciudad` ascendente.",
+        initial_code="-- Intersección de conjuntos con INTERSECT\nSELECT ",
+        solution_query="SELECT ciudad FROM clientes INTERSECT SELECT ciudad FROM almacenes ORDER BY ciudad ASC;",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=41,
+        hints=[
+            "Para hallar elementos presentes en ambos conjuntos a la vez, separa dos consultas SELECT simples con INTERSECT.",
+            "Proyecta ciudad desde la primera tabla, escribe INTERSECT, proyecta ciudad desde la segunda y coloca ORDER BY ciudad ASC al final.",
+            "SELECT ??? FROM clientes INTERSECT SELECT ??? FROM almacenes ORDER BY ciudad ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='`INTERSECT` devuelve únicamente las filas que aparecen de forma idéntica en el resultado de ambas consultas `SELECT`, eliminando duplicados automáticamente.',
+            syntax='SELECT columna_comun FROM tabla_a\nINTERSECT\nSELECT columna_comun FROM tabla_b\nORDER BY columna_comun ASC;',
+            key_points=[
+                'Ambas consultas deben tener el mismo número de columnas y tipos compatibles.',
+                '`INTERSECT` entrega un conjunto único sin valores repetidos (equivale a la intersección matemática $A \\cap B$).',
+                'El `ORDER BY` se escribe una sola vez al final de toda la operación de conjunto.'
+            ],
+            execution_order_note='💡 Mientras `UNION` suma dos listas y `EXCEPT` las resta, `INTERSECT` conserva exclusivamente las coincidencias exactas entre ambas.',
+        ),
+        objectives=[
+            "1. Extraer la columna de ciudades de dos orígenes independientes.",
+            "2. Obtener únicamente las ciudades presentes en ambos conjuntos.",
+            "3. Ordenar el listado único alfabéticamente."
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_ALMACENES],
+    ),
+
+    "e0000000-0000-0000-0000-000000000055": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000055",
+        module_id="c0000000-0000-0000-0000-000000000009",
+        title="Clientes sin Pedidos Completados (NOT EXISTS)",
+        prompt="Fidelización busca contactar a los clientes que aún no cuentan con ninguna compra completada (ya sea porque nunca compraron o porque sus órdenes fueron canceladas o están pendientes). Muestra `cliente_id`, `nombre` y `apellido` de `clientes` usando una subconsulta correlacionada con `NOT EXISTS` sobre `pedidos` filtrando por `estado_pedido = 'completado'`. Ordena por `cliente_id` ascendente.",
+        initial_code="-- Subconsulta correlacionada negativa con NOT EXISTS\nSELECT ",
+        solution_query="SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c WHERE NOT EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.cliente_id AND p.estado_pedido = 'completado') ORDER BY c.cliente_id ASC;",
+        xp_reward=60,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=48,
+        hints=[
+            "Utiliza WHERE NOT EXISTS (...) para conservar únicamente las filas de la consulta externa que no encuentren ninguna coincidencia interna.",
+            "Dentro de la subconsulta correlaciona p.cliente_id = c.cliente_id y exige p.estado_pedido = 'completado'.",
+            "SELECT c.cliente_id, c.nombre, c.apellido FROM clientes c WHERE NOT EXISTS (SELECT 1 FROM pedidos p WHERE p.??? = c.??? AND p.estado_pedido = 'completado') ORDER BY c.cliente_id ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='`NOT EXISTS` verifica que una subconsulta correlacionada no devuelva ninguna fila; es inmune a las trampas de lógica trivalente (`NULL`) que rompen a `NOT IN`.',
+            syntax="SELECT t1.id, t1.nombre\nFROM tabla_principal t1\nWHERE NOT EXISTS (\n    SELECT 1\n    FROM tabla_relacionada t2\n    WHERE t2.principal_id = t1.id\n      AND t2.estado = 'valido'\n)\nORDER BY t1.id ASC;",
+            key_points=[
+                'Si una subconsulta usada con `NOT IN (...)` llega a devolver un solo `NULL`, el filtro completo devuelve 0 filas; `NOT EXISTS` evita por completo ese error.',
+                'La correlación `t2.fk = t1.pk` enlaza cada fila externa con sus posibles coincidencias internas.',
+                'La consulta externa ordena los resultados finales por su identificador único.'
+            ],
+            execution_order_note='💡 En PostgreSQL, `NOT EXISTS` detiene el escaneo interno en cuanto encuentra la primera coincidencia para descartar la fila.',
+        ),
+        objectives=[
+            "1. Identificar entidades sin actividad válida mediante lógica booleana segura.",
+            "2. Correlacionar consulta externa e interna evitando fallos por valores NULL.",
+            "3. Ordenar el listado resultante de forma determinista."
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000056": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000056",
+        module_id="c0000000-0000-0000-0000-000000000010",
+        title="Conteo de Productos por Nivel de Precio (COUNT + CASE)",
+        prompt="Clasifica la composición del catálogo por categoría contando cuántos artículos de cada una pertenecen al rango premium (`precio >= 500`) y cuántos al rango estándar (`precio < 500`). Une `categorias` y `productos` con `LEFT JOIN`, muestra `nombre_categoria`, `productos_premium` y `productos_estandar` usando `COUNT(CASE WHEN ... THEN 1 END)`. Agrupa por categoría y ordena por `categoria_id` ascendente.",
+        initial_code="-- Conteo condicional combinando COUNT y CASE\nSELECT ",
+        solution_query="SELECT c.nombre_categoria, COUNT(CASE WHEN p.precio >= 500 THEN 1 END) AS productos_premium, COUNT(CASE WHEN p.precio < 500 THEN 1 END) AS productos_estandar FROM categorias c LEFT JOIN productos p ON c.categoria_id = p.categoria_id GROUP BY c.categoria_id, c.nombre_categoria ORDER BY c.categoria_id ASC;",
+        xp_reward=60,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=51,
+        hints=[
+            "Como COUNT() ignora los valores NULL, puedes devolver 1 en THEN cuando la condición se cumpla y omitir el ELSE (que queda NULL).",
+            "Combina LEFT JOIN productos p, agrupa por c.categoria_id y c.nombre_categoria, y usa COUNT(CASE WHEN p.precio >= 500 THEN 1 END).",
+            "SELECT c.nombre_categoria, COUNT(CASE WHEN p.??? >= 500 THEN 1 END) AS productos_premium, COUNT(CASE WHEN p.??? < 500 THEN 1 END) AS productos_estandar FROM categorias c LEFT JOIN productos p ON c.??? = p.??? GROUP BY c.categoria_id, c.nombre_categoria ORDER BY c.categoria_id ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='`COUNT(CASE WHEN condicion THEN 1 END)` cuenta únicamente las filas del grupo que cumplen una regla sin necesidad de sumar ceros manualmente.',
+            syntax='SELECT t1.nombre_grupo,\n       COUNT(CASE WHEN t2.metrica >= umbral THEN 1 END) AS conteo_alto,\n       COUNT(CASE WHEN t2.metrica < umbral THEN 1 END) AS conteo_bajo\nFROM tabla_grupos t1\nLEFT JOIN tabla_elementos t2 ON t1.id = t2.grupo_id\nGROUP BY t1.id, t1.nombre_grupo\nORDER BY t1.id ASC;',
+            key_points=[
+                'Cuando un `CASE` omite la cláusula `ELSE`, toda fila que no cumpla ningún `WHEN` evalúa automáticamente a `NULL`.',
+                'Debido a que `COUNT(expresion)` ignora los valores `NULL`, solo contabiliza las filas donde el `CASE` devolvió `1`.',
+                'No confundas `THEN 1` con `THEN 0` si omites el `ELSE`: `COUNT(0)` también contaría 1!'
+            ],
+            execution_order_note='💡 Esta técnica permite construir matrices comparativas de conteo en una sola pasada por la tabla.',
+        ),
+        objectives=[
+            "1. Contabilizar subconjuntos con criterios opuestos dentro de un mismo agrupamiento.",
+            "2. Aprovechar el comportamiento de COUNT frente a NULL omitiendo el ELSE.",
+            "3. Preservar todas las categorías ordenadas por su identificador."
+        ],
+        sample_tables=[SAMPLE_TABLE_CATEGORIAS, SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000057": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000057",
+        module_id="c0000000-0000-0000-0000-000000000011",
+        title="Evolución Mensual de Ventas mediante CTE (TO_CHAR)",
+        prompt="Dirección necesita una serie mensual de ingresos de pedidos completados. Define una CTE llamada `pedidos_mensuales` que transforme la fecha al formato año-mes con `TO_CHAR(fecha_pedido, 'YYYY-MM') AS mes`, cuente los pedidos como `total_pedidos` y sume el total como `ingresos_mensuales` filtrando `estado_pedido = 'completado'`. Luego consulta esa CTE mostrando `mes`, `total_pedidos` e `ingresos_mensuales`, ordenados cronológicamente por `mes ASC`.",
+        initial_code="-- Agrupación temporal por mes estructurada en una CTE\nWITH ",
+        solution_query="WITH pedidos_mensuales AS (SELECT TO_CHAR(fecha_pedido, 'YYYY-MM') AS mes, COUNT(*) AS total_pedidos, SUM(total) AS ingresos_mensuales FROM pedidos WHERE estado_pedido = 'completado' GROUP BY TO_CHAR(fecha_pedido, 'YYYY-MM')) SELECT mes, total_pedidos, ingresos_mensuales FROM pedidos_mensuales ORDER BY mes ASC;",
+        xp_reward=65,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=54,
+        hints=[
+            "Extrae el periodo mensual con TO_CHAR(fecha_pedido, 'YYYY-MM') tanto en el SELECT como en el GROUP BY dentro de la CTE.",
+            "Filtra primero estado_pedido = 'completado' dentro de pedidos_mensuales y ordena la selección final por mes ASC.",
+            "WITH pedidos_mensuales AS (SELECT TO_CHAR(fecha_pedido, 'YYYY-MM') AS mes, COUNT(*) AS total_pedidos, SUM(???) AS ingresos_mensuales FROM pedidos WHERE ??? = 'completado' GROUP BY TO_CHAR(fecha_pedido, 'YYYY-MM')) SELECT mes, total_pedidos, ingresos_mensuales FROM pedidos_mensuales ORDER BY mes ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='Encapsular expresiones temporales como `TO_CHAR(fecha, \'YYYY-MM\')` dentro de una CTE separa la limpieza de fechas del reporte final.',
+            syntax="WITH resumen_mensual AS (\n    SELECT TO_CHAR(columna_fecha, 'YYYY-MM') AS periodo,\n           COUNT(*) AS cantidad,\n           SUM(columna_importe) AS monto\n    FROM tabla_eventos\n    GROUP BY TO_CHAR(columna_fecha, 'YYYY-MM')\n)\nSELECT periodo, cantidad, monto\nFROM resumen_mensual\nORDER BY periodo ASC;",
+            key_points=[
+                "`TO_CHAR(fecha, 'YYYY-MM')` convierte cualquier fecha en una etiqueta ordenable cronológicamente (`2024-01`, `2024-02`, ...).",
+                'En SQL estándar debes repetir la expresión `TO_CHAR(...)` en `GROUP BY` (no el alias del `SELECT`).',
+                'Separar el cálculo en una CTE permite leer y reutilizar el periodo ya limpio en la consulta externa.'
+            ],
+            execution_order_note='💡 Como `YYYY-MM` coloca el año antes del mes con dos dígitos fijos, el orden alfabético coincide exactamente con el orden cronológico.',
+        ),
+        objectives=[
+            "1. Normalizar fechas diarias a períodos mensuales ordenables.",
+            "2. Calcular volumen y facturación mensual sobre ventas válidas dentro de una CTE.",
+            "3. Presentar la serie temporal en orden ascendente."
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000058": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000058",
+        module_id="c0000000-0000-0000-0000-000000000011",
+        title="Categorías sobre el Promedio de Facturación (CTE + Subconsulta)",
+        prompt="Identifica qué categorías facturan por encima del promedio de todas las categorías. Crea una CTE llamada `facturacion_categoria` que sume las líneas de venta (`SUM(dp.cantidad * dp.precio_unitario) AS facturacion`) agrupando por `c.categoria_id` y `c.nombre_categoria`. En la consulta final, muestra `nombre_categoria` y `facturacion` filtrando aquellas cuyo valor supere `(SELECT AVG(facturacion) FROM facturacion_categoria)`. Ordena de mayor a menor `facturacion` y desempata por `nombre_categoria` ascendente.",
+        initial_code="-- Reutiliza la misma CTE en una subconsulta escalar\nWITH ",
+        solution_query="WITH facturacion_categoria AS (SELECT c.categoria_id, c.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS facturacion FROM categorias c INNER JOIN productos pr ON c.categoria_id = pr.categoria_id INNER JOIN detalle_pedidos dp ON pr.producto_id = dp.producto_id GROUP BY c.categoria_id, c.nombre_categoria) SELECT nombre_categoria, facturacion FROM facturacion_categoria WHERE facturacion > (SELECT AVG(facturacion) FROM facturacion_categoria) ORDER BY facturacion DESC, nombre_categoria ASC;",
+        xp_reward=65,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=55,
+        hints=[
+            "Una CTE puede referenciarse varias veces en la consulta principal: úsala tanto en el FROM como dentro de una subconsulta escalar en el WHERE.",
+            "Compara WHERE facturacion > (SELECT AVG(facturacion) FROM facturacion_categoria) y ordena por facturacion DESC, nombre_categoria ASC.",
+            "WITH facturacion_categoria AS (SELECT c.categoria_id, c.nombre_categoria, SUM(dp.cantidad * dp.precio_unitario) AS facturacion FROM categorias c INNER JOIN productos pr ON c.categoria_id = pr.categoria_id INNER JOIN detalle_pedidos dp ON pr.producto_id = dp.producto_id GROUP BY c.categoria_id, c.nombre_categoria) SELECT nombre_categoria, facturacion FROM facturacion_categoria WHERE facturacion > (SELECT AVG(???) FROM facturacion_categoria) ORDER BY facturacion DESC, ??? ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='Una CTE definida en `WITH` puede reutilizarse múltiples veces en la consulta principal, evitando duplicar subconsultas largas al comparar un grupo contra el promedio global de grupos.',
+            syntax='WITH totales_grupo AS (\n    SELECT grupo_id, nombre_grupo, SUM(monto) AS total_grupo\n    FROM tabla_base\n    GROUP BY grupo_id, nombre_grupo\n)\nSELECT nombre_grupo, total_grupo\nFROM totales_grupo\nWHERE total_grupo > (SELECT AVG(total_grupo) FROM totales_grupo)\nORDER BY total_grupo DESC, nombre_grupo ASC;',
+            key_points=[
+                'No es necesario calcular dos veces la agregación: la CTE `totales_grupo` sirve a la vez como tabla origen y dentro de `AVG(...)`.',
+                'La subconsulta escalar `(SELECT AVG(...) FROM cte)` devuelve un único promedio general de referencia.',
+                'La consulta final mantiene un desempate determinista en `ORDER BY`.'
+            ],
+            execution_order_note='💡 Este patrón resuelve el clásico problema de "grupos por encima del promedio de todos los grupos" con máxima legibilidad.',
+        ),
+        objectives=[
+            "1. Consolidar las ventas por grupo dentro de una tabla temporal con nombre.",
+            "2. Reutilizar la CTE en el WHERE para calcular dinámicamente el promedio entre grupos.",
+            "3. Filtrar y ordenar las categorías destacadas con desempate alfabético."
+        ],
+        sample_tables=[SAMPLE_TABLE_CATEGORIAS, SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_DETALLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000059": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000059",
+        module_id="c0000000-0000-0000-0000-000000000012",
+        title="Producto Más Caro por Categoría (CTE + ROW_NUMBER)",
+        prompt="Encuentra el artículo líder en precio dentro de cada categoría. Crea una CTE `ranking_productos` que proyecte `categoria_id`, `nombre_producto`, `precio` y `ROW_NUMBER() OVER (PARTITION BY categoria_id ORDER BY precio DESC, producto_id ASC) AS posicion` desde `productos`. Luego selecciona `categoria_id`, `nombre_producto` y `precio` filtrando únicamente `WHERE posicion = 1` y ordenando por `categoria_id ASC`.",
+        initial_code="-- Patrón de artículo líder por categoría combinando CTE y ROW_NUMBER()\nWITH ",
+        solution_query="WITH ranking_productos AS (SELECT categoria_id, nombre_producto, precio, ROW_NUMBER() OVER (PARTITION BY categoria_id ORDER BY precio DESC, producto_id ASC) AS posicion FROM productos) SELECT categoria_id, nombre_producto, precio FROM ranking_productos WHERE posicion = 1 ORDER BY categoria_id ASC;",
+        xp_reward=70,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=58,
+        hints=[
+            "Las funciones de ventana no pueden filtrarse directamente en el WHERE de la misma consulta; envuélvelas primero en una CTE.",
+            "Dentro de OVER particiona por categoria_id y ordena por precio DESC, producto_id ASC; en el SELECT externo filtra WHERE posicion = 1.",
+            "WITH ranking_productos AS (SELECT categoria_id, nombre_producto, precio, ROW_NUMBER() OVER (PARTITION BY ??? ORDER BY precio DESC, ??? ASC) AS posicion FROM productos) SELECT categoria_id, nombre_producto, precio FROM ranking_productos WHERE posicion = 1 ORDER BY categoria_id ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='El patrón CTE + `ROW_NUMBER() OVER (PARTITION BY ...)` + `WHERE posicion = 1` es la técnica estándar en SQL para extraer el mejor o más reciente registro de cada grupo.',
+            syntax='WITH clasificados AS (\n    SELECT grupo_id, nombre_item, metrica,\n           ROW_NUMBER() OVER (PARTITION BY grupo_id ORDER BY metrica DESC, id ASC) AS pos\n    FROM tabla_elementos\n)\nSELECT grupo_id, nombre_item, metrica\nFROM clasificados\nWHERE pos = 1\nORDER BY grupo_id ASC;',
+            key_points=[
+                'SQL no permite escribir `WHERE ROW_NUMBER() OVER (...) = 1` directamente porque `WHERE` se ejecuta antes que las funciones de ventana.',
+                'Envolver el cálculo de ventana dentro de una CTE permite filtrar por la columna `pos` en la consulta exterior.',
+                'Incluir un desempate único dentro de `OVER (ORDER BY ...)` garantiza que siempre exista exactamente un ganador por grupo.'
+            ],
+            execution_order_note='💡 Este patrón Top-N por grupo evita subconsultas correlacionadas costosas y escala de forma lineal en PostgreSQL.',
+        ),
+        objectives=[
+            "1. Numerar los artículos dentro de cada grupo de mayor a menor valor.",
+            "2. Aislar la función de ventana en una CTE para poder filtrarla en WHERE.",
+            "3. Recuperar el artículo líder por categoría en orden ascendente."
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000060": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000060",
+        module_id="c0000000-0000-0000-0000-000000000012",
+        title="Ingresos Acumulados Progresivos (SUM OVER)",
+        prompt="Calcula la curva acumulada de facturación pedido a pedido. Para los pedidos con `estado_pedido = 'completado'`, muestra `pedido_id`, `fecha_pedido`, `total` y una columna llamada `ingresos_acumulados` usando `SUM(total) OVER (ORDER BY fecha_pedido ASC, pedido_id ASC)`. Ordena la salida por `fecha_pedido ASC` y `pedido_id ASC`.",
+        initial_code="-- Total acumulado progresivo con SUM() OVER\nSELECT ",
+        solution_query="SELECT pedido_id, fecha_pedido, total, SUM(total) OVER (ORDER BY fecha_pedido ASC, pedido_id ASC) AS ingresos_acumulados FROM pedidos WHERE estado_pedido = 'completado' ORDER BY fecha_pedido ASC, pedido_id ASC;",
+        xp_reward=70,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=59,
+        hints=[
+            "Cuando SUM() lleva OVER (ORDER BY ...) se comporta como función de ventana y va sumando fila tras fila en vez de colapsar toda la tabla.",
+            "Filtra estado_pedido = 'completado' en WHERE y usa SUM(total) OVER (ORDER BY fecha_pedido ASC, pedido_id ASC) AS ingresos_acumulados.",
+            "SELECT pedido_id, fecha_pedido, total, SUM(???) OVER (ORDER BY fecha_pedido ASC, ??? ASC) AS ingresos_acumulados FROM pedidos WHERE ??? = 'completado' ORDER BY fecha_pedido ASC, pedido_id ASC;"
+        ],
+        concept=ExerciseConcept(
+            summary='`SUM(col) OVER (ORDER BY ...)` calcula un total acumulado continuo fila por fila respetando el orden definido en la ventana.',
+            syntax='SELECT evento_id, fecha, importe,\n       SUM(importe) OVER (ORDER BY fecha ASC, evento_id ASC) AS acumulado_progresivo\nFROM tabla_operaciones\nORDER BY fecha ASC, evento_id ASC;',
+            key_points=[
+                '`SUM(col)` con `GROUP BY` reduce filas; `SUM(col) OVER (ORDER BY ...)` conserva todas las filas y acumula hasta la fila actual.',
+                'Incluir el identificador único después de la fecha en `OVER (ORDER BY fecha, id)` evita sumar a la vez operaciones distintas del mismo día.',
+                'Las condiciones en `WHERE` se aplican *antes* de calcular el acumulado de ventana.'
+            ],
+            execution_order_note='💡 PostgreSQL ejecuta la ventana sobre las filas filtradas por `WHERE`, acumulando exactamente el saldo progresivo tras cada operación válida.',
+        ),
+        objectives=[
+            "1. Filtrar las transacciones válidas antes de construir el acumulado.",
+            "2. Calcular el saldo progresivo fila a fila sin colapsar los pedidos individuales.",
+            "3. Garantizar un orden cronológico determinista tanto en la ventana como en la salida."
         ],
         sample_tables=[SAMPLE_TABLE_PEDIDOS],
     ),

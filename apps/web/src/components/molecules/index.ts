@@ -10,3 +10,5 @@ export * from './AchievementCard/AchievementCard';
 export * from './PrivacyModal/PrivacyModal';
 export * from './GuestTrialCompleteModal/GuestTrialCompleteModal';
 export * from './RevealSolutionModal/RevealSolutionModal';
+export * from './PedagogyPillarsCard/PedagogyPillarsCard';
+export * from './MethodologyModal/MethodologyModal';

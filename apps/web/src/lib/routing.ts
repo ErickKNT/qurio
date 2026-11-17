@@ -22,6 +22,8 @@ export function pathToUrl(path: AppPath, params?: RouteParams): string {
       return '/profile';
     case 'exercise':
       return params?.exerciseId ? `/exercises/${params.exerciseId}` : '/exercises';
+    case 'admin':
+      return '/admin';
     case 'auth-confirm':
       return '/auth/confirm';
     case 'reset-password':
@@ -54,5 +56,6 @@ export function parseLocation(pathname: string): { path: AppPath; exerciseId?: s
   }
   if (clean === '/auth/confirm' || clean === '/auth-confirm') return { path: 'auth-confirm' };
   if (clean === '/reset-password') return { path: 'reset-password' };
+  if (clean === '/admin') return { path: 'admin' };
   return { path: 'not-found' };
 }

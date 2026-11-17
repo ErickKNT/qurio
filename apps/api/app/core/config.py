@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     SANDBOX_DB_NAME: str = "ecommerce_sandbox"
     SANDBOX_DB_USER: str = "readonly_student"
     SANDBOX_DB_PASSWORD: str = "student_safe_pass"
+    SANDBOX_ADMIN_DB_USER: Optional[str] = None
+    SANDBOX_ADMIN_DB_PASSWORD: Optional[str] = None
     SANDBOX_STATEMENT_TIMEOUT_MS: int = 2000
     SANDBOX_MAX_CONNECTIONS: int = 20
     SANDBOX_MAX_ROWS: int = 1000

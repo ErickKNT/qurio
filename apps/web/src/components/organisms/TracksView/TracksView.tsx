@@ -3,6 +3,8 @@ import { GitBranch, Play } from 'lucide-react';
 import { Track, Exercise } from '@/types';
 import { TrackCard } from '@/components/molecules/TrackCard/TrackCard';
 import { ModuleAccordion } from '@/components/molecules/ModuleAccordion/ModuleAccordion';
+import { PedagogyPillarsCard } from '@/components/molecules/PedagogyPillarsCard/PedagogyPillarsCard';
+import { LearningRoadmapMap } from '@/components/organisms/LearningRoadmapMap/LearningRoadmapMap';
 import { Button, Badge } from '@/components/atoms';
 
 export interface TracksViewProps {
@@ -10,6 +12,7 @@ export interface TracksViewProps {
   exercises: Exercise[];
   completedExerciseIds?: Set<string>;
   onSelectExercise: (exercise: Exercise) => void;
+  onOpenMethodology?: () => void;
   isLoading?: boolean;
   className?: string;
 }
@@ -19,6 +22,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
   exercises,
   completedExerciseIds,
   onSelectExercise,
+  onOpenMethodology,
   isLoading = false,
 }) => {
   const [selectedTrackId, setSelectedTrackId] = useState<string>(tracks[0]?.id || 'sql-foundations');
@@ -54,13 +58,13 @@ export const TracksView: React.FC<TracksViewProps> = ({
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-surface-card border border-border-subtle/50 text-[11px] font-mono text-cyan-accent mb-2">
             <GitBranch className="w-3 h-3" />
-            <span>Currículum Relacional de Qurio</span>
+            <span>Plan de Estudios de Qurio</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-content-primary">
-            Rutas Formativas & Syllabus
+            Rutas de Aprendizaje y Temario
           </h1>
           <p className="text-xs text-content-secondary mt-1">
-            Progresa desde consultas básicas hasta funciones de ventana complejas con evaluación semántica en cada paso.
+            Avanza paso a paso desde consultas básicas hasta análisis complejos con verificación real en cada reto.
           </p>
         </div>
 
@@ -74,8 +78,18 @@ export const TracksView: React.FC<TracksViewProps> = ({
             {tracks.length} Rutas
           </Badge>
           <Badge variant="emerald" dot>
-            3 Sandbox Activos
+            Entorno PostgreSQL Activo
           </Badge>
+          {onOpenMethodology && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenMethodology}
+              className="text-xs text-cyan-accent hover:text-content-primary"
+            >
+              Metodología
+            </Button>
+          )}
         </div>
       </div>
 
@@ -92,6 +106,16 @@ export const TracksView: React.FC<TracksViewProps> = ({
         ))}
       </div>
 
+      {/* Mapa Visual Dual (Camino por Etapas + Árbol de Habilidades) */}
+      <LearningRoadmapMap
+        tracks={tracks}
+        exercises={exercises}
+        completedExerciseIds={completedExerciseIds}
+        selectedTrackId={selectedTrackId}
+        onSelectTrack={(trackId) => setSelectedTrackId(trackId)}
+        onSelectExercise={onSelectExercise}
+      />
+
       {/* Selected Track Detailed Syllabus */}
       {selectedTrack && (
         <section className="flex flex-col gap-6 p-6 sm:p-7 rounded-2xl bg-surface/60 border border-border-subtle/60 shadow-lg">
@@ -104,7 +128,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
                   style={{ backgroundColor: selectedTrack.color_accent }}
                 />
                 <h2 className="text-lg font-bold text-content-primary">
-                  Syllabus Detallado — {selectedTrack.title}
+                  Temario Detallado — {selectedTrack.title}
                 </h2>
                 <Badge variant="mono" size="sm">
                   {selectedTrack.badge_name}
@@ -130,7 +154,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
           {/* Modules Accordion List */}
           <div className="flex flex-col gap-3">
             <span className="text-xs font-mono font-semibold uppercase tracking-wider text-content-muted">
-              Módulos del Programa ({selectedTrack.modules?.length || 0})
+              Módulos de la Ruta ({selectedTrack.modules?.length || 0})
             </span>
 
             <div className="flex flex-col gap-3">
@@ -152,6 +176,9 @@ export const TracksView: React.FC<TracksViewProps> = ({
           </div>
         </section>
       )}
+
+      {/* Respaldo Pedagógico y Técnico de la Currícula */}
+      <PedagogyPillarsCard onOpenMethodology={onOpenMethodology} />
     </div>
   );
 };

@@ -9,6 +9,7 @@ export interface GuestTrialCompleteModalProps {
   onOpenSignUp: () => void;
   onOpenSignIn: () => void;
   solvedCount?: number;
+  remainingCount?: number;
   earnedXp?: number;
   className?: string;
 }
@@ -19,6 +20,7 @@ export const GuestTrialCompleteModal: React.FC<GuestTrialCompleteModalProps> = (
   onOpenSignUp,
   onOpenSignIn,
   solvedCount = 3,
+  remainingCount = 57,
   earnedXp = 100,
   className,
 }) => {
@@ -107,7 +109,7 @@ export const GuestTrialCompleteModal: React.FC<GuestTrialCompleteModalProps> = (
             Has dominado las proyecciones básicas, alias y cálculos con IVA. Tus <strong className="text-content-primary font-mono">+{earnedXp} XP</strong> están guardados temporalmente en tu navegador.
           </p>
           <p className="text-content-muted text-[11px]">
-            Crea tu cuenta gratuita para certificar tu XP en la nube, registrar tu racha diaria y desbloquear los <strong className="text-cyan-accent">47 retos restantes</strong> del currículum.
+            Crea tu cuenta gratuita para certificar tu XP en la nube, registrar tu racha diaria y desbloquear los <strong className="text-cyan-accent">{remainingCount} retos restantes</strong> del currículum.
           </p>
         </div>
 

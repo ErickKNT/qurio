@@ -4,6 +4,7 @@ export * from './MonacoEditorPanel/MonacoEditorPanel';
 export * from './DataGridResults/DataGridResults';
 export * from './ExerciseSpecPanel/ExerciseSpecPanel';
 export * from './TracksView/TracksView';
+export * from './LearningRoadmapMap/LearningRoadmapMap';
 export * from './SqlPlaygroundView/SqlPlaygroundView';
 export * from './AchievementsView/AchievementsView';
 export * from './UserProfileView/UserProfileView';

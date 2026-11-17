@@ -84,8 +84,8 @@ async function runE2ESuite() {
       await page.goto(`${BASE_URL}/`, { waitUntil: 'load' });
       await page.waitForTimeout(1000);
       const title = await page.title();
-      if (title.includes('Dashboard | Qurio')) {
-        logPass('T01: Carga Inicial de Dashboard', `Title: "${title}"`);
+      if (title.includes('Inicio | Qurio')) {
+        logPass('T01: Carga Inicial de Inicio', `Title: "${title}"`);
       } else {
         throw new Error(`Título inesperado: ${title}`);
       }
@@ -362,25 +362,25 @@ async function runE2ESuite() {
       await page.goto(`${BASE_URL}/playground`, { waitUntil: 'load' });
       await page.waitForTimeout(1000);
       const pgTitle = await page.title();
-      if (pgTitle.includes('SQL Playground | Qurio')) {
-        logPass('T10: Navegación a SQL Playground', `Title: "${pgTitle}"`);
+      if (pgTitle.includes('Laboratorio SQL | Qurio')) {
+        logPass('T10: Navegación a Laboratorio SQL', `Title: "${pgTitle}"`);
       }
 
-      // Esperar que Monaco se monte en Playground
+      // Esperar que Monaco se monte en Laboratorio SQL
       await page.waitForFunction(() => typeof window.__setEditorSql === 'function', { timeout: 8000 });
 
-      // Ejecutar query en Playground
+      // Ejecutar query en Laboratorio SQL
       const query = "SELECT categoria_id, nombre_categoria FROM categorias ORDER BY categoria_id LIMIT 3;";
       await page.evaluate((sql) => {
         window.__setEditorSql(sql);
       }, query);
 
       await page.waitForTimeout(500);
-      await page.click('button:has-text("Ejecutar Query")');
+      await page.click('button:has-text("Ejecutar Consulta")');
       await page.waitForSelector('text=Laptops', { timeout: 8000 });
-      logPass('T10.1: Ejecución Tabular en Playground', 'DataGrid renderizó categorías correctamente');
+      logPass('T10.1: Ejecución Tabular en Laboratorio SQL', 'DataGrid renderizó categorías correctamente');
     } catch (err) {
-      logFail('T10: SQL Playground Libre', err);
+      logFail('T10: Laboratorio SQL Libre', err);
     }
 
     // -------------------------------------------------------------------------
@@ -389,14 +389,14 @@ async function runE2ESuite() {
     try {
       await page.goto(`${BASE_URL}/ruta-inexistente-error-404`, { waitUntil: 'load' });
       await page.waitForSelector('text=ERROR 404', { timeout: 5000 });
-      await page.waitForSelector('text=Volver al Dashboard');
+      await page.waitForSelector('text=Volver al Inicio');
       const errTitle = await page.title();
       logPass('T11: Página 404 Personalizada SQL', `Title: "${errTitle}"`);
 
-      // Clic para volver al dashboard
-      await page.click('text=Volver al Dashboard');
+      // Clic para volver al inicio
+      await page.click('text=Volver al Inicio');
       await page.waitForURL(`${BASE_URL}/`);
-      logPass('T11.1: Retorno a Dashboard desde 404', 'Navegación fluida confirmada');
+      logPass('T11.1: Retorno a Inicio desde 404', 'Navegación fluida confirmada');
     } catch (err) {
       logFail('T11: Página 404 Personalizada SQL', err);
     }

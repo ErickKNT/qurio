@@ -184,7 +184,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
             onClick={onExecute}
             leftIcon={<Play className="w-3.5 h-3.5 fill-current" />}
           >
-            {isSubmitMode ? 'Enviar Solución' : 'Ejecutar Query'}
+            {isSubmitMode ? 'Enviar Solución' : 'Ejecutar Consulta'}
           </Button>
         </div>
       </div>

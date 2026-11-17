@@ -24,16 +24,27 @@ import {
   StreakPill,
   GuestTrialCompleteModal,
   RevealSolutionModal,
+  PedagogyPillarsCard,
+  MethodologyModal,
 } from '@/components/molecules';
 import { AuthModal, AuthMode } from '@/components/molecules/AuthModal/AuthModal';
 import {
-  MonacoEditorPanel,
   DataGridResults,
-  ExerciseSpecPanel,
-  TracksView,
 } from '@/components/organisms';
 
-// Lazy loading de vistas secundarias para optimización y code splitting del bundle
+// Lazy loading de vistas secundarias y estación de trabajo para optimización y code splitting del bundle
+const MonacoEditorPanel = React.lazy(() =>
+  import('@/components/organisms/MonacoEditorPanel/MonacoEditorPanel').then((m) => ({ default: m.MonacoEditorPanel }))
+);
+const ExerciseSpecPanel = React.lazy(() =>
+  import('@/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel').then((m) => ({ default: m.ExerciseSpecPanel }))
+);
+const TracksView = React.lazy(() =>
+  import('@/components/organisms/TracksView/TracksView').then((m) => ({ default: m.TracksView }))
+);
+const AdminDashboardView = React.lazy(() =>
+  import('@/components/organisms/AdminDashboardView/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView }))
+);
 const SqlPlaygroundView = React.lazy(() =>
   import('@/components/organisms/SqlPlaygroundView/SqlPlaygroundView').then((m) => ({ default: m.SqlPlaygroundView }))
 );
@@ -67,8 +78,7 @@ import { formatInlineCode } from '@/lib/format';
 import { pathToUrl, parseLocation } from '@/lib/routing';
 import {
   api,
-  FALLBACK_EXERCISES,
-  FALLBACK_TRACKS,
+  INITIAL_EXERCISE_STUB,
   ECOMMERCE_TABLES_SCHEMA,
   ACHIEVEMENTS_CATALOG,
   evaluateUserAchievements,
@@ -93,11 +103,12 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile, user, isCloudAuth, isAuthenticated, isPasswordRecovery, clearPasswordRecovery, signOut, refreshProfile } = useAuth();
+  const { profile, user, isCloudAuth, isAuthenticated, isAdmin, isPasswordRecovery, clearPasswordRecovery, signOut, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthMode>('signin');
   const [guestTrialModalOpen, setGuestTrialModalOpen] = useState(false);
+  const [methodologyModalOpen, setMethodologyModalOpen] = useState(false);
 
   // Identificadores oficiales de los 3 retos de prueba en Módulo 1 para invitados
   const GUEST_TRIAL_EXERCISE_IDS = useMemo(
@@ -111,7 +122,7 @@ export const App: React.FC = () => {
   );
 
   // Estados del Currículum, Tablas y Gamificación
-  const [tracks, setTracks] = useState<Track[]>(FALLBACK_TRACKS);
+  const [tracks, setTracks] = useState<Track[]>([]);
   const [tables] = useState<TableSchemaInfo[]>(ECOMMERCE_TABLES_SCHEMA);
   const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([]);
   const [dailyActivity, setDailyActivity] = useState<{ activity_date: string; exercises_solved: number; xp_earned: number }[]>([]);
@@ -119,9 +130,11 @@ export const App: React.FC = () => {
   const [playgroundInitialQuery, setPlaygroundInitialQuery] = useState<string | undefined>(undefined);
 
   // Estados del Ejercicio Activo y del IDE
-  const [exercises, setExercises] = useState<Exercise[]>(FALLBACK_EXERCISES);
+  const [exercises, setExercises] = useState<Exercise[]>([INITIAL_EXERCISE_STUB]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [sqlCode, setSqlCode] = useState(FALLBACK_EXERCISES[0].initial_code);
+  const [sqlCode, setSqlCode] = useState(
+    () => persistence.getExerciseDraft(INITIAL_EXERCISE_STUB.id) ?? INITIAL_EXERCISE_STUB.initial_code
+  );
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
   const [isExecuting, setIsExecuting] = useState(false);
   const [isResultsExpanded, setIsResultsExpanded] = useState(false);
@@ -144,7 +157,7 @@ export const App: React.FC = () => {
   const [isRevealModalOpen, setIsRevealModalOpen] = useState(false);
   const [isRevealingSolution, setIsRevealingSolution] = useState(false);
 
-  const activeExercise = exercises[currentExerciseIndex] || FALLBACK_EXERCISES[0];
+  const activeExercise = exercises[currentExerciseIndex] || INITIAL_EXERCISE_STUB;
 
   // Navegación con History API
   const navigate = useCallback(
@@ -276,8 +289,11 @@ export const App: React.FC = () => {
 
       const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
       if (isAuth && profile?.id) {
-        const computed = computeOfficialTracksProgress(tracks, exercises, completedSet, false);
-        setTracks(computed);
+        setTracks((currentTracks) =>
+          currentTracks.length > 0
+            ? computeOfficialTracksProgress(currentTracks, exercises, completedSet, false)
+            : currentTracks
+        );
 
         // Carga de métricas reales del estudiante autenticado
         persistence.getUserDailyActivity(profile.id).then((act) => {
@@ -292,8 +308,11 @@ export const App: React.FC = () => {
           }
         });
       } else {
-        const computed = computeGuestTrialTracksProgress(tracks, exercises, completedSet);
-        setTracks(computed);
+        setTracks((currentTracks) =>
+          currentTracks.length > 0
+            ? computeGuestTrialTracksProgress(currentTracks, exercises, completedSet)
+            : currentTracks
+        );
         setDailyActivity([]);
         setTotalAttemptsCount(api.getQueryHistory().length);
       }
@@ -301,9 +320,9 @@ export const App: React.FC = () => {
     });
   }, [profile?.id, exercises.length]);
 
-  // Recomputar progreso por ruta de forma reactiva y consistente cuando cambian los retos o completados
+  // Recomputar progreso por ruta de forma reactiva y consistente cuando cambian los retos, rutas o completados
   useEffect(() => {
-    if (!exercises || exercises.length === 0) return;
+    if (!exercises || exercises.length === 0 || tracks.length === 0) return;
     const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
     if (isAuth && profile?.id) {
       setTracks((currentTracks) =>
@@ -314,13 +333,13 @@ export const App: React.FC = () => {
         computeGuestTrialTracksProgress(currentTracks, exercises, authoritativeCompletedIds)
       );
     }
-  }, [authoritativeCompletedIds, exercises.length, profile?.id]);
+  }, [authoritativeCompletedIds, exercises.length, tracks.length, profile?.id]);
 
   // Reto Recomendado Dinámico (Anti-Hardcode)
   const recommendedExercise = useMemo(() => {
-    if (!exercises || exercises.length === 0) return FALLBACK_EXERCISES[0];
+    if (!exercises || exercises.length === 0) return INITIAL_EXERCISE_STUB;
     const firstPending = exercises.find((ex) => !authoritativeCompletedIds.has(ex.id));
-    return firstPending || exercises[exercises.length - 1] || FALLBACK_EXERCISES[0];
+    return firstPending || exercises[exercises.length - 1] || INITIAL_EXERCISE_STUB;
   }, [exercises, authoritativeCompletedIds]);
 
   // Metadatos de la Ruta y Reto Activo para el Hero Banner del Dashboard (Opción 1)
@@ -329,7 +348,7 @@ export const App: React.FC = () => {
       return {
         activeTrack: tracks[0],
         activeModule: tracks[0]?.modules?.[0],
-        nextExercise: FALLBACK_EXERCISES[0],
+        nextExercise: INITIAL_EXERCISE_STUB,
         exerciseNumberInTrack: 1,
         trackTotal: 22,
         trackCompleted: 0,
@@ -403,21 +422,29 @@ export const App: React.FC = () => {
   // Actualización dinámica del título de la pestaña (Anti-AI Slop Regla 1.1)
   useEffect(() => {
     if (currentPath === 'exercise') {
-      document.title = `${activeExercise.title} — SQL Foundations | Qurio`;
+      const exerciseTrack = tracks.find((t) =>
+        t.modules?.some((m) => m.id === activeExercise.module_id)
+      );
+      const trackLabel = exerciseTrack?.title || 'Fundamentos de SQL';
+      document.title = `${activeExercise.title} — ${trackLabel} | Qurio`;
+    } else if (currentPath === 'admin') {
+      document.title = isAdmin
+        ? 'Administración y Operaciones | Qurio'
+        : 'ERROR 404: Relation Not Found | Qurio';
     } else {
       const titles: Record<string, string> = {
-        dashboard: 'Dashboard | Qurio',
+        dashboard: 'Inicio | Qurio',
         tracks: 'Rutas de Aprendizaje | Qurio',
-        playground: 'SQL Playground | Qurio',
+        playground: 'Laboratorio SQL | Qurio',
         achievements: 'Logros & Rangos | Qurio',
         profile: 'Mi Perfil | Qurio',
         'not-found': 'ERROR 404: Relation Not Found | Qurio',
         'auth-confirm': 'Verificación de Cuenta | Qurio',
         'reset-password': 'Restablecer Contraseña | Qurio',
       };
-      document.title = titles[currentPath] || 'Qurio | Aprende SQL. Piensa en queries.';
+      document.title = titles[currentPath] || 'Qurio | Aprende SQL escribiendo consultas reales.';
     }
-  }, [currentPath, activeExercise]);
+  }, [currentPath, activeExercise, tracks, isAdmin]);
 
   // Cambiar de ejercicio activo
   const handleSelectExercise = (index: number) => {
@@ -706,6 +733,17 @@ export const App: React.FC = () => {
   };
 
   // ============================================================================
+  // VISTA 0: CONSOLA DE ADMINISTRACIÓN Y LIVE OPS (/admin — RBAC + SIGILO)
+  // ============================================================================
+  if (currentPath === 'admin' && isAdmin) {
+    return (
+      <React.Suspense fallback={<ViewLoadingFallback />}>
+        <AdminDashboardView onBackToDashboard={() => navigate('dashboard')} />
+      </React.Suspense>
+    );
+  }
+
+  // ============================================================================
   // VISTA 1: ESPACIO DE TRABAJO DEL EJERCICIO (IDE INTERACTIVO CON MONACO)
   // ============================================================================
   if (currentPath === 'exercise') {
@@ -727,7 +765,10 @@ export const App: React.FC = () => {
                 </Button>
 
                 <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-content-muted">
-                  <span>SQL Foundations</span>
+                  <span>
+                    {tracks.find((t) => t.modules?.some((m) => m.id === activeExercise.module_id))
+                      ?.title || 'Fundamentos de SQL'}
+                  </span>
                   <ChevronRight className="w-3 h-3" />
                   <span className="text-content-primary font-medium">{activeExercise.title}</span>
                 </div>
@@ -818,35 +859,39 @@ export const App: React.FC = () => {
             </div>
           }
           sidebarContent={
-            <ExerciseSpecPanel
-              exercise={activeExercise}
-              unlockedHintsCount={hintsUnlocked}
-              onUnlockHint={handleUnlockHint}
-              isCompleted={activeExercise.is_completed || executionStatus === 'SUCCESS'}
-              failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
-              isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
-              solutionQuery={revealedSolutions[activeExercise.id] || null}
-              onOpenRevealModal={() => setIsRevealModalOpen(true)}
-              onLoadSolutionIntoEditor={handleLoadSolutionIntoEditor}
-            />
+            <React.Suspense fallback={<ViewLoadingFallback />}>
+              <ExerciseSpecPanel
+                exercise={activeExercise}
+                unlockedHintsCount={hintsUnlocked}
+                onUnlockHint={handleUnlockHint}
+                isCompleted={activeExercise.is_completed || executionStatus === 'SUCCESS'}
+                failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
+                isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
+                solutionQuery={revealedSolutions[activeExercise.id] || null}
+                onOpenRevealModal={() => setIsRevealModalOpen(true)}
+                onLoadSolutionIntoEditor={handleLoadSolutionIntoEditor}
+              />
+            </React.Suspense>
           }
           editorContent={
-            <MonacoEditorPanel
-              value={sqlCode}
-              onChange={handleSqlCodeChange}
-              onExecute={handleExecuteSolution}
-              onReset={() => {
-                if (activeExercise?.id) {
-                  persistence.clearExerciseDraft(activeExercise.id);
-                }
-                setSqlCode(activeExercise.initial_code);
-                setExecutionStatus('IDLE');
-                setResultError(undefined);
-                setResultDiff(undefined);
-              }}
-              isLoading={isExecuting}
-              isSubmitMode={true}
-            />
+            <React.Suspense fallback={<ViewLoadingFallback />}>
+              <MonacoEditorPanel
+                value={sqlCode}
+                onChange={handleSqlCodeChange}
+                onExecute={handleExecuteSolution}
+                onReset={() => {
+                  if (activeExercise?.id) {
+                    persistence.clearExerciseDraft(activeExercise.id);
+                  }
+                  setSqlCode(activeExercise.initial_code);
+                  setExecutionStatus('IDLE');
+                  setResultError(undefined);
+                  setResultDiff(undefined);
+                }}
+                isLoading={isExecuting}
+                isSubmitMode={true}
+              />
+            </React.Suspense>
           }
           resultsContent={
             <DataGridResults
@@ -876,7 +921,7 @@ export const App: React.FC = () => {
               </div>
               <div className="flex items-center gap-3">
                 <KbdShortcut keys={['⌘', '↵']} />
-                <span>para compilar y evaluar</span>
+                <span>para ejecutar y evaluar</span>
               </div>
             </div>
           }
@@ -907,6 +952,7 @@ export const App: React.FC = () => {
             setAuthModalOpen(true);
           }}
           solvedCount={3}
+          remainingCount={Math.max(0, exercises.length - GUEST_TRIAL_EXERCISE_IDS.size)}
           earnedXp={100}
         />
 
@@ -924,23 +970,24 @@ export const App: React.FC = () => {
   const getHeaderTitle = () => {
     switch (currentPath) {
       case 'dashboard':
-        return 'Dashboard';
+        return 'Inicio';
       case 'tracks':
         return 'Rutas de Aprendizaje';
       case 'playground':
-        return 'SQL Playground';
+        return 'Laboratorio SQL';
       case 'achievements':
         return 'Logros & Rangos';
       case 'profile':
         return 'Mi Perfil';
       case 'not-found':
+      case 'admin':
         return '404 Relation Not Found';
       case 'auth-confirm':
         return 'Verificación de Cuenta';
       case 'reset-password':
         return 'Restablecer Contraseña';
       default:
-        return 'Dashboard';
+        return 'Inicio';
     }
   };
 
@@ -957,13 +1004,16 @@ export const App: React.FC = () => {
       >
         {/* VISTA A: RUTAS DE APRENDIZAJE */}
         {currentPath === 'tracks' && (
-          <TracksView
-            tracks={tracks}
-            exercises={exercises}
-            completedExerciseIds={authoritativeCompletedIds}
-            onSelectExercise={handleOpenExerciseFromCatalog}
-            isLoading={isProgressLoading}
-          />
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <TracksView
+              tracks={tracks}
+              exercises={exercises}
+              completedExerciseIds={authoritativeCompletedIds}
+              onSelectExercise={handleOpenExerciseFromCatalog}
+              onOpenMethodology={() => setMethodologyModalOpen(true)}
+              isLoading={isProgressLoading}
+            />
+          </React.Suspense>
         )}
 
         {/* VISTA B: SQL PLAYGROUND LIBRE */}
@@ -1005,11 +1055,11 @@ export const App: React.FC = () => {
           </React.Suspense>
         )}
 
-        {/* VISTA E: ERROR 404 (RELATION NOT FOUND) */}
-        {currentPath === 'not-found' && (
+        {/* VISTA E: ERROR 404 (RELATION NOT FOUND) — incluye sigilo absoluto de /admin para no-admins */}
+        {(currentPath === 'not-found' || (currentPath === 'admin' && !isAdmin)) && (
           <React.Suspense fallback={<ViewLoadingFallback />}>
             <NotFoundView
-              missingPath="v_reporte_anual"
+              missingPath={currentPath === 'admin' ? 'admin' : 'v_reporte_anual'}
               onNavigate={(path) => navigate(path as AppPath)}
             />
           </React.Suspense>
@@ -1054,7 +1104,7 @@ export const App: React.FC = () => {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald/10 border border-emerald/25 text-[11px] font-mono text-emerald font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                    <span>Ruta Activa • {activeLearningData.activeTrack?.title || 'SQL Foundations'}</span>
+                    <span>Ruta Activa • {activeLearningData.activeTrack?.title || 'Fundamentos de SQL'}</span>
                     {activeLearningData.activeModule && (
                       <>
                         <span className="text-content-muted">•</span>
@@ -1067,7 +1117,7 @@ export const App: React.FC = () => {
 
                   <div className="flex items-center gap-2 font-mono text-xs text-content-muted">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
-                    <span>PostgreSQL 16 Sandbox • 3.6ms (pg_stat_ready)</span>
+                    <span>PostgreSQL 16 • Entorno Activo</span>
                   </div>
                 </div>
 
@@ -1161,7 +1211,7 @@ export const App: React.FC = () => {
                     onClick={() => navigate('tracks')}
                     className="px-4 shrink-0 whitespace-nowrap text-xs hover:border-cyan-accent/50"
                   >
-                    Ver Syllabus Completo
+                    Ver Temario Completo
                   </Button>
                 </div>
               </div>
@@ -1175,19 +1225,19 @@ export const App: React.FC = () => {
                   </div>
 
                   <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
-                    ¡Bienvenido a Qurio! <span className="text-content-secondary font-normal">Aprende SQL pensando en queries.</span>
+                    ¡Bienvenido a Qurio! <span className="text-content-secondary font-normal">Aprende SQL escribiendo consultas reales.</span>
                   </h1>
 
                   <p className="text-xs text-content-secondary leading-relaxed">
-                    Estás conectado a un motor PostgreSQL 16 real en Docker. Resuelve hasta 3 retos prácticos de SQL Foundations con evaluación semántica de inmediato, sin necesidad de crear cuenta.
+                    Practicas directamente contra una base de datos PostgreSQL 16 real. Resuelve hasta 3 retos iniciales gratis y verifica tus resultados al instante, sin necesidad de crear cuenta.
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 sm:gap-6 shrink-0">
                   <div className="flex flex-col items-start sm:items-end pr-2 font-mono shrink-0 whitespace-nowrap">
-                    <span className="text-[10px] text-content-muted uppercase tracking-wider">Latencia Sandbox</span>
+                    <span className="text-[10px] text-content-muted uppercase tracking-wider">Motor de Práctica</span>
                     <span className="text-xs text-content-secondary font-semibold flex items-center gap-1.5 whitespace-nowrap">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> 3.6ms (pg_stat_ready)
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> PostgreSQL 16 Listo
                     </span>
                   </div>
 
@@ -1265,26 +1315,29 @@ export const App: React.FC = () => {
             />
           </section>
 
-          {/* Selector de Pestañas para el Dashboard / Atomic Showcase */}
-          <div className="flex items-center gap-2 border-b border-border-subtle pb-3">
-            <RadioTab
-              label="Visión General"
-              active={activeTab === 'overview'}
-              onClick={() => setActiveTab('overview')}
-              icon={<Terminal className="w-3.5 h-3.5" />}
-            />
-            <RadioTab
-              label="Sistema de Diseño & Átomos"
-              active={activeTab === 'components'}
-              onClick={() => setActiveTab('components')}
-              icon={<Sparkles className="w-3.5 h-3.5" />}
-              badge="Atomic"
-            />
-          </div>
+          {/* Selector de Pestañas para el Inicio (el showcase técnico solo se muestra a administradores) */}
+          {isAdmin && (
+            <div className="flex items-center gap-2 border-b border-border-subtle pb-3">
+              <RadioTab
+                label="Visión General"
+                active={activeTab === 'overview'}
+                onClick={() => setActiveTab('overview')}
+                icon={<Terminal className="w-3.5 h-3.5" />}
+              />
+              <RadioTab
+                label="Sistema de Diseño & Átomos"
+                active={activeTab === 'components'}
+                onClick={() => setActiveTab('components')}
+                icon={<Sparkles className="w-3.5 h-3.5" />}
+                badge="UI"
+              />
+            </div>
+          )}
 
-          {activeTab === 'overview' ? (
-            /* Vista de Retos Destacados */
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {(!isAdmin || activeTab === 'overview') ? (
+            <div className="flex flex-col gap-6">
+              {/* Vista de Retos Destacados */}
+              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Reto Estrella en Proceso */}
               <div className="lg:col-span-2 flex flex-col justify-between p-6 rounded-2xl bg-surface/70 border border-border-subtle/60 shadow-lg">
                 <div className="flex flex-col gap-3">
@@ -1348,7 +1401,7 @@ export const App: React.FC = () => {
                     <span>Esquema Activo</span>
                   </span>
                   <span className="text-[10px] font-mono text-primary font-medium px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
-                    Ecommerce DB
+                    Tienda Online
                   </span>
                 </div>
 
@@ -1362,7 +1415,7 @@ export const App: React.FC = () => {
                         <Code2 className="w-3.5 h-3.5 text-cyan-accent" />
                         {tbl.tableName} ({tbl.rowCount} filas)
                       </span>
-                      <span className="text-[10px] text-content-muted">public</span>
+                      <span className="text-[10px] text-content-muted">tabla</span>
                     </div>
                   ))}
                 </div>
@@ -1370,14 +1423,21 @@ export const App: React.FC = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setCurrentPath('playground')}
+                  onClick={() => navigate('playground')}
                   className="mt-2 text-xs border-cyan-accent/30 text-cyan-accent hover:bg-cyan-accent/10"
                 >
                   <Terminal className="w-3.5 h-3.5 mr-1 text-cyan-accent" />
-                  <span>Explorar en Playground</span>
+                  <span>Abrir en Laboratorio SQL</span>
                 </Button>
               </div>
-            </section>
+              </section>
+
+              {/* Respaldo Pedagógico y Técnico */}
+              <PedagogyPillarsCard
+                compact
+                onOpenMethodology={() => setMethodologyModalOpen(true)}
+              />
+            </div>
           ) : (
             /* Showcase del Árbol de Atomic Design Pragmático */
             <section className="flex flex-col gap-6 p-6 rounded-2xl bg-surface border border-border-subtle">
@@ -1476,6 +1536,7 @@ export const App: React.FC = () => {
         setAuthModalOpen(true);
       }}
       solvedCount={3}
+      remainingCount={Math.max(0, exercises.length - GUEST_TRIAL_EXERCISE_IDS.size)}
       earnedXp={100}
     />
 
@@ -1484,6 +1545,12 @@ export const App: React.FC = () => {
       isOpen={authModalOpen}
       onClose={() => setAuthModalOpen(false)}
       initialMode={authModalInitialMode}
+    />
+
+    {/* Modal de Metodología Pedagógica y Rigor Técnico */}
+    <MethodologyModal
+      isOpen={methodologyModalOpen}
+      onClose={() => setMethodologyModalOpen(false)}
     />
   </>
   );
