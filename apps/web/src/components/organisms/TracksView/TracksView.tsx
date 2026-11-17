@@ -106,16 +106,6 @@ export const TracksView: React.FC<TracksViewProps> = ({
         ))}
       </div>
 
-      {/* Mapa Visual Dual (Camino por Etapas + Árbol de Habilidades) */}
-      <LearningRoadmapMap
-        tracks={tracks}
-        exercises={exercises}
-        completedExerciseIds={completedExerciseIds}
-        selectedTrackId={selectedTrackId}
-        onSelectTrack={(trackId) => setSelectedTrackId(trackId)}
-        onSelectExercise={onSelectExercise}
-      />
-
       {/* Selected Track Detailed Syllabus */}
       {selectedTrack && (
         <section className="flex flex-col gap-6 p-6 sm:p-7 rounded-2xl bg-surface/60 border border-border-subtle/60 shadow-lg">
@@ -176,6 +166,16 @@ export const TracksView: React.FC<TracksViewProps> = ({
           </div>
         </section>
       )}
+
+      {/* Mapa Visual Dual (Camino por Etapas + Árbol de Habilidades) */}
+      <LearningRoadmapMap
+        tracks={tracks}
+        exercises={exercises}
+        completedExerciseIds={completedExerciseIds}
+        selectedTrackId={selectedTrackId}
+        onSelectTrack={(trackId) => setSelectedTrackId(trackId)}
+        onSelectExercise={onSelectExercise}
+      />
 
       {/* Respaldo Pedagógico y Técnico de la Currícula */}
       <PedagogyPillarsCard onOpenMethodology={onOpenMethodology} />
