@@ -27,13 +27,22 @@ import {
 } from '@/components/molecules';
 import { AuthModal, AuthMode } from '@/components/molecules/AuthModal/AuthModal';
 import {
-  MonacoEditorPanel,
   DataGridResults,
-  ExerciseSpecPanel,
-  TracksView,
 } from '@/components/organisms';
 
-// Lazy loading de vistas secundarias para optimización y code splitting del bundle
+// Lazy loading de vistas secundarias y estación de trabajo para optimización y code splitting del bundle
+const MonacoEditorPanel = React.lazy(() =>
+  import('@/components/organisms/MonacoEditorPanel/MonacoEditorPanel').then((m) => ({ default: m.MonacoEditorPanel }))
+);
+const ExerciseSpecPanel = React.lazy(() =>
+  import('@/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel').then((m) => ({ default: m.ExerciseSpecPanel }))
+);
+const TracksView = React.lazy(() =>
+  import('@/components/organisms/TracksView/TracksView').then((m) => ({ default: m.TracksView }))
+);
+const AdminDashboardView = React.lazy(() =>
+  import('@/components/organisms/AdminDashboardView/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView }))
+);
 const SqlPlaygroundView = React.lazy(() =>
   import('@/components/organisms/SqlPlaygroundView/SqlPlaygroundView').then((m) => ({ default: m.SqlPlaygroundView }))
 );
@@ -67,8 +76,7 @@ import { formatInlineCode } from '@/lib/format';
 import { pathToUrl, parseLocation } from '@/lib/routing';
 import {
   api,
-  FALLBACK_EXERCISES,
-  FALLBACK_TRACKS,
+  INITIAL_EXERCISE_STUB,
   ECOMMERCE_TABLES_SCHEMA,
   ACHIEVEMENTS_CATALOG,
   evaluateUserAchievements,
@@ -93,7 +101,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile, user, isCloudAuth, isAuthenticated, isPasswordRecovery, clearPasswordRecovery, signOut, refreshProfile } = useAuth();
+  const { profile, user, isCloudAuth, isAuthenticated, isAdmin, isPasswordRecovery, clearPasswordRecovery, signOut, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthMode>('signin');
@@ -111,7 +119,7 @@ export const App: React.FC = () => {
   );
 
   // Estados del Currículum, Tablas y Gamificación
-  const [tracks, setTracks] = useState<Track[]>(FALLBACK_TRACKS);
+  const [tracks, setTracks] = useState<Track[]>([]);
   const [tables] = useState<TableSchemaInfo[]>(ECOMMERCE_TABLES_SCHEMA);
   const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([]);
   const [dailyActivity, setDailyActivity] = useState<{ activity_date: string; exercises_solved: number; xp_earned: number }[]>([]);
@@ -119,9 +127,11 @@ export const App: React.FC = () => {
   const [playgroundInitialQuery, setPlaygroundInitialQuery] = useState<string | undefined>(undefined);
 
   // Estados del Ejercicio Activo y del IDE
-  const [exercises, setExercises] = useState<Exercise[]>(FALLBACK_EXERCISES);
+  const [exercises, setExercises] = useState<Exercise[]>([INITIAL_EXERCISE_STUB]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [sqlCode, setSqlCode] = useState(FALLBACK_EXERCISES[0].initial_code);
+  const [sqlCode, setSqlCode] = useState(
+    () => persistence.getExerciseDraft(INITIAL_EXERCISE_STUB.id) ?? INITIAL_EXERCISE_STUB.initial_code
+  );
   const [hintsUnlocked, setHintsUnlocked] = useState(0);
   const [isExecuting, setIsExecuting] = useState(false);
   const [isResultsExpanded, setIsResultsExpanded] = useState(false);
@@ -144,7 +154,7 @@ export const App: React.FC = () => {
   const [isRevealModalOpen, setIsRevealModalOpen] = useState(false);
   const [isRevealingSolution, setIsRevealingSolution] = useState(false);
 
-  const activeExercise = exercises[currentExerciseIndex] || FALLBACK_EXERCISES[0];
+  const activeExercise = exercises[currentExerciseIndex] || INITIAL_EXERCISE_STUB;
 
   // Navegación con History API
   const navigate = useCallback(
@@ -318,9 +328,9 @@ export const App: React.FC = () => {
 
   // Reto Recomendado Dinámico (Anti-Hardcode)
   const recommendedExercise = useMemo(() => {
-    if (!exercises || exercises.length === 0) return FALLBACK_EXERCISES[0];
+    if (!exercises || exercises.length === 0) return INITIAL_EXERCISE_STUB;
     const firstPending = exercises.find((ex) => !authoritativeCompletedIds.has(ex.id));
-    return firstPending || exercises[exercises.length - 1] || FALLBACK_EXERCISES[0];
+    return firstPending || exercises[exercises.length - 1] || INITIAL_EXERCISE_STUB;
   }, [exercises, authoritativeCompletedIds]);
 
   // Metadatos de la Ruta y Reto Activo para el Hero Banner del Dashboard (Opción 1)
@@ -329,7 +339,7 @@ export const App: React.FC = () => {
       return {
         activeTrack: tracks[0],
         activeModule: tracks[0]?.modules?.[0],
-        nextExercise: FALLBACK_EXERCISES[0],
+        nextExercise: INITIAL_EXERCISE_STUB,
         exerciseNumberInTrack: 1,
         trackTotal: 22,
         trackCompleted: 0,
@@ -404,6 +414,10 @@ export const App: React.FC = () => {
   useEffect(() => {
     if (currentPath === 'exercise') {
       document.title = `${activeExercise.title} — SQL Foundations | Qurio`;
+    } else if (currentPath === 'admin') {
+      document.title = isAdmin
+        ? 'Admin Live Ops | Qurio'
+        : 'ERROR 404: Relation Not Found | Qurio';
     } else {
       const titles: Record<string, string> = {
         dashboard: 'Dashboard | Qurio',
@@ -417,7 +431,7 @@ export const App: React.FC = () => {
       };
       document.title = titles[currentPath] || 'Qurio | Aprende SQL. Piensa en queries.';
     }
-  }, [currentPath, activeExercise]);
+  }, [currentPath, activeExercise, isAdmin]);
 
   // Cambiar de ejercicio activo
   const handleSelectExercise = (index: number) => {
@@ -706,6 +720,17 @@ export const App: React.FC = () => {
   };
 
   // ============================================================================
+  // VISTA 0: CONSOLA DE ADMINISTRACIÓN Y LIVE OPS (/admin — RBAC + SIGILO)
+  // ============================================================================
+  if (currentPath === 'admin' && isAdmin) {
+    return (
+      <React.Suspense fallback={<ViewLoadingFallback />}>
+        <AdminDashboardView onBackToDashboard={() => navigate('dashboard')} />
+      </React.Suspense>
+    );
+  }
+
+  // ============================================================================
   // VISTA 1: ESPACIO DE TRABAJO DEL EJERCICIO (IDE INTERACTIVO CON MONACO)
   // ============================================================================
   if (currentPath === 'exercise') {
@@ -818,35 +843,39 @@ export const App: React.FC = () => {
             </div>
           }
           sidebarContent={
-            <ExerciseSpecPanel
-              exercise={activeExercise}
-              unlockedHintsCount={hintsUnlocked}
-              onUnlockHint={handleUnlockHint}
-              isCompleted={activeExercise.is_completed || executionStatus === 'SUCCESS'}
-              failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
-              isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
-              solutionQuery={revealedSolutions[activeExercise.id] || null}
-              onOpenRevealModal={() => setIsRevealModalOpen(true)}
-              onLoadSolutionIntoEditor={handleLoadSolutionIntoEditor}
-            />
+            <React.Suspense fallback={<ViewLoadingFallback />}>
+              <ExerciseSpecPanel
+                exercise={activeExercise}
+                unlockedHintsCount={hintsUnlocked}
+                onUnlockHint={handleUnlockHint}
+                isCompleted={activeExercise.is_completed || executionStatus === 'SUCCESS'}
+                failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
+                isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
+                solutionQuery={revealedSolutions[activeExercise.id] || null}
+                onOpenRevealModal={() => setIsRevealModalOpen(true)}
+                onLoadSolutionIntoEditor={handleLoadSolutionIntoEditor}
+              />
+            </React.Suspense>
           }
           editorContent={
-            <MonacoEditorPanel
-              value={sqlCode}
-              onChange={handleSqlCodeChange}
-              onExecute={handleExecuteSolution}
-              onReset={() => {
-                if (activeExercise?.id) {
-                  persistence.clearExerciseDraft(activeExercise.id);
-                }
-                setSqlCode(activeExercise.initial_code);
-                setExecutionStatus('IDLE');
-                setResultError(undefined);
-                setResultDiff(undefined);
-              }}
-              isLoading={isExecuting}
-              isSubmitMode={true}
-            />
+            <React.Suspense fallback={<ViewLoadingFallback />}>
+              <MonacoEditorPanel
+                value={sqlCode}
+                onChange={handleSqlCodeChange}
+                onExecute={handleExecuteSolution}
+                onReset={() => {
+                  if (activeExercise?.id) {
+                    persistence.clearExerciseDraft(activeExercise.id);
+                  }
+                  setSqlCode(activeExercise.initial_code);
+                  setExecutionStatus('IDLE');
+                  setResultError(undefined);
+                  setResultDiff(undefined);
+                }}
+                isLoading={isExecuting}
+                isSubmitMode={true}
+              />
+            </React.Suspense>
           }
           resultsContent={
             <DataGridResults
@@ -934,6 +963,7 @@ export const App: React.FC = () => {
       case 'profile':
         return 'Mi Perfil';
       case 'not-found':
+      case 'admin':
         return '404 Relation Not Found';
       case 'auth-confirm':
         return 'Verificación de Cuenta';
@@ -957,13 +987,15 @@ export const App: React.FC = () => {
       >
         {/* VISTA A: RUTAS DE APRENDIZAJE */}
         {currentPath === 'tracks' && (
-          <TracksView
-            tracks={tracks}
-            exercises={exercises}
-            completedExerciseIds={authoritativeCompletedIds}
-            onSelectExercise={handleOpenExerciseFromCatalog}
-            isLoading={isProgressLoading}
-          />
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <TracksView
+              tracks={tracks}
+              exercises={exercises}
+              completedExerciseIds={authoritativeCompletedIds}
+              onSelectExercise={handleOpenExerciseFromCatalog}
+              isLoading={isProgressLoading}
+            />
+          </React.Suspense>
         )}
 
         {/* VISTA B: SQL PLAYGROUND LIBRE */}
@@ -1005,11 +1037,11 @@ export const App: React.FC = () => {
           </React.Suspense>
         )}
 
-        {/* VISTA E: ERROR 404 (RELATION NOT FOUND) */}
-        {currentPath === 'not-found' && (
+        {/* VISTA E: ERROR 404 (RELATION NOT FOUND) — incluye sigilo absoluto de /admin para no-admins */}
+        {(currentPath === 'not-found' || (currentPath === 'admin' && !isAdmin)) && (
           <React.Suspense fallback={<ViewLoadingFallback />}>
             <NotFoundView
-              missingPath="v_reporte_anual"
+              missingPath={currentPath === 'admin' ? 'admin' : 'v_reporte_anual'}
               onNavigate={(path) => navigate(path as AppPath)}
             />
           </React.Suspense>

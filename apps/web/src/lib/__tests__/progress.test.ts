@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeOfficialTracksProgress, computeGuestTrialTracksProgress } from '../progress';
-import { FALLBACK_TRACKS, FALLBACK_EXERCISES } from '../api';
+import { FALLBACK_TRACKS, FALLBACK_EXERCISES } from '../fallbackCurriculum';
 import { Track, Exercise } from '@/types';
 
 const mockTracks: Track[] = [

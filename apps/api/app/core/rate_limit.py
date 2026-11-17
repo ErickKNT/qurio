@@ -1,6 +1,6 @@
 import time
 import asyncio
-from typing import Dict, Tuple, Optional
+from typing import Any, Dict, List, Tuple, Optional
 import logging
 from fastapi import Request, HTTPException, status
 
@@ -55,6 +55,37 @@ class InMemoryRateLimiter:
             ]
             for k in expired_keys:
                 del self._history[k]
+
+    async def get_bucket_snapshots(self, window_seconds: int = 60) -> List[Dict[str, Any]]:
+        """Retorna instantánea de identificadores activos y tokens disponibles en la ventana."""
+        now = time.time()
+        cutoff = now - window_seconds
+        snapshots: List[Dict[str, Any]] = []
+        async with self._lock:
+            for key, timestamps in self._history.items():
+                active = [t for t in timestamps if t > cutoff]
+                if not active:
+                    continue
+                is_guest = key.startswith("rl:guest:")
+                limit = (
+                    settings.RATE_LIMIT_GUEST_PER_MINUTE
+                    if is_guest
+                    else settings.RATE_LIMIT_AUTH_PER_MINUTE
+                )
+                remaining = max(0, limit - len(active))
+                reset_in = max(0, int(active[0] + window_seconds - now))
+                snapshots.append(
+                    {
+                        "identifier": key,
+                        "subject_type": "guest_ip" if is_guest else "user_id",
+                        "requests_used": len(active),
+                        "limit": limit,
+                        "remaining_tokens": remaining,
+                        "reset_in_seconds": reset_in,
+                    }
+                )
+        snapshots.sort(key=lambda item: item["remaining_tokens"])
+        return snapshots
 
 
 # Instancia singleton del rate limiter en memoria

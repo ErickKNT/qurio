@@ -17,7 +17,7 @@ import {
 import { Exercise, SampleTableData } from '@/types';
 import { Badge } from '@/components/atoms/Badge/Badge';
 import { Button } from '@/components/atoms/Button/Button';
-import { SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CLIENTES } from '@/lib/api';
+import { SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CLIENTES } from '@/lib/fallbackCurriculum';
 import { cn } from '@/lib/utils';
 import { formatInlineCode } from '@/lib/format';
 

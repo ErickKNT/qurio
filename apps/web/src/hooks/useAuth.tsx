@@ -12,6 +12,7 @@ export interface AuthContextType {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isCloudAuth: boolean;
   isDemoMode: boolean;
   isPasswordRecovery: boolean;
@@ -432,6 +433,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await persistence.updateProfile(profile.id, updates);
   }, [profile]);
 
+  const isAdmin = useMemo(
+    () => Boolean(user?.app_metadata?.role === 'admin'),
+    [user]
+  );
+
   const value: AuthContextType = useMemo(
     () => ({
       session,
@@ -440,6 +446,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading,
       error,
       isAuthenticated: Boolean(user || (!isSupabaseConfigured && profile)),
+      isAdmin,
       isCloudAuth: Boolean(user && isSupabaseConfigured),
       isDemoMode: !isSupabaseConfigured,
       isPasswordRecovery,
@@ -454,7 +461,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) fetchProfile(user.id, user.user_metadata);
       },
     }),
-    [session, user, profile, loading, error, isPasswordRecovery, clearPasswordRecovery, fetchProfile, updateProfileState]
+    [session, user, profile, loading, error, isAdmin, isPasswordRecovery, clearPasswordRecovery, fetchProfile, updateProfileState]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -470,6 +477,7 @@ export function useAuth(): AuthContextType {
       loading: false,
       error: null,
       isAuthenticated: false,
+      isAdmin: false,
       isCloudAuth: false,
       isDemoMode: true,
       isPasswordRecovery: false,

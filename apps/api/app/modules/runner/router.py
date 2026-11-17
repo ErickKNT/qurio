@@ -3,8 +3,9 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.auth import AuthenticatedUser, get_optional_current_user
-from app.core.rate_limit import check_rate_limit, concurrency_semaphore
+from app.core.rate_limit import check_rate_limit, concurrency_semaphore, get_client_ip
 from app.core.supabase import record_verified_progress
+from app.core.system_state import system_state
 from app.modules.curriculum.repository import exercise_repository
 from app.modules.curriculum.seed_data import ExerciseDetail, ExercisePublicDTO
 from app.modules.runner.evaluator import evaluate_solution
@@ -61,12 +62,25 @@ async def execute_playground_query(
     Aplica rate limiting según el tipo de sesión (IP para invitados, User ID para autenticados),
     protección de concurrencia y validación sintáctica AST contra inyecciones y mutaciones.
     """
+    # 0. Killswitch de modo mantenimiento
+    if system_state.is_maintenance_mode:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=system_state.maintenance_message,
+        )
+
     # 1. Rate Limiting diferenciado
     await check_rate_limit(http_request, user)
 
     # 2. Protección de concurrencia sobre el pool
+    client_ip = get_client_ip(http_request)
+    actor_id = user.id if not user.is_guest else "guest"
     async with concurrency_semaphore:
-        result = await sandbox_runner.execute_query(request.query)
+        result = await sandbox_runner.execute_query(
+            request.query,
+            client_ip=client_ip,
+            user_id=actor_id,
+        )
 
     return result
 
@@ -136,6 +150,12 @@ async def reveal_exercise_solution(
             detail="Se requieren al menos 2 intentos fallidos previos para poder desbloquear la solución oficial.",
         )
 
+    if system_state.get_exercise_status(exercise_id) == "hidden":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ejercicio '{exercise_id}' no encontrado.",
+        )
+
     exercise = await exercise_repository.get_internal_for_evaluation(exercise_id)
     if not exercise:
         raise HTTPException(
@@ -193,6 +213,13 @@ async def submit_exercise_solution(
     5. Compara columnas, cardinalidad, nulos, tolerancia numérica y multiconjuntos/orden.
     6. Si el usuario está autenticado y aprueba, el backend certifica el intento vía Supabase RPC con idempotencia.
     """
+    # 0. Killswitch de modo mantenimiento
+    if system_state.is_maintenance_mode:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=system_state.maintenance_message,
+        )
+
     # 1. Rate Limiting diferenciado
     await check_rate_limit(http_request, user)
 
@@ -203,6 +230,12 @@ async def submit_exercise_solution(
             detail="REGISTRATION_REQUIRED_AFTER_TRIAL: Debes crear una cuenta o iniciar sesión para continuar practicando después de los 3 ejercicios de prueba.",
         )
 
+    if system_state.get_exercise_status(exercise_id) == "hidden":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ejercicio '{exercise_id}' no encontrado.",
+        )
+
     exercise = await exercise_repository.get_internal_for_evaluation(exercise_id)
     if not exercise:
         raise HTTPException(
@@ -211,9 +244,19 @@ async def submit_exercise_solution(
         )
 
     # 2. Ejecutar consultas en sandbox protegido por semáforo de concurrencia
+    client_ip = get_client_ip(http_request)
+    actor_id = user.id if not user.is_guest else "guest"
     async with concurrency_semaphore:
-        student_result = await sandbox_runner.execute_query(request.query)
-        expected_result = await sandbox_runner.execute_query(exercise.solution_query)
+        student_result = await sandbox_runner.execute_query(
+            request.query,
+            client_ip=client_ip,
+            user_id=actor_id,
+        )
+        expected_result = await sandbox_runner.execute_query(
+            exercise.solution_query,
+            client_ip="internal",
+            user_id="evaluator",
+        )
 
     if expected_result.status != "SUCCESS":
         raise HTTPException(

@@ -1,12 +1,53 @@
+from collections import deque
+from datetime import datetime, timezone
 import logging
 import re
-from typing import Tuple
+import threading
+from typing import Deque, Dict, List, Tuple
 
 import sqlglot
 from sqlglot import exp
 from sqlglot.errors import ParseError
 
 logger = logging.getLogger(__name__)
+
+# Buffer circular de alta velocidad en memoria para trazabilidad forense de bloqueos AST
+_SECURITY_AUDIT_LOCK = threading.Lock()
+_SECURITY_AUDIT_BUFFER: Deque[Dict[str, str]] = deque(maxlen=500)
+
+
+def record_security_violation(
+    rule_violated: str,
+    submitted_sql: str,
+    blocked_node: str,
+    client_ip: str = "unknown",
+    user_id: str = "guest",
+) -> None:
+    """Registra una violación detectada por el analizador AST en el buffer circular."""
+    snippet = " ".join((submitted_sql or "").strip().split())[:240]
+    event = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "client_ip": client_ip or "unknown",
+        "user_id": user_id or "guest",
+        "rule_violated": rule_violated,
+        "submitted_sql_snippet": snippet,
+        "blocked_node": blocked_node,
+    }
+    with _SECURITY_AUDIT_LOCK:
+        _SECURITY_AUDIT_BUFFER.appendleft(event)
+
+
+def get_security_audit_logs(limit: int = 100) -> List[Dict[str, str]]:
+    """Devuelve las últimas violaciones de seguridad AST en orden cronológico inverso."""
+    bounded = max(1, min(limit, 500))
+    with _SECURITY_AUDIT_LOCK:
+        return list(_SECURITY_AUDIT_BUFFER)[:bounded]
+
+
+def clear_security_audit_logs() -> None:
+    """Limpia el buffer circular de auditoría (útil para aislamiento en pruebas)."""
+    with _SECURITY_AUDIT_LOCK:
+        _SECURITY_AUDIT_BUFFER.clear()
 
 # Tipos de nodos del AST que representan operaciones de mutación, DDL o control transaccional
 MUTATION_NODES = (
@@ -81,7 +122,11 @@ def strip_sql_comments(sql: str) -> str:
     return "\n".join(lines).strip()
 
 
-def validate_sql_security(sql: str) -> Tuple[bool, str]:
+def validate_sql_security(
+    sql: str,
+    client_ip: str = "unknown",
+    user_id: str = "guest",
+) -> Tuple[bool, str]:
     """
     Valida que la consulta SQL enviada sea segura y apta para ejecución en el sandbox
     mediante análisis sintáctico de AST con SQLGlot (dialecto PostgreSQL).
@@ -108,9 +153,23 @@ def validate_sql_security(sql: str) -> Tuple[bool, str]:
         statements = [s for s in sqlglot.parse(sql, read="postgres") if s is not None]
     except ParseError as e:
         logger.warning(f"Error de parseo AST en consulta: {e}")
+        record_security_violation(
+            rule_violated="AST_PARSE_ERROR",
+            submitted_sql=sql,
+            blocked_node="ParseError",
+            client_ip=client_ip,
+            user_id=user_id,
+        )
         return False, f"Error de base de datos (SyntaxError): {str(e)}"
     except Exception as e:
         logger.warning(f"Error inesperado al parsear AST: {e}")
+        record_security_violation(
+            rule_violated="AST_PARSE_UNEXPECTED",
+            submitted_sql=sql,
+            blocked_node=type(e).__name__,
+            client_ip=client_ip,
+            user_id=user_id,
+        )
         return False, f"Error de base de datos (ParseError): {str(e)}"
 
     if not statements:
@@ -118,15 +177,38 @@ def validate_sql_security(sql: str) -> Tuple[bool, str]:
 
     # 2. Control de sentencias múltiples (previene inyección de queries encadenadas)
     if len(statements) > 1:
+        record_security_violation(
+            rule_violated="MULTI_STATEMENT_BLOCKED",
+            submitted_sql=sql,
+            blocked_node=f"Statements[{len(statements)}]",
+            client_ip=client_ip,
+            user_id=user_id,
+        )
         return False, "No está permitido ejecutar múltiples consultas en una sola transacción."
 
     root = statements[0]
 
     # 3. Allowlist de nodos raíz permitidos (lectura)
     if not isinstance(root, ALLOWED_ROOTS):
+        blocked_name = type(root).__name__
         for node_type, name in KEYWORD_NAMES.items():
             if isinstance(root, node_type):
+                blocked_name = name
+                record_security_violation(
+                    rule_violated="DISALLOWED_ROOT_STATEMENT",
+                    submitted_sql=sql,
+                    blocked_node=blocked_name,
+                    client_ip=client_ip,
+                    user_id=user_id,
+                )
                 return False, f"La instrucción '{name}' no está permitida en este entorno de práctica."
+        record_security_violation(
+            rule_violated="DISALLOWED_ROOT_STATEMENT",
+            submitted_sql=sql,
+            blocked_node=blocked_name,
+            client_ip=client_ip,
+            user_id=user_id,
+        )
         return False, "Solo se permiten consultas de lectura (SELECT o CTEs con WITH)."
 
     # 4. Denylist profunda: inspección de TODO el árbol AST (previene mutaciones en CTEs recursivas o subconsultas)
@@ -139,6 +221,13 @@ def validate_sql_security(sql: str) -> Tuple[bool, str]:
                     break
             else:
                 keyword = node.key.upper() if getattr(node, "key", None) else type(node).__name__.upper()
+            record_security_violation(
+                rule_violated="NESTED_MUTATION_OR_DDL_BLOCKED",
+                submitted_sql=sql,
+                blocked_node=keyword,
+                client_ip=client_ip,
+                user_id=user_id,
+            )
             return False, f"La instrucción '{keyword}' no está permitida en este entorno de práctica."
 
     # 5. Detección de funciones peligrosas del sistema
@@ -149,12 +238,26 @@ def validate_sql_security(sql: str) -> Tuple[bool, str]:
             func_name = (func.key or "").lower()
 
         if func_name in DANGEROUS_FUNCTIONS:
+            record_security_violation(
+                rule_violated="DANGEROUS_SYSTEM_FUNCTION",
+                submitted_sql=sql,
+                blocked_node=func_name,
+                client_ip=client_ip,
+                user_id=user_id,
+            )
             return False, f"El uso de la función '{func_name}' está estrictamente restringido."
 
     # 6. Detección de acceso a catálogos o tablas internas sensibles
     for table in root.find_all(exp.Table):
         t_name = (table.name or "").lower()
         if t_name in SENSITIVE_TABLES:
+            record_security_violation(
+                rule_violated="SENSITIVE_SYSTEM_TABLE_ACCESS",
+                submitted_sql=sql,
+                blocked_node=t_name,
+                client_ip=client_ip,
+                user_id=user_id,
+            )
             return False, f"El acceso a la tabla interna del sistema '{t_name}' no está permitido."
 
     return True, ""

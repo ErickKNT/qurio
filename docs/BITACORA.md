@@ -6,17 +6,15 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 11.3: Auditoría Final del Procedimiento de Rollback y Continuidad Operativa (`QURIO-PHASE-11.3-ROLLBACK-AUDIT`) — Concluida**  
-* **Próxima Fase:** **Aprobación Formal del Piloto (Gate G-07) y Despliegue Controlado con Usuarios**  
-* **Rama Git Activa:** `feat/phase-11-pilot-readiness`  
+* **Fase Actual:** **Fase 12: Consola de Administración, Live Ops y Observabilidad Pedagógica (Qurio Admin) — Implementada en Rama Aislada**  
+* **Próxima Fase:** **Revisión final y Merge de `feat/phase-12-admin-console` hacia `main` + Aplicación controlada de `04_admin_rbac.sql` en Supabase**  
+* **Rama Git Activa:** `feat/phase-12-admin-console` (aislada, bifurcada desde `main`)  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
-  * Contenedores Docker (`qurio-api` en 8000, `qurio-postgres-sandbox` en 5433): Operativos y verificados de forma exhaustiva; apagados de forma controlada (`docker compose down`) tras concluir las pruebas.
-  * API FastAPI: **100% Verificado** — Suite de **80 pruebas automatizadas pasando limpiamente en 61.50s** en `apps/api/tests/`. Incluye **15 pruebas de infraestructura de seguridad/migración** y **10 escenarios críticos de regresión/contingencia** (idempotencia de RPC v6.1, rollback v4.0 con preservación estricta de CLS/RLS, modo de contingencia en FastAPI sin adjudicación falsa de XP y recuperación íntegra de recompensas tras restablecimiento).
-  * Frontend React 18 + Vite: **100% Verificado** — Build de producción `dist/` limpio (**2,171 módulos en 5.38s, 0 errores, 0 ocurrencias de `solution_query`**) y suite de **17 pruebas automatizadas en Vitest** (`npm run test`) pasando en 861ms (`progress.test.ts`, `persistence.test.ts`, `routing.test.ts`).
-  * E2E en Navegador Real: **19 de 19 pruebas pasadas al 100% en Google Chrome real** vía Playwright (`pilot_e2e_suite.mjs`), con verificación indeleble de **0 XP oficial para invitados** en T06 y bloqueo en 4º reto en T07.
-  * Continuidad Operativa (Alternativa B): Si la RPC no existe o falla, el Sandbox de PostgreSQL continúa evaluando las consultas con éxito, pero la API otorga estrictamente 0 XP oficial y notifica el modo contingencia sin falsificar progreso oficial.
-  * Integridad de Supabase Cloud: **Zero Cloud Mutations** cumplido al 100% (0 escrituras en `bfvgqxfzftumwrleacof`). Scripts `03_security_hardening.sql` v6.1 y `rollback_security_hardening.sql` v4.0 reconciliados, probados y listos para aplicación administrativa por el propietario.
-  * Veredicto Final: **APROBADO CON RESTRICCIONES**.
+  * Contenedor Docker Sandbox (`qurio-postgres-sandbox` en `localhost:5433`): Activo y saludable (`healthy`).
+  * API FastAPI (`apps/api`, `uvicorn` en `http://127.0.0.1:8000`): **100% Verificado** — Suite de **96 pruebas automatizadas pasando limpiamente en 93.28s** en `apps/api/tests/` (`85` existentes + `11` nuevas en `test_admin.py`).
+  * Frontend React 18 + Vite (`apps/web`): **100% Verificado** — Build de producción `dist/` limpio (**2,273 módulos en 7.30s, 0 errores TypeScript, 0 advertencias Rollup >500 kB**, bundle base `index` reducido a **114.72 kB** y código administrativo aislado en `vendor-admin` de **83.07 kB**), más suite de **30 pruebas automatizadas en Vitest** (`6` archivos, `30/30 passed`, incluyendo `src/tests/admin.test.ts`).
+  * E2E en Navegador Real (`apps/web/e2e/pilot_e2e_suite.mjs`): **15 de 18 comprobaciones pasadas** en Google Chrome headless (sin regresiones de Fase 12; `T07/T08/T09` fallan por desfase previo en `main` al reemplazar el texto `REGISTRATION_REQUIRED_AFTER_TRIAL` por `GuestTrialCompleteModal`).
+  * Integridad de Supabase Cloud: **Zero Cloud Mutations** cumplido al 100%. Nuevo script `database/supabase/04_admin_rbac.sql` validado en PostgreSQL local con doble ejecución idempotente.
 
 ---
 
@@ -38,6 +36,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **10 (Doc)** | **Blueprint v1.2 & Plan de Estabilización v1.2** | ✅ Concluida | `docs/product-business-blueprint-v1` | `QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` v1.2 y `PHASE_10_STABILIZATION_PLAN.md` v1.2 sincronizados. |
 | **10 (Base)** | **Auditoría Operativa y Línea Base de Desarrollo** | ✅ Concluida | `docs/operational-baseline-v1` | `QURIO_OPERATIONAL_AUDIT.md` (diagnóstico forense) y `QURIO_OPERATIONAL_BASELINE.md` (prioridades de grupo piloto). |
 | **10 (Ejec)** | **Estabilización Técnica Integral (Bloques A, B, C, D)** | ✅ Concluida | `feat/phase-10-stabilization` | Resolución de brechas `C-01` a `C-05`, suites de pruebas 100% exitosas (69 backend / 8 frontend), build limpio y sandbox apagado. |
+| **11** | **Preparación del Piloto, Hardening v6.3 y E2E** | ✅ Concluida | `main` (vía `feat/phase-11-pilot-readiness`) | Endurecimiento CLS/RLS, RPC autoritativa de XP/rachas, rollback v4.0 y suite E2E Playwright. |
+| **12** | **Consola de Administración, Live Ops y Observabilidad** | ✅ Implementada (Aislada) | `feat/phase-12-admin-console` | RBAC criptográfico `app_metadata.role`, API `/admin/*` (Live Ops, `pg_stat_activity`, Replay Forense, Auditoría AST, Killswitches), UI Atomic Design lazy en `vendor-admin` y code splitting base (`114.72 kB`). |
 
 ---
 
@@ -1451,3 +1451,33 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   3. **Verificación:**
      * **Frontend Vitest:** 5 archivos de prueba, 26/26 tests aprobados.
      * **Build de Producción (`tsc && vite build`):** 2,265 módulos transformados, 0 errores en `5.84s`.
+
+
+---
+
+### Entrada 48: Fase 12 — Consola de Administración, Live Ops y Observabilidad Pedagógica (Qurio Admin)
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-12-admin-console` (bifurcada desde `main`, aislada sin merge ni push)
+* **Objetivo:**
+  1. Implementar control de acceso RBAC criptográfico basado exclusivamente en `app_metadata.role = 'admin'` tanto en Supabase SQL como en FastAPI.
+  2. Construir el submódulo backend `/api/v1/admin/*` para Live Ops del Sandbox Docker (`ecommerce_sandbox`), analítica pedagógica de los 50 retos, replay forense con diff semántico, trazabilidad de bloqueos AST SQLGlot y killswitches operativos.
+  3. Construir la UI de administración en React bajo Atomic Design Pragmático, aislada por code splitting (`vendor-admin` + carga diferida) y con sigilo 404 para usuarios sin privilegios.
+* **Actividades y Decisiones Técnicas:**
+  1. **Infraestructura SQL RBAC (`database/supabase/04_admin_rbac.sql`):**
+     * Creado script DDL idempotente con `public.is_admin()` (`SECURITY DEFINER`, `SET search_path = ''`) leyendo `request.jwt.claims -> 'app_metadata' ->> 'role'`.
+     * Añadida columna idempotente `operational_status` (`active`, `hidden`, `under_review`) en `public.exercises`, políticas RLS administrativas de solo lectura y vista/RPC protegidas (`public.admin_exercise_metrics_view`, `public.admin_curriculum_metrics()`).
+  2. **Backend FastAPI (`apps/api/app/core/` & `apps/api/app/modules/admin/`):**
+     * En `auth.py`: extendido `AuthenticatedUser` con `app_metadata`, alias `get_current_user` y dependencia `require_admin` (401 `AUTHENTICATION_REQUIRED` para invitados, 403 `ADMIN_PRIVILEGES_REQUIRED` si `app_metadata.role != 'admin'`).
+     * En `security.py` y `rate_limit.py`: incorporado buffer circular `deque(maxlen=500)` con lock para violaciones AST SQLGlot y método `get_bucket_snapshots()` para visibilidad de cuotas activas.
+     * En `system_state.py`, `service.py` y `runner/router.py`: añadido estado atómico para modo mantenimiento (HTTP `503` en `/playground/execute` y `/exercises/{id}/submit`, manteniendo lecturas abiertas), ocultamiento operativo de retos (`hidden` -> `404`), métricas de pool `asyncpg`, `pg_stat_activity` sobre `ecommerce_sandbox`, `pg_cancel_backend(pid)` parametrizado y reciclaje limpio del pool.
+     * Creado `apps/api/app/modules/admin/` (`schemas.py`, `service.py`, `router.py`) con los 8 endpoints administrativos protegidos por `Depends(require_admin)`.
+  3. **Frontend React 18, Atomic Design & Code Splitting (`apps/web/`):**
+     * Extraído el catálogo estático `FALLBACK_EXERCISES` / `FALLBACK_TRACKS` a `src/lib/fallbackCurriculum.ts` con importación dinámica, y configurados `React.lazy` + `manualChunks` (`vendor-admin`, `vendor-sql-formatter`, etc.) en `vite.config.ts`. El bundle base `index` bajó de `579.37 kB` a **`114.72 kB`** y todo el código admin quedó aislado en `vendor-admin` (**`83.07 kB`**).
+     * Expuesto `isAdmin` en `useAuth.tsx` (`user?.app_metadata?.role === 'admin'`). En `App.tsx` y `routing.ts`, la ruta `/admin` carga `AdminDashboardView` de forma diferida solo para administradores y renderiza `NotFoundView` (`SQLSTATE 42P01`) con sigilo total para invitados o usuarios regulares.
+     * Implementados los componentes atómicos/moleculares (`AdminBadge`, `AdminMetricTile`, `KillswitchToggle` con confirmación inline en 2 pasos sin `alert()`/`confirm()`, `ConnectionGauge`, `SqlDiffViewer`) y el organismo `AdminDashboardView` con 5 pestañas y Drawer forense (`SqlDiffViewer` + `DataGridResults`).
+  4. **Verificación Integral:**
+     * **Backend Pytest (`apps/api/tests/`):** **96/96 pruebas aprobadas** en `93.28s` (`85` existentes + `11` nuevas en `tests/test_admin.py` cubriendo RBAC 401/403/200, pool metrics, `pg_stat_activity` + cancelación PID, replay semántico, buffer AST, killswitch 503, reciclaje de pool, ocultamiento de retos e idempotencia SQL de `04_admin_rbac.sql`).
+     * **Frontend Vitest (`apps/web/`):** **30/30 pruebas aprobadas** (`6` archivos, incluyendo `src/tests/admin.test.ts` con guardia 404 sigiloso, acceso admin, doble confirmación de `KillswitchToggle` y resaltado de `SqlDiffViewer`).
+     * **Build de Producción (`npm run build`):** `2,273` módulos transformados en `7.30s`, `0` errores TypeScript, `0` advertencias Rollup >500 kB y `0` fugas de `solution_query` en `fallbackCurriculum` / catálogo público.
+     * **Playwright E2E (`pilot_e2e_suite.mjs`):** `15/18` comprobaciones aprobadas (`T07/T08/T09` fallan por comportamiento preexistente en `main` donde `GuestTrialCompleteModal` intercepta la vista antes de mostrar el texto `REGISTRATION_REQUIRED_AFTER_TRIAL`).

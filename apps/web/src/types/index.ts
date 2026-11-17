@@ -176,6 +176,7 @@ export type AppPath =
   | 'achievements'
   | 'profile'
   | 'exercise'
+  | 'admin'
   | 'auth-confirm'
   | 'reset-password'
   | 'not-found';

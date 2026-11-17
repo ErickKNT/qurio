@@ -3,6 +3,7 @@ from typing import Optional, List, Dict
 import httpx
 
 from app.core.config import settings
+from app.core.system_state import system_state
 from app.modules.curriculum.seed_data import SEED_EXERCISES, ExerciseDetail, ExercisePublicDTO
 
 logger = logging.getLogger(__name__)
@@ -60,17 +61,31 @@ class ExerciseRepository:
         Obtiene el DTO público de un ejercicio (SIN solution_query).
         Apto para ser servido a clientes web y estudiantes.
         """
+        op_status = system_state.get_exercise_status(exercise_id)
+        if op_status == "hidden":
+            return None
         internal = await self.get_internal_for_evaluation(exercise_id)
         if internal:
-            return internal.to_public_dto()
+            dto = internal.to_public_dto()
+            dto.operational_status = op_status
+            return dto
         return None
 
     async def list_public(self) -> List[ExercisePublicDTO]:
         """
         Devuelve todos los ejercicios activos en su formato DTO público (SIN solution_query).
+        Excluye ejercicios marcados operativamente como 'hidden'.
         """
         internal_list = await self.list_all()
-        return [ex.to_public_dto() for ex in internal_list]
+        results: List[ExercisePublicDTO] = []
+        for ex in internal_list:
+            op_status = system_state.get_exercise_status(ex.id)
+            if op_status == "hidden":
+                continue
+            dto = ex.to_public_dto()
+            dto.operational_status = op_status
+            results.append(dto)
+        return results
 
     async def list_all(self) -> List[ExerciseDetail]:
         """Devuelve todos los ejercicios completos (para evaluación interna)."""

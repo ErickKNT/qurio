@@ -25,6 +25,7 @@ class ExercisePublicDTO(BaseModel):
     difficulty: str
     check_order: bool
     sort_order: int
+    operational_status: str = "active"
     hints: List[str] = []
     concept: Optional[ExerciseConcept] = None
     objectives: Optional[List[str]] = None
@@ -42,6 +43,7 @@ class ExerciseDetail(BaseModel):
     difficulty: str
     check_order: bool
     sort_order: int
+    operational_status: str = "active"
     hints: List[str] = []
     concept: Optional[ExerciseConcept] = None
     objectives: Optional[List[str]] = None
@@ -58,6 +60,7 @@ class ExerciseDetail(BaseModel):
             difficulty=self.difficulty,
             check_order=self.check_order,
             sort_order=self.sort_order,
+            operational_status=self.operational_status,
             hints=self.hints,
             concept=self.concept,
             objectives=self.objectives,

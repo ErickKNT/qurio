@@ -1,7 +1,7 @@
 import logging
-from typing import Optional
-from pydantic import BaseModel
-from fastapi import Header, HTTPException, status
+from typing import Any, Dict, Optional
+from pydantic import BaseModel, Field
+from fastapi import Depends, Header, HTTPException, status
 import jwt
 from jwt import PyJWKClient, PyJWTError, ExpiredSignatureError
 
@@ -15,6 +15,7 @@ class AuthenticatedUser(BaseModel):
     email: Optional[str] = None
     role: str = "authenticated"
     is_guest: bool = False
+    app_metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 # Cliente JWKS en memoria con caché de claves públicas de Supabase
@@ -121,12 +122,20 @@ async def get_optional_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    raw_app_metadata = payload.get("app_metadata")
+    app_metadata = raw_app_metadata if isinstance(raw_app_metadata, dict) else {}
+
     return AuthenticatedUser(
         id=user_id,
         email=payload.get("email"),
         role=payload.get("role", "authenticated"),
         is_guest=False,
+        app_metadata=app_metadata,
     )
+
+
+# Alias semántico para dependencias que requieren usuario actual (invitado o autenticado)
+get_current_user = get_optional_current_user
 
 
 async def get_required_current_user(
@@ -143,4 +152,29 @@ async def get_required_current_user(
             detail="Esta operación requiere autenticación activa con Supabase.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    return user
+
+
+async def require_admin(
+    user: AuthenticatedUser = Depends(get_current_user),
+) -> AuthenticatedUser:
+    """
+    Dependencia autoritativa RBAC para rutas /api/v1/admin/*.
+    Exige identidad autenticada (401 si es invitado) y rol 'admin'
+    exclusivamente dentro del claim firmado app_metadata (403 si no).
+    """
+    if user.is_guest:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="AUTHENTICATION_REQUIRED",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    admin_role = (user.app_metadata or {}).get("role")
+    if admin_role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="ADMIN_PRIVILEGES_REQUIRED",
+        )
+
     return user

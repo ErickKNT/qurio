@@ -10,6 +10,7 @@ import {
   ChevronRight,
   LogOut,
   LogIn,
+  ShieldAlert,
 } from 'lucide-react';
 import { Button } from '@/components/atoms/Button/Button';
 import { useAuth } from '@/hooks/useAuth';
@@ -32,7 +33,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   onOpenAuth,
   className,
 }) => {
-  const { profile, isAuthenticated, signOut } = useAuth();
+  const { profile, isAuthenticated, isAdmin, signOut } = useAuth();
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -40,6 +41,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     { id: 'playground', label: 'SQL Playground', icon: Terminal },
     { id: 'achievements', label: 'Logros & Rangos', icon: Award },
     { id: 'profile', label: 'Mi Perfil', icon: User },
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin Live Ops', icon: ShieldAlert }] : []),
   ];
 
   return (
@@ -111,6 +113,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               playground: isActive ? 'text-cyan-accent' : 'text-content-muted group-hover:text-cyan-accent',
               achievements: isActive ? 'text-amber-streak' : 'text-content-muted group-hover:text-amber-streak',
               profile: isActive ? 'text-purple-500' : 'text-content-muted group-hover:text-purple-500',
+              admin: isActive ? 'text-error' : 'text-error/80 group-hover:text-error',
             };
 
             return (
