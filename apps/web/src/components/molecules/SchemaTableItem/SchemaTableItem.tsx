@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { Table, ChevronDown, ChevronRight, Key, ArrowUpRight } from 'lucide-react';
+import { Table, ChevronDown, ChevronRight, Key, ArrowUpRight, Eye } from 'lucide-react';
 import { TableSchemaInfo } from '@/types';
 import { cn } from '@/lib/utils';
 
 export interface SchemaTableItemProps {
   table: TableSchemaInfo;
   onInsertQuery?: (query: string) => void;
+  onPreviewTable?: (tableName: string, query: string) => void;
   className?: string;
 }
 
 export const SchemaTableItem: React.FC<SchemaTableItemProps> = ({
   table,
   onInsertQuery,
+  onPreviewTable,
   className,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +22,13 @@ export const SchemaTableItem: React.FC<SchemaTableItemProps> = ({
     e.stopPropagation();
     if (onInsertQuery) {
       onInsertQuery(`SELECT * FROM ${table.tableName} LIMIT 10;`);
+    }
+  };
+
+  const handlePreview = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onPreviewTable) {
+      onPreviewTable(table.tableName, `SELECT * FROM ${table.tableName} LIMIT 50;`);
     }
   };
 
@@ -47,14 +56,27 @@ export const SchemaTableItem: React.FC<SchemaTableItemProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[10px] text-content-muted">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[10px] text-content-muted mr-0.5">
             {table.rowCount} filas
           </span>
+          {onPreviewTable && (
+            <button
+              type="button"
+              onClick={handlePreview}
+              title={`Previsualizar ${table.tableName} en nueva pestaña`}
+              aria-label={`Previsualizar tabla ${table.tableName}`}
+              className="p-1 rounded hover:bg-surface-dim text-content-muted hover:text-emerald transition-colors"
+            >
+              <Eye className="w-3 h-3" />
+            </button>
+          )}
           {onInsertQuery && (
             <button
+              type="button"
               onClick={handleQuickSelect}
               title={`Insertar SELECT * FROM ${table.tableName} LIMIT 10;`}
+              aria-label={`Insertar consulta para ${table.tableName}`}
               className="p-1 rounded hover:bg-surface-dim text-content-muted hover:text-cyan-accent transition-colors"
             >
               <ArrowUpRight className="w-3 h-3" />

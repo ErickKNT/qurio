@@ -173,6 +173,7 @@ export type AppPath =
   | 'dashboard'
   | 'playground'
   | 'tracks'
+  | 'reference'
   | 'achievements'
   | 'profile'
   | 'exercise'

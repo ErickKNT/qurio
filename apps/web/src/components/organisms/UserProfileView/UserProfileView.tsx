@@ -15,15 +15,18 @@ import {
   Play,
   ChevronDown,
   ChevronUp,
+  Lock,
 } from 'lucide-react';
-import { UserProfile, QueryHistoryItem } from '@/types';
+import { UserProfile, QueryHistoryItem, Track } from '@/types';
 import { Badge, Button } from '@/components/atoms';
 import { MetricTile } from '@/components/molecules/MetricTile/MetricTile';
+import { CertificateModal, CertificateData } from '@/components/organisms/CertificateModal/CertificateModal';
 import { cn } from '@/lib/utils';
 
 export interface UserProfileViewProps {
   profile: UserProfile | null;
   history: QueryHistoryItem[];
+  tracks?: Track[];
   completedCount?: number;
   totalExercises?: number;
   dailyActivity?: { activity_date: string; exercises_solved: number; xp_earned: number }[];
@@ -36,6 +39,7 @@ export interface UserProfileViewProps {
 export const UserProfileView: React.FC<UserProfileViewProps> = ({
   profile,
   history,
+  tracks = [],
   completedCount = 0,
   totalExercises = 60,
   dailyActivity = [],
@@ -45,6 +49,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedCertificate, setSelectedCertificate] = useState<CertificateData | null>(null);
 
   const handleCopy = (id: string, text: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -280,6 +285,139 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         </div>
       </section>
 
+      {/* Constancias de Finalización por Ruta y Currículum Global */}
+      <section className="flex flex-col gap-4 p-6 rounded-2xl bg-surface/60 border border-border-subtle/60">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-col">
+            <h3 className="text-sm font-bold text-content-primary flex items-center gap-2">
+              <Award className="w-4 h-4 text-amber-streak" />
+              Constancias de Finalización
+            </h3>
+            <p className="text-xs text-content-secondary mt-0.5">
+              Completa el 100% de una ruta oficial o de los {totalExercises} retos para emitir tu constancia verificable en PDF.
+            </p>
+          </div>
+          {!isCloudAuth && (
+            <Badge variant="amber" size="sm">
+              Requiere cuenta autenticada
+            </Badge>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {tracks.map((tr) => {
+            const trTotal = tr.total_exercises || 1;
+            const trDone = tr.completed_exercises ?? 0;
+            const unlocked = isCloudAuth && trDone >= trTotal && trTotal > 0;
+            return (
+              <div
+                key={tr.id}
+                className={cn(
+                  'p-4 rounded-xl border flex items-center justify-between gap-3',
+                  unlocked
+                    ? 'bg-emerald/[0.06] border-emerald/35'
+                    : 'bg-surface-dim/50 border-border-subtle/50'
+                )}
+              >
+                <div className="flex flex-col gap-1 min-w-0">
+                  <span className="text-xs font-bold text-content-primary truncate">
+                    {tr.title}
+                  </span>
+                  <span className="text-[11px] font-mono text-content-muted">
+                    {trDone} / {trTotal} retos aprobados
+                  </span>
+                </div>
+
+                {unlocked ? (
+                  <Button
+                    size="sm"
+                    variant="emerald"
+                    onClick={() =>
+                      setSelectedCertificate({
+                        id: tr.id,
+                        recipientName: profile?.full_name || profile?.username || 'Estudiante Qurio',
+                        trackTitle: tr.title,
+                        completedExercises: trDone,
+                        totalExercises: trTotal,
+                        issuedDate: new Date().toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        }),
+                        verificationCode: `QURIO-${tr.slug.slice(0, 6).toUpperCase()}-${(profile?.id || 'LOCAL').slice(0, 6).toUpperCase()}`,
+                      })
+                    }
+                    className="shrink-0 text-xs"
+                  >
+                    Ver Constancia
+                  </Button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-content-muted shrink-0">
+                    <Lock className="w-3 h-3" />
+                    <span>{Math.max(0, trTotal - trDone)} restantes</span>
+                  </span>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Constancia Global (60 retos) */}
+          {(() => {
+            const globalUnlocked = isCloudAuth && completedCount >= totalExercises && totalExercises > 0;
+            return (
+              <div
+                className={cn(
+                  'p-4 rounded-xl border flex items-center justify-between gap-3',
+                  globalUnlocked
+                    ? 'bg-primary/10 border-primary/40'
+                    : 'bg-surface-dim/50 border-border-subtle/50'
+                )}
+              >
+                <div className="flex flex-col gap-1 min-w-0">
+                  <span className="text-xs font-bold text-content-primary truncate">
+                    Currículum Completo SQL (PostgreSQL 16)
+                  </span>
+                  <span className="text-[11px] font-mono text-content-muted">
+                    {completedCount} / {totalExercises} retos aprobados
+                  </span>
+                </div>
+
+                {globalUnlocked ? (
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() =>
+                      setSelectedCertificate({
+                        id: 'global',
+                        recipientName: profile?.full_name || profile?.username || 'Estudiante Qurio',
+                        trackTitle: 'Currículum Completo SQL • PostgreSQL 16',
+                        completedExercises: completedCount,
+                        totalExercises,
+                        issuedDate: new Date().toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        }),
+                        verificationCode: `QURIO-FULL-${(profile?.id || 'LOCAL').slice(0, 6).toUpperCase()}`,
+                        isGlobal: true,
+                      })
+                    }
+                    className="shrink-0 text-xs"
+                  >
+                    Ver Certificado
+                  </Button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-content-muted shrink-0">
+                    <Lock className="w-3 h-3" />
+                    <span>{Math.max(0, totalExercises - completedCount)} restantes</span>
+                  </span>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+      </section>
+
       {/* Query Execution History Log */}
       <section className="flex flex-col gap-4 p-6 rounded-2xl bg-surface/60 border border-border-subtle/60">
         <div className="flex items-center justify-between">
@@ -395,6 +533,12 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           )}
         </div>
       </section>
+
+      <CertificateModal
+        certificate={selectedCertificate}
+        isOpen={Boolean(selectedCertificate)}
+        onClose={() => setSelectedCertificate(null)}
+      />
     </div>
   );
 };

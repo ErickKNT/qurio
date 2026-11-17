@@ -63,6 +63,16 @@ const AuthConfirmView = React.lazy(() =>
 const ResetPasswordView = React.lazy(() =>
   import('@/components/organisms/ResetPasswordView/ResetPasswordView').then((m) => ({ default: m.ResetPasswordView }))
 );
+const SqlReferenceView = React.lazy(() =>
+  import('@/components/organisms/SqlReferenceView/SqlReferenceView').then((m) => ({ default: m.SqlReferenceView }))
+);
+const CommandPaletteModal = React.lazy(() =>
+  import('@/components/organisms/CommandPaletteModal/CommandPaletteModal').then((m) => ({ default: m.CommandPaletteModal }))
+);
+const ModuleGuideModal = React.lazy(() =>
+  import('@/components/organisms/ModuleGuideModal/ModuleGuideModal').then((m) => ({ default: m.ModuleGuideModal }))
+);
+import type { ModuleGuide } from '@/lib/moduleGuides';
 
 const ViewLoadingFallback: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-[360px] gap-3 text-content-muted">
@@ -74,7 +84,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { persistence } from '@/lib/persistence';
 import { computeOfficialTracksProgress, computeGuestTrialTracksProgress } from '@/lib/progress';
-import { formatInlineCode } from '@/lib/format';
+import { formatSqlProse } from '@/lib/format';
 import { pathToUrl, parseLocation } from '@/lib/routing';
 import {
   api,
@@ -103,7 +113,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile, user, isCloudAuth, isAuthenticated, isAdmin, isPasswordRecovery, clearPasswordRecovery, signOut, refreshProfile } = useAuth();
+  const { profile, user, isCloudAuth, isAuthenticated, isAdmin, isPasswordRecovery, guestSyncCount, clearPasswordRecovery, signOut, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthMode>('signin');
@@ -156,6 +166,21 @@ export const App: React.FC = () => {
   const [revealedSolutions, setRevealedSolutions] = useState<Record<string, string>>({});
   const [isRevealModalOpen, setIsRevealModalOpen] = useState(false);
   const [isRevealingSolution, setIsRevealingSolution] = useState(false);
+  const [isTrialResult, setIsTrialResult] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [activePaletteGuide, setActivePaletteGuide] = useState<ModuleGuide | null>(null);
+
+  // Atajo global Cmd+K / Ctrl+K para Búsqueda Rápida
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   const activeExercise = exercises[currentExerciseIndex] || INITIAL_EXERCISE_STUB;
 
@@ -208,8 +233,7 @@ export const App: React.FC = () => {
         hash.includes('type=signup') ||
         hash.includes('auth-confirm') ||
         hash.includes('type=email_change') ||
-        search.includes('type=signup') ||
-        search.includes('code=')
+        search.includes('type=signup')
       ) {
         setCurrentPath('auth-confirm');
         return;
@@ -318,7 +342,7 @@ export const App: React.FC = () => {
       }
       setIsProgressLoading(false);
     });
-  }, [profile?.id, exercises.length]);
+  }, [profile?.id, guestSyncCount, exercises.length]);
 
   // Recomputar progreso por ruta de forma reactiva y consistente cuando cambian los retos, rutas o completados
   useEffect(() => {
@@ -436,6 +460,7 @@ export const App: React.FC = () => {
         dashboard: 'Inicio | Qurio',
         tracks: 'Rutas de Aprendizaje | Qurio',
         playground: 'Laboratorio SQL | Qurio',
+        reference: 'Referencia SQL | Qurio',
         achievements: 'Logros & Rangos | Qurio',
         profile: 'Mi Perfil | Qurio',
         'not-found': 'ERROR 404: Relation Not Found | Qurio',
@@ -454,6 +479,7 @@ export const App: React.FC = () => {
       const draft = persistence.getExerciseDraft(ex.id);
       setSqlCode(draft !== null ? draft : ex.initial_code);
       setHintsUnlocked(0);
+      setIsTrialResult(false);
       setExecutionStatus('IDLE');
       setRowCount(0);
       setResultColumns([]);
@@ -475,6 +501,7 @@ export const App: React.FC = () => {
       const draft = persistence.getExerciseDraft(ex.id);
       setSqlCode(draft !== null ? draft : ex.initial_code);
       setHintsUnlocked(0);
+      setIsTrialResult(false);
       setExecutionStatus('IDLE');
       setRowCount(0);
       setResultColumns([]);
@@ -526,9 +553,47 @@ export const App: React.FC = () => {
     }
   }, [activeExercise, failedAttemptsByExercise]);
 
+  // Ejecución exploratoria libre dentro de un reto (no evalúa ni cuenta intento fallido)
+  const handleRunExerciseTrial = useCallback(async () => {
+    if (!sqlCode.trim() || isExecuting) return;
+
+    setIsExecuting(true);
+    setIsTrialResult(true);
+    setExecutionStatus('LOADING');
+    setResultError(undefined);
+    setResultDiff(undefined);
+    setResultMessage(undefined);
+    setAwardedXp(0);
+
+    try {
+      const res = await api.executePlayground(sqlCode);
+      setExecutionTime(res.execution_time_ms);
+
+      if (res.status === 'SUCCESS') {
+        setExecutionStatus('SUCCESS');
+        setRowCount(res.row_count);
+        setResultColumns(res.columns);
+        setResultRows(res.rows);
+        setResultMessage('Ejecución exploratoria (sin evaluar). Pulsa "Enviar Solución" cuando estés listo.');
+      } else {
+        setExecutionStatus('ERROR');
+        setRowCount(0);
+        setResultColumns([]);
+        setResultRows([]);
+        setResultError(res.error || 'No se pudo ejecutar la consulta exploratoria.');
+      }
+    } catch (err: any) {
+      setExecutionStatus('ERROR');
+      setResultError(err.message || 'Error al probar consulta en el sandbox.');
+    } finally {
+      setIsExecuting(false);
+    }
+  }, [sqlCode, isExecuting]);
+
   // Ejecución / Evaluación Semántica End-to-End
   const handleExecuteSolution = useCallback(async () => {
     if (!sqlCode.trim()) return;
+    setIsTrialResult(false);
 
     const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
 
@@ -879,14 +944,17 @@ export const App: React.FC = () => {
                 value={sqlCode}
                 onChange={handleSqlCodeChange}
                 onExecute={handleExecuteSolution}
+                onRunTrial={handleRunExerciseTrial}
                 onReset={() => {
                   if (activeExercise?.id) {
                     persistence.clearExerciseDraft(activeExercise.id);
                   }
                   setSqlCode(activeExercise.initial_code);
+                  setIsTrialResult(false);
                   setExecutionStatus('IDLE');
                   setResultError(undefined);
                   setResultDiff(undefined);
+                  setResultMessage(undefined);
                 }}
                 isLoading={isExecuting}
                 isSubmitMode={true}
@@ -903,8 +971,9 @@ export const App: React.FC = () => {
               error={resultError}
               diff={resultDiff}
               message={resultMessage}
-              xpAwarded={awardedXp}
+              xpAwarded={isTrialResult ? undefined : awardedXp}
               onNextExercise={handleNextExercise}
+              isPlayground={isTrialResult}
               failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
               isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
               onOpenRevealModal={() => setIsRevealModalOpen(true)}
@@ -916,12 +985,18 @@ export const App: React.FC = () => {
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-4">
                 <span>PostgreSQL 16.3 (Sandbox Docker)</span>
-                <span>DB: ecommerce_sandbox</span>
-                <span>User: readonly_student</span>
+                <span className="hidden sm:inline">DB: ecommerce_sandbox</span>
+                <span className="hidden md:inline">User: readonly_student</span>
               </div>
-              <div className="flex items-center gap-3">
-                <KbdShortcut keys={['⌘', '↵']} />
-                <span>para ejecutar y evaluar</span>
+              <div className="flex items-center gap-4">
+                <div className="hidden sm:flex items-center gap-2">
+                  <KbdShortcut keys={['⌘', '⇧', '↵']} />
+                  <span>probar</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <KbdShortcut keys={['⌘', '↵']} />
+                  <span>evaluar</span>
+                </div>
               </div>
             </div>
           }
@@ -975,6 +1050,8 @@ export const App: React.FC = () => {
         return 'Rutas de Aprendizaje';
       case 'playground':
         return 'Laboratorio SQL';
+      case 'reference':
+        return 'Referencia SQL';
       case 'achievements':
         return 'Logros & Rangos';
       case 'profile':
@@ -1000,6 +1077,7 @@ export const App: React.FC = () => {
         currentPath={currentPath}
         onNavigate={(path) => navigate(path as AppPath)}
         title={getHeaderTitle()}
+        onOpenSearch={() => setCommandPaletteOpen(true)}
         onOpenAuth={() => setAuthModalOpen(true)}
       >
         {/* VISTA A: RUTAS DE APRENDIZAJE */}
@@ -1023,6 +1101,18 @@ export const App: React.FC = () => {
           </React.Suspense>
         )}
 
+        {/* VISTA B2: REFERENCIA RÁPIDA SQL */}
+        {currentPath === 'reference' && (
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <SqlReferenceView
+              onOpenPlayground={(query) => {
+                setPlaygroundInitialQuery(query);
+                navigate('playground');
+              }}
+            />
+          </React.Suspense>
+        )}
+
         {/* VISTA C: LOGROS & MEDALLAS */}
         {currentPath === 'achievements' && (
           <React.Suspense fallback={<ViewLoadingFallback />}>
@@ -1040,6 +1130,7 @@ export const App: React.FC = () => {
             <UserProfileView
               profile={profile}
               history={queryHistory}
+              tracks={tracks}
               completedCount={authoritativeCompletedIds.size}
               totalExercises={exercises.length}
               dailyActivity={dailyActivity}
@@ -1144,7 +1235,7 @@ export const App: React.FC = () => {
                   </div>
 
                   <p className="text-xs text-content-secondary leading-relaxed max-w-3xl line-clamp-2">
-                    {formatInlineCode(activeLearningData.nextExercise?.prompt)}
+                    {formatSqlProse(activeLearningData.nextExercise?.prompt)}
                   </p>
                 </div>
 
@@ -1353,7 +1444,7 @@ export const App: React.FC = () => {
                   </h3>
 
                   <p className="text-xs text-content-secondary leading-relaxed">
-                    {formatInlineCode(recommendedExercise?.prompt || 'Consulta la base de datos relacional con SQL.')}
+                    {formatSqlProse(recommendedExercise?.prompt || 'Consulta la base de datos relacional con SQL.')}
                   </p>
 
                   <div className="mt-2 p-3 rounded-lg bg-surface-dim/80 border border-border-subtle/50 border-l-2 border-l-cyan-accent font-mono text-xs text-content-secondary flex items-center justify-between">
@@ -1546,6 +1637,28 @@ export const App: React.FC = () => {
       onClose={() => setAuthModalOpen(false)}
       initialMode={authModalInitialMode}
     />
+
+    {/* Paleta de Comandos / Búsqueda Rápida (⌘K) */}
+    <React.Suspense fallback={null}>
+      <CommandPaletteModal
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        exercises={exercises}
+        tables={tables}
+        onSelectExercise={handleOpenExerciseFromCatalog}
+        onSelectGuide={(guide) => setActivePaletteGuide(guide)}
+        onSelectTable={(table) => {
+          setPlaygroundInitialQuery(`SELECT * FROM ${table.tableName} LIMIT 50;`);
+          navigate('playground');
+        }}
+        onSelectReference={() => navigate('reference')}
+      />
+      <ModuleGuideModal
+        guide={activePaletteGuide}
+        isOpen={Boolean(activePaletteGuide)}
+        onClose={() => setActivePaletteGuide(null)}
+      />
+    </React.Suspense>
 
     {/* Modal de Metodología Pedagógica y Rigor Técnico */}
     <MethodologyModal

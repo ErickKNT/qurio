@@ -9,8 +9,10 @@ import {
   ChevronDown,
   ShieldCheck,
   Zap,
+  Menu,
+  Search,
 } from 'lucide-react';
-import { SearchInput } from '@/components/molecules/SearchInput/SearchInput';
+import { KbdShortcut } from '@/components/atoms/KbdShortcut/KbdShortcut';
 import { Button } from '@/components/atoms/Button/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -19,7 +21,9 @@ import { cn } from '@/lib/utils';
 export interface TopHeaderProps {
   title?: string;
   isSidebarCollapsed?: boolean;
+  onOpenMobileMenu?: () => void;
   onOpenPlayground?: () => void;
+  onOpenSearch?: () => void;
   onOpenAuth?: () => void;
   className?: string;
 }
@@ -27,11 +31,12 @@ export interface TopHeaderProps {
 export const TopHeader: React.FC<TopHeaderProps> = ({
   title = 'Inicio',
   isSidebarCollapsed = false,
+  onOpenMobileMenu,
   onOpenPlayground,
+  onOpenSearch,
   onOpenAuth,
   className,
 }) => {
-  const [searchVal, setSearchVal] = useState('');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -61,16 +66,27 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   return (
     <header
       className={cn(
-        'fixed top-0 right-0 h-14 z-40 transition-all duration-300',
-        'bg-canvas/90 backdrop-blur-md border-b border-border-subtle/50 px-6',
-        'flex items-center justify-between',
-        isSidebarCollapsed ? 'left-20' : 'left-64',
+        'fixed top-0 right-0 left-0 h-14 z-40 transition-all duration-300',
+        'bg-canvas/90 backdrop-blur-md border-b border-border-subtle/50 px-4 sm:px-6',
+        'flex items-center justify-between gap-2',
+        isSidebarCollapsed ? 'lg:left-20' : 'lg:left-64',
         className
       )}
     >
-      {/* Left: Section Title or Context Breadcrumb */}
-      <div className="flex items-center gap-3">
-        <h2 className="text-xs font-semibold tracking-tight text-content-primary uppercase font-mono flex items-center gap-1.5">
+      {/* Left: Mobile Menu Button + Section Title or Context Breadcrumb */}
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        {onOpenMobileMenu && (
+          <button
+            type="button"
+            onClick={onOpenMobileMenu}
+            className="lg:hidden p-1.5 -ml-1 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card/60 transition-colors shrink-0"
+            aria-label="Abrir menú de navegación"
+            title="Menú"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+        <h2 className="text-xs font-semibold tracking-tight text-content-primary uppercase font-mono flex items-center gap-1.5 truncate">
           <span className="w-1.5 h-1.5 rounded-full bg-primary" />
           <span>{title}</span>
         </h2>
@@ -86,17 +102,37 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         )}
       </div>
 
-      {/* Center: Search Bar */}
-      <div className="hidden lg:block w-72">
-        <SearchInput
-          value={searchVal}
-          onChange={setSearchVal}
-          placeholder="Buscar consultas, lecciones..."
-        />
-      </div>
+      {/* Center: Quick Command Search Trigger (⌘K) */}
+      {onOpenSearch && (
+        <div className="hidden lg:block w-72">
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className="w-full flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-surface-card/70 hover:bg-surface-card border border-border-subtle hover:border-primary/40 text-xs text-content-muted transition-colors"
+            title="Abrir búsqueda rápida (⌘K)"
+          >
+            <span className="flex items-center gap-2 truncate">
+              <Search className="w-3.5 h-3.5 text-content-muted shrink-0" />
+              <span className="truncate">Buscar retos, guías, SQL...</span>
+            </span>
+            <KbdShortcut keys={['⌘', 'K']} />
+          </button>
+        </div>
+      )}
 
-      {/* Right: Notifications & User Avatar / Auth Buttons */}
-      <div className="flex items-center gap-3">
+      {/* Right: Mobile Search + Theme + Notifications & Auth */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {onOpenSearch && (
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className="lg:hidden p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card/60 transition-colors"
+            title="Búsqueda rápida (⌘K)"
+            aria-label="Abrir búsqueda rápida"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+        )}
         {/* Theme Toggle Button */}
         <button
           type="button"

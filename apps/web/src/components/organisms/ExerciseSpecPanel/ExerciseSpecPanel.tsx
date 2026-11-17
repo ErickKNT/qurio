@@ -13,13 +13,17 @@ import {
   Layers,
   Lock,
   Unlock,
+  GitFork,
 } from 'lucide-react';
 import { Exercise, SampleTableData } from '@/types';
 import { Badge } from '@/components/atoms/Badge/Badge';
 import { Button } from '@/components/atoms/Button/Button';
+import { ErDiagramModal } from '@/components/organisms/ErDiagramModal/ErDiagramModal';
+import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/ModuleGuideModal';
+import { getModuleGuide } from '@/lib/moduleGuides';
 import { SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CLIENTES } from '@/lib/fallbackCurriculum';
 import { cn } from '@/lib/utils';
-import { formatInlineCode } from '@/lib/format';
+import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
 
 export interface ExerciseSpecPanelProps {
   exercise: Exercise;
@@ -53,6 +57,10 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
   const [checkedObjectives, setCheckedObjectives] = useState<Record<number, boolean>>({});
   const [copiedCol, setCopiedCol] = useState<string | null>(null);
   const [copiedSolution, setCopiedSolution] = useState(false);
+  const [erDiagramOpen, setErDiagramOpen] = useState(false);
+  const [moduleGuideOpen, setModuleGuideOpen] = useState(false);
+
+  const activeModuleGuide = getModuleGuide(exercise.module_id) || null;
 
   // Cambiar a la pestaña de solución automáticamente si se acaba de desbloquear
   useEffect(() => {
@@ -261,23 +269,35 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
             {/* Tarjeta de Concepto Clave y Sintaxis de Referencia (Micro-Learning) */}
             {exercise.concept && (
               <div className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-gradient-to-br from-surface to-primary/[0.04] border border-border-subtle/80 shadow-sm">
-                <div className="flex items-center justify-between text-[11px] font-mono font-semibold uppercase tracking-wider text-primary">
+                <div className="flex items-center justify-between text-[11px] font-mono font-semibold uppercase tracking-wider text-primary gap-2">
                   <span className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
                     Concepto Clave & Sintaxis
                   </span>
-                  <span className="text-[10px] text-content-muted font-normal">Guía Paso a Paso</span>
+                  {activeModuleGuide ? (
+                    <button
+                      type="button"
+                      onClick={() => setModuleGuideOpen(true)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 hover:bg-primary/20 border border-primary/25 text-[10px] font-mono text-primary-light normal-case transition-colors"
+                      title="Abrir guía teórica completa y diagrama visual de este módulo"
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span>Guía del módulo</span>
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-content-muted font-normal">Guía Paso a Paso</span>
+                  )}
                 </div>
 
                 <p className="text-xs text-content-secondary leading-relaxed">
-                  {formatInlineCode(exercise.concept.summary)}
+                  {formatSqlProse(exercise.concept.summary)}
                 </p>
 
                 {/* Bloque de Sintaxis */}
                 {exercise.concept.syntax && (
-                  <div className="p-2.5 rounded-lg bg-surface-card border border-border-subtle font-mono text-[11px] text-primary-light overflow-x-auto leading-relaxed shadow-inner">
+                  <div className="p-2.5 rounded-lg bg-surface-card border border-border-subtle font-mono text-[11px] overflow-x-auto leading-relaxed shadow-inner [font-variant-ligatures:none]">
                     <pre className="m-0 font-mono">
-                      <code>{exercise.concept.syntax}</code>
+                      <code>{highlightSqlBlock(exercise.concept.syntax)}</code>
                     </pre>
                   </div>
                 )}
@@ -288,7 +308,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                     {exercise.concept.key_points.map((pt, idx) => (
                       <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
                         <span className="text-primary font-bold shrink-0 mt-0.5">•</span>
-                        <span>{formatInlineCode(pt)}</span>
+                        <span>{formatSqlProse(pt)}</span>
                       </li>
                     ))}
                   </ul>
@@ -299,7 +319,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                   <div className="mt-1 p-2.5 rounded-lg bg-cyan-accent/10 border border-cyan-accent/25 text-[11px] text-cyan-600 dark:text-cyan-accent leading-relaxed flex flex-col gap-1.5">
                     <div className="flex items-start gap-2">
                       <Layers className="w-3.5 h-3.5 shrink-0 text-cyan-accent mt-0.5" />
-                      <span>{formatInlineCode(exercise.concept.execution_order_note)}</span>
+                      <span>{formatSqlProse(exercise.concept.execution_order_note)}</span>
                     </div>
                     <div className="flex items-center justify-between pt-1 border-t border-cyan-accent/15 text-[10px] font-mono text-content-muted">
                       <span>PostgreSQL 16 Sandbox</span>
@@ -317,7 +337,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 Consigna del Negocio
               </span>
               <div className="text-xs text-content-secondary leading-relaxed bg-surface/50 p-3 rounded-xl border border-border-subtle/60 shadow-sm">
-                <p>{formatInlineCode(exercise.prompt)}</p>
+                <p>{formatSqlProse(exercise.prompt)}</p>
 
                 {/* Botón rápido para inspeccionar la tabla en la pestaña muestra */}
                 <div className="mt-3 pt-2.5 border-t border-border-subtle/40 flex items-center justify-between text-[11px] font-mono text-content-muted">
@@ -375,7 +395,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                         >
                           {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
                         </span>
-                        <span className="leading-snug">{obj}</span>
+                        <span className="leading-snug font-sans">{formatSqlProse(obj)}</span>
                       </button>
                     );
                   })}
@@ -492,10 +512,22 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
         {/* ==================================================================== */}
         {activeTab === 'schema' && (
           <div className="flex flex-col gap-3 font-mono text-[11px] animate-fadeIn">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
-              <Database className="w-3.5 h-3.5 text-indigo-400" />
-              Esquema Completo (Ecommerce DB)
-            </span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5 text-indigo-400" />
+                Esquema Completo (Ecommerce DB)
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setErDiagramOpen(true)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-card border border-border-subtle hover:border-cyan-accent/50 text-[10px] text-cyan-accent font-semibold transition-colors"
+                title="Ver Diagrama Entidad-Relación de las 10 tablas"
+              >
+                <GitFork className="w-3 h-3" />
+                <span>Diagrama ER</span>
+              </button>
+            </div>
 
             {schemaTables.map((tbl) => (
               <div
@@ -569,7 +601,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                         Pista #{index + 1} — {levelLabels[index] || 'Apoyo Progresivo'}
                       </span>
                     </div>
-                    <p className="leading-relaxed">{formatInlineCode(hint)}</p>
+                    <p className="leading-relaxed">{formatSqlProse(hint)}</p>
                   </div>
                 );
               })}
@@ -681,7 +713,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
             <div className="p-3 rounded-lg bg-surface-card border border-amber-streak/30 text-xs text-content-secondary leading-relaxed">
               <span className="font-semibold text-content-primary">💡 Explicación de la solución:</span>
               <p className="mt-1 font-sans">
-                {formatInlineCode(
+                {formatSqlProse(
                   exercise.concept?.summary ||
                     'Esta consulta resuelve los requerimientos del reto aplicando las cláusulas estándar en PostgreSQL.'
                 )}
@@ -714,8 +746,8 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 </button>
               </div>
 
-              <pre className="p-3.5 rounded-xl bg-canvas border border-border-subtle text-xs text-cyan-accent overflow-x-auto whitespace-pre font-mono leading-relaxed shadow-inner">
-                {solutionQuery}
+              <pre className="p-3.5 rounded-xl bg-canvas border border-border-subtle text-xs overflow-x-auto whitespace-pre font-mono leading-relaxed shadow-inner [font-variant-ligatures:none]">
+                <code>{highlightSqlBlock(solutionQuery)}</code>
               </pre>
 
               {onLoadSolutionIntoEditor && (
@@ -733,6 +765,17 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
           </div>
         )}
       </div>
+
+      <ErDiagramModal
+        isOpen={erDiagramOpen}
+        onClose={() => setErDiagramOpen(false)}
+      />
+
+      <ModuleGuideModal
+        guide={activeModuleGuide}
+        isOpen={moduleGuideOpen}
+        onClose={() => setModuleGuideOpen(false)}
+      />
     </div>
   );
 };

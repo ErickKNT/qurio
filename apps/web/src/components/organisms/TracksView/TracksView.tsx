@@ -5,6 +5,8 @@ import { TrackCard } from '@/components/molecules/TrackCard/TrackCard';
 import { ModuleAccordion } from '@/components/molecules/ModuleAccordion/ModuleAccordion';
 import { PedagogyPillarsCard } from '@/components/molecules/PedagogyPillarsCard/PedagogyPillarsCard';
 import { LearningRoadmapMap } from '@/components/organisms/LearningRoadmapMap/LearningRoadmapMap';
+import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/ModuleGuideModal';
+import { getModuleGuide } from '@/lib/moduleGuides';
 import { Button, Badge } from '@/components/atoms';
 
 export interface TracksViewProps {
@@ -26,6 +28,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
   isLoading = false,
 }) => {
   const [selectedTrackId, setSelectedTrackId] = useState<string>(tracks[0]?.id || 'sql-foundations');
+  const [guideModuleId, setGuideModuleId] = useState<string | null>(null);
 
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId) || tracks[0];
 
@@ -158,6 +161,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
                     exercises={moduleExercises}
                     completedExerciseIds={completedExerciseIds}
                     onSelectExercise={onSelectExercise}
+                    onOpenGuide={(modId) => setGuideModuleId(modId)}
                     defaultOpen={idx === 0}
                   />
                 );
@@ -179,6 +183,12 @@ export const TracksView: React.FC<TracksViewProps> = ({
 
       {/* Respaldo Pedagógico y Técnico de la Currícula */}
       <PedagogyPillarsCard onOpenMethodology={onOpenMethodology} />
+
+      <ModuleGuideModal
+        guide={guideModuleId ? getModuleGuide(guideModuleId) || null : null}
+        isOpen={Boolean(guideModuleId)}
+        onClose={() => setGuideModuleId(null)}
+      />
     </div>
   );
 };
