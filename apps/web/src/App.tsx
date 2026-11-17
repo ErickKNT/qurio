@@ -84,7 +84,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { persistence } from '@/lib/persistence';
 import { computeOfficialTracksProgress, computeGuestTrialTracksProgress } from '@/lib/progress';
-import { formatInlineCode } from '@/lib/format';
+import { formatSqlProse } from '@/lib/format';
 import { pathToUrl, parseLocation } from '@/lib/routing';
 import {
   api,
@@ -1235,7 +1235,7 @@ export const App: React.FC = () => {
                   </div>
 
                   <p className="text-xs text-content-secondary leading-relaxed max-w-3xl line-clamp-2">
-                    {formatInlineCode(activeLearningData.nextExercise?.prompt)}
+                    {formatSqlProse(activeLearningData.nextExercise?.prompt)}
                   </p>
                 </div>
 
@@ -1444,7 +1444,7 @@ export const App: React.FC = () => {
                   </h3>
 
                   <p className="text-xs text-content-secondary leading-relaxed">
-                    {formatInlineCode(recommendedExercise?.prompt || 'Consulta la base de datos relacional con SQL.')}
+                    {formatSqlProse(recommendedExercise?.prompt || 'Consulta la base de datos relacional con SQL.')}
                   </p>
 
                   <div className="mt-2 p-3 rounded-lg bg-surface-dim/80 border border-border-subtle/50 border-l-2 border-l-cyan-accent font-mono text-xs text-content-secondary flex items-center justify-between">

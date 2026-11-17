@@ -17,6 +17,7 @@ import {
 import { ColumnInfo, DiffResult } from '@/types';
 import { Badge } from '@/components/atoms/Badge/Badge';
 import { Button } from '@/components/atoms/Button/Button';
+import { formatSqlProse } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 export interface DataGridResultsProps {
@@ -296,8 +297,8 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
               <span>Detalle de la Discrepancia Semántica</span>
             </div>
 
-            <p className="text-xs text-content-primary leading-relaxed">
-              {diff.reason}
+            <p className="text-xs text-content-primary leading-relaxed font-sans">
+              {formatSqlProse(diff.reason)}
             </p>
 
             {message && (

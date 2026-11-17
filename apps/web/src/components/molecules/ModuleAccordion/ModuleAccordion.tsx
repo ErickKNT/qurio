@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, CheckCircle2, Circle, ArrowRight, BookOpen }
 import { Module, Exercise } from '@/types';
 import { Badge, Button } from '@/components/atoms';
 import { cn } from '@/lib/utils';
-import { formatInlineCode } from '@/lib/format';
+import { formatSqlProse } from '@/lib/format';
 
 export interface ModuleAccordionProps {
   module: Module;
@@ -142,7 +142,7 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
                         {idx + 1}. {exercise.title}
                       </span>
                       <span className="text-[11px] font-sans text-content-muted line-clamp-1">
-                        {formatInlineCode(exercise.prompt)}
+                        {formatSqlProse(exercise.prompt)}
                       </span>
                     </div>
                   </div>

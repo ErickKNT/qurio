@@ -10,6 +10,8 @@ import { SQL_REFERENCE_TERMS, searchSqlReference } from '@/lib/sqlReference';
 import { ErDiagramModal } from '@/components/organisms/ErDiagramModal/ErDiagramModal';
 import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/ModuleGuideModal';
 import { CertificateModal } from '@/components/organisms/CertificateModal/CertificateModal';
+import { ExerciseSpecPanel } from '@/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel';
+import { FALLBACK_EXERCISES } from '@/lib/fallbackCurriculum';
 import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
 
 describe('Qurio UX, ER, Guías y Referencia SQL', () => {
@@ -120,5 +122,30 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     );
     expect(selectToken?.className).toContain('text-cyan-accent');
     expect(selectToken?.className).toContain('font-bold');
+  });
+
+  it('ExerciseSpecPanel resalta palabras reservadas SQL en pistas y solución oficial', () => {
+    const { container } = render(
+      <ExerciseSpecPanel
+        exercise={FALLBACK_EXERCISES[0]}
+        unlockedHintsCount={2}
+        onUnlockHint={() => {}}
+        failedAttemptsCount={2}
+        isSolutionRevealed={true}
+        solutionQuery="SELECT nombre_producto, precio FROM productos;"
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Pistas \(2\/3\)/i }));
+    const hintCodes = Array.from(container.querySelectorAll('code')).map((el) => el.textContent);
+    expect(hintCodes).toContain('SELECT');
+    expect(hintCodes).toContain('FROM');
+
+    fireEvent.click(screen.getByRole('button', { name: /^Solución$/i }));
+    const selectSpan = Array.from(container.querySelectorAll('pre code span')).find(
+      (el) => el.textContent === 'SELECT'
+    );
+    expect(selectSpan?.className).toContain('text-cyan-accent');
+    expect(selectSpan?.className).toContain('font-bold');
   });
 });

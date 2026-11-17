@@ -23,7 +23,7 @@ import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/Module
 import { getModuleGuide } from '@/lib/moduleGuides';
 import { SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CLIENTES } from '@/lib/fallbackCurriculum';
 import { cn } from '@/lib/utils';
-import { formatInlineCode, highlightSqlBlock } from '@/lib/format';
+import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
 
 export interface ExerciseSpecPanelProps {
   exercise: Exercise;
@@ -290,7 +290,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 </div>
 
                 <p className="text-xs text-content-secondary leading-relaxed">
-                  {formatInlineCode(exercise.concept.summary)}
+                  {formatSqlProse(exercise.concept.summary)}
                 </p>
 
                 {/* Bloque de Sintaxis */}
@@ -308,7 +308,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                     {exercise.concept.key_points.map((pt, idx) => (
                       <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
                         <span className="text-primary font-bold shrink-0 mt-0.5">•</span>
-                        <span>{formatInlineCode(pt)}</span>
+                        <span>{formatSqlProse(pt)}</span>
                       </li>
                     ))}
                   </ul>
@@ -319,7 +319,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                   <div className="mt-1 p-2.5 rounded-lg bg-cyan-accent/10 border border-cyan-accent/25 text-[11px] text-cyan-600 dark:text-cyan-accent leading-relaxed flex flex-col gap-1.5">
                     <div className="flex items-start gap-2">
                       <Layers className="w-3.5 h-3.5 shrink-0 text-cyan-accent mt-0.5" />
-                      <span>{formatInlineCode(exercise.concept.execution_order_note)}</span>
+                      <span>{formatSqlProse(exercise.concept.execution_order_note)}</span>
                     </div>
                     <div className="flex items-center justify-between pt-1 border-t border-cyan-accent/15 text-[10px] font-mono text-content-muted">
                       <span>PostgreSQL 16 Sandbox</span>
@@ -337,7 +337,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 Consigna del Negocio
               </span>
               <div className="text-xs text-content-secondary leading-relaxed bg-surface/50 p-3 rounded-xl border border-border-subtle/60 shadow-sm">
-                <p>{formatInlineCode(exercise.prompt)}</p>
+                <p>{formatSqlProse(exercise.prompt)}</p>
 
                 {/* Botón rápido para inspeccionar la tabla en la pestaña muestra */}
                 <div className="mt-3 pt-2.5 border-t border-border-subtle/40 flex items-center justify-between text-[11px] font-mono text-content-muted">
@@ -395,7 +395,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                         >
                           {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
                         </span>
-                        <span className="leading-snug">{obj}</span>
+                        <span className="leading-snug font-sans">{formatSqlProse(obj)}</span>
                       </button>
                     );
                   })}
@@ -601,7 +601,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                         Pista #{index + 1} — {levelLabels[index] || 'Apoyo Progresivo'}
                       </span>
                     </div>
-                    <p className="leading-relaxed">{formatInlineCode(hint)}</p>
+                    <p className="leading-relaxed">{formatSqlProse(hint)}</p>
                   </div>
                 );
               })}
@@ -713,7 +713,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
             <div className="p-3 rounded-lg bg-surface-card border border-amber-streak/30 text-xs text-content-secondary leading-relaxed">
               <span className="font-semibold text-content-primary">💡 Explicación de la solución:</span>
               <p className="mt-1 font-sans">
-                {formatInlineCode(
+                {formatSqlProse(
                   exercise.concept?.summary ||
                     'Esta consulta resuelve los requerimientos del reto aplicando las cláusulas estándar en PostgreSQL.'
                 )}
@@ -746,8 +746,8 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 </button>
               </div>
 
-              <pre className="p-3.5 rounded-xl bg-canvas border border-border-subtle text-xs text-cyan-accent overflow-x-auto whitespace-pre font-mono leading-relaxed shadow-inner">
-                {solutionQuery}
+              <pre className="p-3.5 rounded-xl bg-canvas border border-border-subtle text-xs overflow-x-auto whitespace-pre font-mono leading-relaxed shadow-inner [font-variant-ligatures:none]">
+                <code>{highlightSqlBlock(solutionQuery)}</code>
               </pre>
 
               {onLoadSolutionIntoEditor && (
