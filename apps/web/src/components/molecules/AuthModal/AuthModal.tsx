@@ -469,39 +469,44 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key`}
             )}
 
             {/* Acceso rápido OAuth (cuando Supabase Cloud está configurado) */}
-            {mode !== 'forgot' && !isDemoMode && (
-              <div className="mb-4 flex flex-col gap-2.5">
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    disabled={isSubmitting}
-                    onClick={() => handleOAuth('github')}
-                    leftIcon={<GithubLogo className="w-4 h-4 shrink-0" />}
-                    className="text-xs font-mono justify-center"
-                  >
-                    GitHub
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    disabled={isSubmitting}
-                    onClick={() => handleOAuth('google')}
-                    leftIcon={<GoogleLogo className="w-4 h-4 shrink-0" />}
-                    className="text-xs font-mono justify-center"
-                  >
-                    Google
-                  </Button>
+            {mode !== 'forgot' && !isDemoMode && (() => {
+              const isGoogleEnabled = import.meta.env.VITE_ENABLE_GOOGLE_OAUTH === 'true';
+              return (
+                <div className="mb-4 flex flex-col gap-2.5">
+                  <div className={cn('grid gap-2', isGoogleEnabled ? 'grid-cols-2' : 'grid-cols-1')}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={isSubmitting}
+                      onClick={() => handleOAuth('github')}
+                      leftIcon={<GithubLogo className="w-4 h-4 shrink-0" />}
+                      className="text-xs font-mono justify-center w-full"
+                    >
+                      {isGoogleEnabled ? 'GitHub' : 'Continuar con GitHub'}
+                    </Button>
+                    {isGoogleEnabled && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        disabled={isSubmitting}
+                        onClick={() => handleOAuth('google')}
+                        leftIcon={<GoogleLogo className="w-4 h-4 shrink-0" />}
+                        className="text-xs font-mono justify-center"
+                      >
+                        Google
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-mono text-content-muted uppercase tracking-wider">
+                    <span className="flex-1 h-px bg-border-subtle/50" />
+                    <span>o con tu correo</span>
+                    <span className="flex-1 h-px bg-border-subtle/50" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] font-mono text-content-muted uppercase tracking-wider">
-                  <span className="flex-1 h-px bg-border-subtle/50" />
-                  <span>o con tu correo</span>
-                  <span className="flex-1 h-px bg-border-subtle/50" />
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Formulario */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
