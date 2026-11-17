@@ -14,22 +14,22 @@ const STATUS_MAP: Record<
   { defaultLabel: string; container: string; dot: string }
 > = {
   healthy: {
-    defaultLabel: 'HEALTHY',
+    defaultLabel: 'SALUDABLE',
     container: 'bg-emerald/10 text-emerald border border-emerald/35',
     dot: 'bg-emerald shadow-glow-emerald',
   },
   warning: {
-    defaultLabel: 'WARNING',
+    defaultLabel: 'ADVERTENCIA',
     container: 'bg-amber-streak/10 text-amber-streak border border-amber-streak/35',
     dot: 'bg-amber-streak shadow-glow-amber',
   },
   critical: {
-    defaultLabel: 'CRITICAL',
+    defaultLabel: 'CRÍTICO',
     container: 'bg-error/10 text-error border border-error/40',
     dot: 'bg-error',
   },
   killswitch_active: {
-    defaultLabel: 'KILLSWITCH ACTIVE',
+    defaultLabel: 'INTERRUPTOR ACTIVO',
     container: 'bg-error-container/35 text-error border border-error/50 shadow-[0_0_12px_-3px_rgba(239,68,68,0.45)]',
     dot: 'bg-error animate-pulse',
   },

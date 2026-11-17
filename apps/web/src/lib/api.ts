@@ -408,7 +408,7 @@ export const ECOMMERCE_TABLES_SCHEMA: TableSchemaInfo[] = [
 export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'first-query',
-    title: 'Primer Query',
+    title: 'Primera Consulta',
     description: 'Ejecutaste con éxito tu primera consulta SQL en Qurio.',
     icon: 'Terminal',
     category: 'progreso',
@@ -417,7 +417,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     progress: 0,
     required_threshold: 1,
     current_value: 0,
-    unit: 'query',
+    unit: 'consulta',
   },
   {
     id: 'join-apprentice',
@@ -474,7 +474,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'speed-runner',
     title: 'Baja Latencia',
-    description: 'Ejecuta una consulta evaluada en menos de 5ms en el sandbox.',
+    description: 'Ejecuta una consulta evaluada en menos de 5 ms en PostgreSQL.',
     icon: 'Zap',
     category: 'habilidad',
     xp_reward: 120,
@@ -482,11 +482,11 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     progress: 0,
     required_threshold: 1,
     current_value: 0,
-    unit: 'query',
+    unit: 'consulta',
   },
   {
     id: 'window-wizard',
-    title: 'Window Wizard',
+    title: 'Maestro de Ventanas',
     description: 'Resuelve un ejercicio analítico utilizando funciones de ventana (ROW_NUMBER).',
     icon: 'Layers',
     category: 'habilidad',
@@ -506,7 +506,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     xp_reward: 500,
     unlocked_at: null,
     progress: 0,
-    required_threshold: 50,
+    required_threshold: 60,
     current_value: 0,
     unit: 'ejercicios',
   },

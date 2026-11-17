@@ -195,7 +195,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
                 </span>
               )}
               <span className="hidden md:inline text-[11px] text-content-secondary">
-                Tu consulta arrojó el resultado exacto en el Sandbox.
+                Tu consulta obtuvo el resultado esperado.
               </span>
             </div>
           </div>
@@ -219,10 +219,10 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
           <div className="h-full flex flex-col items-center justify-center p-6 text-center text-content-muted">
             <Terminal className="w-8 h-8 mb-2 text-content-muted/60" />
             <p className="text-sm font-medium text-content-secondary">
-              Listo para ejecutar en el Sandbox de PostgreSQL
+              Listo para ejecutar en PostgreSQL
             </p>
             <p className="text-xs text-content-muted mt-1 max-w-sm">
-              Escribe tu consulta SQL arriba y presiona <kbd className="px-1.5 py-0.5 rounded bg-surface-card border border-border-subtle text-content-primary font-mono text-[11px]">⌘↵</kbd> para compilar y ver los resultados en esta tabla.
+              Escribe tu consulta SQL arriba y presiona <kbd className="px-1.5 py-0.5 rounded bg-surface-card border border-border-subtle text-content-primary font-mono text-[11px]">⌘↵</kbd> para ejecutar y ver los resultados en esta tabla.
             </p>
           </div>
         )}
@@ -231,7 +231,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
           <div className="h-full flex flex-col items-center justify-center p-6 text-center text-content-muted">
             <div className="w-7 h-7 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-3" />
             <span className="text-xs font-mono text-content-secondary">
-              Ejecutando en PostgreSQL Sandbox (timeout: 2,000ms)...
+              Ejecutando consulta en PostgreSQL (límite: 2,000 ms)...
             </span>
           </div>
         )}

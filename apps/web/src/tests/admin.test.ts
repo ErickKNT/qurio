@@ -107,7 +107,7 @@ describe('Qurio Admin Console — RBAC Stealth Guard & Componentes Operativos', 
     await waitFor(() => {
       expect(screen.getByText(/SQLSTATE 42P01/i)).toBeInTheDocument();
     });
-    expect(screen.queryByText(/Qurio Admin & Live Ops/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Qurio Admin & Operaciones en Vivo/i)).not.toBeInTheDocument();
     expect(document.title).toBe('ERROR 404: Relation Not Found | Qurio');
     unmount();
 
@@ -139,7 +139,7 @@ describe('Qurio Admin Console — RBAC Stealth Guard & Componentes Operativos', 
     await waitFor(() => {
       expect(screen.getByText(/SQLSTATE 42P01/i)).toBeInTheDocument();
     });
-    expect(screen.queryByText(/Qurio Admin & Live Ops/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Qurio Admin & Operaciones en Vivo/i)).not.toBeInTheDocument();
     expect(document.title).toBe('ERROR 404: Relation Not Found | Qurio');
   });
 
@@ -158,9 +158,9 @@ describe('Qurio Admin Console — RBAC Stealth Guard & Componentes Operativos', 
     render(React.createElement(App));
 
     await waitFor(() => {
-      expect(screen.getByText(/Qurio Admin & Live Ops/i)).toBeInTheDocument();
+      expect(screen.getByText(/Qurio Admin & Operaciones en Vivo/i)).toBeInTheDocument();
     });
-    expect(document.title).toBe('Admin Live Ops | Qurio');
+    expect(document.title).toBe('Administración y Operaciones | Qurio');
     expect(mockGetLiveOps).toHaveBeenCalled();
   });
 

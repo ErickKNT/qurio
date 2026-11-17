@@ -24,6 +24,8 @@ import {
   StreakPill,
   GuestTrialCompleteModal,
   RevealSolutionModal,
+  PedagogyPillarsCard,
+  MethodologyModal,
 } from '@/components/molecules';
 import { AuthModal, AuthMode } from '@/components/molecules/AuthModal/AuthModal';
 import {
@@ -106,6 +108,7 @@ export const App: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthMode>('signin');
   const [guestTrialModalOpen, setGuestTrialModalOpen] = useState(false);
+  const [methodologyModalOpen, setMethodologyModalOpen] = useState(false);
 
   // Identificadores oficiales de los 3 retos de prueba en Módulo 1 para invitados
   const GUEST_TRIAL_EXERCISE_IDS = useMemo(
@@ -286,8 +289,11 @@ export const App: React.FC = () => {
 
       const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
       if (isAuth && profile?.id) {
-        const computed = computeOfficialTracksProgress(tracks, exercises, completedSet, false);
-        setTracks(computed);
+        setTracks((currentTracks) =>
+          currentTracks.length > 0
+            ? computeOfficialTracksProgress(currentTracks, exercises, completedSet, false)
+            : currentTracks
+        );
 
         // Carga de métricas reales del estudiante autenticado
         persistence.getUserDailyActivity(profile.id).then((act) => {
@@ -302,8 +308,11 @@ export const App: React.FC = () => {
           }
         });
       } else {
-        const computed = computeGuestTrialTracksProgress(tracks, exercises, completedSet);
-        setTracks(computed);
+        setTracks((currentTracks) =>
+          currentTracks.length > 0
+            ? computeGuestTrialTracksProgress(currentTracks, exercises, completedSet)
+            : currentTracks
+        );
         setDailyActivity([]);
         setTotalAttemptsCount(api.getQueryHistory().length);
       }
@@ -311,9 +320,9 @@ export const App: React.FC = () => {
     });
   }, [profile?.id, exercises.length]);
 
-  // Recomputar progreso por ruta de forma reactiva y consistente cuando cambian los retos o completados
+  // Recomputar progreso por ruta de forma reactiva y consistente cuando cambian los retos, rutas o completados
   useEffect(() => {
-    if (!exercises || exercises.length === 0) return;
+    if (!exercises || exercises.length === 0 || tracks.length === 0) return;
     const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
     if (isAuth && profile?.id) {
       setTracks((currentTracks) =>
@@ -324,7 +333,7 @@ export const App: React.FC = () => {
         computeGuestTrialTracksProgress(currentTracks, exercises, authoritativeCompletedIds)
       );
     }
-  }, [authoritativeCompletedIds, exercises.length, profile?.id]);
+  }, [authoritativeCompletedIds, exercises.length, tracks.length, profile?.id]);
 
   // Reto Recomendado Dinámico (Anti-Hardcode)
   const recommendedExercise = useMemo(() => {
@@ -413,25 +422,29 @@ export const App: React.FC = () => {
   // Actualización dinámica del título de la pestaña (Anti-AI Slop Regla 1.1)
   useEffect(() => {
     if (currentPath === 'exercise') {
-      document.title = `${activeExercise.title} — SQL Foundations | Qurio`;
+      const exerciseTrack = tracks.find((t) =>
+        t.modules?.some((m) => m.id === activeExercise.module_id)
+      );
+      const trackLabel = exerciseTrack?.title || 'Fundamentos de SQL';
+      document.title = `${activeExercise.title} — ${trackLabel} | Qurio`;
     } else if (currentPath === 'admin') {
       document.title = isAdmin
-        ? 'Admin Live Ops | Qurio'
+        ? 'Administración y Operaciones | Qurio'
         : 'ERROR 404: Relation Not Found | Qurio';
     } else {
       const titles: Record<string, string> = {
-        dashboard: 'Dashboard | Qurio',
+        dashboard: 'Inicio | Qurio',
         tracks: 'Rutas de Aprendizaje | Qurio',
-        playground: 'SQL Playground | Qurio',
+        playground: 'Laboratorio SQL | Qurio',
         achievements: 'Logros & Rangos | Qurio',
         profile: 'Mi Perfil | Qurio',
         'not-found': 'ERROR 404: Relation Not Found | Qurio',
         'auth-confirm': 'Verificación de Cuenta | Qurio',
         'reset-password': 'Restablecer Contraseña | Qurio',
       };
-      document.title = titles[currentPath] || 'Qurio | Aprende SQL. Piensa en queries.';
+      document.title = titles[currentPath] || 'Qurio | Aprende SQL escribiendo consultas reales.';
     }
-  }, [currentPath, activeExercise, isAdmin]);
+  }, [currentPath, activeExercise, tracks, isAdmin]);
 
   // Cambiar de ejercicio activo
   const handleSelectExercise = (index: number) => {
@@ -752,7 +765,10 @@ export const App: React.FC = () => {
                 </Button>
 
                 <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-content-muted">
-                  <span>SQL Foundations</span>
+                  <span>
+                    {tracks.find((t) => t.modules?.some((m) => m.id === activeExercise.module_id))
+                      ?.title || 'Fundamentos de SQL'}
+                  </span>
                   <ChevronRight className="w-3 h-3" />
                   <span className="text-content-primary font-medium">{activeExercise.title}</span>
                 </div>
@@ -905,7 +921,7 @@ export const App: React.FC = () => {
               </div>
               <div className="flex items-center gap-3">
                 <KbdShortcut keys={['⌘', '↵']} />
-                <span>para compilar y evaluar</span>
+                <span>para ejecutar y evaluar</span>
               </div>
             </div>
           }
@@ -936,6 +952,7 @@ export const App: React.FC = () => {
             setAuthModalOpen(true);
           }}
           solvedCount={3}
+          remainingCount={Math.max(0, exercises.length - GUEST_TRIAL_EXERCISE_IDS.size)}
           earnedXp={100}
         />
 
@@ -953,11 +970,11 @@ export const App: React.FC = () => {
   const getHeaderTitle = () => {
     switch (currentPath) {
       case 'dashboard':
-        return 'Dashboard';
+        return 'Inicio';
       case 'tracks':
         return 'Rutas de Aprendizaje';
       case 'playground':
-        return 'SQL Playground';
+        return 'Laboratorio SQL';
       case 'achievements':
         return 'Logros & Rangos';
       case 'profile':
@@ -970,7 +987,7 @@ export const App: React.FC = () => {
       case 'reset-password':
         return 'Restablecer Contraseña';
       default:
-        return 'Dashboard';
+        return 'Inicio';
     }
   };
 
@@ -993,6 +1010,7 @@ export const App: React.FC = () => {
               exercises={exercises}
               completedExerciseIds={authoritativeCompletedIds}
               onSelectExercise={handleOpenExerciseFromCatalog}
+              onOpenMethodology={() => setMethodologyModalOpen(true)}
               isLoading={isProgressLoading}
             />
           </React.Suspense>
@@ -1086,7 +1104,7 @@ export const App: React.FC = () => {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald/10 border border-emerald/25 text-[11px] font-mono text-emerald font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                    <span>Ruta Activa • {activeLearningData.activeTrack?.title || 'SQL Foundations'}</span>
+                    <span>Ruta Activa • {activeLearningData.activeTrack?.title || 'Fundamentos de SQL'}</span>
                     {activeLearningData.activeModule && (
                       <>
                         <span className="text-content-muted">•</span>
@@ -1099,7 +1117,7 @@ export const App: React.FC = () => {
 
                   <div className="flex items-center gap-2 font-mono text-xs text-content-muted">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
-                    <span>PostgreSQL 16 Sandbox • 3.6ms (pg_stat_ready)</span>
+                    <span>PostgreSQL 16 • Entorno Activo</span>
                   </div>
                 </div>
 
@@ -1193,7 +1211,7 @@ export const App: React.FC = () => {
                     onClick={() => navigate('tracks')}
                     className="px-4 shrink-0 whitespace-nowrap text-xs hover:border-cyan-accent/50"
                   >
-                    Ver Syllabus Completo
+                    Ver Temario Completo
                   </Button>
                 </div>
               </div>
@@ -1207,19 +1225,19 @@ export const App: React.FC = () => {
                   </div>
 
                   <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
-                    ¡Bienvenido a Qurio! <span className="text-content-secondary font-normal">Aprende SQL pensando en queries.</span>
+                    ¡Bienvenido a Qurio! <span className="text-content-secondary font-normal">Aprende SQL escribiendo consultas reales.</span>
                   </h1>
 
                   <p className="text-xs text-content-secondary leading-relaxed">
-                    Estás conectado a un motor PostgreSQL 16 real en Docker. Resuelve hasta 3 retos prácticos de SQL Foundations con evaluación semántica de inmediato, sin necesidad de crear cuenta.
+                    Practicas directamente contra una base de datos PostgreSQL 16 real. Resuelve hasta 3 retos iniciales gratis y verifica tus resultados al instante, sin necesidad de crear cuenta.
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 sm:gap-6 shrink-0">
                   <div className="flex flex-col items-start sm:items-end pr-2 font-mono shrink-0 whitespace-nowrap">
-                    <span className="text-[10px] text-content-muted uppercase tracking-wider">Latencia Sandbox</span>
+                    <span className="text-[10px] text-content-muted uppercase tracking-wider">Motor de Práctica</span>
                     <span className="text-xs text-content-secondary font-semibold flex items-center gap-1.5 whitespace-nowrap">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> 3.6ms (pg_stat_ready)
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> PostgreSQL 16 Listo
                     </span>
                   </div>
 
@@ -1297,26 +1315,29 @@ export const App: React.FC = () => {
             />
           </section>
 
-          {/* Selector de Pestañas para el Dashboard / Atomic Showcase */}
-          <div className="flex items-center gap-2 border-b border-border-subtle pb-3">
-            <RadioTab
-              label="Visión General"
-              active={activeTab === 'overview'}
-              onClick={() => setActiveTab('overview')}
-              icon={<Terminal className="w-3.5 h-3.5" />}
-            />
-            <RadioTab
-              label="Sistema de Diseño & Átomos"
-              active={activeTab === 'components'}
-              onClick={() => setActiveTab('components')}
-              icon={<Sparkles className="w-3.5 h-3.5" />}
-              badge="Atomic"
-            />
-          </div>
+          {/* Selector de Pestañas para el Inicio (el showcase técnico solo se muestra a administradores) */}
+          {isAdmin && (
+            <div className="flex items-center gap-2 border-b border-border-subtle pb-3">
+              <RadioTab
+                label="Visión General"
+                active={activeTab === 'overview'}
+                onClick={() => setActiveTab('overview')}
+                icon={<Terminal className="w-3.5 h-3.5" />}
+              />
+              <RadioTab
+                label="Sistema de Diseño & Átomos"
+                active={activeTab === 'components'}
+                onClick={() => setActiveTab('components')}
+                icon={<Sparkles className="w-3.5 h-3.5" />}
+                badge="UI"
+              />
+            </div>
+          )}
 
-          {activeTab === 'overview' ? (
-            /* Vista de Retos Destacados */
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {(!isAdmin || activeTab === 'overview') ? (
+            <div className="flex flex-col gap-6">
+              {/* Vista de Retos Destacados */}
+              <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Reto Estrella en Proceso */}
               <div className="lg:col-span-2 flex flex-col justify-between p-6 rounded-2xl bg-surface/70 border border-border-subtle/60 shadow-lg">
                 <div className="flex flex-col gap-3">
@@ -1380,7 +1401,7 @@ export const App: React.FC = () => {
                     <span>Esquema Activo</span>
                   </span>
                   <span className="text-[10px] font-mono text-primary font-medium px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
-                    Ecommerce DB
+                    Tienda Online
                   </span>
                 </div>
 
@@ -1394,7 +1415,7 @@ export const App: React.FC = () => {
                         <Code2 className="w-3.5 h-3.5 text-cyan-accent" />
                         {tbl.tableName} ({tbl.rowCount} filas)
                       </span>
-                      <span className="text-[10px] text-content-muted">public</span>
+                      <span className="text-[10px] text-content-muted">tabla</span>
                     </div>
                   ))}
                 </div>
@@ -1402,14 +1423,21 @@ export const App: React.FC = () => {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setCurrentPath('playground')}
+                  onClick={() => navigate('playground')}
                   className="mt-2 text-xs border-cyan-accent/30 text-cyan-accent hover:bg-cyan-accent/10"
                 >
                   <Terminal className="w-3.5 h-3.5 mr-1 text-cyan-accent" />
-                  <span>Explorar en Playground</span>
+                  <span>Abrir en Laboratorio SQL</span>
                 </Button>
               </div>
-            </section>
+              </section>
+
+              {/* Respaldo Pedagógico y Técnico */}
+              <PedagogyPillarsCard
+                compact
+                onOpenMethodology={() => setMethodologyModalOpen(true)}
+              />
+            </div>
           ) : (
             /* Showcase del Árbol de Atomic Design Pragmático */
             <section className="flex flex-col gap-6 p-6 rounded-2xl bg-surface border border-border-subtle">
@@ -1508,6 +1536,7 @@ export const App: React.FC = () => {
         setAuthModalOpen(true);
       }}
       solvedCount={3}
+      remainingCount={Math.max(0, exercises.length - GUEST_TRIAL_EXERCISE_IDS.size)}
       earnedXp={100}
     />
 
@@ -1516,6 +1545,12 @@ export const App: React.FC = () => {
       isOpen={authModalOpen}
       onClose={() => setAuthModalOpen(false)}
       initialMode={authModalInitialMode}
+    />
+
+    {/* Modal de Metodología Pedagógica y Rigor Técnico */}
+    <MethodologyModal
+      isOpen={methodologyModalOpen}
+      onClose={() => setMethodologyModalOpen(false)}
     />
   </>
   );

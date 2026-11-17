@@ -25,7 +25,7 @@ export interface TopHeaderProps {
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
-  title = 'Dashboard',
+  title = 'Inicio',
   isSidebarCollapsed = false,
   onOpenPlayground,
   onOpenAuth,
@@ -74,14 +74,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <span className="w-1.5 h-1.5 rounded-full bg-primary" />
           <span>{title}</span>
         </h2>
-        {onOpenPlayground && title !== 'SQL Playground' && (
+        {onOpenPlayground && title !== 'Laboratorio SQL' && (
           <button
             type="button"
             onClick={onOpenPlayground}
             className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-mono rounded-full bg-cyan-accent/10 hover:bg-cyan-accent/20 text-cyan-600 dark:text-cyan-accent border border-cyan-accent/25 transition-all shadow-sm"
           >
             <Terminal className="w-3 h-3 text-cyan-accent" />
-            <span>Playground</span>
+            <span>Laboratorio SQL</span>
           </button>
         )}
       </div>

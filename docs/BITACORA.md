@@ -1481,3 +1481,111 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Frontend Vitest (`apps/web/`):** **30/30 pruebas aprobadas** (`6` archivos, incluyendo `src/tests/admin.test.ts` con guardia 404 sigiloso, acceso admin, doble confirmación de `KillswitchToggle` y resaltado de `SqlDiffViewer`).
      * **Build de Producción (`npm run build`):** `2,273` módulos transformados en `7.30s`, `0` errores TypeScript, `0` advertencias Rollup >500 kB y `0` fugas de `solution_query` en `fallbackCurriculum` / catálogo público.
      * **Playwright E2E (`pilot_e2e_suite.mjs`):** `15/18` comprobaciones aprobadas (`T07/T08/T09` fallan por comportamiento preexistente en `main` donde `GuestTrialCompleteModal` intercepta la vista antes de mostrar el texto `REGISTRATION_REQUIRED_AFTER_TRIAL`).
+
+---
+
+### Entrada 49: Fase 13 — Calibración Pedagógica de los 50 Retos y Localización Progresiva 100% en Español
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-13-pedagogical-calibration` (bifurcada desde `feat/phase-12-admin-console`, aislada sin merge ni push)
+* **Objetivo:**
+  1. Alinear la especificación pedagógica (`docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md`) con el esquema real de `ecommerce_seed.sql` y la regla obligatoria de **Español 100% Progresivo** (conservando exclusivamente sintaxis SQL estándar e identificadores del esquema).
+  2. Eliminar anglicismos innecesarios y jerga técnica prematura en UI, navegación, nombres de rutas/módulos y los 50 ejercicios.
+  3. Calibrar los 50 retos en los tres orígenes de catálogo (`seed_data.py`, `fallbackCurriculum.ts` sin `solution_query` y `02_seed_curriculum.sql` + `sync_supabase_curriculum.py`) con pistas progresivas de 3 niveles sin spoilers, determinismo estricto en `ORDER BY` / `LIMIT` y cero fugas de esquema en `concept`.
+* **Actividades y Decisiones Técnicas:**
+  1. **Especificación Pedagógica y Auditoría Contra PostgreSQL 16 Sandbox (`docs/pedagogia/`):**
+     * Corregidas las columnas de referencia en la Regla 2 (`detalle_pedidos`, `facturas`, `pagos`, `inventario`) para coincidir al 100% con `database/sandbox/ecommerce_seed.sql`, incorporada la Regla 6 (*Español 100% Progresivo*) y corregida la ruta canónica en la Sección 6.
+  2. **Localización Progresiva de Interfaz y Rutas (`apps/web/` & `database/supabase/`):**
+     * UI migrada a terminología natural en español para estudiantes iniciales: `Dashboard` -> `Inicio`, `SQL Playground` -> `Laboratorio SQL`, `Syllabus` -> `Temario Detallado`, `SQLBolt Didactics` -> `Guía Paso a Paso`, `Ejecutar Query` -> `Ejecutar Consulta`, `Admin Console` -> `Administración`, y etiquetas operativas en español dentro de `AdminDashboardView` y `AdminBadge`.
+     * Rutas formativas traducidas progresivamente (`Fundamentos de SQL`, `SQL Relacional`, `Consultas Avanzadas`), logros consistentes (`Primera Consulta`, `Maestro de Relaciones`, `Maestro de Ventanas`) y encabezados de módulos localizados (`Consultas Temporales con WITH (CTEs)`, `Funciones Analíticas de Ventana`, etc.).
+     * Corregido el breadcrumb estático en `App.tsx` al resolver un ejercicio para mostrar dinámicamente el nombre real de la ruta activa, y restringida la pestaña de átomos de diseño en desarrollo a usuarios administradores.
+  3. **Calibración Completa de los 50 Retos (Lotes A, B y C):**
+     * **3 niveles de andamiaje en los 50 ejercicios (`150` filas en `exercise_hints`):** Pista 1 conceptual, Pista 2 estructural y Pista 3 plantilla parcial con huecos (`???`), eliminando los 8 spoilers directos (`Escribe: ...`).
+     * **Determinismo semántico y `sort_order` contiguo `1..50`:** Corregida la colisión previa `sort_order=45` duplicada (ahora Módulo 10 termina en `#45`, Módulo 11 `#46-#47` y Módulo 12 `#48-#50` ordenando `ROW_NUMBER` antes de `DENSE_RANK` y `LAG`), agregado `ORDER BY ranking ASC` faltante en `#48` (`ROW_NUMBER`) con `check_order=True`, y añadidos criterios únicos de desempate en consultas ordenadas o con `LIMIT` (`#11`, `#12`, `#18`, `#22`, `#24`, `#26`, `#41`, `#44`, `#46`, `#47`, `#48`, `#49`, `#50`).
+     * **Cero fugas y cero anglicismos:** Eliminadas referencias a tablas o columnas reales del esquema en `concept.*` (`#22`, `#29`, `#30`, `#32`, `#33`, `#35`, `#36`, `#46`) y traducidos títulos con jerga prematura (`Anti-Join`, `IN Subquery`, `Conditional Aggregation`, `Pipeline de Datos`).
+  4. **Regresión Automatizada y Verificación:**
+     * **Backend Pytest (`apps/api/tests/`):** **98/98 pruebas aprobadas** en `77.20s`, incorporando en `tests/test_schema_consistency.py` dos pruebas permanentes (`test_curriculum_50_exercises_unique_sort_order_and_sync` y `test_curriculum_pedagogical_rubric_and_sandbox_determinism`) que ejecutan las 50 `solution_query` contra PostgreSQL 16 Sandbox (`1..20` filas cada una), auditan AST determinista, pistas, `concept` y sincronía entre las 3 fuentes (`0/50` incumplimientos).
+     * **Frontend (`apps/web/`):** `tsc --noEmit` sin errores, `vitest run` con **6 archivos / 30 pruebas aprobadas** y `npm run build` (`vite build`) compilado limpiamente (`2,273` módulos en `5.71s`) verificando ausencia total de `solution_query` en `fallbackCurriculum.ts`.
+     * **Playwright E2E (`pilot_e2e_suite.mjs`):** Actualizados los selectores de títulos y botones traducidos (`Inicio | Qurio`, `Laboratorio SQL | Qurio`, `Ejecutar Consulta`, `Volver al Inicio`); **15/18 comprobaciones aprobadas** (`T01`–`T06.1`, `T10`–`T13`), persistiendo únicamente los 3 fallos preexistentes (`T07/T08/T09`) por intercepción visual de `GuestTrialCompleteModal`.
+
+---
+
+### Entrada 50: Reordenamiento por Átomo Cognitivo (Módulos 4 y 5), Dificultad `Avanzado` en Ruta 3 y Expansión Curricular a 60 Retos
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-13-pedagogical-calibration` (aislada sin merge ni push)
+* **Objetivo:**
+  1. Corregir los dos saltos de complejidad interna detectados al auditar el orden secuencial bajo *Taipalus (2020)* y la dimensión *Átomo Cognitivo* dentro de los Módulos 4 y 5.
+  2. Diferenciar formalmente la dificultad de la Ruta 3 (`Consultas Avanzadas`) a `'Avanzado'` (`Principiante` $\to$ `Intermedio` $\to$ `Avanzado`).
+  3. Ampliar el currículum de **50 a 60 retos** (`180` pistas en 3 niveles) para cubrir lagunas pedagógicas clave en filtros temporales, lógica trivalente (`NULL`/`COALESCE`), álgebra de conjuntos y analítica avanzada.
+* **Actividades y Decisiones Técnicas:**
+  1. **Reordenamiento de Módulos 4 y 5 (`seed_data.py`, `fallbackCurriculum.ts`, `02_seed_curriculum.sql`):**
+     * **Módulo 4 (`#16–#24`):** Ahora inicia con agregación global sin agrupar (`#16` *Métricas Globales*), continúa con `GROUP BY` básico (`#17–#19`), introduce el puente `WHERE + GROUP BY` (`#20`), consolida multi-agregación (`#21` *Resumen de Pedidos por Estado*) y cierra exclusivamente con el bloque `HAVING` (`#22` *Conteo > 2*, `#23` *HAVING SUM*, `#24` *HAVING AVG*).
+     * **Módulo 5 (`#25–#29`):** Consolida primero los cuatro `INNER JOIN` planos (`#25–#28`) y deja `Gasto Acumulado por Cliente` (`INNER JOIN + GROUP BY + SUM`) como cierre integrador (`#29`).
+     * **Ruta 3 (`Consultas Avanzadas`, `#45–#60`):** Etiquetada con `difficulty = 'Avanzado'` tanto en `learning_paths` como en los 16 ejercicios de la ruta.
+  2. **10 Nuevos Retos Calibrados (`e0000000-...-0051` a `0060`, total `24 + 20 + 16 = 60`):**
+     * `#11` (`0051`): *Pedidos de Febrero de 2024* (rango de fechas `BETWEEN` en `WHERE`).
+     * `#20` (`0052`): *Compras Completadas por Cliente* (`WHERE` antes de `GROUP BY`).
+     * `#35` (`0053`): *Gasto Total de Clientes Incluyendo 0€* (`LEFT JOIN` + `COALESCE(SUM(...), 0)`).
+     * `#41` (`0054`): *Ciudades con Clientes y Almacenes* (`INTERSECT`).
+     * `#48` (`0055`): *Clientes sin Pedidos Completados* (`NOT EXISTS` inmune a trampas de `NULL` en `NOT IN`).
+     * `#51` (`0056`): *Conteo de Productos por Nivel de Precio* (`COUNT(CASE WHEN ... THEN 1 END)`).
+     * `#54` (`0057`): *Evolución Mensual de Ventas mediante CTE* (`TO_CHAR(fecha_pedido, 'YYYY-MM')`).
+     * `#55` (`0058`): *Categorías sobre el Promedio de Facturación* (reutilización de CTE con subconsulta escalar `AVG`).
+     * `#58` (`0059`): *Producto Más Caro por Categoría* (CTE + `ROW_NUMBER() OVER (PARTITION BY ...)`).
+     * `#59` (`0060`): *Ingresos Acumulados Progresivos* (`SUM(total) OVER (ORDER BY fecha_pedido, pedido_id)`).
+  3. **Actualización Dinámica de Umbrales y Pruebas:**
+     * `GuestTrialCompleteModal.tsx` y `App.tsx` calculan dinámicamente los retos restantes (`exercises.length - 3`), `UserProfileView.tsx` y logro `master-sql` en `api.ts` actualizados a `60`, y `progress.test.ts` actualizado a `24 + 20 + 16 = 60`.
+     * En `apps/api/tests/test_schema_consistency.py`, actualizadas las aserciones a `60` retos / `180` pistas, agregadas guardas automáticas de orden cognitivo para Módulos 4 y 5, verificación de `difficulty` por ruta, y soporte AST para `INTERSECT` y agrupación simple en CTEs.
+  4. **Verificación Integral Post-Expansión:**
+     * **Pytest (`apps/api/tests/`):** **98/98 pruebas aprobadas** en `78.47s` (60/60 `solution_query` ejecutadas en PostgreSQL 16 Sandbox con `1..20` filas, determinismo y cero fugas en `concept`).
+     * **Frontend (`apps/web/`):** `tsc --noEmit` limpio, **6 archivos / 30 pruebas aprobadas** en `vitest`, y `vite build` exitoso (`2,273` módulos en `7.14s`).
+
+---
+
+### Entrada 51: Regla Operativa de Ingeniería Curricular y Visualización del Respaldo Pedagógico en UI
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-13-pedagogical-calibration` (aislada sin merge ni push)
+* **Objetivo:**
+  1. Convertir la especificación de `docs/pedagogia/` en una regla permanente del repositorio descubierta automáticamente por cualquier agente o desarrollador al crear ejercicios SQL.
+  2. Visualizar dentro de Qurio (bajo Atomic Design Pragmático y mediante un modal dedicado) los fundamentos de psicología cognitiva, didáctica de SQL y arquitectura técnica en PostgreSQL 16 que respaldan la enseñanza de la plataforma.
+* **Actividades y Decisiones Técnicas:**
+  1. **Regla Permanente del Repositorio (`.agents/rules/sql-pedagogy.md` & `AGENTS.md`):**
+     * Creada la regla operativa [`.agents/rules/sql-pedagogy.md`](file:///c:/Desarrollo/Qurio/.agents/rules/sql-pedagogy.md) con el checklist obligatorio de 8 puntos (paridad PostgreSQL 16, esquema canónico de 10 tablas, 1–20 filas, determinismo, `concept` abstracto sin spoilers, 3 pistas progresivas en Español 100% Progresivo, átomo cognitivo y validación obligatoria en `test_schema_consistency.py`).
+     * Enlazada en [`AGENTS.md`](file:///c:/Desarrollo/Qurio/AGENTS.md) como estándar bloqueante del proyecto.
+  2. **Moléculas de Respaldo Pedagógico (`apps/web/src/components/molecules/`):**
+     * **`PedagogyPillarsCard`:** Banda compacta con los 3 pilares basados en evidencia (*Carga Cognitiva Gradual*, *Andamiaje en 3 Capas* y *Motor Real PostgreSQL 16*) integrada en `Inicio` (`App.tsx`) y `Rutas de Aprendizaje` (`TracksView.tsx`), con botón directo hacia el modal de metodología.
+     * **`MethodologyModal`:** Modal accesible (`role="dialog"`, cierre con `Escape`) que expone el andamiaje decreciente en 3 capas, el flujo técnico real (`Monaco` $\to$ `AST SQLGlot` $\to$ `PostgreSQL 16 Sandbox readonly_student` $\to$ `Comparador Semántico`), las 5 familias de trampas semánticas entrenadas (*Brass & Goldberg, 2006*; *Taipalus, 2020*) y enlaces DOI verificables (*Sweller*, *Renkl*, *Mitrovic*, *Wilson*).
+  3. **Micro-señales en el Espacio de Trabajo (`ExerciseSpecPanel.tsx`):**
+     * Etiquetados explícitamente los 3 niveles en la pestaña de pistas (`Nivel 1 • Enfoque Conceptual`, `Nivel 2 • Estructura SQL`, `Nivel 3 • Plantilla Guiada`).
+     * Incorporado el sello verificable `PostgreSQL 16 Sandbox • Evaluación Semántica de Conjuntos` en la tarjeta de orden de ejecución del motor.
+  4. **Verificación:**
+     * **Frontend (`apps/web/`):** Añadida la suite [`src/tests/pedagogy.test.ts`](file:///c:/Desarrollo/Qurio/apps/web/src/tests/pedagogy.test.ts) (**7 archivos / 33 pruebas aprobadas** en `vitest`), `tsc --noEmit` sin errores y `vite build` exitoso (`2,275` módulos transformados en `6.11s`).
+     * **Backend:** `pytest apps/api/tests/test_schema_consistency.py -v` (**5/5 aprobadas** en `2.43s` sobre los 60 retos).
+
+---
+
+### Entrada 52: Corrección de Condición de Carrera en Rutas y Mapa Visual Curricular Dual (`LearningRoadmapMap`)
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/phase-13-pedagogical-calibration` (aislada sin merge ni push)
+* **Objetivo:**
+  1. Corregir la condición de carrera en `App.tsx` tras el *code splitting* de `fallbackCurriculum.ts` que dejaba vacío el estado `tracks` cuando `persistence.getCompletedExerciseIds` resolvía con el *closure* inicial (`[]`).
+  2. Incorporar el organismo [`LearningRoadmapMap.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/LearningRoadmapMap/LearningRoadmapMap.tsx) dentro de [`TracksView.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/components/organisms/TracksView/TracksView.tsx) con selector dual entre **Camino por Etapas** y **Árbol de Habilidades** conectado por SVG.
+* **Actividades y Decisiones Técnicas:**
+  1. **Corrección en [`App.tsx`](file:///c:/Desarrollo/Qurio/apps/web/src/App.tsx#L290-L335):**
+     * Reemplazadas las asignaciones directas `setTracks(compute...)` dentro del efecto de carga de progreso por actualizaciones funcionales seguras (`setTracks((currentTracks) => currentTracks.length > 0 ? ... : currentTracks)`) e incorporada la dependencia `tracks.length` en el recomputador reactivo para garantizar cálculo sin pérdidas tras carga asíncrona.
+  2. **Organismo `LearningRoadmapMap` (`src/components/organisms/LearningRoadmapMap/`):**
+     * **Camino por Etapas:** visualización en 3 etapas conectadas (`Fundamentos de SQL` $\to$ `SQL Relacional` $\to$ `Consultas Avanzadas`) con riel progresivo vertical de los 12 módulos (`completado`, `en curso`, `pendiente`).
+     * **Árbol de Habilidades (Diseño Circuito Top-Down por Defecto):** refactorizado a una arquitectura vertical por zonas (*Principiante* $\to$ *Intermedio* $\to$ *Avanzado*) con tarjetas legibles (`M01..M12`, conceptos SQL clave en `JetBrains Mono` y barra de progreso integrada), puertos SVG y aristas Bézier calculadas dinámicamente vía `ResizeObserver` (`39` rutas SVG sin traslapes de nodos), resaltando toda la cadena causal de ancestros al seleccionar o pasar el cursor.
+     * **Panel inferior de estaciones por módulo:** al hacer clic en cualquier módulo en ambos modos, sincroniza la ruta seleccionada en `TracksView` y muestra las estaciones individuales de cada reto (`#01..#60`) con salto directo al editor SQL.
+  3. **Verificación:**
+     * **Vitest (`apps/web/`):** **7 archivos / 34 pruebas aprobadas** (`2.70s`, incluida prueba de interacción de `LearningRoadmapMap` en `pedagogy.test.ts`).
+     * **Playwright en vivo sobre `http://localhost:5173/tracks`:** confirmados los `39` trazos SVG del circuito, `0` traslapes de nodos y `0` errores de página.
+     * **Build de producción (`vite build`):** **2,276 módulos transformados en `5.76s`**.
+     * **Backend (`test_schema_consistency.py`):** **5/5 pruebas aprobadas** (`2.32s`).
+
+
+
+

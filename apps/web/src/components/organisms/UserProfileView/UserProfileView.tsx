@@ -37,7 +37,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   profile,
   history,
   completedCount = 0,
-  totalExercises = 50,
+  totalExercises = 60,
   dailyActivity = [],
   onOpenPlayground,
   onOpenAuth,
@@ -65,7 +65,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
   const levelTitles: Record<number, string> = {
     1: 'Novato SQL',
-    2: 'Junior Query Builder',
+    2: 'Constructor de Consultas',
     3: 'Especialista Relacional',
     4: 'Arquitecto de Consultas',
     5: 'Maestro de Datos',
@@ -127,17 +127,17 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               </Badge>
               {isCloudAuth ? (
                 <Badge variant="emerald" dot size="sm">
-                  Supabase Cloud
+                  Sesión en la Nube
                 </Badge>
               ) : (
                 <Badge variant="amber" size="sm">
-                  Local / Offline
+                  Modo Local
                 </Badge>
               )}
             </div>
 
             <p className="text-xs text-content-secondary font-mono">
-              {profile?.full_name || profile?.username || 'Estudiante'} • {isCloudAuth ? 'Sesión JWT Autenticada' : 'Modo Demostración'}
+              {profile?.full_name || profile?.username || 'Estudiante'} • {isCloudAuth ? 'Sesión Autenticada' : 'Modo Demostración'}
             </p>
 
             <div className="flex flex-wrap items-center gap-3 mt-1 text-[11px] font-mono text-content-muted">
@@ -148,7 +148,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <span>•</span>
               <span className="flex items-center gap-1 text-emerald">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Sandbox Aislado Conectado
+                Entorno de Práctica Conectado
               </span>
             </div>
 
@@ -217,13 +217,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           accent="indigo"
         />
         <MetricTile
-          label="Latencia Sandbox"
+          label="Tiempo de Respuesta"
           value={
             history.length > 0
               ? `${(history.reduce((acc, h) => acc + (h.execution_time_ms || 0), 0) / history.length).toFixed(1)} ms`
               : '3.6 ms'
           }
-          subValue="pg_stat_statements"
+          subValue="Promedio en PostgreSQL"
           icon={<Clock className="w-4 h-4" />}
           accent="cyan"
         />
@@ -289,13 +289,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               Historial Reciente de Consultas
             </h3>
             <p className="text-xs text-content-secondary mt-0.5">
-              Registro auditado de ejecuciones enviadas al Sandbox Docker.
+              Registro de tus últimas consultas ejecutadas en PostgreSQL.
             </p>
           </div>
 
           {onOpenPlayground && (
             <Button size="sm" variant="outline" onClick={() => onOpenPlayground()} className="text-xs">
-              <span>Abrir Playground</span>
+              <span>Abrir Laboratorio</span>
               <ChevronRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           )}
@@ -304,7 +304,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <div className="flex flex-col gap-2 font-mono text-xs">
           {history.length === 0 ? (
             <div className="p-4 rounded-xl bg-surface-dim/40 border border-border-subtle/30 text-center text-content-muted">
-              Aún no has ejecutado consultas. ¡Abre el Playground o resuelve un reto para ver tu historial!
+              Aún no has ejecutado consultas. ¡Abre el Laboratorio SQL o resuelve un reto para ver tu historial!
             </div>
           ) : (
             history.map((item) => (
@@ -336,7 +336,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     <span>{item.execution_time_ms} ms</span>
                     <span>{item.executed_at}</span>
                     <Badge variant={item.status === 'SUCCESS' ? 'emerald' : 'error'} size="sm">
-                      {item.status}
+                      {item.status === 'SUCCESS' ? 'EXITOSA' : 'ERROR'}
                     </Badge>
 
                     {/* Acciones interactivas: Copiar y Abrir en Playground */}
@@ -370,10 +370,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                           type="button"
                           onClick={(e) => handleOpenInPlayground(item.query, e)}
                           className="px-2 py-1 rounded-md border bg-surface-card border-border-subtle text-content-secondary hover:text-cyan-accent hover:border-cyan-accent/50 hover:bg-cyan-accent/10 transition-all flex items-center gap-1 select-none"
-                          title="Cargar esta consulta en el SQL Playground"
+                          title="Cargar esta consulta en el Laboratorio SQL"
                         >
                           <Play className="w-3 h-3 fill-current" />
-                          <span className="text-[10px] font-sans hidden sm:inline">Playground</span>
+                          <span className="text-[10px] font-sans hidden sm:inline">Laboratorio</span>
                         </button>
                       )}
                     </div>

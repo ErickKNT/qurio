@@ -64,25 +64,25 @@ def main():
 
     # 12 Módulos oficiales
     official_modules = [
-        {"id": "a0000000-0000-0000-0000-000000000001", "path_id": "sql-foundations", "module_number": 1, "title": "SELECT & Proyecciones de Datos", "description": "Aprende a solicitar columnas específicas y utilizar alias limpios."},
-        {"id": "a0000000-0000-0000-0000-000000000002", "path_id": "sql-foundations", "module_number": 2, "title": "Filtrado con WHERE y Operadores Lógicos", "description": "Aplica filtros condicionales exactos mediante operadores de comparación y rangos."},
-        {"id": "a0000000-0000-0000-0000-000000000003", "path_id": "sql-foundations", "module_number": 3, "title": "Ordenamiento y Paginación", "description": "Ordena resultados con ORDER BY (ASC/DESC) y limita registros devueltos."},
-        {"id": "a0000000-0000-0000-0000-000000000004", "path_id": "sql-foundations", "module_number": 4, "title": "Agregación y Agrupamiento", "description": "Resume datos con COUNT, SUM, AVG y filtra agrupaciones con HAVING."},
-        {"id": "b0000000-0000-0000-0000-000000000005", "path_id": "relational-sql", "module_number": 5, "title": "Uniones Fundamentales (INNER JOIN)", "description": "Cruza dos tablas mediante claves foráneas emparejando registros existentes."},
-        {"id": "b0000000-0000-0000-0000-000000000006", "path_id": "relational-sql", "module_number": 6, "title": "Detección de Ausencias (LEFT JOIN & NULL)", "description": "Identifica registros huérfanos o entidades sin actividad asociada."},
-        {"id": "b0000000-0000-0000-0000-000000000007", "path_id": "relational-sql", "module_number": 7, "title": "Consultas Multi-Tabla en Cascada", "description": "Conecta tres o más tablas en cascada para análisis integral del negocio."},
-        {"id": "b0000000-0000-0000-0000-000000000008", "path_id": "relational-sql", "module_number": 8, "title": "Operaciones de Conjunto y Joins Especiales", "description": "Combina consultas mediante UNION, EXCEPT, CROSS JOIN y SELF JOIN."},
-        {"id": "c0000000-0000-0000-0000-000000000009", "path_id": "advanced-queries", "module_number": 9, "title": "Subconsultas Analíticas", "description": "Integra subconsultas en cláusulas WHERE y proyecciones escalares."},
-        {"id": "c0000000-0000-0000-0000-000000000010", "path_id": "advanced-queries", "module_number": 10, "title": "Expresiones Condicionales (CASE)", "description": "Transforma y categoriza datos en vuelo con lógica condicional."},
-        {"id": "c0000000-0000-0000-0000-000000000011", "path_id": "advanced-queries", "module_number": 11, "title": "Common Table Expressions (CTEs)", "description": "Estructura consultas complejas y legibles con la cláusula WITH."},
-        {"id": "c0000000-0000-0000-0000-000000000012", "path_id": "advanced-queries", "module_number": 12, "title": "Funciones de Ventana (Window Functions)", "description": "Aplica cálculos de partición y ranking sin colapsar las filas devueltas."},
+        {"id": "a0000000-0000-0000-0000-000000000001", "path_id": "sql-foundations", "module_number": 1, "title": "SELECT y Proyecciones de Datos", "description": "Aprende a solicitar columnas específicas y utilizar alias y cálculos aritméticos limpios."},
+        {"id": "a0000000-0000-0000-0000-000000000002", "path_id": "sql-foundations", "module_number": 2, "title": "Filtrado con WHERE y Operadores Lógicos", "description": "Aplica filtros condicionales exactos mediante operadores de comparación, patrones, fechas y rangos con BETWEEN."},
+        {"id": "a0000000-0000-0000-0000-000000000003", "path_id": "sql-foundations", "module_number": 3, "title": "Ordenamiento y Paginación", "description": "Ordena resultados con ORDER BY (ASC/DESC) y limita registros devueltos con LIMIT y OFFSET."},
+        {"id": "a0000000-0000-0000-0000-000000000004", "path_id": "sql-foundations", "module_number": 4, "title": "Agregación y Agrupamiento", "description": "Resume datos de lo global a lo agrupado con COUNT, SUM, AVG, WHERE previo y filtrado de grupos con HAVING."},
+        {"id": "b0000000-0000-0000-0000-000000000005", "path_id": "relational-sql", "module_number": 5, "title": "Uniones Fundamentales (INNER JOIN)", "description": "Cruza tablas relacionales mediante claves foráneas antes de dar el salto a agregaciones cruzadas."},
+        {"id": "b0000000-0000-0000-0000-000000000006", "path_id": "relational-sql", "module_number": 6, "title": "Detección de Ausencias (LEFT JOIN y NULL)", "description": "Identifica registros huérfanos o entidades sin actividad asociada mediante LEFT JOIN, IS NULL y COALESCE."},
+        {"id": "b0000000-0000-0000-0000-000000000007", "path_id": "relational-sql", "module_number": 7, "title": "Consultas Multi-Tabla en Cascada", "description": "Conecta 3 o más tablas para análisis integral del negocio en cascada relacional."},
+        {"id": "b0000000-0000-0000-0000-000000000008", "path_id": "relational-sql", "module_number": 8, "title": "Operaciones de Conjunto y Uniones Especiales", "description": "Combina consultas mediante UNION, INTERSECT, EXCEPT, CROSS JOIN y auto-uniones con SELF JOIN."},
+        {"id": "c0000000-0000-0000-0000-000000000009", "path_id": "advanced-queries", "module_number": 9, "title": "Subconsultas Analíticas", "description": "Integra subconsultas escalares, listas IN y pruebas de existencia (EXISTS / NOT EXISTS) en WHERE."},
+        {"id": "c0000000-0000-0000-0000-000000000010", "path_id": "advanced-queries", "module_number": 10, "title": "Expresiones Condicionales (CASE)", "description": "Transforma, categoriza y pivota métricas y conteos al vuelo con lógica condicional CASE."},
+        {"id": "c0000000-0000-0000-0000-000000000011", "path_id": "advanced-queries", "module_number": 11, "title": "Consultas Temporales con WITH (CTEs)", "description": "Estructura análisis temporales, comparativas entre grupos y flujos por etapas con la cláusula WITH."},
+        {"id": "c0000000-0000-0000-0000-000000000012", "path_id": "advanced-queries", "module_number": 12, "title": "Funciones Analíticas de Ventana", "description": "Aplica clasificaciones, máximos por grupo, acumulados progresivos y análisis temporal (ROW_NUMBER, DENSE_RANK, SUM OVER, LAG)."},
     ]
 
     for mod in official_modules:
         res = api_request("modules", method="POST", data=mod)
         print(f"Módulo verificado: #{mod['module_number']} {mod['title']}")
 
-    print("\n--- PASO 3: Sincronizando los 50 Ejercicios Oficiales ---")
+    print("\n--- PASO 3: Sincronizando los 60 Ejercicios Oficiales ---")
     exercises_to_upsert = []
     for ex in SEED_EXERCISES.values():
         exercises_to_upsert.append({
@@ -139,10 +139,10 @@ def main():
     all_exs = api_request("exercises?select=id,title,sort_order&order=sort_order.asc")
     print(f"Total módulos en Cloud: {len(all_mods)}")
     print(f"Total ejercicios en Cloud: {len(all_exs)}")
-    if len(all_exs) == 50 and len(all_mods) == 12:
-        print("\n>>> ¡SINCRONIZACIÓN EXITOSA! 12 Módulos y 50 Ejercicios en Supabase Cloud <<<")
+    if len(all_exs) == 60 and len(all_mods) == 12:
+        print("\n>>> ¡SINCRONIZACIÓN EXITOSA! 12 Módulos y 60 Ejercicios en Supabase Cloud <<<")
     else:
-        print(f"\nAdvertencia: se esperaban 12 y 50, se obtuvieron {len(all_mods)} y {len(all_exs)}")
+        print(f"\nAdvertencia: se esperaban 12 y 60, se obtuvieron {len(all_mods)} y {len(all_exs)}")
 
 if __name__ == "__main__":
     main()

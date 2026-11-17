@@ -44,7 +44,7 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
   const [isResultsExpanded, setIsResultsExpanded] = useState(false);
   const [query, setQuery] = useState<string>(
     initialQuery ||
-    '-- SQL Playground — Qurio\n-- Escribe cualquier consulta libre contra el schema public de Ecommerce_Production_DB\nSELECT cliente_id, nombre, apellido, email, ciudad\nFROM clientes\nLIMIT 10;'
+    '-- Laboratorio SQL — Qurio\n-- Escribe cualquier consulta libre contra la base de datos de práctica\nSELECT cliente_id, nombre, apellido, email, ciudad\nFROM clientes\nLIMIT 10;'
   );
 
   useEffect(() => {
@@ -99,14 +99,14 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
         <div className="flex items-center gap-3 overflow-hidden">
           <div className="flex items-center gap-1.5 text-content-primary font-bold">
             <Terminal className="w-4 h-4 text-cyan-accent shrink-0" />
-            <span className="hidden sm:inline">SQL Playground</span>
+            <span className="hidden sm:inline">Laboratorio SQL</span>
           </div>
 
           <span className="text-border-subtle">•</span>
 
           <div className="flex items-center gap-1.5 text-content-secondary truncate text-[11px]">
             <Database className="w-3.5 h-3.5 text-cyan-accent shrink-0" />
-            <span className="font-semibold text-primary dark:text-primary-light">Ecommerce_Production_DB</span>
+            <span className="font-semibold text-primary dark:text-primary-light">Base de Práctica (Tienda)</span>
             <span className="text-content-muted text-[10px] font-mono px-1 py-0.2 rounded bg-surface-dim border border-border-subtle/40">public</span>
           </div>
         </div>
@@ -114,11 +114,11 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
         <div className="flex items-center gap-2.5 shrink-0 text-[11px]">
           <span className="hidden md:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald/10 text-emerald-600 dark:text-emerald border border-emerald/20 text-[10px] font-mono font-medium">
             <ShieldCheck className="w-3 h-3 text-emerald shrink-0" />
-            <span>readonly_student</span>
+            <span>solo lectura</span>
           </span>
 
           <Badge variant="emerald" dot size="sm">
-            postgres:16 sandbox
+            PostgreSQL 16
           </Badge>
 
           {executionResult && executionResult.execution_time_ms > 0 && (

@@ -36,12 +36,12 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   const { profile, isAuthenticated, isAdmin, signOut } = useAuth();
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'dashboard', label: 'Inicio', icon: LayoutDashboard },
     { id: 'tracks', label: 'Rutas de Aprendizaje', icon: GitBranch },
-    { id: 'playground', label: 'SQL Playground', icon: Terminal },
+    { id: 'playground', label: 'Laboratorio SQL', icon: Terminal },
     { id: 'achievements', label: 'Logros & Rangos', icon: Award },
     { id: 'profile', label: 'Mi Perfil', icon: User },
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin Live Ops', icon: ShieldAlert }] : []),
+    ...(isAdmin ? [{ id: 'admin', label: 'Administración', icon: ShieldAlert }] : []),
   ];
 
   return (
@@ -81,7 +81,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 </span>
                 <span className="mt-1.5 text-[10px] font-mono flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald/10 text-emerald-600 dark:text-emerald border border-emerald/25 w-fit font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0 animate-pulse" />
-                  pg:16 sandbox
+                  PostgreSQL 16
                 </span>
               </div>
             )}

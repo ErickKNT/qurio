@@ -165,18 +165,18 @@ describe('computeGuestTrialTracksProgress', () => {
 });
 
 describe('Production Fallback Consistency', () => {
-  it('FALLBACK_TRACKS y FALLBACK_EXERCISES suman exactamente 50 ejercicios con conceptos y objetivos pedagógicos', () => {
-    expect(FALLBACK_EXERCISES.length).toBe(50);
+  it('FALLBACK_TRACKS y FALLBACK_EXERCISES suman exactamente 60 ejercicios con conceptos y objetivos pedagógicos', () => {
+    expect(FALLBACK_EXERCISES.length).toBe(60);
     const missingConcept = FALLBACK_EXERCISES.filter((e) => !e.concept);
     const missingObjectives = FALLBACK_EXERCISES.filter((e) => !e.objectives || e.objectives.length === 0);
     expect(missingConcept.map(e => e.id)).toEqual([]);
     expect(missingObjectives.map(e => e.id)).toEqual([]);
 
     const res = computeOfficialTracksProgress(FALLBACK_TRACKS, FALLBACK_EXERCISES, new Set(), false);
-    expect(res[0].total_exercises).toBe(22);
-    expect(res[1].total_exercises).toBe(18);
-    expect(res[2].total_exercises).toBe(10);
+    expect(res[0].total_exercises).toBe(24);
+    expect(res[1].total_exercises).toBe(20);
+    expect(res[2].total_exercises).toBe(16);
     const totalExercisesInTracks = res.reduce((acc, t) => acc + (t.total_exercises || 0), 0);
-    expect(totalExercisesInTracks).toBe(50);
+    expect(totalExercisesInTracks).toBe(60);
   });
 });

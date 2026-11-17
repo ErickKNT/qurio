@@ -39,18 +39,18 @@ import { cn } from '@/lib/utils';
 type AdminTab = 'live-ops' | 'curriculum' | 'forensics' | 'security' | 'system';
 
 const TRACK_INFO_BY_ORDER = (sortOrder: number): { trackName: string; moduleNumber: number } => {
-  if (sortOrder <= 4) return { trackName: '1. SQL Foundations', moduleNumber: 1 };
-  if (sortOrder <= 10) return { trackName: '1. SQL Foundations', moduleNumber: 2 };
-  if (sortOrder <= 14) return { trackName: '1. SQL Foundations', moduleNumber: 3 };
-  if (sortOrder <= 22) return { trackName: '1. SQL Foundations', moduleNumber: 4 };
-  if (sortOrder <= 27) return { trackName: '2. Relational SQL', moduleNumber: 5 };
-  if (sortOrder <= 32) return { trackName: '2. Relational SQL', moduleNumber: 6 };
-  if (sortOrder <= 36) return { trackName: '2. Relational SQL', moduleNumber: 7 };
-  if (sortOrder <= 40) return { trackName: '2. Relational SQL', moduleNumber: 8 };
-  if (sortOrder <= 43) return { trackName: '3. Advanced Queries', moduleNumber: 9 };
-  if (sortOrder <= 45) return { trackName: '3. Advanced Queries', moduleNumber: 10 };
-  if (sortOrder <= 47) return { trackName: '3. Advanced Queries', moduleNumber: 11 };
-  return { trackName: '3. Advanced Queries', moduleNumber: 12 };
+  if (sortOrder <= 4) return { trackName: '1. Fundamentos de SQL', moduleNumber: 1 };
+  if (sortOrder <= 10) return { trackName: '1. Fundamentos de SQL', moduleNumber: 2 };
+  if (sortOrder <= 14) return { trackName: '1. Fundamentos de SQL', moduleNumber: 3 };
+  if (sortOrder <= 22) return { trackName: '1. Fundamentos de SQL', moduleNumber: 4 };
+  if (sortOrder <= 27) return { trackName: '2. SQL Relacional', moduleNumber: 5 };
+  if (sortOrder <= 32) return { trackName: '2. SQL Relacional', moduleNumber: 6 };
+  if (sortOrder <= 36) return { trackName: '2. SQL Relacional', moduleNumber: 7 };
+  if (sortOrder <= 40) return { trackName: '2. SQL Relacional', moduleNumber: 8 };
+  if (sortOrder <= 43) return { trackName: '3. Consultas Avanzadas', moduleNumber: 9 };
+  if (sortOrder <= 45) return { trackName: '3. Consultas Avanzadas', moduleNumber: 10 };
+  if (sortOrder <= 47) return { trackName: '3. Consultas Avanzadas', moduleNumber: 11 };
+  return { trackName: '3. Consultas Avanzadas', moduleNumber: 12 };
 };
 
 export interface AdminDashboardViewProps {
@@ -320,7 +320,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <div>
               <div className="flex items-center gap-2.5">
                 <h1 className="text-lg font-bold tracking-tight text-content-primary">
-                  Qurio Admin &amp; Live Ops
+                  Qurio Admin &amp; Operaciones en Vivo
                 </h1>
                 <AdminBadge
                   status={
@@ -332,9 +332,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   }
                   label={
                     liveOps?.maintenance_mode
-                      ? 'MAINTENANCE 503'
+                      ? 'MANTENIMIENTO 503'
                       : liveOps?.sandbox_healthy
-                      ? 'SANDBOX ONLINE'
+                      ? 'ENTORNO ACTIVO'
                       : 'VERIFICANDO'
                   }
                 />
@@ -348,7 +348,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="flex items-center gap-2.5">
             {onBackToDashboard && (
               <Button type="button" variant="secondary" size="sm" onClick={onBackToDashboard}>
-                Volver al Workspace
+                Volver al Inicio
               </Button>
             )}
           </div>
@@ -360,7 +360,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           className="max-w-7xl mx-auto mt-4 flex items-center gap-1.5 overflow-x-auto pb-1"
         >
           <RadioTab
-            label="[Live Ops & Sandbox]"
+            label="[Operaciones en Vivo]"
             active={activeTab === 'live-ops'}
             onClick={() => setActiveTab('live-ops')}
             icon={<Activity className="w-3.5 h-3.5" />}
@@ -447,7 +447,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   size="sm"
                   onClick={() => setAutoRefreshLiveOps((prev) => !prev)}
                 >
-                  {autoRefreshLiveOps ? 'Polling 3s: ON' : 'Polling 3s: OFF'}
+                  {autoRefreshLiveOps ? 'Auto-refresco 3s: ON' : 'Auto-refresco 3s: OFF'}
                 </Button>
                 <Button
                   type="button"
@@ -611,9 +611,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   className="px-3 py-2 rounded-lg bg-surface border border-border-subtle text-xs font-mono text-content-primary focus:outline-none focus:border-cyan-accent"
                 >
                   <option value="ALL">Todas las Rutas (1–3)</option>
-                  <option value="1.">Ruta 1: SQL Foundations (M1–M4)</option>
-                  <option value="2.">Ruta 2: Relational SQL (M5–M8)</option>
-                  <option value="3.">Ruta 3: Advanced Queries (M9–M12)</option>
+                  <option value="1.">Ruta 1: Fundamentos de SQL (M1–M4)</option>
+                  <option value="2.">Ruta 2: SQL Relacional (M5–M8)</option>
+                  <option value="3.">Ruta 3: Consultas Avanzadas (M9–M12)</option>
                 </select>
               </div>
               <Button

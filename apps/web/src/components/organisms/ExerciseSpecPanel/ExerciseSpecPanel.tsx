@@ -266,7 +266,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
                     Concepto Clave & Sintaxis
                   </span>
-                  <span className="text-[10px] text-content-muted font-normal">SQLBolt Didactics</span>
+                  <span className="text-[10px] text-content-muted font-normal">Guía Paso a Paso</span>
                 </div>
 
                 <p className="text-xs text-content-secondary leading-relaxed">
@@ -294,11 +294,17 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                   </ul>
                 )}
 
-                {/* Nota de Orden de Ejecución */}
+                {/* Nota de Orden de Ejecución y Respaldo de Motor */}
                 {exercise.concept.execution_order_note && (
-                  <div className="mt-1 p-2 rounded-lg bg-cyan-accent/10 border border-cyan-accent/25 text-[11px] text-cyan-600 dark:text-cyan-accent leading-relaxed flex items-center gap-2">
-                    <Layers className="w-3.5 h-3.5 shrink-0 text-cyan-accent" />
-                    <span>{formatInlineCode(exercise.concept.execution_order_note)}</span>
+                  <div className="mt-1 p-2.5 rounded-lg bg-cyan-accent/10 border border-cyan-accent/25 text-[11px] text-cyan-600 dark:text-cyan-accent leading-relaxed flex flex-col gap-1.5">
+                    <div className="flex items-start gap-2">
+                      <Layers className="w-3.5 h-3.5 shrink-0 text-cyan-accent mt-0.5" />
+                      <span>{formatInlineCode(exercise.concept.execution_order_note)}</span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-cyan-accent/15 text-[10px] font-mono text-content-muted">
+                      <span>PostgreSQL 16 Sandbox</span>
+                      <span>Evaluación Semántica de Conjuntos</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -547,23 +553,32 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              {exercise.hints?.slice(0, unlockedHintsCount).map((hint, index) => (
-                <div
-                  key={index}
-                  className="p-3 rounded-lg bg-surface-card border border-amber-streak/30 text-xs text-content-secondary flex flex-col gap-1 animate-fadeIn shadow-sm"
-                >
-                  <span className="font-mono text-[10px] text-amber-streak font-semibold">
-                    Pista #{index + 1}:
-                  </span>
-                  <p className="leading-relaxed">{formatInlineCode(hint)}</p>
-                </div>
-              ))}
+              {exercise.hints?.slice(0, unlockedHintsCount).map((hint, index) => {
+                const levelLabels = [
+                  'Nivel 1 • Enfoque Conceptual',
+                  'Nivel 2 • Estructura SQL',
+                  'Nivel 3 • Plantilla Guiada',
+                ];
+                return (
+                  <div
+                    key={index}
+                    className="p-3 rounded-lg bg-surface-card border border-amber-streak/30 text-xs text-content-secondary flex flex-col gap-1 animate-fadeIn shadow-sm"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-[10px] text-amber-streak font-semibold">
+                        Pista #{index + 1} — {levelLabels[index] || 'Apoyo Progresivo'}
+                      </span>
+                    </div>
+                    <p className="leading-relaxed">{formatInlineCode(hint)}</p>
+                  </div>
+                );
+              })}
 
               {unlockedHintsCount === 0 && (
                 <div className="p-4 rounded-xl bg-surface-card/40 border border-border-subtle/50 text-center flex flex-col items-center gap-2">
                   <Lightbulb className="w-6 h-6 text-amber-streak opacity-80" />
                   <p className="text-xs text-content-muted">
-                    ¿Te trabaste? Puedes desbloquear pistas, pero reducirán un porcentaje del XP otorgado por este ejercicio.
+                    ¿Te trabaste? Las pistas avanzan por capas (Conceptual → Estructura → Plantilla con huecos) para entrenar tu criterio antes de reducir XP.
                   </p>
                   <Button
                     variant="ghost"
@@ -571,7 +586,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                     className="mt-1 text-cyan-accent"
                     onClick={onUnlockHint}
                   >
-                    Desbloquear Pista 1 (-15% XP)
+                    Desbloquear Nivel 1: Enfoque Conceptual (-15% XP)
                   </Button>
                 </div>
               )}

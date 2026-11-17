@@ -84,7 +84,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({
             onClick={() => onNavigate('dashboard')}
             leftIcon={<LayoutDashboard className="w-4 h-4" />}
           >
-            Volver al Dashboard
+            Volver al Inicio
           </Button>
 
           <Button
@@ -100,7 +100,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({
             onClick={() => onNavigate('playground')}
             leftIcon={<Play className="w-4 h-4" />}
           >
-            Abrir SQL Playground
+            Abrir Laboratorio SQL
           </Button>
         </div>
       </div>
