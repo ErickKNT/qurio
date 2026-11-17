@@ -11,3 +11,8 @@ export * from './UserProfileView/UserProfileView';
 export * from './NotFoundView/NotFoundView';
 export * from './AuthConfirmView/AuthConfirmView';
 export * from './ResetPasswordView/ResetPasswordView';
+export * from './ErDiagramModal/ErDiagramModal';
+export * from './ModuleGuideModal/ModuleGuideModal';
+export * from './SqlReferenceView/SqlReferenceView';
+export * from './CommandPaletteModal/CommandPaletteModal';
+export * from './CertificateModal/CertificateModal';

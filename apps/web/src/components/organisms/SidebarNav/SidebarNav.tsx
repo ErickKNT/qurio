@@ -11,6 +11,8 @@ import {
   LogOut,
   LogIn,
   ShieldAlert,
+  X,
+  BookMarked,
 } from 'lucide-react';
 import { Button } from '@/components/atoms/Button/Button';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +23,8 @@ export interface SidebarNavProps {
   onNavigate: (path: string) => void;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
   onOpenAuth?: () => void;
   className?: string;
 }
@@ -30,15 +34,24 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   onNavigate,
   isCollapsed = false,
   onToggleCollapse,
+  isMobileOpen = false,
+  onCloseMobile,
   onOpenAuth,
   className,
 }) => {
   const { profile, isAuthenticated, isAdmin, signOut } = useAuth();
+  const effectiveCollapsed = isCollapsed && !isMobileOpen;
+
+  const handleNavigate = (path: string) => {
+    onNavigate(path);
+    onCloseMobile?.();
+  };
 
   const navItems = [
     { id: 'dashboard', label: 'Inicio', icon: LayoutDashboard },
     { id: 'tracks', label: 'Rutas de Aprendizaje', icon: GitBranch },
     { id: 'playground', label: 'Laboratorio SQL', icon: Terminal },
+    { id: 'reference', label: 'Referencia SQL', icon: BookMarked },
     { id: 'achievements', label: 'Logros & Rangos', icon: Award },
     { id: 'profile', label: 'Mi Perfil', icon: User },
     ...(isAdmin ? [{ id: 'admin', label: 'Administración', icon: ShieldAlert }] : []),
@@ -46,10 +59,13 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
   return (
     <aside
+      aria-label="Navegación principal"
       className={cn(
         'fixed left-0 top-0 h-screen z-50 flex flex-col justify-between transition-all duration-300',
         'bg-surface-dim border-r border-border-subtle/60 select-none overflow-x-hidden',
-        isCollapsed ? 'w-20' : 'w-64',
+        'w-64',
+        isCollapsed ? 'lg:w-20' : 'lg:w-64',
+        isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0',
         className
       )}
     >
@@ -58,12 +74,12 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         <div
           className={cn(
             'border-b border-border-subtle/40 transition-all duration-300',
-            isCollapsed
+            effectiveCollapsed
               ? 'py-3.5 px-2 flex flex-col items-center gap-2.5'
               : 'p-4 flex items-center justify-between'
           )}
         >
-          <div className={cn('flex items-center min-w-0', isCollapsed ? 'justify-center w-full' : 'gap-3.5')}>
+          <div className={cn('flex items-center min-w-0', effectiveCollapsed ? 'justify-center w-full' : 'gap-3.5')}>
             {/* Isotipo Oficial SVG de Qurio */}
             <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 via-cyan-accent/15 to-emerald/20 border border-primary/30 flex items-center justify-center shrink-0 shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-glow-primary">
               <svg className="w-7 h-7 shrink-0" width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -74,7 +90,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               </svg>
             </div>
 
-            {!isCollapsed && (
+            {!effectiveCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="font-sans font-bold text-xl tracking-tight text-content-primary leading-none">
                   Qurio
@@ -89,14 +105,27 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
           {onToggleCollapse && (
             <button
+              type="button"
               onClick={onToggleCollapse}
               className={cn(
-                'p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card transition-colors shrink-0',
-                isCollapsed ? 'w-8 h-8 flex items-center justify-center' : ''
+                'hidden lg:flex p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card transition-colors shrink-0',
+                isCollapsed ? 'w-8 h-8 items-center justify-center' : ''
               )}
               title={isCollapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
             >
               {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+          )}
+
+          {onCloseMobile && (
+            <button
+              type="button"
+              onClick={onCloseMobile}
+              className="lg:hidden p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card transition-colors shrink-0"
+              aria-label="Cerrar menú de navegación"
+              title="Cerrar menú"
+            >
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -111,6 +140,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               dashboard: isActive ? 'text-primary' : 'text-content-muted group-hover:text-primary',
               tracks: isActive ? 'text-primary' : 'text-content-muted group-hover:text-primary',
               playground: isActive ? 'text-cyan-accent' : 'text-content-muted group-hover:text-cyan-accent',
+              reference: isActive ? 'text-cyan-accent' : 'text-content-muted group-hover:text-cyan-accent',
               achievements: isActive ? 'text-amber-streak' : 'text-content-muted group-hover:text-amber-streak',
               profile: isActive ? 'text-purple-500' : 'text-content-muted group-hover:text-purple-500',
               admin: isActive ? 'text-error' : 'text-error/80 group-hover:text-error',
@@ -119,29 +149,29 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             return (
               <button
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
+                onClick={() => handleNavigate(item.id)}
                 className={cn(
                   'group relative flex items-center rounded-lg text-xs font-medium transition-all duration-150',
-                  isCollapsed
+                  effectiveCollapsed
                     ? 'justify-center w-10 h-10 mx-auto'
                     : 'gap-3 px-3 py-2 w-full',
                   isActive
                     ? 'bg-primary/10 text-primary dark:text-primary-light font-semibold shadow-sm border border-primary/25'
                     : 'text-content-secondary hover:text-content-primary hover:bg-surface-card/60 border border-transparent'
                 )}
-                title={isCollapsed ? item.label : undefined}
+                title={effectiveCollapsed ? item.label : undefined}
               >
-                {isActive && !isCollapsed && (
+                {isActive && !effectiveCollapsed && (
                   <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary" />
                 )}
                 <Icon
                   className={cn(
                     'shrink-0 transition-colors',
-                    isCollapsed ? 'w-5 h-5' : 'w-4 h-4',
+                    effectiveCollapsed ? 'w-5 h-5' : 'w-4 h-4',
                     iconColors[item.id] || (isActive ? 'text-primary' : 'text-content-muted')
                   )}
                 />
-                {!isCollapsed && <span className="flex-1 text-left truncate">{item.label}</span>}
+                {!effectiveCollapsed && <span className="flex-1 text-left truncate">{item.label}</span>}
               </button>
             );
           })}
@@ -151,7 +181,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       {/* Footer User Profile & Level/XP Card */}
       <div className="p-3 border-t border-border-subtle/40">
         {!isAuthenticated ? (
-          !isCollapsed ? (
+          !effectiveCollapsed ? (
             <div className="flex flex-col gap-2 p-3 rounded-xl bg-surface/50 border border-border-subtle/60 text-center items-center">
               <span className="text-[11px] font-mono text-content-muted uppercase tracking-wider font-semibold">Modo Invitado</span>
               <p className="text-[11px] text-content-secondary leading-tight">
@@ -161,7 +191,10 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={onOpenAuth}
+                  onClick={() => {
+                    onCloseMobile?.();
+                    onOpenAuth();
+                  }}
                   leftIcon={<LogIn className="w-3.5 h-3.5" />}
                   className="w-full text-xs py-1.5 mt-1 shadow-glow-primary"
                 >
@@ -182,7 +215,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               )}
             </div>
           )
-        ) : !isCollapsed ? (
+        ) : !effectiveCollapsed ? (
           <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-surface/60 border border-border-subtle/60 shadow-sm animate-fadeIn">
             <div className="flex items-center gap-2">
               <img

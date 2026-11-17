@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 12: Consola de Administración, Live Ops y Observabilidad Pedagógica (Qurio Admin) — Implementada en Rama Aislada**  
-* **Próxima Fase:** **Revisión final y Merge de `feat/phase-12-admin-console` hacia `main` + Aplicación controlada de `04_admin_rbac.sql` en Supabase**  
-* **Rama Git Activa:** `feat/phase-12-admin-console` (aislada, bifurcada desde `main`)  
+* **Fase Actual:** **Fase 15: Evolución UX, Consola SQL, Diagrama ER & Guías Teóricas Modulares — Implementada en Rama Aislada**  
+* **Próxima Fase:** **Revisión visual en navegador + Merge de `feat/ux-pedagogy-and-er-upgrade` hacia `main` + Planificación de Ruta 4 (DDL & DML en PostgreSQL Transaccional)**  
+* **Rama Git Activa:** `feat/ux-pedagogy-and-er-upgrade` (aislada, bifurcada desde `main`)  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
   * Contenedor Docker Sandbox (`qurio-postgres-sandbox` en `localhost:5433`): Activo y saludable (`healthy`).
   * API FastAPI (`apps/api`, `uvicorn` en `http://127.0.0.1:8000`): **100% Verificado** — Suite de **96 pruebas automatizadas pasando limpiamente en 93.28s** en `apps/api/tests/` (`85` existentes + `11` nuevas en `test_admin.py`).
@@ -38,6 +38,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **10 (Ejec)** | **Estabilización Técnica Integral (Bloques A, B, C, D)** | ✅ Concluida | `feat/phase-10-stabilization` | Resolución de brechas `C-01` a `C-05`, suites de pruebas 100% exitosas (69 backend / 8 frontend), build limpio y sandbox apagado. |
 | **11** | **Preparación del Piloto, Hardening v6.3 y E2E** | ✅ Concluida | `main` (vía `feat/phase-11-pilot-readiness`) | Endurecimiento CLS/RLS, RPC autoritativa de XP/rachas, rollback v4.0 y suite E2E Playwright. |
 | **12** | **Consola de Administración, Live Ops y Observabilidad** | ✅ Implementada (Aislada) | `feat/phase-12-admin-console` | RBAC criptográfico `app_metadata.role`, API `/admin/*` (Live Ops, `pg_stat_activity`, Replay Forense, Auditoría AST, Killswitches), UI Atomic Design lazy en `vendor-admin` y code splitting base (`114.72 kB`). |
+| **15** | **Evolución UX, Consola SQL, Diagrama ER & Guías Modulares** | ✅ Implementada (Aislada) | `feat/ux-pedagogy-and-er-upgrade` | Drawer móvil + tabs en Playground, modo dual Probar/Enviar, Playground multi-tab + Historial, Diagrama ER interactivo (`10` tablas), `12` guías teóricas con micro-diagramas, Referencia SQL + `⌘K`, OAuth y Constancias PDF. |
 
 ---
 
@@ -1613,3 +1614,32 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * **Backend (`pytest tests -v`):** **102/102 pruebas aprobadas** en `92.36s` (`15` pruebas en `test_admin.py` cubriendo RBAC, agregación/filtros de usuarios, preservación de `app_metadata` y bloqueos de auto-moderación).
      * **Frontend (`vitest run`):** **7 archivos / 35 pruebas aprobadas** en `2.96s` (incluida prueba integral del directorio, drawer, salto forense y moderación en 2 pasos en `src/tests/admin.test.ts`).
      * **Build de producción (`tsc && vite build`):** **2,278 módulos transformados en `6.08s`**, cero errores TypeScript (`vendor-admin` aislado en `130.41 kB`).
+
+
+---
+
+### Entrada 54: Evolución UX, Consola SQL, Diagrama ER, Guías Modulares y Referencia `⌘K`
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/ux-pedagogy-and-er-upgrade` (aislada desde `main`)
+* **Objetivo:** Incorporar las mejoras de experiencia de usuario, ergonomía de consola SQL, visibilidad de esquema ER, respaldo teórico por módulo y cierre de ruta identificadas en el benchmark competitivo sin sacrificar la identidad *Terminal Glow Minimal* ni la arquitectura de PostgreSQL 16 Sandbox.
+* **Entregables Implementados (Slices 1–6):**
+  1. **Responsividad Móvil Real (Slice 1):**
+     * [`DashboardLayout.tsx`](../apps/web/src/components/templates/DashboardLayout/DashboardLayout.tsx), [`SidebarNav.tsx`](../apps/web/src/components/organisms/SidebarNav/SidebarNav.tsx) y [`TopHeader.tsx`](../apps/web/src/components/organisms/TopHeader/TopHeader.tsx): drawer lateral deslizante con backdrop en `< lg`, botón menú y eliminación de reserva fija horizontal en móvil.
+     * [`SqlPlaygroundView.tsx`](../apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx): conmutador de 3 pestañas móviles (`Tablas`, `Editor SQL`, `Resultados`) y salto automático a resultados tras ejecutar en pantallas estrechas.
+  2. **Sensación de Consola SQL Real (Slice 2):**
+     * [`MonacoEditorPanel.tsx`](../apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx) y [`App.tsx`](../apps/web/src/App.tsx): botón **`Probar`** (`⌘⇧↵`) para ejecutar consultas exploratorias contra `/api/v1/playground/execute` sin evaluar ni contar intentos fallidos, separado de **`Enviar Solución`** (`⌘↵`), más actualización de handlers vía `refs` para evitar closures obsoletos.
+     * [`SqlPlaygroundView.tsx`](../apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx) y [`SchemaTableItem.tsx`](../apps/web/src/components/molecules/SchemaTableItem/SchemaTableItem.tsx): soporte **multi-pestaña** persistente (`qurio_playground_tabs_v1`, hasta 6 pestañas), previsualización de tabla en nueva pestaña en 1 clic (`SELECT * FROM ... LIMIT 50;`) y pestaña de **Historial** integrada.
+  3. **Diagrama Entidad-Relación Interactivo (Slice 3):**
+     * [`schemaGraph.ts`](../apps/web/src/lib/schemaGraph.ts) y [`ErDiagramModal.tsx`](../apps/web/src/components/organisms/ErDiagramModal/ErDiagramModal.tsx): visualización interactiva de las `10` tablas canónicas y `9` relaciones FK con conectores SVG curvos, badges `PK`/`FK`, resaltado de relaciones por hover/clic, zoom y salto directo al Playground. Integrado en `SqlPlaygroundView` y en la pestaña `Esquema` de [`ExerciseSpecPanel.tsx`](../apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx).
+  4. **Guías Teóricas por Módulo + Micro-Diagramas Visuales (Slice 4):**
+     * [`moduleGuides.ts`](../apps/web/src/lib/moduleGuides.ts), [`SqlTransformDiagram.tsx`](../apps/web/src/components/molecules/SqlTransformDiagram/SqlTransformDiagram.tsx) y [`ModuleGuideModal.tsx`](../apps/web/src/components/organisms/ModuleGuideModal/ModuleGuideModal.tsx): 12 guías teóricas completas (orden lógico en PostgreSQL 16, diagramas `Entrada → Cláusula → Salida`, ejemplos ilustrativos sin spoilers y errores frecuentes), accesibles desde [`TracksView.tsx`](../apps/web/src/components/organisms/TracksView/TracksView.tsx), [`ModuleAccordion.tsx`](../apps/web/src/components/molecules/ModuleAccordion/ModuleAccordion.tsx) y `ExerciseSpecPanel`.
+  5. **Referencia Rápida PostgreSQL 16 + Paleta `⌘K` (Slice 5):**
+     * [`sqlReference.ts`](../apps/web/src/lib/sqlReference.ts), [`SqlReferenceView.tsx`](../apps/web/src/components/organisms/SqlReferenceView/SqlReferenceView.tsx) (`/reference`) y [`CommandPaletteModal.tsx`](../apps/web/src/components/organisms/CommandPaletteModal/CommandPaletteModal.tsx): catálogo buscable de sintaxis (incluyendo referencia informativa DDL/DML) y búsqueda unificada `⌘K` / `Ctrl+K` sobre retos, guías, tablas y sintaxis.
+  6. **OAuth, Fusión Reactiva y Constancias de Finalización (Slice 6):**
+     * [`useAuth.tsx`](../apps/web/src/hooks/useAuth.tsx) y [`AuthModal.tsx`](../apps/web/src/components/molecules/AuthModal/AuthModal.tsx): soporte `signInWithOAuth` (GitHub / Google vía Supabase Auth con manejo inline si el proveedor no está activado) y contador `guestSyncCount` para refrescar el progreso oficial tras fusionar retos invitados.
+     * [`CertificateModal.tsx`](../apps/web/src/components/organisms/CertificateModal/CertificateModal.tsx) y [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx): sección de Constancias verificables por ruta y currículum global con impresión/PDF (`window.print()`).
+* **Verificación:**
+  * **Frontend (`vitest run`):** **8 archivos / 43 pruebas aprobadas** en `3.37s` (incluidas 6 pruebas nuevas en `src/tests/uxUpgrade.test.tsx`).
+  * **Build de producción (`tsc && vite build`):** **2,288 módulos transformados en `6.52s`**, 0 errores TypeScript (`index` base en `107.79 kB`).
+  * **Backend (`test_schema_consistency.py`):** Las 4 comprobaciones estáticas y de sincronización curricular aprobaron (`PASSED`); la 5.ª prueba de ejecución en vivo contra Docker (`test_curriculum_pedagogical_rubric_and_sandbox_determinism`) quedó pendiente de levantar el contenedor local `qurio-postgres-sandbox` (`localhost:5433` rechazó conexión).

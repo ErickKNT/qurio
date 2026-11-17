@@ -14,6 +14,7 @@ export interface DashboardLayoutProps {
   currentPath: string;
   onNavigate: (path: string) => void;
   title?: string;
+  onOpenSearch?: () => void;
   onOpenAuth?: () => void;
   children: React.ReactNode;
 }
@@ -22,44 +23,59 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   currentPath,
   onNavigate,
   title = 'Dashboard',
+  onOpenSearch,
   onOpenAuth,
   children,
 }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-canvas text-content-primary flex flex-col justify-between">
       <div className="flex flex-1">
+        {/* Mobile Drawer Backdrop */}
+        {isMobileMenuOpen && (
+          <div
+            role="presentation"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden fixed inset-0 z-40 bg-canvas/75 backdrop-blur-sm animate-fadeIn"
+          />
+        )}
+
         {/* Sidebar Navigation */}
         <SidebarNav
           currentPath={currentPath}
           onNavigate={onNavigate}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+          isMobileOpen={isMobileMenuOpen}
+          onCloseMobile={() => setIsMobileMenuOpen(false)}
           onOpenAuth={onOpenAuth}
         />
 
         {/* Main Content Area */}
         <div
           className={cn(
-            'flex-1 flex flex-col min-h-screen transition-all duration-300',
-            isSidebarCollapsed ? 'pl-20' : 'pl-64'
+            'flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-300',
+            isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
           )}
         >
           <TopHeader
             title={title}
             isSidebarCollapsed={isSidebarCollapsed}
+            onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
             onOpenPlayground={() => onNavigate('playground')}
+            onOpenSearch={onOpenSearch}
             onOpenAuth={onOpenAuth}
           />
 
           <main
             className={cn(
-              'flex-1 transition-all duration-300 animate-fadeIn',
+              'flex-1 transition-all duration-300 animate-fadeIn min-w-0',
               currentPath === 'playground'
-                ? 'pt-16 px-6 pb-3 w-full h-screen flex flex-col overflow-hidden max-w-none'
-                : 'pt-20 px-8 pb-12 max-w-7xl w-full mx-auto'
+                ? 'pt-16 px-3 sm:px-6 pb-2 sm:pb-3 w-full h-screen flex flex-col overflow-hidden max-w-none'
+                : 'pt-20 px-4 sm:px-8 pb-10 sm:pb-12 max-w-7xl w-full mx-auto'
             )}
           >
             {children}
@@ -67,7 +83,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
           {/* Technical Authentic Footer (Anti-AI Slop Regla 1.1) */}
           {currentPath !== 'playground' && (
-            <footer className="mt-auto border-t border-border-subtle/40 py-5 px-8 max-w-7xl w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-content-muted">
+            <footer className="mt-auto border-t border-border-subtle/40 py-5 px-4 sm:px-8 max-w-7xl w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-content-muted">
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
                 <span>Qurio • PostgreSQL 16 Sandbox</span>

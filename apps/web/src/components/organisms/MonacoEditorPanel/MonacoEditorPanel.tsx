@@ -11,9 +11,12 @@ export interface MonacoEditorPanelProps {
   value: string;
   onChange: (val: string) => void;
   onExecute: () => void;
+  onRunTrial?: () => void;
   onReset?: () => void;
   isLoading?: boolean;
   isSubmitMode?: boolean;
+  hideEngineBadge?: boolean;
+  tabLabel?: string;
   className?: string;
 }
 
@@ -21,14 +24,27 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
   value,
   onChange,
   onExecute,
+  onRunTrial,
   onReset,
   isLoading = false,
   isSubmitMode = true,
+  hideEngineBadge = false,
+  tabLabel = 'query.sql',
   className,
 }) => {
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
+  const onExecuteRef = useRef(onExecute);
+  const onRunTrialRef = useRef(onRunTrial);
   const { isDark } = useTheme();
+
+  useEffect(() => {
+    onExecuteRef.current = onExecute;
+  }, [onExecute]);
+
+  useEffect(() => {
+    onRunTrialRef.current = onRunTrial;
+  }, [onRunTrial]);
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -95,10 +111,19 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
     // 3. Registrar motor de autocompletado inteligente SQL (Keywords, Tablas, Columnas y Alias)
     registerSqlCompletionProvider(monaco);
 
-    // 4. Vincular atajos de teclado:
+    // 4. Vincular atajos de teclado (via refs para evitar closures obsoletos):
     // Cmd/Ctrl + Enter -> onExecute
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      onExecute();
+      onExecuteRef.current();
+    });
+
+    // Cmd/Ctrl + Shift + Enter -> onRunTrial (si existe)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
+      if (onRunTrialRef.current) {
+        onRunTrialRef.current();
+      } else {
+        onExecuteRef.current();
+      }
     });
 
     // Shift + Alt + F -> handleFormatSql (Atajo estándar de formateo en VS Code / Monaco)
@@ -146,16 +171,18 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
   return (
     <div className={cn('flex flex-col h-full w-full bg-canvas select-none', className)}>
       {/* Barra de Herramientas del Editor */}
-      <div className="h-10 px-4 bg-surface-dim border-b border-border-subtle flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-xs font-mono font-medium text-cyan-accent">
-            <Terminal className="w-3.5 h-3.5 text-cyan-accent" />
-            <span>query.sql</span>
+      <div className="h-10 px-3 sm:px-4 bg-surface-dim border-b border-border-subtle flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-1.5 text-xs font-mono font-medium text-cyan-accent truncate">
+            <Terminal className="w-3.5 h-3.5 text-cyan-accent shrink-0" />
+            <span className="truncate">{tabLabel}</span>
           </div>
-          <span className="text-[11px] font-mono text-content-muted">• PostgreSQL 16</span>
+          {!hideEngineBadge && (
+            <span className="hidden sm:inline text-[11px] font-mono text-content-muted whitespace-nowrap">• PostgreSQL 16</span>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {onReset && (
             <button
               onClick={onReset}
@@ -163,7 +190,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
               title="Restablecer consulta inicial"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px]">Restablecer</span>
+              <span className="hidden md:inline text-[11px]">Restablecer</span>
             </button>
           )}
 
@@ -173,8 +200,21 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
             title="Formatear consulta SQL con jerarquía e indentación (Shift + Alt + F)"
           >
             <Wand2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline text-[11px]">Formatear</span>
+            <span className="hidden md:inline text-[11px]">Formatear</span>
           </button>
+
+          {isSubmitMode && onRunTrial && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isLoading}
+              onClick={onRunTrial}
+              title="Ejecutar consulta libre en el sandbox sin evaluar ni contar intentos (⌘⇧↵)"
+              className="text-xs px-2.5"
+            >
+              Probar
+            </Button>
+          )}
 
           <Button
             variant={isSubmitMode ? 'emerald' : 'primary'}
@@ -184,7 +224,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
             onClick={onExecute}
             leftIcon={<Play className="w-3.5 h-3.5 fill-current" />}
           >
-            {isSubmitMode ? 'Enviar Solución' : 'Ejecutar Consulta'}
+            {isSubmitMode ? 'Enviar Solución' : 'Ejecutar'}
           </Button>
         </div>
       </div>

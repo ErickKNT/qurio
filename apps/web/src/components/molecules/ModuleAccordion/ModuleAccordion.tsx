@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, CheckCircle2, Circle, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, CheckCircle2, Circle, ArrowRight, BookOpen } from 'lucide-react';
 import { Module, Exercise } from '@/types';
 import { Badge, Button } from '@/components/atoms';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,7 @@ export interface ModuleAccordionProps {
   exercises: Exercise[];
   completedExerciseIds?: Set<string>;
   onSelectExercise: (exercise: Exercise) => void;
+  onOpenGuide?: (moduleId: string) => void;
   defaultOpen?: boolean;
   className?: string;
 }
@@ -21,6 +22,7 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
   exercises,
   completedExerciseIds,
   onSelectExercise,
+  onOpenGuide,
   defaultOpen = false,
   className,
 }) => {
@@ -86,7 +88,21 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-4 shrink-0 font-mono text-xs text-content-muted">
+        <div className="flex items-center gap-2.5 sm:gap-4 shrink-0 font-mono text-xs text-content-muted">
+          {onOpenGuide && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenGuide(module.id);
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/25 text-[10px] text-primary-light font-semibold transition-colors"
+              title="Leer guía teórica y diagrama visual del módulo"
+            >
+              <BookOpen className="w-3 h-3" />
+              <span className="hidden sm:inline">Guía</span>
+            </button>
+          )}
           <span>
             {completedExercises}/{totalExercises} retos
           </span>

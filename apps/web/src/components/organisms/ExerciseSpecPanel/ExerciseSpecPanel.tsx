@@ -13,10 +13,14 @@ import {
   Layers,
   Lock,
   Unlock,
+  GitFork,
 } from 'lucide-react';
 import { Exercise, SampleTableData } from '@/types';
 import { Badge } from '@/components/atoms/Badge/Badge';
 import { Button } from '@/components/atoms/Button/Button';
+import { ErDiagramModal } from '@/components/organisms/ErDiagramModal/ErDiagramModal';
+import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/ModuleGuideModal';
+import { getModuleGuide } from '@/lib/moduleGuides';
 import { SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CLIENTES } from '@/lib/fallbackCurriculum';
 import { cn } from '@/lib/utils';
 import { formatInlineCode } from '@/lib/format';
@@ -53,6 +57,10 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
   const [checkedObjectives, setCheckedObjectives] = useState<Record<number, boolean>>({});
   const [copiedCol, setCopiedCol] = useState<string | null>(null);
   const [copiedSolution, setCopiedSolution] = useState(false);
+  const [erDiagramOpen, setErDiagramOpen] = useState(false);
+  const [moduleGuideOpen, setModuleGuideOpen] = useState(false);
+
+  const activeModuleGuide = getModuleGuide(exercise.module_id) || null;
 
   // Cambiar a la pestaña de solución automáticamente si se acaba de desbloquear
   useEffect(() => {
@@ -261,12 +269,24 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
             {/* Tarjeta de Concepto Clave y Sintaxis de Referencia (Micro-Learning) */}
             {exercise.concept && (
               <div className="flex flex-col gap-2.5 p-3.5 rounded-xl bg-gradient-to-br from-surface to-primary/[0.04] border border-border-subtle/80 shadow-sm">
-                <div className="flex items-center justify-between text-[11px] font-mono font-semibold uppercase tracking-wider text-primary">
+                <div className="flex items-center justify-between text-[11px] font-mono font-semibold uppercase tracking-wider text-primary gap-2">
                   <span className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
                     Concepto Clave & Sintaxis
                   </span>
-                  <span className="text-[10px] text-content-muted font-normal">Guía Paso a Paso</span>
+                  {activeModuleGuide ? (
+                    <button
+                      type="button"
+                      onClick={() => setModuleGuideOpen(true)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 hover:bg-primary/20 border border-primary/25 text-[10px] font-mono text-primary-light normal-case transition-colors"
+                      title="Abrir guía teórica completa y diagrama visual de este módulo"
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span>Guía del módulo</span>
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-content-muted font-normal">Guía Paso a Paso</span>
+                  )}
                 </div>
 
                 <p className="text-xs text-content-secondary leading-relaxed">
@@ -492,10 +512,22 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
         {/* ==================================================================== */}
         {activeTab === 'schema' && (
           <div className="flex flex-col gap-3 font-mono text-[11px] animate-fadeIn">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
-              <Database className="w-3.5 h-3.5 text-indigo-400" />
-              Esquema Completo (Ecommerce DB)
-            </span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5 text-indigo-400" />
+                Esquema Completo (Ecommerce DB)
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setErDiagramOpen(true)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-surface-card border border-border-subtle hover:border-cyan-accent/50 text-[10px] text-cyan-accent font-semibold transition-colors"
+                title="Ver Diagrama Entidad-Relación de las 10 tablas"
+              >
+                <GitFork className="w-3 h-3" />
+                <span>Diagrama ER</span>
+              </button>
+            </div>
 
             {schemaTables.map((tbl) => (
               <div
@@ -733,6 +765,17 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
           </div>
         )}
       </div>
+
+      <ErDiagramModal
+        isOpen={erDiagramOpen}
+        onClose={() => setErDiagramOpen(false)}
+      />
+
+      <ModuleGuideModal
+        guide={activeModuleGuide}
+        isOpen={moduleGuideOpen}
+        onClose={() => setModuleGuideOpen(false)}
+      />
     </div>
   );
 };

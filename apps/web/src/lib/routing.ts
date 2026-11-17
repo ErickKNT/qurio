@@ -14,6 +14,8 @@ export function pathToUrl(path: AppPath, params?: RouteParams): string {
       return '/';
     case 'tracks':
       return params?.trackSlug ? `/tracks/${params.trackSlug}` : '/tracks';
+    case 'reference':
+      return '/reference';
     case 'playground':
       return '/playground';
     case 'achievements':
@@ -47,6 +49,7 @@ export function parseLocation(pathname: string): { path: AppPath; exerciseId?: s
     return { path: 'tracks', trackSlug: slug };
   }
   if (clean === '/playground') return { path: 'playground' };
+  if (clean === '/reference') return { path: 'reference' };
   if (clean === '/achievements') return { path: 'achievements' };
   if (clean === '/profile') return { path: 'profile' };
   if (clean === '/exercises' || clean === '/exercise') return { path: 'exercise' };

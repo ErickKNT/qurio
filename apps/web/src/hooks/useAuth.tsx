@@ -16,8 +16,10 @@ export interface AuthContextType {
   isCloudAuth: boolean;
   isDemoMode: boolean;
   isPasswordRecovery: boolean;
+  guestSyncCount: number;
   clearPasswordRecovery: () => void;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signInWithOAuth: (provider: 'github' | 'google') => Promise<{ success: boolean; error?: string }>;
   signUp: (
     email: string,
     password: string,
@@ -39,6 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [guestSyncCount, setGuestSyncCount] = useState(0);
 
   const clearPasswordRecovery = useCallback(() => {
     setIsPasswordRecovery(false);
@@ -200,6 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ).then((res) => {
               if (res.syncedCount > 0) {
                 fetchProfile(newSession.user.id, newSession.user.user_metadata);
+                setGuestSyncCount((prev) => prev + 1);
               }
             });
           }
@@ -264,6 +268,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     return { success: true };
+  };
+
+  // Iniciar Sesión con OAuth (GitHub / Google)
+  const signInWithOAuth = async (
+    provider: 'github' | 'google'
+  ): Promise<{ success: boolean; error?: string }> => {
+    setError(null);
+    if (!isSupabaseConfigured) {
+      const msg = 'El inicio de sesión con OAuth requiere configurar Supabase en apps/web/.env.';
+      setError(msg);
+      return { success: false, error: msg };
+    }
+
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+        },
+      });
+
+      if (oauthError) {
+        const lower = oauthError.message.toLowerCase();
+        const friendlyMsg =
+          lower.includes('not enabled') || lower.includes('unsupported provider')
+            ? `El proveedor ${provider === 'github' ? 'GitHub' : 'Google'} aún no está habilitado en Supabase Auth; puedes acceder con tu correo.`
+            : oauthError.message;
+        setError(friendlyMsg);
+        return { success: false, error: friendlyMsg };
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      const msg = err?.message || 'No se pudo iniciar la autenticación OAuth.';
+      setError(msg);
+      return { success: false, error: msg };
+    }
   };
 
   // Crear Cuenta / Registro
@@ -450,8 +491,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isCloudAuth: Boolean(user && isSupabaseConfigured),
       isDemoMode: !isSupabaseConfigured,
       isPasswordRecovery,
+      guestSyncCount,
       clearPasswordRecovery,
       signIn,
+      signInWithOAuth,
       signUp,
       signOut,
       resetPassword,
@@ -461,7 +504,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) fetchProfile(user.id, user.user_metadata);
       },
     }),
-    [session, user, profile, loading, error, isAdmin, isPasswordRecovery, clearPasswordRecovery, fetchProfile, updateProfileState]
+    [session, user, profile, loading, error, isAdmin, isPasswordRecovery, guestSyncCount, clearPasswordRecovery, fetchProfile, updateProfileState]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -481,8 +524,10 @@ export function useAuth(): AuthContextType {
       isCloudAuth: false,
       isDemoMode: true,
       isPasswordRecovery: false,
+      guestSyncCount: 0,
       clearPasswordRecovery: () => {},
       signIn: async () => ({ success: false, error: 'AuthProvider no inicializado' }),
+      signInWithOAuth: async () => ({ success: false, error: 'AuthProvider no inicializado' }),
       signUp: async () => ({ success: false, error: 'AuthProvider no inicializado' }),
       signOut: async () => {},
       resetPassword: async () => ({ success: false }),

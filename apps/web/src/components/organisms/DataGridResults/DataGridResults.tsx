@@ -213,6 +213,14 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
         </div>
       )}
 
+      {/* 2B. AVISO DE EJECUCIÓN EXPLORATORIA (SIN EVALUAR) */}
+      {status === 'SUCCESS' && isPlayground && message && (
+        <div className="px-4 py-1.5 bg-cyan-accent/10 border-b border-cyan-accent/20 flex items-center gap-2 text-[11px] font-mono text-cyan-600 dark:text-cyan-accent shrink-0 animate-fadeIn">
+          <Terminal className="w-3.5 h-3.5 shrink-0" />
+          <span>{message}</span>
+        </div>
+      )}
+
       {/* 3. CONTENIDO PRINCIPAL: TABLA O COMPARATIVA */}
       <div className="flex-1 overflow-auto bg-canvas relative">
         {status === 'IDLE' && (

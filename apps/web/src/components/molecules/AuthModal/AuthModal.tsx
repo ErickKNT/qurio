@@ -53,7 +53,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     isDemo: boolean;
   } | null>(null);
 
-  const { signIn, signUp, resetPassword, isCloudAuth, isDemoMode } = useAuth();
+  const { signIn, signInWithOAuth, signUp, resetPassword, isCloudAuth, isDemoMode } = useAuth();
+
+  const handleOAuth = async (provider: 'github' | 'google') => {
+    setFormError(null);
+    setSuccessMessage(null);
+    setIsSubmitting(true);
+    try {
+      const res = await signInWithOAuth(provider);
+      if (!res.success) {
+        setFormError(res.error || 'No se pudo iniciar sesión con el proveedor externo.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   React.useEffect(() => {
     if (isOpen) {
@@ -420,6 +434,39 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key`}
               >
                 <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{successMessage}</span>
+              </div>
+            )}
+
+            {/* Acceso rápido OAuth (cuando Supabase Cloud está configurado) */}
+            {mode !== 'forgot' && !isDemoMode && (
+              <div className="mb-4 flex flex-col gap-2.5">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={isSubmitting}
+                    onClick={() => handleOAuth('github')}
+                    className="text-xs font-mono justify-center"
+                  >
+                    GitHub
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={isSubmitting}
+                    onClick={() => handleOAuth('google')}
+                    className="text-xs font-mono justify-center"
+                  >
+                    Google
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] font-mono text-content-muted uppercase tracking-wider">
+                  <span className="flex-1 h-px bg-border-subtle/50" />
+                  <span>o con tu correo</span>
+                  <span className="flex-1 h-px bg-border-subtle/50" />
+                </div>
               </div>
             )}
 
