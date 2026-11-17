@@ -15,22 +15,23 @@ El diseño curricular y evaluativo de Qurio no se basa en heurísticas empírica
 Todo agente o revisor humano debe calibrar el contenido contra los siguientes textos académicos formales y recursos abiertos:
 
 ### 1.1. Didáctica de SQL y Análisis Empírico de Errores Semánticos
-* **Brass, S., & Goldberg, C. (2006).** *Semantic errors in SQL queries*. **Journal of Systems and Software**, 79(7), 870–883.
-  * **DOI / Enlace Académico:** [https://doi.org/10.1016/j.jss.2005.07.038](https://doi.org/10.1016/j.jss.2005.07.038)
-  * **Repositorio del Autor (Martin-Luther-Universität Halle-Wittenberg):** [https://www.informatik.uni-halle.de/~brass/slq/](https://www.informatik.uni-halle.de/~brass/slq/)
-  * **Fundamento Aplicado:** Establece la taxonomía canónica de 43 anomalías y errores semánticos en SQL. Define las condiciones donde una consulta es sintácticamente válida (compila en el motor) pero lógicamente incorrecta (tautologías en `WHERE`, productos cartesianos encubiertos, colapsos inválidos de tuplas o proyecciones redundantes).
-* **Taipalus, T., & Seppänen, V. (2020).** *SQL Education: A Systematic Literature Review and Researcher Guide*. **ACM Transactions on Computing Education (TOCE)**, 20(3), 1–32.
-  * **DOI / Enlace Académico:** [https://doi.org/10.1145/3373407](https://doi.org/10.1145/3373407)
+* **Brass, S., & Goldberg, C. (2006).** *Semantic errors in SQL queries: A quite complete list*. **Journal of Systems and Software**, 79(5), 630–644.
+  * **DOI / Enlace Académico:** [https://doi.org/10.1016/j.jss.2005.06.028](https://doi.org/10.1016/j.jss.2005.06.028)
+  * **Página Académica del Autor (Martin-Luther-Universität Halle-Wittenberg):** [https://users.informatik.uni-halle.de/~brass/](https://users.informatik.uni-halle.de/~brass/)
+  * **Fundamento Aplicado:** Establece la taxonomía canónica de anomalías y errores semánticos en SQL. Define las condiciones donde una consulta es sintácticamente válida (compila en el motor) pero lógicamente incorrecta (tautologías/contradicciones en `WHERE`, productos cartesianos encubiertos, colapsos inválidos de tuplas o proyecciones redundantes).
+* **Taipalus, T., & Seppänen, V. (2020).** *SQL Education: A Systematic Mapping Study and Future Research Agenda*. **ACM Transactions on Computing Education (TOCE)**, 20(3), 1–33.
+  * **DOI / Enlace Académico:** [https://doi.org/10.1145/3398377](https://doi.org/10.1145/3398377)
   * **Preprint Abierto Institucional (Universidad de Jyväskylä):** [https://jyx.jyu.fi/handle/123456789/71408](https://jyx.jyu.fi/handle/123456789/71408)
-  * **Fundamento Aplicado:** Meta-análisis sistemático de más de 50 estudios sobre pedagogía de SQL. Documenta las tasas de abandono estudiantil asociadas a la introducción prematura de conceptos anidados y la necesidad de aislar factores de complejidad.
-* **Taipalus, T. (2020).** *The Effects of Query Complexity on SQL Query Formulation*. **Computers & Education**, 158, 104008.
-  * **DOI / Enlace Académico:** [https://doi.org/10.1016/j.compedu.2020.104008](https://doi.org/10.1016/j.compedu.2020.104008)
-  * **Fundamento Aplicado:** Análisis empírico del coste mental de combinar cláusulas. Demuestra que exigir simultáneamente operaciones de agregación y joins sin dominio previo genera parálisis cognitiva en alumnos novatos e intermedios.
-* **Ahadi, A., Prior, R., Behbood, V., & Lister, R. (2016).** *Students' Syntactic and Semantic Errors in SQL*. **Proceedings of the 47th ACM Technical Symposium on Computing Science Education (SIGCSE '16)**, 273–278.
+  * **Fundamento Aplicado:** Estudio sistemático sobre pedagogía de SQL. Documenta las dificultades asociadas a la introducción prematura de conceptos anidados y la necesidad de aislar factores de complejidad.
+* **Taipalus, T. (2020).** *The effects of database complexity on SQL query formulation*. **Journal of Systems and Software**, 165, 110576.
+  * **DOI / Enlace Académico:** [https://doi.org/10.1016/j.jss.2020.110576](https://doi.org/10.1016/j.jss.2020.110576)
+  * **Fundamento Aplicado:** Análisis empírico del coste cognitivo derivado de la complejidad estructural de la base de datos y la formulación de consultas multi-cláusula en alumnos novatos e intermedios.
+* **Ahadi, A., Behbood, V., Vihavainen, A., Prior, J., & Lister, R. (2016).** *Students' Syntactic Mistakes in Writing Seven Different Types of SQL Queries and its Application to Predicting Students' Success*. **Proceedings of the 47th ACM Technical Symposium on Computing Science Education (SIGCSE '16)**, 401–406.
   * **DOI / Enlace Académico:** [https://doi.org/10.1145/2839509.2844640](https://doi.org/10.1145/2839509.2844640)
-  * **Fundamento Aplicado:** Evaluación cuantitativa de más de 65,000 consultas estudiantiles reales, identificando las dificultades persistentes en la comprensión del álgebra de conjuntos.
-* **Mitrovic, A. (2003).** *An Intelligent Tutoring System for Learning SQL*. **IEEE Intelligent Systems**, 18(5), 46–53.
-  * **DOI / Enlace Académico:** [https://doi.org/10.1109/MIS.2003.1200727](https://doi.org/10.1109/MIS.2003.1200727)
+  * **Fundamento Aplicado:** Evaluación cuantitativa de consultas estudiantiles reales en siete familias de SQL, identificando los errores persistentes que requieren progresión gradual.
+* **Mitrovic, A. (2003).** *An Intelligent SQL Tutor on the Web*. **International Journal of Artificial Intelligence in Education**, 13(2–4), 173–197; y **Mitrovic, A., Martin, B., & Suraweera, P. (2007).** *Intelligent Tutors for All: The Constraint-Based Approach*. **IEEE Intelligent Systems**, 22(4), 38–45.
+  * **DOI / Enlace Académico (2003):** [https://doi.org/10.3233/irg-2003-13(2-4)03](https://doi.org/10.3233/irg-2003-13(2-4)03)
+  * **DOI / Enlace Académico (2007):** [https://doi.org/10.1109/MIS.2007.74](https://doi.org/10.1109/MIS.2007.74)
   * **Fundamento Aplicado:** Demostración del modelo basado en restricciones relacionales (*Constraint-Based Modeling*): el aprendizaje se maximiza cuando el sistema verifica el cumplimiento de propiedades del conjunto resultante en lugar de comparar cadenas de texto o regex.
 
 ### 1.2. Pedagogía Técnica de la Computación y Educación Abierta
@@ -49,7 +50,7 @@ Todo agente o revisor humano debe calibrar el contenido contra los siguientes te
   * **Enlace Editorial:** [https://link.springer.com/book/10.1007/978-1-4419-8126-4](https://link.springer.com/book/10.1007/978-1-4419-8126-4)
   * **Fundamento Aplicado:** Teoría de la Carga Cognitiva (CLT). La memoria de trabajo está limitada a procesar pocos elementos nuevos simultáneos. Se debe eliminar la **carga extraña** (enunciados ambiguos, nombres rebuscados) para concentrar los recursos en la **carga pertinente** (asimilación del modelo relacional).
 * **Renkl, A. (2014).** *Toward an instructionally oriented theory of example-based learning*. **Cognitive Science**, 38(1), 1–37.
-  * **DOI / Enlace Académico:** [https://doi.org/10.1111/cogs.12128](https://doi.org/10.1111/cogs.12128)
+  * **DOI / Enlace Académico:** [https://doi.org/10.1111/cogs.12086](https://doi.org/10.1111/cogs.12086)
   * **Fundamento Aplicado:** Efecto del Ejemplo Resuelto (*Worked Example Effect*). Los estudiantes asimilan mejor la lógica cuando observan estructuras resueltas y avanzan hacia problemas de compleción antes de enfrentarse a un lienzo en blanco.
 
 ### 1.4. Alineamiento Curricular e Instruccional

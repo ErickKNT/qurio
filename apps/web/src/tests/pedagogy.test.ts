@@ -40,6 +40,19 @@ describe('Visualización Pedagógica, Psicológica y Técnica en Qurio', () => {
     expect(screen.getByText(/Taipalus, T\. \(2020\)/i)).toBeInTheDocument();
     expect(screen.getByText('5. Orden y Determinismo')).toBeInTheDocument();
 
+    const hrefs = screen
+      .getAllByRole('link')
+      .map((link) => link.getAttribute('href'));
+    expect(hrefs).toEqual([
+      'https://doi.org/10.1016/j.jss.2005.06.028',
+      'https://doi.org/10.1145/3398377',
+      'https://doi.org/10.1016/j.jss.2020.110576',
+      'https://doi.org/10.1109/MIS.2007.74',
+      'https://doi.org/10.1207/s15516709cog1202_4',
+      'https://doi.org/10.1111/cogs.12086',
+      'https://teachtogether.tech/',
+    ]);
+
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(handleClose).toHaveBeenCalledTimes(1);
 

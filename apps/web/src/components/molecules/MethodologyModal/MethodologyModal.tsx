@@ -67,24 +67,34 @@ const SEMANTIC_TRAPS = [
 
 const ACADEMIC_REFERENCES = [
   {
-    citation: 'Brass, S. & Goldberg, C. (2006) — Semantic errors in SQL queries',
-    note: 'Taxonomía de errores lógicos en consultas válidas sintácticamente.',
-    url: 'https://doi.org/10.1016/j.jss.2005.07.038',
+    citation: 'Brass, S. & Goldberg, C. (2006) — Semantic errors in SQL queries: A quite complete list',
+    note: 'Taxonomía de errores lógicos en consultas válidas sintácticamente (JSS 79(5), 630–644).',
+    url: 'https://doi.org/10.1016/j.jss.2005.06.028',
   },
   {
-    citation: 'Taipalus, T. (2020) — The Effects of Query Complexity on SQL Formulation',
-    note: 'Aislamiento progresivo de joins, agregaciones y anidación.',
-    url: 'https://doi.org/10.1016/j.compedu.2020.104008',
+    citation: 'Taipalus, T. & Seppänen, V. (2020) — SQL Education (ACM TOCE)',
+    note: 'Mapeo sistemático en educación SQL; preprint abierto en Universidad de Jyväskylä.',
+    url: 'https://doi.org/10.1145/3398377',
   },
   {
-    citation: 'Mitrovic, A. (2003) — Constraint-Based Modeling for SQL Tutoring',
-    note: 'Evaluación basada en propiedades del resultado relacional, no texto.',
-    url: 'https://doi.org/10.1109/MIS.2003.1200727',
+    citation: 'Taipalus, T. (2020) — The effects of database complexity on SQL query formulation',
+    note: 'Impacto de la complejidad del esquema y cláusulas en la formulación SQL (JSS 165).',
+    url: 'https://doi.org/10.1016/j.jss.2020.110576',
   },
   {
-    citation: 'Sweller, J. (1988) & Renkl, A. (2014) — Cognitive Load & Worked Examples',
-    note: 'Reducción de carga extraña y transición gradual de ejemplos a autonomía.',
-    url: 'https://doi.org/10.1111/cogs.12128',
+    citation: 'Mitrovic, A., Martin, B. & Suraweera, P. (2007) — Intelligent Tutors for All: The Constraint-Based Approach',
+    note: 'Evaluación basada en restricciones sobre el conjunto relacional resultante, no texto.',
+    url: 'https://doi.org/10.1109/MIS.2007.74',
+  },
+  {
+    citation: 'Sweller, J. (1988) — Cognitive Load During Problem Solving: Effects on Learning',
+    note: 'Teoría de Carga Cognitiva: minimizar carga extraña para maximizar aprendizaje.',
+    url: 'https://doi.org/10.1207/s15516709cog1202_4',
+  },
+  {
+    citation: 'Renkl, A. (2014) — Toward an Instructionally Oriented Theory of Example-Based Learning',
+    note: 'Transición gradual de ejemplos trabajados hacia resolución autónoma.',
+    url: 'https://doi.org/10.1111/cogs.12086',
   },
   {
     citation: 'Wilson, G. (2019) — Teaching Tech Together (Faded Scaffolding)',
