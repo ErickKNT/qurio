@@ -17,7 +17,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
-import { Button, Badge, KbdShortcut, RadioTab } from '@/components/atoms';
+import { Button, Badge, KbdShortcut, RadioTab, Select } from '@/components/atoms';
 import {
   MetricTile,
   FormField,
@@ -777,17 +777,17 @@ export const App: React.FC = () => {
               {/* Selector Rápido de Ejercicios */}
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono text-content-muted hidden md:inline">Reto:</span>
-                <select
+                <Select<number>
                   value={currentExerciseIndex}
-                  onChange={(e) => handleSelectExercise(Number(e.target.value))}
-                  className="bg-surface-card text-content-primary border border-border-subtle text-xs rounded-lg px-2.5 py-1 font-mono outline-none focus:border-primary"
-                >
-                  {exercises.map((ex, idx) => (
-                    <option key={ex.id} value={idx}>
-                      #{idx + 1} {ex.title}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(idx) => handleSelectExercise(idx)}
+                  aria-label="Seleccionar reto"
+                  className="min-w-[180px] max-w-[260px]"
+                  menuClassName="right-0 left-auto w-72"
+                  options={exercises.map((ex, idx) => ({
+                    value: idx,
+                    label: `#${idx + 1} ${ex.title}`,
+                  }))}
+                />
 
                 <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-dim border border-border-subtle text-[11px] font-mono text-emerald">
                   <span className="w-2 h-2 rounded-full bg-emerald" />

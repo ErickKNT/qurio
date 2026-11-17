@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/atoms/Button/Button';
 import { AdminBadge } from '@/components/atoms/AdminBadge/AdminBadge';
+import { Select } from '@/components/atoms/Select/Select';
 import { AdminMetricTile } from '@/components/molecules/AdminMetricTile/AdminMetricTile';
 import { UserModerationDrawer } from '@/components/molecules/UserModerationDrawer/UserModerationDrawer';
 import { AdminUserRecord, AdminUserRole, AdminUsersPageResponse } from '@/types/admin';
@@ -144,33 +145,37 @@ export const AdminUsersPanel: React.FC<AdminUsersPanelProps> = ({
           <label htmlFor="admin-users-role" className="text-[10px] font-mono uppercase text-content-muted">
             Rol
           </label>
-          <select
+          <Select
             id="admin-users-role"
             value={roleFilter}
-            onChange={(e) => onRoleFilterChange(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-canvas border border-border-subtle text-xs font-mono text-content-primary"
-          >
-            <option value="">Todos</option>
-            <option value="student">Estudiantes</option>
-            <option value="admin">Admins</option>
-          </select>
+            onChange={(val) => onRoleFilterChange(val)}
+            aria-label="Rol"
+            className="min-w-[140px]"
+            options={[
+              { value: '', label: 'Todos' },
+              { value: 'student', label: 'Estudiantes' },
+              { value: 'admin', label: 'Admins' },
+            ]}
+          />
         </div>
 
         <div className="flex flex-col gap-1">
           <label htmlFor="admin-users-status" className="text-[10px] font-mono uppercase text-content-muted">
             Estado Cuenta
           </label>
-          <select
+          <Select
             id="admin-users-status"
             value={statusFilter}
-            onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-canvas border border-border-subtle text-xs font-mono text-content-primary"
-          >
-            <option value="">Todos</option>
-            <option value="active">Activos y verificados</option>
-            <option value="unconfirmed">Sin confirmar correo</option>
-            <option value="banned">Suspendidos</option>
-          </select>
+            onChange={(val) => onStatusFilterChange(val)}
+            aria-label="Estado Cuenta"
+            className="min-w-[190px]"
+            options={[
+              { value: '', label: 'Todos' },
+              { value: 'active', label: 'Activos y verificados' },
+              { value: 'unconfirmed', label: 'Sin confirmar correo' },
+              { value: 'banned', label: 'Suspendidos' },
+            ]}
+          />
         </div>
 
         <Button

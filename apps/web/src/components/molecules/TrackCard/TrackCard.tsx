@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BookOpen, Clock, ChevronRight } from 'lucide-react';
 import { Track } from '@/types';
 import { Badge, Button } from '@/components/atoms';
@@ -19,6 +19,8 @@ export const TrackCard: React.FC<TrackCardProps> = ({
   onStartTrack,
   className,
 }) => {
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const canExpandDescription = track.description.length > 85;
   const total = track.total_exercises || 20;
   const isLoading = track.is_progress_loading || track.completed_exercises === null;
   const completed = track.completed_exercises ?? 0;
@@ -85,9 +87,27 @@ export const TrackCard: React.FC<TrackCardProps> = ({
           <h3 className="text-lg font-bold text-content-primary group-hover:text-cyan-accent transition-colors">
             {track.title}
           </h3>
-          <p className="text-xs text-content-secondary line-clamp-2 mt-1.5 leading-relaxed">
+          <p
+            className={cn(
+              'text-xs text-content-secondary mt-1.5 leading-relaxed',
+              !isDescriptionExpanded && 'line-clamp-2'
+            )}
+          >
             {track.description}
           </p>
+          {canExpandDescription && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDescriptionExpanded((prev) => !prev);
+              }}
+              aria-expanded={isDescriptionExpanded}
+              className="mt-1 inline-flex items-center text-[11px] font-mono font-medium text-cyan-accent hover:text-primary-light transition-colors"
+            >
+              {isDescriptionExpanded ? 'Ver menos' : 'Leer más'}
+            </button>
+          )}
         </div>
       </div>
 

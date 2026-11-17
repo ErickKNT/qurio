@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/atoms/Button/Button';
 import { RadioTab } from '@/components/atoms/RadioTab/RadioTab';
 import { AdminBadge } from '@/components/atoms/AdminBadge/AdminBadge';
+import { Select } from '@/components/atoms/Select/Select';
 import { AdminMetricTile } from '@/components/molecules/AdminMetricTile/AdminMetricTile';
 import { ConnectionGauge } from '@/components/molecules/ConnectionGauge/ConnectionGauge';
 import { KillswitchToggle } from '@/components/molecules/KillswitchToggle/KillswitchToggle';
@@ -720,17 +721,19 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   aria-label="Filtrar retos del currículum"
                   className="px-3 py-2 rounded-lg bg-surface border border-border-subtle text-xs font-mono text-content-primary placeholder:text-content-muted focus:outline-none focus:border-cyan-accent min-w-[260px]"
                 />
-                <select
+                <Select
                   value={trackFilter}
-                  onChange={(e) => setTrackFilter(e.target.value)}
+                  onChange={(val) => setTrackFilter(val)}
                   aria-label="Filtrar por ruta formativa"
-                  className="px-3 py-2 rounded-lg bg-surface border border-border-subtle text-xs font-mono text-content-primary focus:outline-none focus:border-cyan-accent"
-                >
-                  <option value="ALL">Todas las Rutas (1–3)</option>
-                  <option value="1.">Ruta 1: Fundamentos de SQL (M1–M4)</option>
-                  <option value="2.">Ruta 2: SQL Relacional (M5–M8)</option>
-                  <option value="3.">Ruta 3: Consultas Avanzadas (M9–M12)</option>
-                </select>
+                  size="md"
+                  className="min-w-[230px]"
+                  options={[
+                    { value: 'ALL', label: 'Todas las Rutas (1–3)' },
+                    { value: '1.', label: 'Ruta 1: Fundamentos de SQL (M1–M4)' },
+                    { value: '2.', label: 'Ruta 2: SQL Relacional (M5–M8)' },
+                    { value: '3.', label: 'Ruta 3: Consultas Avanzadas (M9–M12)' },
+                  ]}
+                />
               </div>
               <Button
                 type="button"
@@ -813,18 +816,20 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <div className="flex flex-wrap items-end gap-3 p-4 rounded-xl bg-surface border border-border-subtle/80">
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-mono uppercase text-content-muted">Estado</label>
-                <select
+                <Select
                   value={attemptFilters.status ?? ''}
-                  onChange={(e) =>
-                    setAttemptFilters((prev) => ({ ...prev, status: e.target.value, page: 1 }))
+                  onChange={(val) =>
+                    setAttemptFilters((prev) => ({ ...prev, status: val, page: 1 }))
                   }
-                  className="px-3 py-1.5 rounded-lg bg-canvas border border-border-subtle text-xs font-mono text-content-primary"
-                >
-                  <option value="">Todos</option>
-                  <option value="PASSED">PASSED</option>
-                  <option value="FAILED">FAILED</option>
-                  <option value="ERROR">ERROR</option>
-                </select>
+                  aria-label="Estado de intento"
+                  className="min-w-[120px]"
+                  options={[
+                    { value: '', label: 'Todos' },
+                    { value: 'PASSED', label: 'PASSED' },
+                    { value: 'FAILED', label: 'FAILED' },
+                    { value: 'ERROR', label: 'ERROR' },
+                  ]}
+                />
               </div>
               <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
                 <label className="text-[10px] font-mono uppercase text-content-muted">Exercise ID</label>
@@ -1169,34 +1174,34 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <select
+                <Select
                   value={selectedExerciseId}
-                  onChange={(e) => {
-                    const nextId = e.target.value;
+                  onChange={(nextId) => {
                     setSelectedExerciseId(nextId);
                     const found = curriculum?.exercises.find((item) => item.exercise_id === nextId);
                     if (found) setSelectedExerciseStatus(found.operational_status);
                   }}
                   aria-label="Seleccionar reto"
-                  className="flex-1 min-w-[260px] px-3 py-2 rounded-lg bg-canvas border border-border-subtle text-xs font-mono text-content-primary"
-                >
-                  {(curriculum?.exercises ?? []).map((ex) => (
-                    <option key={ex.exercise_id} value={ex.exercise_id}>
-                      #{ex.sort_order} — {ex.title} ({ex.operational_status})
-                    </option>
-                  ))}
-                </select>
+                  size="md"
+                  className="flex-1 min-w-[260px]"
+                  options={(curriculum?.exercises ?? []).map((ex) => ({
+                    value: ex.exercise_id,
+                    label: `#${ex.sort_order} — ${ex.title} (${ex.operational_status})`,
+                  }))}
+                />
 
-                <select
+                <Select<ExerciseOperationalStatus>
                   value={selectedExerciseStatus}
-                  onChange={(e) => setSelectedExerciseStatus(e.target.value as ExerciseOperationalStatus)}
+                  onChange={(val) => setSelectedExerciseStatus(val)}
                   aria-label="Seleccionar estado operativo"
-                  className="px-3 py-2 rounded-lg bg-canvas border border-border-subtle text-xs font-mono text-content-primary"
-                >
-                  <option value="active">active</option>
-                  <option value="under_review">under_review</option>
-                  <option value="hidden">hidden</option>
-                </select>
+                  size="md"
+                  className="min-w-[155px]"
+                  options={[
+                    { value: 'active', label: 'active' },
+                    { value: 'under_review', label: 'under_review' },
+                    { value: 'hidden', label: 'hidden' },
+                  ]}
+                />
 
                 <Button
                   type="button"

@@ -75,7 +75,12 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-content-secondary line-clamp-1 mt-0.5">
+            <p
+              className={cn(
+                'text-xs text-content-secondary mt-0.5 leading-relaxed',
+                !isOpen && 'line-clamp-1'
+              )}
+            >
               {module.description}
             </p>
           </div>

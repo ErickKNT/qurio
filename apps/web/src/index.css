@@ -48,6 +48,13 @@
     font-feature-settings: "liga" 0, "calt" 0 !important;
   }
 
+  /* Estilizado base para controles nativos residuales */
+  select,
+  option {
+    background-color: rgb(var(--color-surface-card));
+    color: rgb(var(--color-content-primary));
+  }
+
   /* Custom scrollbars */
   ::-webkit-scrollbar {
     width: 6px;

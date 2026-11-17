@@ -6,6 +6,8 @@ import '@testing-library/jest-dom/vitest';
 
 import { PedagogyPillarsCard } from '@/components/molecules/PedagogyPillarsCard/PedagogyPillarsCard';
 import { MethodologyModal } from '@/components/molecules/MethodologyModal/MethodologyModal';
+import { TrackCard } from '@/components/molecules/TrackCard/TrackCard';
+import { Select } from '@/components/atoms/Select/Select';
 import { ExerciseSpecPanel } from '@/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel';
 import { LearningRoadmapMap } from '@/components/organisms/LearningRoadmapMap/LearningRoadmapMap';
 import { FALLBACK_EXERCISES, FALLBACK_TRACKS } from '@/lib/fallbackCurriculum';
@@ -106,5 +108,61 @@ describe('Visualización Pedagógica, Psicológica y Técnica en Qurio', () => {
     expect(onSelectExercise).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'e0000000-0000-0000-0000-000000000001' })
     );
+  });
+
+  it('TrackCard permite expandir y colapsar descripciones largas sin disparar onSelect ni onStartTrack', () => {
+    const onSelect = vi.fn();
+    const onStartTrack = vi.fn();
+    const longTrack = {
+      ...FALLBACK_TRACKS[0],
+      description:
+        'Aprende a consultar bases de datos desde cero. Proyecciones con SELECT, cálculos derivados, filtrado con WHERE, ordenamiento determinista y agregaciones con GROUP BY y HAVING.',
+    };
+
+    render(
+      React.createElement(TrackCard, {
+        track: longTrack,
+        onSelect,
+        onStartTrack,
+      })
+    );
+
+    const paragraph = screen.getByText(longTrack.description);
+    expect(paragraph.className).toContain('line-clamp-2');
+
+    const expandBtn = screen.getByRole('button', { name: /Leer más/i });
+    fireEvent.click(expandBtn);
+
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onStartTrack).not.toHaveBeenCalled();
+    expect(paragraph.className).not.toContain('line-clamp-2');
+    expect(screen.getByRole('button', { name: /Ver menos/i })).toBeInTheDocument();
+  });
+
+  it('Select atom renderiza opciones con tema personalizado y actualiza el valor seleccionado', () => {
+    const onChange = vi.fn();
+    render(
+      React.createElement(Select, {
+        value: 'active',
+        onChange,
+        'aria-label': 'Filtro de estado',
+        options: [
+          { value: 'active', label: 'Activos' },
+          { value: 'banned', label: 'Suspendidos' },
+        ],
+      })
+    );
+
+    const trigger = screen.getByRole('combobox', { name: 'Filtro de estado' });
+    expect(trigger).toHaveTextContent('Activos');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+    fireEvent.click(trigger);
+    const listbox = screen.getByRole('listbox');
+    expect(listbox).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('option', { name: 'Suspendidos' }));
+    expect(onChange).toHaveBeenCalledWith('banned');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 });

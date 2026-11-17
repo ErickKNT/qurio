@@ -3,3 +3,4 @@ export * from './Badge/Badge';
 export * from './TextInput/TextInput';
 export * from './KbdShortcut/KbdShortcut';
 export * from './RadioTab/RadioTab';
+export * from './Select/Select';
