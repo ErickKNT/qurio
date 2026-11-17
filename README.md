@@ -17,8 +17,9 @@
   <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38BDF8?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 3.4" />
   <img src="https://img.shields.io/badge/Docker-Sandbox-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Sandbox" />
-  <img src="https://img.shields.io/badge/Backend_Pytest-85%2F85%20Passing-22C55E?style=for-the-badge" alt="Backend Pytest 85/85 Passing" />
-  <img src="https://img.shields.io/badge/Frontend_Vitest-26%2F26%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 26/26 Passing" />
+  <img src="https://img.shields.io/badge/Backend_Pytest-102%2F102%20Passing-22C55E?style=for-the-badge" alt="Backend Pytest 102/102 Passing" />
+  <img src="https://img.shields.io/badge/Frontend_Vitest-35%2F35%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 35/35 Passing" />
+  <img src="https://img.shields.io/badge/Curr%C3%ADculo-60%20Retos%20%2F%20180%20Pistas-6366F1?style=for-the-badge" alt="60 Retos SQL" />
   <img src="https://img.shields.io/badge/Security-Hardened%20(RLS%20%2B%20CLS%20%2B%20RPC)-059669?style=for-the-badge" alt="Security Hardened" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=for-the-badge" alt="MIT License" />
 </p>
@@ -87,15 +88,25 @@ La mayoría de las plataformas de aprendizaje de SQL caen en dos extremos: o son
 - Visualizador de discrepancias semánticas (`DiffResult`) y sincronización automática para mostrar la tabla de resultados tras ejecuciones exitosas.
 - Consola de terminal para visualización limpia de errores de PostgreSQL o bloqueos de seguridad AST.
 
-### 🗺️ Rutas Curriculares Humanizadas y Pedagogía Anti-Spoilers (50 Retos)
-El plan de estudios de Qurio está organizado en 3 rutas formativas (12 módulos) con consignas redactadas en lenguaje de negocio cotidiano:
-1. **SQL Foundations (22 Retos - 44%):** `SELECT`, `WHERE`, operadores lógicos, ordenamiento con `ORDER BY`, agregaciones (`COUNT`, `SUM`, `AVG`), agrupamiento con `GROUP BY` y filtrado posterior con `HAVING`.
-2. **Relational SQL & Joins (18 Retos - 36%):** Claves foráneas, `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, uniones (`UNION`, `UNION ALL`) y subconsultas correlacionadas.
-3. **Advanced Queries & Analytics (10 Retos - 20%):** Funciones de ventana (`ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LEAD`, `LAG`), expresiones de tabla comunes (`WITH` / CTEs), lógica condicional con `CASE WHEN` y consultas analíticas de negocio.
+### 🗺️ Mapa Visual Curricular, Pedagogía Basada en Evidencia y 60 Retos Anti-Spoilers
+El plan de estudios de Qurio está organizado en **3 rutas formativas (12 módulos, 60 retos y 180 pistas progresivas)** con consignas redactadas en lenguaje de negocio cotidiano bajo los estándares documentados en [`docs/pedagogia/`](./docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md) y la regla permanente [`.agents/rules/sql-pedagogy.md`](./.agents/rules/sql-pedagogy.md):
+1. **Fundamentos de SQL (`24` Retos - `40%`):** `SELECT`, `WHERE`, operadores lógicos, ordenamiento con `ORDER BY`, agregaciones (`COUNT`, `SUM`, `AVG`), agrupamiento con `GROUP BY` y filtrado posterior con `HAVING`.
+2. **SQL Relacional (`20` Retos - `33%`):** Claves foráneas, `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, operaciones de conjuntos (`UNION`, `UNION ALL`, `INTERSECT`, `EXCEPT`) y subconsultas correlacionadas / `NOT EXISTS`.
+3. **Consultas Avanzadas (`16` Retos - `27%`):** Funciones de ventana (`ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LEAD`, `LAG`, agregados con `OVER`), expresiones de tabla comunes (`WITH` / CTEs), lógica condicional con `CASE WHEN` y consultas analíticas de negocio.
 
-- **Pedagogía Libre de Spoilers:** Tanto los objetivos interactivos como los 50 bloques *"Concepto Clave & Sintaxis"* utilizan plantillas abstractas (`columna_1`, `nombre_tabla`, `valor_umbral`) y notas técnicas de comportamiento del motor sin revelar la consulta solución.
+- **Mapa Curricular Dual (`LearningRoadmapMap`):** Selector interactivo entre **Árbol de Habilidades** (circuito top-down de 3 niveles con rutas SVG conectadas dinámicamente y resaltado de cadena de prerrequisitos) y **Camino por Etapas**, conectado al panel inferior de estaciones (`#01..#60`) con salto directo al IDE.
+- **Metodología Visible y Basada en Evidencia:** Banda informativa (`PedagogyPillarsCard`) y modal técnico-pedagógico (`MethodologyModal`) que explican la *Teoría de Carga Cognitiva* (Sweller), el andamiaje decreciente en 3 capas (*Nivel 1: Enfoque Conceptual*, *Nivel 2: Estructura SQL*, *Nivel 3: Plantilla Guiada*), la taxonomía de errores semánticos reales y la arquitectura en PostgreSQL 16 Sandbox.
+- **Pedagogía Libre de Spoilers:** Tanto los objetivos interactivos como los **60 bloques** *"Concepto Clave & Sintaxis"* utilizan plantillas abstractas (`columna_1`, `nombre_tabla`, `valor_umbral`) y notas técnicas de comportamiento del motor sin revelar la consulta solución.
 - **Revelación Controlada de Solución Oficial:** Tras acumular al menos **2 intentos fallidos**, el estudiante puede desbloquear la solución oficial mediante `RevealSolutionModal` (`/api/v1/exercises/{id}/reveal-solution`), con registro de telemetría pedagógica y acreditación estricta de **0 XP** cuando se resuelve tras verla.
 - **Modo Prueba para Invitados y Conversión:** Los visitantes pueden resolver los 3 retos iniciales del Módulo 1 con XP de prueba y sincronizar su progreso automáticamente al crear cuenta o iniciar sesión.
+
+### 🛠️ Consola Administrativa y Live Ops (`Qurio Admin` — `/admin`)
+Panel operativo aislado en chunk lazy dedicado (`vendor-admin`) y protegido mediante validación criptográfica del claim **`app_metadata.role == 'admin'`** en backend y guard silencioso en frontend:
+- **`[Operaciones en Vivo]`:** Telemetría del pool `asyncpg`, memoria RSS del proceso FastAPI, RTT al Sandbox Docker, inspección en tiempo real de `pg_stat_activity` y cancelación quirúrgica por `PID` (`pg_cancel_backend`).
+- **`[Usuarios]`:** Directorio consolidado (Supabase Auth Admin API + `user_profiles` + `user_progress` + `exercise_attempts`), KPIs de comunidad, búsqueda por correo/`@username`/UUID, filtros por rol y estado, panel `UserModerationDrawer` con confirmación inline en 2 pasos (promoción/degradación de rol y suspensión/reactivación de cuentas con protección anti-auto-moderación) y salto directo a los intentos del usuario en Forense.
+- **`[Analítica Pedagógica]`:** Embudo curricular, tasas de *first-pass*, abandono, distribución de uso de pistas y tiempos medianos de ejecución por reto.
+- **`[Forense de Intentos]` y `[Auditoría AST & Seguridad]`:** Historial paginado de envíos con *Replay Forense* en vivo (`SqlDiffViewer` comparando código estudiante vs. oficial) y bitácora de bloqueos AST (SQLGlot) + limitador de tasa.
+- **`[Control del Sistema]`:** Interruptores (*Killswitches*) en 2 pasos para modo de mantenimiento global (`HTTP 503`), cambio de estado operativo por reto (`active`, `under_review`, `hidden`) y reciclado del pool de conexiones.
 
 ### 🔐 Autenticación Cloud y Recuperación de Contraseña (Supabase Auth)
 - Flujos dedicados con HTML5 History API (`/auth/confirm` y `/reset-password`), soporte de verificación por `token_hash` (`verifyOtp`), eventos `PASSWORD_RECOVERY` y normalización automática de URLs de callback.
@@ -203,25 +214,29 @@ sequenceDiagram
 
 ```
 Qurio/
-├── .agents/skills/             # Colección de habilidades para desarrollo asistido
+├── .agents/
+│   ├── rules/                  # Reglas permanentes del repositorio (ej. sql-pedagogy.md)
+│   └── skills/                 # Colección de habilidades para desarrollo asistido
 ├── apps/
 │   ├── api/                    # ⚡ Backend FastAPI (Python 3.12)
 │   │   ├── app/
-│   │   │   ├── core/           # Configuración Pydantic, Auth ES256/JWKS, Rate Limit y Supabase Service
-│   │   │   │   ├── auth.py     # Autenticación autoritativa JWT (ES256/JWKS Supabase)
+│   │   │   ├── core/           # Configuración Pydantic, Auth ES256/JWKS, Rate Limit, System State y Supabase Service
+│   │   │   │   ├── auth.py     # Autenticación autoritativa JWT (ES256/JWKS Supabase) y guard require_admin
 │   │   │   │   ├── config.py   # Configuración de entornos y secretos
 │   │   │   │   ├── rate_limit.py # Limitador de tasa por token-bucket
 │   │   │   │   └── supabase.py # Cliente seguro para invocación de RPCs
 │   │   │   ├── modules/
-│   │   │   │   ├── curriculum/ # Catálogo de 50 ejercicios, pistas, conceptos saneados y fallback
+│   │   │   │   ├── admin/      # API /admin/* (Live Ops, Usuarios y Moderación, Analítica, Replay Forense, Killswitches)
+│   │   │   │   ├── curriculum/ # Catálogo de 60 ejercicios, 180 pistas, conceptos saneados y fallback
 │   │   │   │   └── runner/     # Pool asyncpg, Evaluador semántico, Seguridad AST/Regex y Router
 │   │   │   └── main.py         # Punto de entrada FastAPI y cabeceras de endurecimiento HTTP
-│   │   ├── tests/              # Suite de 85 pruebas automáticas (Pytest + Asyncio)
+│   │   ├── tests/              # Suite de 102 pruebas automáticas (Pytest + Asyncio)
+│   │   │   ├── test_admin.py   # Pruebas RBAC, Live Ops, Replay Forense, Usuarios, Moderación y Killswitches
 │   │   │   ├── test_auth.py    # Pruebas de tokens ES256, expiración y audiencias
 │   │   │   ├── test_evaluator.py # Pruebas del motor de evaluación de conjuntos
 │   │   │   ├── test_integration.py # Pruebas HTTP, Sandbox y reveal-solution (0 XP / >=2 fallos)
 │   │   │   ├── test_rate_limit.py  # Pruebas de límites de tasa (Token Bucket)
-│   │   │   ├── test_schema_consistency.py # Consistencia de 50 ejercicios, SQL y no-spoilers
+│   │   │   ├── test_schema_consistency.py # Consistencia de 60 ejercicios, SQL, determinismo y no-spoilers
 │   │   │   ├── test_security.py    # Pruebas de sanitización AST (SQLGlot) y regex
 │   │   │   └── test_supabase_migration.py # Auditoría de privilegios, CLS, concurrencia y RPC
 │   │   ├── Dockerfile          # Contenerización de la API
@@ -231,19 +246,21 @@ Qurio/
 │       ├── public/             # Isotipo SVG, Favicon y vector Open Graph
 │       ├── src/
 │       │   ├── components/     # Árbol estricto bajo Atomic Design Pragmático
-│       │   │   ├── atoms/      # Button, Badge, TextInput, KbdShortcut, RadioTab
-│       │   │   ├── molecules/  # SearchInput, FormField, MetricTile, RevealSolutionModal,
-│       │   │   │               # GuestTrialCompleteModal, SuccessModal, AuthModal, etc.
-│       │   │   ├── organisms/  # MonacoEditorPanel, DataGridResults, ExerciseSpecPanel,
-│       │   │   │               # TracksView, SqlPlaygroundView, ResetPasswordView, AuthConfirmView, etc.
+│       │   │   ├── atoms/      # Button, Badge, AdminBadge, TextInput, KbdShortcut, RadioTab
+│       │   │   ├── molecules/  # SearchInput, FormField, MetricTile, AdminMetricTile, PedagogyPillarsCard,
+│       │   │   │               # MethodologyModal, KillswitchToggle, SqlDiffViewer, UserModerationDrawer,
+│       │   │   │               # RevealSolutionModal, GuestTrialCompleteModal, SuccessModal, AuthModal, etc.
+│       │   │   ├── organisms/  # MonacoEditorPanel, DataGridResults, ExerciseSpecPanel, LearningRoadmapMap,
+│       │   │   │               # TracksView, SqlPlaygroundView, AdminDashboardView, AdminUsersPanel, etc.
 │       │   │   └── templates/  # DashboardLayout, WorkspaceLayout (divisor arrastrable y expansión)
-│       │   ├── hooks/          # useAuth (ES256, PASSWORD_RECOVERY), useTheme
-│       │   ├── lib/            # Cliente API, Supabase normalizado, routing, format, persistence y tests Vitest
-│       │   ├── types/          # Definiciones estrictas de TypeScript
+│       │   ├── hooks/          # useAuth (ES256, app_metadata.role, PASSWORD_RECOVERY), useTheme
+│       │   ├── lib/            # Cliente API, adminApi, Supabase normalizado, routing, persistence y tests Vitest
+│       │   ├── tests/          # Pruebas de integración UI (admin.test.ts, pedagogy.test.ts)
+│       │   ├── types/          # Definiciones estrictas de TypeScript (incl. admin.ts)
 │       │   ├── App.tsx         # Coordinador principal y enrutador HTML5 History API
 │       │   └── index.css       # Tokens de diseño Tailwind y desactivación de ligaduras monoespaciadas
 │       ├── tailwind.config.js  # Paleta de diseño Terminal Glow Minimal
-│       └── vite.config.ts      # Configuración de compilación Vite y code splitting
+│       └── vite.config.ts      # Configuración de compilación Vite y code splitting (incl. vendor-admin)
 │
 ├── database/
 │   ├── sandbox/                # 🐳 Definición del contenedor PostgreSQL Sandbox
@@ -251,16 +268,18 @@ Qurio/
 │   │   └── ecommerce_seed.sql  # Dataset de 10 tablas de ecommerce_sandbox
 │   └── supabase/               # ☁️ Esquemas DDL, catálogo y endurecimiento Supabase Cloud
 │       ├── 01_schema.sql       # Tablas de perfiles, rutas, módulos, intentos y logros
-│       ├── 02_seed_curriculum.sql # Catálogo semilla de ejercicios y pistas
+│       ├── 02_seed_curriculum.sql # Catálogo semilla de 60 ejercicios y 180 pistas
 │       ├── 03_security_hardening.sql # Hardening v5.0: RPC autoritativa, RLS/CLS, anti-NULL, search_path=''
+│       ├── 04_admin_rbac.sql   # Función is_admin(), métricas curriculares admin y RLS para consola admin
 │       ├── rollback_security_hardening.sql # Reversión segura preservando índices de integridad
 │       └── diagnose_privileges.sql # Auditoría de privilegios tabla/columna y consistencia de XP
 │
-├── docs/                       # 📚 Documentación técnica, PRD, SAD, auditorías y bitácora
+├── docs/                       # 📚 Documentación técnica, PRD, SAD, pedagogía, auditorías y bitácora
 │   ├── audits/                 # Reportes de línea base operativa y estabilización (Fase 10)
+│   ├── pedagogia/              # Especificación pedagógica y psicología cognitiva del currículo SQL
 │   ├── security/               # 🛡️ Auditorías y resultados de seguridad de Fases 9 y 11
 │   ├── BITACORA.md             # Registro cronológico detallado de hitos y decisiones
-│   ├── CURRICULUM_SPEC.md      # Especificación pedagógica de los 50 retos
+│   ├── CURRICULUM_SPEC.md      # Especificación pedagógica de referencia
 │   ├── PRD.md                  # Especificación de requerimientos de producto
 │   └── SAD.md                  # Documento de arquitectura de software
 │
@@ -462,7 +481,7 @@ npm run dev
 
 La suite de pruebas automatizadas de Qurio evalúa la seguridad AST/Regex, autenticación ES256, rate limiting, evaluación semántica, consistencia curricular anti-spoilers, privilegios de base de datos e interfaz frontend:
 
-**Backend (Pytest — 85 pruebas):**
+**Backend (Pytest — 102 pruebas):**
 ```bash
 cd apps/api
 pytest tests/ -v
@@ -471,18 +490,19 @@ pytest tests/ -v
 ```
 
 ```text
+tests/test_admin.py ................ RBAC Admin, Live Ops, Forense, Usuarios, Moderación y Killswitches
 tests/test_auth.py ................. JWT ES256, expiración, audiencias e invitados
 tests/test_evaluator.py ............ Comparador semántico, multiconjuntos, NULLs y orden
 tests/test_integration.py .......... Endpoints REST, Sandbox Docker y reveal-solution (0 XP)
 tests/test_rate_limit.py ........... Límites por Token Bucket (invitado vs autenticado)
-tests/test_schema_consistency.py ... 50 retos, citas SQL y verificación anti-spoilers
+tests/test_schema_consistency.py ... 60 retos, citas SQL, determinismo y verificación anti-spoilers
 tests/test_security.py ............. Sanitización AST (SQLGlot) y bloqueo DDL/DML
 tests/test_supabase_migration.py ... Privilegios, CLS, concurrencia y RPC autoritativa
 
-======================== 85 passed in 64.32s ========================
+======================= 102 passed in 92.36s ========================
 ```
 
-**Frontend (Vitest — 26 pruebas) y Build de Producción:**
+**Frontend (Vitest — 35 pruebas) y Build de Producción:**
 ```bash
 cd apps/web
 npm test
@@ -491,12 +511,14 @@ npm run build
 
 ```text
  ✓ src/lib/__tests__/routing.test.ts (5 tests)
+ ✓ src/lib/__tests__/progress.test.ts (6 tests)
  ✓ src/lib/__tests__/supabase.test.ts (4 tests)
  ✓ src/lib/__tests__/achievements.test.ts (4 tests)
- ✓ src/lib/__tests__/progress.test.ts (6 tests)
  ✓ src/lib/__tests__/persistence.test.ts (7 tests)
+ ✓ src/tests/pedagogy.test.ts (4 tests)
+ ✓ src/tests/admin.test.ts (5 tests)
 
- Test Files  5 passed (5) | Tests  26 passed (26)
+ Test Files  7 passed (7) | Tests  35 passed (35)
 ```
 
 ---
@@ -518,7 +540,7 @@ npm run build
 | `SANDBOX_STATEMENT_TIMEOUT_MS` | Entero | `2000` | Límite máximo de ejecución por consulta (ms). |
 | `SUPABASE_URL` | String | *(Opcional)* | URL del proyecto Supabase Cloud (`https://<id>.supabase.co`). |
 | `SUPABASE_ANON_KEY` | String | *(Opcional)* | Clave anónima pública de Supabase. |
-| `SUPABASE_SERVICE_ROLE_KEY` | String | *(Privada)* | Clave maestra privilegiada de backend para ejecutar la RPC autoritativa `record_verified_attempt`. **Nunca exponer al cliente**. |
+| `SUPABASE_SERVICE_ROLE_KEY` | String | *(Privada)* | Clave maestra privilegiada de backend para ejecutar la RPC `record_verified_attempt` y administrar usuarios vía Auth Admin API. **Nunca exponer al cliente**. |
 | `SUPABASE_JWT_SECRET` | String | *(Opcional)* | Secreto simétrico HMAC para validación de tokens de prueba. |
 | `SUPABASE_JWKS_URL` | String | *(Auto)* | URL de claves públicas JWKS (`<SUPABASE_URL>/auth/v1/.well-known/jwks.json`). |
 | `SUPABASE_JWT_AUDIENCE` | String | `authenticated` | Audiencia esperada del JWT. |
@@ -542,9 +564,9 @@ El desarrollo de Qurio sigue directrices estrictas establecidas en [`AGENTS.md`]
 
 ### 1. Atomic Design Pragmático
 Todo componente reutilizable pertenece obligatoriamente a uno de los 4 niveles jerárquicos:
-- **Átomos (`src/components/atoms/`):** Bloques indivisibles estilizados (`Button`, `Badge`, `TextInput`, `KbdShortcut`, `RadioTab`).
-- **Moléculas (`src/components/molecules/`):** Combinaciones funcionales (`SearchInput`, `StreakPill`, `FormField`, `MetricTile`, `TrackCard`, `AchievementCard`).
-- **Organismos (`src/components/organisms/`):** Módulos autónomos complejos (`MonacoEditorPanel`, `DataGridResults`, `ExerciseSpecPanel`, `TracksView`, `SqlPlaygroundView`, `UserProfileView`, `SidebarNav`, `TopHeader`).
+- **Átomos (`src/components/atoms/`):** Bloques indivisibles estilizados (`Button`, `Badge`, `AdminBadge`, `TextInput`, `KbdShortcut`, `RadioTab`).
+- **Moléculas (`src/components/molecules/`):** Combinaciones funcionales (`SearchInput`, `StreakPill`, `FormField`, `MetricTile`, `AdminMetricTile`, `TrackCard`, `AchievementCard`, `PedagogyPillarsCard`, `MethodologyModal`, `UserModerationDrawer`, `KillswitchToggle`, `SqlDiffViewer`).
+- **Organismos (`src/components/organisms/`):** Módulos autónomos complejos (`MonacoEditorPanel`, `DataGridResults`, `ExerciseSpecPanel`, `LearningRoadmapMap`, `TracksView`, `SqlPlaygroundView`, `UserProfileView`, `AdminDashboardView`, `AdminUsersPanel`, `SidebarNav`, `TopHeader`).
 - **Plantillas (`src/components/templates/`):** Estructuras de layout de página desacopladas de la lógica de datos (`DashboardLayout`, `WorkspaceLayout`).
 
 ### 2. Estética *Terminal Glow Minimal*
