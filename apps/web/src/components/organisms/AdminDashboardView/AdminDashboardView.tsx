@@ -731,7 +731,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   value={curriculumSearch}
                   onChange={(e) => setCurriculumSearch(e.target.value)}
                   placeholder="Buscar reto por título, orden o UUID..."
-                  aria-label="Filtrar retos del currículum"
+                  aria-label="Filtrar retos del plan de estudios"
                   className="px-3 py-2 rounded-lg bg-surface border border-border-subtle text-xs font-mono text-content-primary placeholder:text-content-muted focus:outline-none focus:border-cyan-accent min-w-[260px]"
                 />
                 <Select

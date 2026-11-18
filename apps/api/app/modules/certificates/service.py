@@ -94,6 +94,14 @@ _TRACK_SKILLS_MAP: Dict[str, List[str]] = {
 }
 
 
+def _normalize_track_title(track_id: str, raw_title: str) -> str:
+    if track_id == "global-curriculum":
+        lowered = (raw_title or "").lower()
+        if not raw_title or "currículum" in lowered or "curriculum" in lowered:
+            return "Plan de Estudios Completo — SQL Engineering"
+    return raw_title
+
+
 def _row_to_dto(row: dict, base_url: str) -> CertificateDTO:
     code = row["verification_code"]
     issued_raw = row["issued_at"]
@@ -102,20 +110,22 @@ def _row_to_dto(row: dict, base_url: str) -> CertificateDTO:
     else:
         issued_dt = issued_raw
 
+    track_id = row["track_id"]
+    normalized_title = _normalize_track_title(track_id, row["track_title"])
+
     clean_base = (base_url or "http://localhost:5173").rstrip("/")
     verify_url = f"{clean_base}/verify/{code}"
     api_prefix = settings.API_V1_PREFIX.rstrip("/")
     pdf_url = f"{api_prefix}/certificates/{code}/pdf"
     qr_svg_url = f"{api_prefix}/certificates/{code}/qr.svg"
     linkedin_url = build_linkedin_add_url(
-        cert_name=f"{row['track_title']} (SQL PostgreSQL 16)",
+        cert_name=f"{normalized_title} (SQL PostgreSQL 16)",
         issued_at=issued_dt,
         verify_url=verify_url,
         cert_id=code,
     )
     completed = int(row["completed_exercises"])
     total = int(row["total_exercises"])
-    track_id = row["track_id"]
     sha256_hash = hashlib.sha256(
         f"{code}|{row['user_id']}|{track_id}|{completed}/{total}|{issued_dt.isoformat()}".encode("utf-8")
     ).hexdigest()
@@ -124,7 +134,7 @@ def _row_to_dto(row: dict, base_url: str) -> CertificateDTO:
         id=str(row["id"]),
         user_id=str(row["user_id"]),
         track_id=track_id,
-        track_title=row["track_title"],
+        track_title=normalized_title,
         recipient_name=row["recipient_name"],
         verification_code=code,
         completed_exercises=completed,
@@ -231,6 +241,25 @@ async def issue_certificate_for_user(
                 )
                 if existing_res.status_code == 200 and existing_res.json():
                     row = existing_res.json()[0]
+                    normalized_title = _normalize_track_title(payload.track_id, payload.track_title)
+                    if row.get("track_title") != normalized_title or int(row.get("total_exercises") or 0) != effective_total:
+                        patch_body = {
+                            "track_title": normalized_title,
+                            "total_exercises": effective_total,
+                            "completed_exercises": completed_val,
+                        }
+                        try:
+                            patch_res = await client.patch(
+                                f"{rest_url}?id=eq.{row['id']}",
+                                json=patch_body,
+                                headers={**_supabase_headers(), "Prefer": "return=representation"},
+                            )
+                            if patch_res.status_code in (200, 204) and patch_res.json():
+                                row = patch_res.json()[0]
+                            else:
+                                row = {**row, **patch_body}
+                        except Exception:
+                            row = {**row, **patch_body}
                     _LOCAL_CERT_BY_KEY[cert_key] = row
                     _LOCAL_CERT_BY_CODE[row["verification_code"]] = row
                     return _row_to_dto(row, base_url)

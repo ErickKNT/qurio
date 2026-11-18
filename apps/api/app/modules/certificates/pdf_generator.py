@@ -344,7 +344,7 @@ def generate_certificate_pdf(cert: CertificateDTO) -> bytes:
     c.drawCentredString(sig2_cx, sig_y + 28, "Comité Técnico Qurio")
     c.setFillColor(outline_muted)
     c.setFont("Courier", 7.5)
-    c.drawCentredString(sig2_cx, sig_y + 16, "AST Audit & Curriculum QA")
+    c.drawCentredString(sig2_cx, sig_y + 16, "AST Audit & SQL Engineering QA")
 
     # Ledger Footer (SHA-256 + Emisión + Registro)
     footer_line_y = m + 38
