@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794960888.377958,
-    "seen": 1794960956.3972216,
-    "ast_hash": "9ad60d7e227d4e4cad3d514de446b85d",
+    "mtime": 1794961149.214764,
+    "seen": 1794961168.6126277,
+    "ast_hash": "0e21e1b4ad105423712ebbff1a61762a",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1248,8 +1248,8 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/CertificateModal/CertificateModal.tsx": {
-    "mtime": 1794960805.9465714,
-    "seen": 1794960956.3678794,
+    "mtime": 1794960997.4072652,
+    "seen": 1794961168.5819187,
     "ast_hash": "389be1f4a1cffe1b704b8431d3746bc7",
     "semantic_hash": ""
   },
@@ -1296,8 +1296,8 @@
     "semantic_hash": ""
   },
   "apps/web/src/tests/uxUpgrade.test.tsx": {
-    "mtime": 1794960886.5373118,
-    "seen": 1794960956.3809807,
+    "mtime": 1794960997.673108,
+    "seen": 1794961168.5953321,
     "ast_hash": "f5040b1aa8236d03a161a69737919337",
     "semantic_hash": ""
   },
@@ -1308,26 +1308,26 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/pdf_generator.py": {
-    "mtime": 1794960725.9453015,
-    "seen": 1794960956.3487093,
+    "mtime": 1794960997.0735343,
+    "seen": 1794961168.5626338,
     "ast_hash": "cf02a4de03f772b6e81d4af7c6d064dd",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/router.py": {
-    "mtime": 1794960734.561618,
-    "seen": 1794960956.348713,
+    "mtime": 1794960997.1368494,
+    "seen": 1794961168.5626378,
     "ast_hash": "bc73fb29c9e559368b7b4b9bc0cd8cf9",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/schemas.py": {
-    "mtime": 1794960722.5855148,
-    "seen": 1794960956.348715,
+    "mtime": 1794960997.210532,
+    "seen": 1794961168.5626404,
     "ast_hash": "5a54a8f759da102a3ac54567617628bc",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/service.py": {
-    "mtime": 1794960724.404846,
-    "seen": 1794960956.3487167,
+    "mtime": 1794960997.27209,
+    "seen": 1794961168.5626426,
     "ast_hash": "bf2558dcfa116be258aaa228db591bfa",
     "semantic_hash": ""
   },
@@ -1338,8 +1338,8 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/CertificateVerifyView/CertificateVerifyView.tsx": {
-    "mtime": 1794960807.2593539,
-    "seen": 1794960956.3678854,
+    "mtime": 1794960997.5424006,
+    "seen": 1794961168.5822382,
     "ast_hash": "8e98434072b4b9081b96470a2b570881",
     "semantic_hash": ""
   },

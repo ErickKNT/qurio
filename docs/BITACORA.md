@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 16: Constancias Verificables en PDF/QR, LinkedIn (`/verify/:code`) y Controles QA Admin — Implementada en Rama Aislada**  
-* **Próxima Fase:** **Validación interactiva con cuenta Admin + Ejecución de `05_certificates.sql` en Supabase Cloud + Merge de `feat/verifiable-certificates-pdf-linkedin` hacia `main`**  
-* **Rama Git Activa:** `feat/verifiable-certificates-pdf-linkedin` (bifurcada desde `main`)  
+* **Fase Actual:** **Fase 16: Constancias Verificables en PDF/QR, LinkedIn (`/verify/:code`), Rediseño *Terminal Glow Minimal* y Controles QA Admin — Concluida y Fusionada en `main`**  
+* **Próxima Fase:** **Ejecución de `05_certificates.sql` en Supabase Cloud + Planificación de Ruta 4 (DDL & DML en PostgreSQL Transaccional)**  
+* **Rama Git Activa:** `main` (merge verificado de `feat/verifiable-certificates-pdf-linkedin`)  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
   * Contenedor Docker Sandbox (`qurio-postgres-sandbox` en `localhost:5433`): Activo y saludable (`healthy`).
   * API FastAPI (`apps/api`, `uvicorn` en `http://127.0.0.1:8000`): **100% Verificado** — Suite de **96 pruebas automatizadas pasando limpiamente en 93.28s** en `apps/api/tests/` (`85` existentes + `11` nuevas en `test_admin.py`).
@@ -39,7 +39,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **11** | **Preparación del Piloto, Hardening v6.3 y E2E** | ✅ Concluida | `main` (vía `feat/phase-11-pilot-readiness`) | Endurecimiento CLS/RLS, RPC autoritativa de XP/rachas, rollback v4.0 y suite E2E Playwright. |
 | **12** | **Consola de Administración, Live Ops y Observabilidad** | ✅ Implementada (Aislada) | `feat/phase-12-admin-console` | RBAC criptográfico `app_metadata.role`, API `/admin/*` (Live Ops, `pg_stat_activity`, Replay Forense, Auditoría AST, Killswitches), UI Atomic Design lazy en `vendor-admin` y code splitting base (`114.72 kB`). |
 | **15** | **Evolución UX, Consola SQL, Diagrama ER & Guías Modulares** | ✅ Concluida | `main` (vía `feat/ux-pedagogy-and-er-upgrade`) | Drawer móvil + tabs en Playground, modo dual Probar/Enviar, Playground multi-tab + Historial, Diagrama ER interactivo (`10` tablas), `12` guías teóricas con micro-diagramas, Referencia SQL + `⌘K`, OAuth GitHub y Constancias. |
-| **16** | **Constancias Verificables PDF/QR, LinkedIn & Modo QA Admin** | ✅ Implementada (Aislada) | `feat/verifiable-certificates-pdf-linkedin` | Emisión idempotente (`user_certificates`), PDF vectorial A4 con QR (`reportlab`), enlace público `/verify/:code`, botón *Añadir a LinkedIn* y desbloqueo QA Admin vía `app_metadata.role === 'admin'`. |
+| **16** | **Constancias Verificables PDF/QR, LinkedIn & Modo QA Admin** | ✅ Concluida | `main` (vía `feat/verifiable-certificates-pdf-linkedin`) | Emisión idempotente (`user_certificates`), PDF vectorial A4 oscuro con QR (`reportlab`), enlace público `/verify/:code`, QR SVG, *Añadir a LinkedIn*, UI *Terminal Glow Minimal* y desbloqueo QA Admin (`app_metadata.role === 'admin'`). |
 
 ---
 
