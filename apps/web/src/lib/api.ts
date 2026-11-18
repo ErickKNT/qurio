@@ -337,6 +337,13 @@ export const api = {
   getCertificatePdfUrl(verificationCode: string): string {
     return `${API_BASE_URL}/certificates/${encodeURIComponent(verificationCode)}/pdf`;
   },
+
+  /**
+   * Devuelve la URL del código QR SVG vectorial en FastAPI.
+   */
+  getCertificateQrSvgUrl(verificationCode: string): string {
+    return `${API_BASE_URL}/certificates/${encodeURIComponent(verificationCode)}/qr.svg`;
+  },
 };
 
 

@@ -99,7 +99,11 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
       />
     );
     expect(screen.getByText('erick_sql')).toBeInTheDocument();
-    expect(screen.getByText('1. Fundamentos de SQL')).toBeInTheDocument();
+    expect(screen.getAllByText('1. Fundamentos de SQL').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('Acreditación de Competencia Técnica').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('QURIO VERIFIED')).toBeInTheDocument();
+    expect(screen.getByText('Habilidades Técnicas Validadas')).toBeInTheDocument();
+    expect(screen.getByText('Validación Pública')).toBeInTheDocument();
     expect(screen.getByText(/^ID: QURIO-SQL-FO-123456$/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Añadir a LinkedIn/i })).toHaveAttribute(
       'href',

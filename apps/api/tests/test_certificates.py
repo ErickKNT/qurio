@@ -85,6 +85,9 @@ def test_admin_can_issue_verify_and_download_pdf_and_linkedin_certificate():
         assert data["is_qa_preview"] is True
         assert data["verify_url"] == f"https://qurio.dev/verify/{code}"
         assert data["linkedin_url"].startswith("https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME")
+        assert len(data["sha256_hash"]) == 64
+        assert data["modules_count"] == 4
+        assert len(data["validated_skills"]) >= 5
 
         # Verificación pública sin autenticación
         res_verify = client.get(f"/api/v1/certificates/{code}")
@@ -96,6 +99,12 @@ def test_admin_can_issue_verify_and_download_pdf_and_linkedin_certificate():
         assert res_pdf.status_code == 200
         assert res_pdf.headers["content-type"] == "application/pdf"
         assert res_pdf.content.startswith(b"%PDF-")
+
+        # QR SVG vectorial público
+        res_qr = client.get(f"/api/v1/certificates/{code}/qr.svg")
+        assert res_qr.status_code == 200
+        assert res_qr.headers["content-type"].startswith("image/svg+xml")
+        assert b"<svg" in res_qr.content
     finally:
         app.dependency_overrides.clear()
 

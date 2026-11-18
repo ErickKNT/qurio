@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
 
 from app.core.auth import AuthenticatedUser, get_required_current_user
-from app.modules.certificates.pdf_generator import generate_certificate_pdf
+from app.modules.certificates.pdf_generator import generate_certificate_pdf, generate_certificate_qr_svg
 from app.modules.certificates.schemas import CertificateDTO, CertificateIssueRequest
 from app.modules.certificates.service import (
     get_certificate_by_code,
@@ -84,4 +84,25 @@ async def download_certificate_pdf(verification_code: str, request: Request):
             "Content-Disposition": f'attachment; filename="{filename}"',
             "Cache-Control": "no-store",
         },
+    )
+
+
+@router.get("/{verification_code}/qr.svg")
+async def get_certificate_qr_svg(verification_code: str, request: Request):
+    """Genera un código QR SVG vectorial apuntando a la URL pública de verificación."""
+    cert = await get_certificate_by_code(
+        verification_code=verification_code,
+        default_base_url=_origin_from_request(request),
+    )
+    if not cert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No se encontró ninguna constancia verificada con el código '{verification_code}'.",
+        )
+
+    svg_str = generate_certificate_qr_svg(cert.verify_url)
+    return Response(
+        content=svg_str,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=3600"},
     )

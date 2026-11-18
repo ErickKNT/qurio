@@ -1669,3 +1669,21 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Backend (`pytest apps/api/tests/test_certificates.py apps/api/tests/test_schema_consistency.py -v`):** **8 pruebas aprobadas** (`2.43s`) contra `qurio-postgres-sandbox` conectado (`3` pruebas nuevas de constancias/RBAC Admin + `5` pruebas de consistencia curricular).
   * **Docker (`qurio-api`):** Reconstruido con `reportlab-5.1.0` y validado en vivo vía `GET /api/v1/health` (`{"status":"healthy","sandbox_database":"connected","error":null}`).
   * **Frontend (`vitest run` y `tsc && vite build`):** Suites y build de producción verificados tras la implementación en `apps/web/src/tests/uxUpgrade.test.tsx`.
+
+
+---
+
+### Entrada 56: Rediseño Visual *Terminal Glow Minimal* para Constancias Web y PDF
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/verifiable-certificates-pdf-linkedin`
+* **Objetivo:** Alinear tanto la vista modal / pública (`/verify/:code`) como el documento PDF descargable con la referencia oficial de diseño en [`docs/constancias/`](constancias/screen.png) (*Terminal Glow Minimal*).
+* **Entregables Implementados:**
+  1. **Componente Compartido [`CertificateShowcase.tsx`](../apps/web/src/components/organisms/CertificateModal/CertificateShowcase.tsx):**
+     * Cabecera con breadcrumbs, badges `EMITIDO OFICIALMENTE` / `QA ADMIN PREVIEW`, `INMUTABLE • SHA-256`, chip `ID: {verification_code}` y barra de acciones (`Copiar Enlace`, `Imprimir`, `Añadir a LinkedIn`, `Descargar PDF`).
+     * Lienzo heroico `#080d1d` con retícula relacional punteada SVG, luminiscencia radial indigo/cyan, rosetones técnicos en las 4 esquinas, isotipo Qurio, nombre del titular con subrayado gradiente, 4 tarjetas de métricas auditadas, firmas vectoriales con sello holográfico orbital `QURIO VERIFIED` + QR SVG (`/certificates/{code}/qr.svg`) y pie criptográfico `HASH SHA-256`.
+     * Bloque inferior de **Habilidades Técnicas Validadas**, **Validación Pública** y barra de portafolio (`Copiar Badge HTML` y `Publicar en X`).
+     * Reutilizado de forma unificada en [`CertificateModal.tsx`](../apps/web/src/components/organisms/CertificateModal/CertificateModal.tsx) y [`CertificateVerifyView.tsx`](../apps/web/src/components/organisms/CertificateVerifyView/CertificateVerifyView.tsx).
+  2. **PDF Vectorial Oscuro & QR SVG ([`pdf_generator.py`](../apps/api/app/modules/certificates/pdf_generator.py), [`service.py`](../apps/api/app/modules/certificates/service.py), [`router.py`](../apps/api/app/modules/certificates/router.py)):**
+     * PDF A4 apaisado rediseñado con lienzo `#080D1D`, retícula técnica punteada, corner brackets, 4 métricas, firmas vectoriales Bézier, sello orbital con `QrCodeWidget` escaneable real sobre placa de alto contraste y hash `SHA-256` determinístico.
+     * Nuevo endpoint público `GET /api/v1/certificates/{verification_code}/qr.svg` usando `reportlab.graphics.renderSVG`.

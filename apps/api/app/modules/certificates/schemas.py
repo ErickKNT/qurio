@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -26,3 +26,7 @@ class CertificateDTO(BaseModel):
     verify_url: str
     pdf_url: str
     linkedin_url: str
+    sha256_hash: str = ""
+    modules_count: int = 4
+    validated_skills: List[str] = Field(default_factory=list)
+    qr_svg_url: str = ""

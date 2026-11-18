@@ -41,6 +41,50 @@ def _generate_verification_code(user_id: str, track_id: str, is_qa_preview: bool
     return f"{prefix}-{year}-{digest}"
 
 
+_TRACK_MODULES_COUNT: Dict[str, int] = {
+    "sql-foundations": 4,
+    "relational-sql": 4,
+    "advanced-queries": 4,
+    "global-curriculum": 12,
+}
+
+_TRACK_SKILLS_MAP: Dict[str, List[str]] = {
+    "sql-foundations": [
+        "Sintaxis ANSI SQL",
+        "Proyección SELECT & Alias",
+        "Filtros WHERE, BETWEEN & IN",
+        "Ordenamiento ORDER BY & LIMIT",
+        "Funciones Escalares de Texto y Fecha",
+        "Agregación GROUP BY & HAVING",
+    ],
+    "relational-sql": [
+        "Modelo Relacional & Claves FK",
+        "INNER JOIN Multi-Tabla",
+        "Detección de Ausencias (LEFT JOIN + NULL)",
+        "COALESCE & Normalización 3NF",
+        "Operaciones de Conjunto (UNION / EXCEPT)",
+        "CROSS JOIN & Auto-uniones (SELF JOIN)",
+    ],
+    "advanced-queries": [
+        "Subconsultas Correlacionadas",
+        "Predicados EXISTS & NOT EXISTS",
+        "Lógica Condicional CASE WHEN",
+        "CTEs Temporales (WITH)",
+        "Funciones de Ventana (OVER, PARTITION BY)",
+        "Ranking & Análisis Temporal (LAG / SUM OVER)",
+    ],
+    "global-curriculum": [
+        "Sintaxis ANSI SQL",
+        "INNER, LEFT & SELF JOINS",
+        "Agrupación GROUP BY & HAVING",
+        "Normalización 3NF & Modelado",
+        "Subconsultas & CTEs (WITH)",
+        "Evaluación PostgreSQL 16 Sandbox",
+        "Funciones de Ventana (OVER, PARTITION BY)",
+    ],
+}
+
+
 def _row_to_dto(row: dict, base_url: str) -> CertificateDTO:
     code = row["verification_code"]
     issued_raw = row["issued_at"]
@@ -53,27 +97,38 @@ def _row_to_dto(row: dict, base_url: str) -> CertificateDTO:
     verify_url = f"{clean_base}/verify/{code}"
     api_prefix = settings.API_V1_PREFIX.rstrip("/")
     pdf_url = f"{api_prefix}/certificates/{code}/pdf"
+    qr_svg_url = f"{api_prefix}/certificates/{code}/qr.svg"
     linkedin_url = build_linkedin_add_url(
         cert_name=f"{row['track_title']} (SQL PostgreSQL 16)",
         issued_at=issued_dt,
         verify_url=verify_url,
         cert_id=code,
     )
+    completed = int(row["completed_exercises"])
+    total = int(row["total_exercises"])
+    track_id = row["track_id"]
+    sha256_hash = hashlib.sha256(
+        f"{code}|{row['user_id']}|{track_id}|{completed}/{total}|{issued_dt.isoformat()}".encode("utf-8")
+    ).hexdigest()
 
     return CertificateDTO(
         id=str(row["id"]),
         user_id=str(row["user_id"]),
-        track_id=row["track_id"],
+        track_id=track_id,
         track_title=row["track_title"],
         recipient_name=row["recipient_name"],
         verification_code=code,
-        completed_exercises=int(row["completed_exercises"]),
-        total_exercises=int(row["total_exercises"]),
+        completed_exercises=completed,
+        total_exercises=total,
         is_qa_preview=bool(row.get("is_qa_preview", False)),
         issued_at=issued_dt,
         verify_url=verify_url,
         pdf_url=pdf_url,
         linkedin_url=linkedin_url,
+        sha256_hash=sha256_hash,
+        modules_count=_TRACK_MODULES_COUNT.get(track_id, 4),
+        validated_skills=_TRACK_SKILLS_MAP.get(track_id, _TRACK_SKILLS_MAP["global-curriculum"]),
+        qr_svg_url=qr_svg_url,
     )
 
 

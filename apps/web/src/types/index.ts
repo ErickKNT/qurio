@@ -183,6 +183,10 @@ export interface CertificateRecord {
   verify_url: string;
   pdf_url: string;
   linkedin_url: string;
+  sha256_hash?: string;
+  modules_count?: number;
+  validated_skills?: string[];
+  qr_svg_url?: string;
 }
 
 export type AppPath =

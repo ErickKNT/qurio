@@ -360,9 +360,9 @@
     "semantic_hash": "501dbefce3bdfe944cecf55933c7a6ee"
   },
   "apps/web/src/lib/api.ts": {
-    "mtime": 1794959873.310302,
-    "seen": 1794960318.9291182,
-    "ast_hash": "4bbd6774eba53af3fdeefd8a8045e357",
+    "mtime": 1794960751.2437387,
+    "seen": 1794960956.376956,
+    "ast_hash": "46c6d8707e0ca4a6bae9d9a13b75916e",
     "semantic_hash": ""
   },
   "apps/web/src/lib/persistence.ts": {
@@ -390,9 +390,9 @@
     "semantic_hash": "8a353b797c4d202550e3d273eb5f3d4b"
   },
   "apps/web/src/types/index.ts": {
-    "mtime": 1794959868.0629551,
-    "seen": 1794960318.9320056,
-    "ast_hash": "190b0dec40842712012d3fde1cf5ab38",
+    "mtime": 1794960749.772634,
+    "seen": 1794960956.3812773,
+    "ast_hash": "17cb1508f2ef70bfd19a6bbebbccf5b1",
     "semantic_hash": ""
   },
   "apps/web/src/vite-env.d.ts": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794960279.7032104,
-    "seen": 1794960318.9497008,
-    "ast_hash": "5624c5629b5a5cd0b3e1f2ba17270ab6",
+    "mtime": 1794960888.377958,
+    "seen": 1794960956.3972216,
+    "ast_hash": "9ad60d7e227d4e4cad3d514de446b85d",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1248,9 +1248,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/CertificateModal/CertificateModal.tsx": {
-    "mtime": 1794960112.270649,
-    "seen": 1794960318.9242642,
-    "ast_hash": "757e758a5760d55b7d42263ebdd564b9",
+    "mtime": 1794960805.9465714,
+    "seen": 1794960956.3678794,
+    "ast_hash": "389be1f4a1cffe1b704b8431d3746bc7",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/CommandPaletteModal/CommandPaletteModal.tsx": {
@@ -1296,9 +1296,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/tests/uxUpgrade.test.tsx": {
-    "mtime": 1794960109.7103665,
-    "seen": 1794960318.9316962,
-    "ast_hash": "48191ce0a208a8ca7e9f8bfcc81da365",
+    "mtime": 1794960886.5373118,
+    "seen": 1794960956.3809807,
+    "ast_hash": "f5040b1aa8236d03a161a69737919337",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/__init__.py": {
@@ -1308,39 +1308,63 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/pdf_generator.py": {
-    "mtime": 1794959808.194304,
-    "seen": 1794960318.8992434,
-    "ast_hash": "70ba02fb79a24036ab6440e7d0c2bc15",
+    "mtime": 1794960725.9453015,
+    "seen": 1794960956.3487093,
+    "ast_hash": "cf02a4de03f772b6e81d4af7c6d064dd",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/router.py": {
-    "mtime": 1794959811.93336,
-    "seen": 1794960318.8992453,
-    "ast_hash": "085bf83c33b14f4a1a9cf9922b7f8973",
+    "mtime": 1794960734.561618,
+    "seen": 1794960956.348713,
+    "ast_hash": "bc73fb29c9e559368b7b4b9bc0cd8cf9",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/schemas.py": {
-    "mtime": 1794959806.3661766,
-    "seen": 1794960318.8992472,
-    "ast_hash": "d7e0650e18cead5aca45193f05972358",
+    "mtime": 1794960722.5855148,
+    "seen": 1794960956.348715,
+    "ast_hash": "5a54a8f759da102a3ac54567617628bc",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/service.py": {
-    "mtime": 1794959838.8190403,
-    "seen": 1794960318.8992488,
-    "ast_hash": "b972e9479a20fb22f3ee44aa78d52b63",
+    "mtime": 1794960724.404846,
+    "seen": 1794960956.3487167,
+    "ast_hash": "bf2558dcfa116be258aaa228db591bfa",
     "semantic_hash": ""
   },
   "apps/api/tests/test_certificates.py": {
-    "mtime": 1794960041.5019596,
-    "seen": 1794960318.9030144,
-    "ast_hash": "41c6f48b376aabb1f90576d3a28017ac",
+    "mtime": 1794960736.1389606,
+    "seen": 1794960956.3527126,
+    "ast_hash": "c5edcdee0e0f0da2f2701a6b84010d74",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/CertificateVerifyView/CertificateVerifyView.tsx": {
-    "mtime": 1794959899.3377438,
-    "seen": 1794960318.9242675,
-    "ast_hash": "875d6349f76455456b1c14ea7cd1cd35",
+    "mtime": 1794960807.2593539,
+    "seen": 1794960956.3678854,
+    "ast_hash": "8e98434072b4b9081b96470a2b570881",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/organisms/CertificateModal/CertificateShowcase.tsx": {
+    "mtime": 1794960804.4651294,
+    "seen": 1794960956.3678827,
+    "ast_hash": "4fd339d7036e25f9e32f132d200aee7c",
+    "semantic_hash": ""
+  },
+  "docs/constancias/DESIGN.md": {
+    "mtime": 1794982120.0,
+    "seen": 1794960956.4017906,
+    "ast_hash": "85c21f3f1eeb484954c3180bdb86c430",
+    "semantic_hash": ""
+  },
+  "docs/constancias/code.html": {
+    "mtime": 1794982120.0,
+    "seen": 1794960956.4017937,
+    "ast_hash": "7d5ef7f5267bad90f566bc9d82833233",
+    "semantic_hash": ""
+  },
+  "docs/constancias/screen.png": {
+    "mtime": 1794982120.0,
+    "seen": 1794960956.4082592,
+    "ast_hash": "f3596a3dc6525f8132c51b42983cc675",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {
