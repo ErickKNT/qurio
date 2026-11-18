@@ -174,7 +174,7 @@ export interface QueryHistoryItem {
   executed_at: string;
   status: 'SUCCESS' | 'ERROR';
   execution_time_ms: number;
-  row_count: number;
+  row_count?: number;
 }
 
 export interface CertificateRecord {

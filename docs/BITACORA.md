@@ -1705,7 +1705,10 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * [`EditProfileModal.tsx`](../apps/web/src/components/molecules/EditProfileModal/EditProfileModal.tsx): edición validada inline de nombre visible, bio profesional y URL de avatar con `@username` de solo lectura.
      * [`ProfileBadgesShowcase.tsx`](../apps/web/src/components/molecules/ProfileBadgesShowcase/ProfileBadgesShowcase.tsx): vitrina de 6 insignias destacadas con enlace a `/achievements`.
      * [`ProfilePrecisionCard.tsx`](../apps/web/src/components/molecules/ProfilePrecisionCard/ProfilePrecisionCard.tsx): porcentaje de éxito `PASSED`, velocidad `<50ms` y resolución sin pistas con grado calculado.
-  3. **Rediseño de [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx) y Conexión en [`App.tsx`](../apps/web/src/App.tsx):**
-     * Banner heroico Bento + 4 KPIs reales + grid `8/4` (mapa de calor anual **52 semanas**, rutas en progreso con salto directo a `Continuar`/`Ver Constancia`, historial real de consultas, insignias, precisión SQL y sección `#cert-section` con tarjetas emitidas, descarga PDF y botones **QA Admin**).
+     * [`QueryHistoryModal.tsx`](../apps/web/src/components/molecules/QueryHistoryModal/QueryHistoryModal.tsx): componente compartido `QueryHistoryRow` + modal buscable con filtro `Todas / Solo Exitosas` y paginación real de 10 en servidor (`getUserAttemptsPage` con `.range()`).
+  3. **Regla Permanente de Ingeniería ([`critical-sparring.md`](../.agents/rules/critical-sparring.md) & [`AGENTS.md`](../AGENTS.md)):**
+     * Formalización de criterio técnico crítico (cero complacencia) antes de implementar sugerencias de diseño o arquitectura.
+  4. **Rediseño de [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx) y Conexión en [`App.tsx`](../apps/web/src/App.tsx):**
+     * Banner heroico Bento + 4 KPIs reales + grid `8/4` (mapa de calor anual **52 semanas**, rutas en progreso con salto directo a `Continuar`/`Ver Constancia`, historial compacto **Top 5** con acceso a historial completo, insignias, precisión SQL y sección `#cert-section` con tarjetas emitidas, descarga PDF y botones **QA Admin**).
 * **Verificación:**
   * **Frontend (`npm.cmd test`):** **8 archivos / 47 pruebas aprobadas** en `3.04s` (incluyendo prueba de heatmap de 364 celdas, métricas de precisión y validación inline de `EditProfileModal` en [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).

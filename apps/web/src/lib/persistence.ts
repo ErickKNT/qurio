@@ -512,11 +512,68 @@ export const persistence = {
         executed_at: row.created_at,
         status: row.status === 'PASSED' ? ('SUCCESS' as const) : ('ERROR' as const),
         execution_time_ms: row.execution_time_ms || 0,
-        row_count: 0,
       }));
     } catch (err) {
       console.warn('Error al obtener historial de intentos de Supabase:', err);
       return [];
+    }
+  },
+
+  /**
+   * Obtiene una página real de consultas evaluadas desde Supabase con filtro y búsqueda SQL.
+   */
+  async getUserAttemptsPage(params: {
+    userId: string;
+    page?: number;
+    pageSize?: number;
+    statusFilter?: 'all' | 'SUCCESS';
+    search?: string;
+  }): Promise<{ items: QueryHistoryItem[]; total: number }> {
+    const page = Math.max(0, params.page ?? 0);
+    const pageSize = Math.max(1, Math.min(50, params.pageSize ?? 10));
+    const searchClean = (params.search ?? '').trim();
+
+    if (!params.userId || params.userId.startsWith('demo-') || !isSupabaseConfigured) {
+      return { items: [], total: 0 };
+    }
+
+    try {
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      let query = supabase
+        .from('exercise_attempts')
+        .select('id, submitted_sql, status, execution_time_ms, created_at', { count: 'exact' })
+        .eq('user_id', params.userId);
+
+      if (params.statusFilter === 'SUCCESS') {
+        query = query.eq('status', 'PASSED');
+      }
+      if (searchClean) {
+        query = query.ilike('submitted_sql', `%${searchClean}%`);
+      }
+
+      const { data, count, error } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) {
+        console.warn('Error al paginar exercise_attempts en Supabase:', error.message);
+        return { items: [], total: 0 };
+      }
+
+      const items: QueryHistoryItem[] = (data || []).map((row) => ({
+        id: row.id,
+        query: row.submitted_sql,
+        executed_at: row.created_at,
+        status: row.status === 'PASSED' ? ('SUCCESS' as const) : ('ERROR' as const),
+        execution_time_ms: row.execution_time_ms || 0,
+      }));
+
+      return { items, total: count ?? items.length };
+    } catch (err) {
+      console.warn('Error de red al paginar historial:', err);
+      return { items: [], total: 0 };
     }
   },
 

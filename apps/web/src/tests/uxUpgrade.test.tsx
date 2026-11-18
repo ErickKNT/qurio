@@ -235,4 +235,49 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     fireEvent.click(screen.getByRole('button', { name: /Guardar Cambios/i }));
     expect(screen.getByRole('alert')).toHaveTextContent(/al menos 2 caracteres/i);
   });
+
+  it('UserProfileView limita historial rápido a 5 filas y abre QueryHistoryModal con búsqueda y paginación de 10', () => {
+    const manyQueries = Array.from({ length: 14 }, (_, idx) => ({
+      id: `q-${idx}`,
+      query: idx === 11 ? 'SELECT * FROM productos_especial;' : `SELECT ${idx} FROM clientes;`,
+      executed_at: '2026-11-17T18:00:00Z',
+      status: (idx % 2 === 0 ? 'SUCCESS' : 'ERROR') as 'SUCCESS' | 'ERROR',
+      execution_time_ms: 12,
+    }));
+
+    render(
+      <UserProfileView
+        profile={{
+          id: 'demo-local',
+          username: 'demo_sql',
+          total_xp: 200,
+          current_level: 1,
+          current_streak_days: 1,
+          max_streak_days: 1,
+          preferred_theme: 'dark',
+          created_at: '2026-11-01T00:00:00Z',
+        }}
+        history={manyQueries}
+        tracks={FALLBACK_TRACKS}
+        isCloudAuth={false}
+      />
+    );
+
+    expect(screen.getByText('Historial Reciente (Últimas 5)')).toBeInTheDocument();
+    expect(screen.getByText('SELECT 0 FROM clientes;')).toBeInTheDocument();
+    expect(screen.queryByText('SELECT 6 FROM clientes;')).not.toBeInTheDocument();
+    // No muestra "0 filas" cuando row_count no existe
+    expect(screen.queryByText('0 filas')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Ver todo/i }));
+    expect(screen.getByText('Historial Completo de Consultas')).toBeInTheDocument();
+    expect(screen.getByText(/Página/i)).toHaveTextContent(/Página 1 de 2/i);
+
+    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
+    expect(screen.getByText('SELECT * FROM productos_especial;')).toBeInTheDocument();
+
+    const searchInput = screen.getByPlaceholderText(/Buscar por cláusula o tabla/i);
+    fireEvent.change(searchInput, { target: { value: 'productos_especial' } });
+    expect(screen.getByText('SELECT * FROM productos_especial;')).toBeInTheDocument();
+  });
 });

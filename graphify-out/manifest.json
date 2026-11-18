@@ -132,8 +132,8 @@
     "semantic_hash": "33fad9c02cb0ec6d6030369ef6347d57"
   },
   "apps/web/src/App.tsx": {
-    "mtime": 1794961912.4513707,
-    "seen": 1794962035.2970307,
+    "mtime": 1794962078.2296925,
+    "seen": 1794962413.0005763,
     "ast_hash": "f9220b4a3896bc50f4ad52b280d142e9",
     "semantic_hash": ""
   },
@@ -240,9 +240,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/index.ts": {
-    "mtime": 1794961832.1159716,
-    "seen": 1794962035.3064919,
-    "ast_hash": "b06fb9ef559db1aa32b9e323534fcc6f",
+    "mtime": 1794962323.206625,
+    "seen": 1794962413.0112622,
+    "ast_hash": "814e979398825ae90b7a9f6948b9e858",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/AchievementsView/AchievementsView.tsx": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx": {
-    "mtime": 1794959735.6649811,
-    "seen": 1794960318.9256058,
-    "ast_hash": "112d5c88f5fccf717bb10482b1f40c23",
+    "mtime": 1794962298.384411,
+    "seen": 1794962413.0173929,
+    "ast_hash": "595ebd594947d55a55f26f3f41f5d817",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/TopHeader/TopHeader.tsx": {
@@ -318,9 +318,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx": {
-    "mtime": 1794961974.167149,
-    "seen": 1794962035.3120885,
-    "ast_hash": "dd9cbff68a32a580413dfb0b8485d1d8",
+    "mtime": 1794962357.6965754,
+    "seen": 1794962413.0184467,
+    "ast_hash": "dc0355efb81247c9a1be495db08ebf7d",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/index.ts": {
@@ -348,8 +348,8 @@
     "semantic_hash": "69ac3b764f496f4afd22e38b507d078b"
   },
   "apps/web/src/hooks/useAuth.tsx": {
-    "mtime": 1794961968.841868,
-    "seen": 1794962035.3130121,
+    "mtime": 1794962078.8816767,
+    "seen": 1794962413.0197034,
     "ast_hash": "a822c12e778c233f196448b1e71b76ff",
     "semantic_hash": ""
   },
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/persistence.ts": {
-    "mtime": 1794961965.682444,
-    "seen": 1794962035.3160894,
-    "ast_hash": "f0ac185b36793b7ad006e4cb9979eebf",
+    "mtime": 1794962299.5208101,
+    "seen": 1794962413.023102,
+    "ast_hash": "86e2731ba86b6d669f060b963c9aa55c",
     "semantic_hash": ""
   },
   "apps/web/src/lib/supabase.ts": {
@@ -390,9 +390,9 @@
     "semantic_hash": "8a353b797c4d202550e3d273eb5f3d4b"
   },
   "apps/web/src/types/index.ts": {
-    "mtime": 1794961785.4755487,
-    "seen": 1794962035.3188908,
-    "ast_hash": "d64998094e84d33446f3bc85baaa35d8",
+    "mtime": 1794962297.2702181,
+    "seen": 1794962413.0260873,
+    "ast_hash": "5ab17b8feb0d9b916fe15c6103d26f3e",
     "semantic_hash": ""
   },
   "apps/web/src/vite-env.d.ts": {
@@ -690,9 +690,9 @@
     "semantic_hash": "05fe5402ed96bf608ae4ab746772e926"
   },
   "AGENTS.md": {
-    "mtime": 1794947181.277512,
-    "seen": 1794949174.714985,
-    "ast_hash": "ef1895b4120d65950f19a91f25e08a15",
+    "mtime": 1794962189.8874335,
+    "seen": 1794962413.0405526,
+    "ast_hash": "7edc126a1e6a7ce7219366a4714d3c93",
     "semantic_hash": ""
   },
   "README.md": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1794962012.8597047,
-    "seen": 1794962035.334309,
-    "ast_hash": "edd8e53626874af163823ae314c3a892",
+    "mtime": 1794962371.1343567,
+    "seen": 1794962413.0421047,
+    "ast_hash": "6811348f94b91972b0245aef9fac835f",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1296,9 +1296,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/tests/uxUpgrade.test.tsx": {
-    "mtime": 1794961928.2167835,
-    "seen": 1794962035.318565,
-    "ast_hash": "2b6f8afcc6dbc10f4d014a6dd90b5962",
+    "mtime": 1794962370.0207064,
+    "seen": 1794962413.025794,
+    "ast_hash": "55d2f791640a4e3396c859be8d4e6233",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/__init__.py": {
@@ -1383,6 +1383,18 @@
     "mtime": 1794961830.581254,
     "seen": 1794962035.3033147,
     "ast_hash": "60e2010d1c8b74fab935a7c9b2272242",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/molecules/QueryHistoryModal/QueryHistoryModal.tsx": {
+    "mtime": 1794962322.1792333,
+    "seen": 1794962413.0080607,
+    "ast_hash": "46818e561cb7e511c30957c4fe08bdcc",
+    "semantic_hash": ""
+  },
+  ".agents/rules/critical-sparring.md": {
+    "mtime": 1794962191.9337463,
+    "seen": 1794962413.0281532,
+    "ast_hash": "316dabff7f8d75422dec8023ec884941",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {

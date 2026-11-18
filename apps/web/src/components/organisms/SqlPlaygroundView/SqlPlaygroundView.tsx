@@ -456,7 +456,7 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
                       {item.status}
                     </span>
                     <span className="text-content-muted">
-                      {item.execution_time_ms.toFixed(1)}ms • {item.row_count}f
+                      {item.execution_time_ms.toFixed(1)}ms{item.row_count !== undefined ? ` • ${item.row_count}f` : ''}
                     </span>
                   </div>
                   <span className="text-[11px] font-mono text-content-primary group-hover:text-cyan-accent line-clamp-2 break-all">

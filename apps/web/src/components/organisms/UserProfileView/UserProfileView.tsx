@@ -6,13 +6,9 @@ import {
   CheckCircle2,
   Calendar,
   ChevronRight,
-  Code2,
   UserCheck,
-  Copy,
   Check,
   Play,
-  ChevronDown,
-  ChevronUp,
   Lock,
   ShieldAlert,
   Sparkles,
@@ -23,6 +19,7 @@ import {
   Download,
   Eye,
   GraduationCap,
+  History,
 } from 'lucide-react';
 import {
   UserProfile,
@@ -37,6 +34,10 @@ import { MetricTile } from '@/components/molecules/MetricTile/MetricTile';
 import { EditProfileModal } from '@/components/molecules/EditProfileModal/EditProfileModal';
 import { ProfileBadgesShowcase } from '@/components/molecules/ProfileBadgesShowcase/ProfileBadgesShowcase';
 import { ProfilePrecisionCard } from '@/components/molecules/ProfilePrecisionCard/ProfilePrecisionCard';
+import {
+  QueryHistoryModal,
+  QueryHistoryRow,
+} from '@/components/molecules/QueryHistoryModal/QueryHistoryModal';
 import {
   CertificateModal,
   CertificateData,
@@ -100,6 +101,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   const [certError, setCertError] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [copiedProfileSummary, setCopiedProfileSummary] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'SUCCESS'>('all');
+  const [isFullHistoryOpen, setIsFullHistoryOpen] = useState(false);
 
   useEffect(() => {
     if (!isCloudAuth) {
@@ -292,6 +295,14 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       monthMarkers: markers,
     };
   }, [dailyActivity]);
+
+  const visibleHistory = useMemo(() => {
+    const filtered =
+      historyFilter === 'SUCCESS'
+        ? history.filter((item) => item.status === 'SUCCESS')
+        : history;
+    return filtered.slice(0, 5);
+  }, [history, historyFilter]);
 
   const scrollToCerts = () => {
     const el = document.getElementById('cert-section');
@@ -725,116 +736,91 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             </div>
           </section>
 
-          {/* C. Historial Real de Consultas Recientes */}
+          {/* C. Historial Compacto (Top 5) + Modal Buscable */}
           <section className="rounded-2xl bg-surface/70 border border-border-subtle/60 p-5 sm:p-6 shadow-md flex flex-col gap-4">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex flex-col">
                 <h2 className="text-base font-semibold text-content-primary flex items-center gap-2">
                   <Terminal className="w-4 h-4 text-primary-light" />
-                  <span>Historial de Consultas Recientes</span>
+                  <span>Historial Reciente (Últimas 5)</span>
                 </h2>
                 <p className="text-xs text-content-secondary mt-0.5">
-                  Tus envíos recientes en el evaluador o Playground para reabrirlos al instante.
+                  Tus últimos envíos en el evaluador o Playground listos para reabrir.
                 </p>
               </div>
-              {onOpenPlayground && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onOpenPlayground()}
-                  className="text-xs"
-                >
-                  <span>Abrir Laboratorio</span>
-                  <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                </Button>
-              )}
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="inline-flex items-center p-0.5 rounded-lg bg-surface-dim border border-border-subtle/60">
+                  <button
+                    type="button"
+                    onClick={() => setHistoryFilter('all')}
+                    className={cn(
+                      'px-2.5 py-1 rounded-md font-mono text-[11px] transition-colors',
+                      historyFilter === 'all'
+                        ? 'bg-primary text-white font-semibold'
+                        : 'text-content-secondary hover:text-content-primary'
+                    )}
+                  >
+                    Todas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryFilter('SUCCESS')}
+                    className={cn(
+                      'px-2.5 py-1 rounded-md font-mono text-[11px] transition-colors',
+                      historyFilter === 'SUCCESS'
+                        ? 'bg-emerald text-white font-semibold'
+                        : 'text-content-secondary hover:text-content-primary'
+                    )}
+                  >
+                    Solo Exitosas
+                  </button>
+                </div>
+
+                {(history.length > 0 || effectiveAttemptsTotal > 0) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsFullHistoryOpen(true)}
+                    leftIcon={<History className="w-3.5 h-3.5 text-cyan-accent" />}
+                    className="text-xs"
+                  >
+                    <span>Ver todo ({effectiveAttemptsTotal || history.length})</span>
+                  </Button>
+                )}
+
+                {onOpenPlayground && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => onOpenPlayground()}
+                    className="text-xs"
+                  >
+                    <span>Laboratorio</span>
+                    <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                  </Button>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-col gap-2 font-mono text-xs">
-              {history.length === 0 ? (
+              {visibleHistory.length === 0 ? (
                 <div className="p-4 rounded-xl bg-surface-dim/50 border border-border-subtle/40 text-center text-content-muted">
-                  Aún no has ejecutado consultas. ¡Abre el Laboratorio SQL o resuelve un reto para ver tu historial!
+                  {history.length === 0
+                    ? 'Aún no has ejecutado consultas. ¡Abre el Laboratorio SQL o resuelve un reto para ver tu historial!'
+                    : 'No hay consultas exitosas recientes en la vista rápida.'}
                 </div>
               ) : (
-                history.map((item) => (
-                  <div
+                visibleHistory.map((item) => (
+                  <QueryHistoryRow
                     key={item.id}
-                    className="flex flex-col p-3 rounded-xl bg-surface-dim/50 hover:bg-surface-card/70 border border-border-subtle/50 gap-2 transition-all"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                      <div
-                        onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                        className="flex items-center gap-2.5 overflow-hidden flex-1 cursor-pointer select-none group"
-                        title="Clic para expandir/contraer consulta completa"
-                      >
-                        <Code2 className="w-3.5 h-3.5 text-content-muted group-hover:text-cyan-accent shrink-0 transition-colors" />
-                        <span className="text-content-primary truncate font-mono text-[11px] group-hover:text-primary-light transition-colors">
-                          {item.query}
-                        </span>
-                        {expandedId === item.id ? (
-                          <ChevronUp className="w-3 h-3 text-content-muted shrink-0" />
-                        ) : (
-                          <ChevronDown className="w-3 h-3 text-content-muted opacity-60 group-hover:opacity-100 shrink-0" />
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 text-[10px] text-content-muted flex-wrap">
-                        <span className="text-emerald font-semibold">{item.row_count} filas</span>
-                        <span>{item.execution_time_ms} ms</span>
-                        <Badge variant={item.status === 'SUCCESS' ? 'emerald' : 'error'} size="sm">
-                          {item.status === 'SUCCESS' ? 'EXITOSA' : 'ERROR'}
-                        </Badge>
-
-                        <div className="flex items-center gap-1.5 pl-2 border-l border-border-subtle/40">
-                          <button
-                            type="button"
-                            onClick={(e) => handleCopy(item.id, item.query, e)}
-                            className={cn(
-                              'px-2 py-1 rounded-md border transition-all flex items-center gap-1 select-none',
-                              copiedId === item.id
-                                ? 'bg-emerald/15 border-emerald/40 text-emerald font-semibold'
-                                : 'bg-surface-card border-border-subtle text-content-secondary hover:text-content-primary hover:border-primary/50'
-                            )}
-                            title="Copiar consulta SQL"
-                          >
-                            {copiedId === item.id ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald" />
-                                <span className="text-[10px] font-sans text-emerald">Copiado</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3" />
-                                <span className="text-[10px] font-sans hidden sm:inline">Copiar</span>
-                              </>
-                            )}
-                          </button>
-
-                          {onOpenPlayground && (
-                            <button
-                              type="button"
-                              onClick={(e) => handleOpenInPlayground(item.query, e)}
-                              className="px-2 py-1 rounded-md border bg-surface-card border-border-subtle text-content-secondary hover:text-cyan-accent hover:border-cyan-accent/50 hover:bg-cyan-accent/10 transition-all flex items-center gap-1 select-none"
-                              title="Cargar esta consulta en el Laboratorio SQL"
-                            >
-                              <Play className="w-3 h-3 fill-current" />
-                              <span className="text-[10px] font-sans hidden sm:inline">Laboratorio</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {expandedId === item.id && (
-                      <div className="mt-1 pt-2 border-t border-border-subtle/40 animate-fadeIn">
-                        <div className="p-3 rounded-lg bg-canvas/80 border border-border-subtle font-mono text-xs text-primary-light overflow-x-auto select-text shadow-inner">
-                          <pre className="m-0 leading-relaxed font-mono whitespace-pre-wrap break-words">
-                            <code>{item.query}</code>
-                          </pre>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                    item={item}
+                    isExpanded={expandedId === item.id}
+                    isCopied={copiedId === item.id}
+                    onToggleExpand={(id) => setExpandedId(expandedId === id ? null : id)}
+                    onCopy={handleCopy}
+                    onOpenPlayground={onOpenPlayground ? handleOpenInPlayground : undefined}
+                  />
                 ))
               )}
             </div>
@@ -1064,6 +1050,16 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           onSave={onUpdateProfile}
         />
       )}
+
+      <QueryHistoryModal
+        isOpen={isFullHistoryOpen}
+        onClose={() => setIsFullHistoryOpen(false)}
+        userId={profile?.id}
+        isCloudAuth={isCloudAuth}
+        localHistory={history}
+        initialFilter={historyFilter}
+        onOpenPlayground={onOpenPlayground}
+      />
     </div>
   );
 };
