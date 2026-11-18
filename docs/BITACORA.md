@@ -1760,4 +1760,24 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Frontend (`npm.cmd --prefix apps/web test`):** **8 archivos / 49 pruebas aprobadas** en `4.90s`.
   * **Build (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,301 módulos**, 0 errores) en `8.15s`.
 
+---
+
+### Entrada 60: Motor Léxico SQL por Sentencia/Scope en Monaco y DataGrid Redimensionable en Playground
+
+* **Fecha:** 18 de Noviembre de 2026
+* **Rama de Trabajo:** `main`
+* **Objetivo:** Corregir la contaminación de sugerencias y cruce de alias entre sentencias en Monaco Editor, habilitar la ejecución de la sentencia bajo el cursor en Laboratorio SQL y dotar de divisor arrastrable al DataGrid de `SqlPlaygroundView`.
+* **Entregables Implementados:**
+  1. **Motor Léxico SQL por Sentencia y Scope ([`sqlCompleter.ts`](../apps/web/src/components/organisms/MonacoEditorPanel/sqlCompleter.ts)):**
+     * Segmentación por `;` respetando cadenas (`'...'`), identificadores (`"..."`) y comentarios (`--`, `/* ... */`).
+     * Aislamiento de alias por scope de paréntesis/subconsulta (`maskUnrelatedParentheses`), detección de CTEs (`WITH ... AS (...)`) con sus columnas proyectadas y filtrado consciente de cláusula (`FROM_JOIN` vs `EXPRESSION`).
+  2. **Ejecución de Sentencia Activa ([`MonacoEditorPanel.tsx`](../apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx)):**
+     * Soporte `executeActiveStatement` en Playground para ejecutar la selección o únicamente la sentencia bajo el cursor en scripts multi-consulta.
+  3. **Divisor Redimensionable Compartido ([`useResizableSplit.ts`](../apps/web/src/hooks/useResizableSplit.ts), [`SplitResizeHandle.tsx`](../apps/web/src/components/atoms/SplitResizeHandle/SplitResizeHandle.tsx), [`WorkspaceLayout.tsx`](../apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx), [`SqlPlaygroundView.tsx`](../apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx)):**
+     * Lógica y átomo de divisor horizontal arrastrable reutilizados entre Ejercicios y Laboratorio SQL (`qurio_playground_results_pct`).
+* **Verificación:**
+  * **Frontend (`npm.cmd --prefix apps/web test`):** **9 archivos / 55 pruebas aprobadas** en `5.41s` (incluidas 6 pruebas nuevas en [`sqlCompleter.test.ts`](../apps/web/src/tests/sqlCompleter.test.ts)).
+  * **Build (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,303 módulos**, 0 errores) en `9.61s`.
+
+
 

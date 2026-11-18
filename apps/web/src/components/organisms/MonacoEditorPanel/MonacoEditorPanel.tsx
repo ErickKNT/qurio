@@ -4,17 +4,21 @@ import { Play, RotateCcw, Wand2, Terminal } from 'lucide-react';
 import { format as formatSql } from 'sql-formatter';
 import { Button } from '@/components/atoms/Button/Button';
 import { useTheme } from '@/hooks/useTheme';
-import { registerSqlCompletionProvider } from './sqlCompleter';
+import {
+  extractExecutableStatementAtOffset,
+  registerSqlCompletionProvider,
+} from './sqlCompleter';
 import { cn } from '@/lib/utils';
 
 export interface MonacoEditorPanelProps {
   value: string;
   onChange: (val: string) => void;
-  onExecute: () => void;
+  onExecute: (activeSql?: string) => void;
   onRunTrial?: () => void;
   onReset?: () => void;
   isLoading?: boolean;
   isSubmitMode?: boolean;
+  executeActiveStatement?: boolean;
   hideEngineBadge?: boolean;
   tabLabel?: string;
   className?: string;
@@ -28,6 +32,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
   onReset,
   isLoading = false,
   isSubmitMode = true,
+  executeActiveStatement = false,
   hideEngineBadge = false,
   tabLabel = 'query.sql',
   className,
@@ -36,6 +41,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
   const monacoRef = useRef<any>(null);
   const onExecuteRef = useRef(onExecute);
   const onRunTrialRef = useRef(onRunTrial);
+  const executeActiveStatementRef = useRef(executeActiveStatement);
   const { isDark } = useTheme();
 
   useEffect(() => {
@@ -45,6 +51,27 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
   useEffect(() => {
     onRunTrialRef.current = onRunTrial;
   }, [onRunTrial]);
+
+  useEffect(() => {
+    executeActiveStatementRef.current = executeActiveStatement;
+  }, [executeActiveStatement]);
+
+  const getExecutableSql = (): string | undefined => {
+    const editor = editorRef.current;
+    if (!executeActiveStatementRef.current || !editor) return undefined;
+    const model = editor.getModel?.();
+    if (!model) return undefined;
+    const selection = editor.getSelection?.();
+    if (selection && !selection.isEmpty()) {
+      const selectedText = model.getValueInRange(selection);
+      if (selectedText && selectedText.trim()) return selectedText.trim();
+    }
+    const position = editor.getPosition?.();
+    if (position && typeof model.getOffsetAt === 'function') {
+      return extractExecutableStatementAtOffset(model.getValue(), model.getOffsetAt(position));
+    }
+    return undefined;
+  };
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
@@ -114,7 +141,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
     // 4. Vincular atajos de teclado (via refs para evitar closures obsoletos):
     // Cmd/Ctrl + Enter -> onExecute
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      onExecuteRef.current();
+      onExecuteRef.current(getExecutableSql());
     });
 
     // Cmd/Ctrl + Shift + Enter -> onRunTrial (si existe)
@@ -122,7 +149,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
       if (onRunTrialRef.current) {
         onRunTrialRef.current();
       } else {
-        onExecuteRef.current();
+        onExecuteRef.current(getExecutableSql());
       }
     });
 
@@ -221,7 +248,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
             size="sm"
             kbdShortcut="⌘↵"
             isLoading={isLoading}
-            onClick={onExecute}
+            onClick={() => onExecute(getExecutableSql())}
             leftIcon={<Play className="w-3.5 h-3.5 fill-current" />}
           >
             {isSubmitMode ? 'Enviar Solución' : 'Ejecutar'}

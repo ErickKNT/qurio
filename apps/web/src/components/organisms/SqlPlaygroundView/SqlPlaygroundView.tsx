@@ -17,7 +17,8 @@ import { MonacoEditorPanel } from '@/components/organisms/MonacoEditorPanel/Mona
 import { DataGridResults } from '@/components/organisms/DataGridResults/DataGridResults';
 import { ErDiagramModal } from '@/components/organisms/ErDiagramModal/ErDiagramModal';
 import { SchemaTableItem } from '@/components/molecules/SchemaTableItem/SchemaTableItem';
-import { Badge, RadioTab } from '@/components/atoms';
+import { Badge, RadioTab, SplitResizeHandle } from '@/components/atoms';
+import { useResizableSplit } from '@/hooks/useResizableSplit';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +34,7 @@ interface PlaygroundTab {
   query: string;
 }
 
+const PLAYGROUND_SPLIT_STORAGE_KEY = 'qurio_playground_results_pct';
 const TABS_STORAGE_KEY = 'qurio_playground_tabs_v1';
 const MAX_TABS = 6;
 const DEFAULT_SQL =
@@ -94,6 +96,21 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
   initialQuery,
 }) => {
   const [isResultsExpanded, setIsResultsExpanded] = useState(false);
+  const {
+    splitContainerRef,
+    isDraggingSplit,
+    effectiveResultsPct,
+    handleMouseDownSplit,
+    handleResetSplit,
+  } = useResizableSplit({
+    storageKey: PLAYGROUND_SPLIT_STORAGE_KEY,
+    defaultPct: 54,
+    minPct: 24,
+    maxPct: 78,
+    expandedPct: 76,
+    isResultsExpanded,
+    onToggleResultsExpanded: setIsResultsExpanded,
+  });
   const [{ tabs: initialTabs, activeId: initialActiveId }] = useState(() => loadInitialTabs(initialQuery));
   const [tabs, setTabs] = useState<PlaygroundTab[]>(initialTabs);
   const [activeTabId, setActiveTabId] = useState<string>(initialActiveId);
@@ -232,9 +249,13 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
     [isExecuting]
   );
 
-  const handleExecute = useCallback(() => {
-    return runSqlForTab(activeTab.id, query);
-  }, [runSqlForTab, activeTab.id, query]);
+  const handleExecute = useCallback(
+    (activeSql?: string) => {
+      const targetSql = activeSql && activeSql.trim() ? activeSql : query;
+      return runSqlForTab(activeTab.id, targetSql);
+    },
+    [runSqlForTab, activeTab.id, query]
+  );
 
   const handlePreviewTable = useCallback(
     (tableName: string, previewSql: string) => {
@@ -475,8 +496,11 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
 
         {/* Panel Derecho: Editor Monaco + Resultados de DataGrid */}
         <div
+          ref={splitContainerRef}
+          style={{ '--playground-results-split': `${effectiveResultsPct}%` } as React.CSSProperties}
           className={cn(
-            'lg:col-span-9 flex-col gap-3 h-full min-h-0 overflow-hidden',
+            'lg:col-span-9 flex-col gap-3 lg:gap-0 h-full min-h-0 overflow-hidden',
+            isDraggingSplit && 'select-none',
             mobileTab === 'tables' ? 'hidden lg:flex' : 'flex flex-1 lg:flex'
           )}
         >
@@ -535,9 +559,8 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
           {/* Arriba: Editor Monaco */}
           <div
             className={cn(
-              'transition-[height] duration-150 ease-out rounded-xl overflow-hidden border border-border-subtle/70',
-              mobileTab === 'results' ? 'hidden lg:block' : 'flex-1 lg:flex-none min-h-0',
-              isResultsExpanded ? 'lg:h-[22%] lg:min-h-[140px]' : 'lg:h-[40%] lg:min-h-[190px]'
+              'rounded-xl lg:rounded-b-none overflow-hidden border border-border-subtle/70 lg:flex-1 min-h-0 lg:min-h-[140px]',
+              mobileTab === 'results' ? 'hidden lg:block' : 'flex-1'
             )}
           >
             <MonacoEditorPanel
@@ -547,16 +570,25 @@ export const SqlPlaygroundView: React.FC<SqlPlaygroundViewProps> = ({
               onReset={() => updateActiveQuery('')}
               isLoading={isExecuting}
               isSubmitMode={false}
+              executeActiveStatement={true}
               hideEngineBadge={true}
               tabLabel={activeTab.title}
               className="h-full"
             />
           </div>
 
+          {/* Divisor arrastrable en escritorio (doble clic restablece proporción) */}
+          <SplitResizeHandle
+            isDragging={isDraggingSplit}
+            onMouseDown={handleMouseDownSplit}
+            onDoubleClick={handleResetSplit}
+          />
+
           {/* Abajo: DataGrid de Resultados (isPlayground={true} elimina felicitaciones artificiales) */}
           <div
             className={cn(
-              'flex-1 min-h-0 overflow-hidden',
+              'flex-1 lg:flex-none lg:h-[var(--playground-results-split)] min-h-0 lg:min-h-[180px] overflow-hidden transition-[height] duration-150 ease-out',
+              isDraggingSplit && 'transition-none',
               mobileTab === 'editor' ? 'hidden lg:block' : 'block'
             )}
           >

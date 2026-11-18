@@ -168,9 +168,9 @@
     "semantic_hash": "109485fdb70615c166df87e46921b5a3"
   },
   "apps/web/src/components/atoms/index.ts": {
-    "mtime": 1794949066.4506555,
-    "seen": 1794949174.691168,
-    "ast_hash": "e7657f2567ced45fc9ab40177697863e",
+    "mtime": 1795027144.5056834,
+    "seen": 1795027347.7518477,
+    "ast_hash": "0a394993773142d7a329c7b8a9e9db2d",
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/AchievementCard/AchievementCard.tsx": {
@@ -270,16 +270,16 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/MonacoEditorPanel/MonacoEditorPanel.tsx": {
-    "mtime": 1794959735.6629777,
-    "seen": 1794960318.9246325,
-    "ast_hash": "e21daa41431b0e35faa2bfe5513867ef",
+    "mtime": 1795027283.3397856,
+    "seen": 1795027347.770414,
+    "ast_hash": "f4061a9b2b6310ee4ac12a9d46a9b8f2",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/MonacoEditorPanel/sqlCompleter.ts": {
-    "mtime": 1794249694.2647128,
-    "seen": 1794252886.8074245,
-    "ast_hash": "bda959543272089476471804bd7a7cc9",
-    "semantic_hash": "bda959543272089476471804bd7a7cc9"
+    "mtime": 1795027283.446843,
+    "seen": 1795027347.7704203,
+    "ast_hash": "ae99d0723f78437f878833d2f1a59ec0",
+    "semantic_hash": ""
   },
   "apps/web/src/components/organisms/NotFoundView/NotFoundView.tsx": {
     "mtime": 1794947181.31453,
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/SqlPlaygroundView/SqlPlaygroundView.tsx": {
-    "mtime": 1794964390.732766,
-    "seen": 1794965161.347201,
-    "ast_hash": "595ebd594947d55a55f26f3f41f5d817",
+    "mtime": 1795027283.5131824,
+    "seen": 1795027347.77228,
+    "ast_hash": "3fc1e455d232b9fc31c2cb25fb165e3e",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/TopHeader/TopHeader.tsx": {
@@ -336,9 +336,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/templates/WorkspaceLayout/WorkspaceLayout.tsx": {
-    "mtime": 1794528796.7901144,
-    "seen": 1794935930.4510605,
-    "ast_hash": "4dea2b9dbd6b1b20063f81a773d9ab48",
+    "mtime": 1795027283.595829,
+    "seen": 1795027347.7759364,
+    "ast_hash": "eb57a80fd55b34a027e68bafe40dc10a",
     "semantic_hash": ""
   },
   "apps/web/src/components/templates/index.ts": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1795026697.7477129,
-    "seen": 1795026725.1931977,
-    "ast_hash": "53ffa8cce8c3b5ba91bb5ba13dfd1d9b",
+    "mtime": 1795027323.7640836,
+    "seen": 1795027347.8220963,
+    "ast_hash": "5489811abf182ac915773c9cc5b77988",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1449,6 +1449,24 @@
     "mtime": 1795025503.6397078,
     "seen": 1795026725.1675518,
     "ast_hash": "8d21826356893034ddeb0a54dc4c68f2",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/atoms/SplitResizeHandle/SplitResizeHandle.tsx": {
+    "mtime": 1795027133.8732295,
+    "seen": 1795027347.751494,
+    "ast_hash": "da666dc11c46d7d0ab9a7e219a79860a",
+    "semantic_hash": ""
+  },
+  "apps/web/src/hooks/useResizableSplit.ts": {
+    "mtime": 1795027132.488011,
+    "seen": 1795027347.7781558,
+    "ast_hash": "f5d312189583a44cdb0d0200c3d8aafe",
+    "semantic_hash": ""
+  },
+  "apps/web/src/tests/sqlCompleter.test.ts": {
+    "mtime": 1795027243.4019704,
+    "seen": 1795027347.7883515,
+    "ast_hash": "5214d146881ab259c4118e1758c39329",
     "semantic_hash": ""
   },
   "apps/web/package-lock.json": {
