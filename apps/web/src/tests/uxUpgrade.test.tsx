@@ -12,8 +12,10 @@ import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/Module
 import { CertificateModal } from '@/components/organisms/CertificateModal/CertificateModal';
 import { ExerciseSpecPanel } from '@/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel';
 import { UserProfileView } from '@/components/organisms/UserProfileView/UserProfileView';
+import { DashboardHomeView } from '@/components/organisms/DashboardHomeView/DashboardHomeView';
+import { DesignSystemShowcase } from '@/components/organisms/DesignSystemShowcase/DesignSystemShowcase';
 import { FALLBACK_EXERCISES, FALLBACK_TRACKS } from '@/lib/fallbackCurriculum';
-import { ACHIEVEMENTS_CATALOG } from '@/lib/api';
+import { ACHIEVEMENTS_CATALOG, ECOMMERCE_TABLES_SCHEMA } from '@/lib/api';
 import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
 import { parseLocation, pathToUrl } from '@/lib/routing';
 
@@ -279,5 +281,53 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     const searchInput = screen.getByPlaceholderText(/Buscar por cláusula o tabla/i);
     fireEvent.change(searchInput, { target: { value: 'productos_especial' } });
     expect(screen.getByText('SELECT * FROM productos_especial;')).toBeInTheDocument();
+  });
+
+  it('DashboardHomeView y DesignSystemShowcase operan desacoplados con navegación consistente (H01, H08, H13)', () => {
+    const navigatedPaths: string[] = [];
+    const startedExercises: string[] = [];
+
+    render(
+      <DashboardHomeView
+        isAuthenticated={false}
+        isAdmin={false}
+        profile={null}
+        activeLearningData={{
+          activeTrack: FALLBACK_TRACKS[0],
+          activeModule: FALLBACK_TRACKS[0].modules[0],
+          nextExercise: FALLBACK_EXERCISES[0],
+          exerciseNumberInTrack: 1,
+          trackTotal: 24,
+          trackCompleted: 0,
+          trackPercent: 0,
+          moduleRemaining: 4,
+          isAllCompleted: false,
+        }}
+        recommendedExercise={FALLBACK_EXERCISES[0]}
+        exercisesCount={60}
+        completedCount={0}
+        totalAttemptsCount={0}
+        queryHistoryCount={0}
+        tables={ECOMMERCE_TABLES_SCHEMA}
+        onStartExerciseById={(id) => startedExercises.push(id)}
+        onNavigate={(path) => navigatedPaths.push(path)}
+        onOpenAuth={() => {}}
+        onOpenMethodology={() => {}}
+      />
+    );
+
+    expect(screen.getByText(/MODO INVITADO • PRUEBA ACTIVA/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Ver Rutas/i }));
+    expect(navigatedPaths).toContain('tracks');
+
+    fireEvent.click(screen.getByRole('button', { name: /Resolver Reto/i }));
+    expect(startedExercises).toContain(FALLBACK_EXERCISES[0].id);
+
+    cleanup();
+
+    render(<DesignSystemShowcase onNavigate={(path) => navigatedPaths.push(path)} />);
+    const emailInput = screen.getByLabelText(/Correo Electrónico de Registro/i);
+    fireEvent.change(emailInput, { target: { value: 'invalido' } });
+    expect(screen.getByText(/formato de correo electrónico válido/i)).toBeInTheDocument();
   });
 });

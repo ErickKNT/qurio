@@ -1712,3 +1712,26 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * Banner heroico Bento + 4 KPIs reales + grid `8/4` (mapa de calor anual **52 semanas**, rutas en progreso con salto directo a `Continuar`/`Ver Constancia`, historial compacto **Top 5** con acceso a historial completo, insignias, precisión SQL y sección `#cert-section` con tarjetas emitidas, descarga PDF y botones **QA Admin**).
 * **Verificación:**
   * **Frontend (`npm.cmd test`):** **8 archivos / 47 pruebas aprobadas** en `3.04s` (incluyendo prueba de heatmap de 364 celdas, métricas de precisión y validación inline de `EditProfileModal` en [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).
+
+---
+
+### Entrada 58: Auditoría Estática Exhaustiva y Refactorización Modular de `App.tsx` (H01–H13)
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `refactor/app-modularization` (creada tras fusionar `feat/profile-bento-redesign` en `main`)
+* **Objetivo:** Resolver los 13 hallazgos técnicos (`H01`–`H13`) documentados en [`docs/audits/QURIO_APP_TSX_AUDIT_AND_REFACTOR_PLAN.md`](audits/QURIO_APP_TSX_AUDIT_AND_REFACTOR_PLAN.md), eliminando el antipatrón *God Component* de `App.tsx` (reducción de `1,795` a `476` líneas) bajo cumplimiento estricto de Atomic Design Pragmático (Regla 1.3) sin romper ningún contrato ni prueba existente.
+* **Entregables Implementados:**
+  1. **Hooks de Dominio Desacoplados (`apps/web/src/hooks/`):**
+     * [`useAppRouter.ts`](../apps/web/src/hooks/useAppRouter.ts): encapsula el enrutamiento con `History API`, `popstate`, sincronización reactiva de `document.title` (`useDocumentTitle`) y detección estructurada de parámetros de autenticación mediante `URLSearchParams` en lugar de coincidencias frágiles `.includes()` (`H04`, `H08`, `H09`).
+     * [`useCurriculumState.ts`](../apps/web/src/hooks/useCurriculumState.ts): separa la descarga única del catálogo en montaje (`[]`) de la hidratación asíncrona de progreso protegida con `Promise.allSettled`, `try/catch/finally` y bandera de cancelación (`H02`, `H03`), eliminando efectos secundarios impuros dentro de `setAuthoritativeCompletedIds` (`H05`) y condiciones de carrera entre el historial local y remoto (`H11`).
+     * [`useExerciseWorkspace.ts`](../apps/web/src/hooks/useExerciseWorkspace.ts): gestiona el ciclo de vida del reto activo, pistas, borradores, revelación de soluciones y ejecución/evaluación SQL, estabilizando `handleExecuteSolution` y `handleRunExerciseTrial` mediante `useRef` para evitar recreaciones en cada pulsación de tecla en Monaco Editor e incluyendo `isAdmin` en las dependencias de `handleConfirmRevealSolution` (`H04`, `H08`, `H10`).
+  2. **Nuevos Organismos Atomic Design (`apps/web/src/components/organisms/`):**
+     * [`DashboardHomeView.tsx`](../apps/web/src/components/organisms/DashboardHomeView/DashboardHomeView.tsx): extrae la vista principal del Dashboard (`H01`) y corrige la navegación hacia `/tracks` (`H08`).
+     * [`DesignSystemShowcase.tsx`](../apps/web/src/components/organisms/DesignSystemShowcase/DesignSystemShowcase.tsx): aísla el escaparate de átomos/moléculas y su estado local de validación en un chunk independiente cargado con `React.lazy` (`3.45 kB`), sacándolo del flujo principal de producción (`H13`).
+     * [`ExerciseHeaderBar.tsx`](../apps/web/src/components/organisms/ExerciseHeaderBar/ExerciseHeaderBar.tsx): extrae la barra superior de la estación de trabajo del IDE (`H01`).
+  3. **Orquestador Limpio y Modales Globales Unificados ([`App.tsx`](../apps/web/src/App.tsx)):**
+     * Reordenamiento de todas las sentencias `import` en la cabecera del módulo (`H12`), desacoplamiento de errores de constancias respecto a `resultError` del IDE (`H07`) y montaje unificado de modales globales (`AuthModal`, `GuestTrialCompleteModal`, `CommandPaletteModal`, `ModuleGuideModal`, `CertificateModal`, `MethodologyModal`) en el fragmento raíz para habilitar `⌘K` también dentro de la vista de ejercicios (`H06`).
+* **Verificación:**
+  * **Frontend (`npm.cmd --prefix apps/web test`):** **8 archivos / 49 pruebas aprobadas** en `3.67s` (incluyendo `admin.test.ts` sobre `<App />` y la nueva prueba de `DashboardHomeView` y `DesignSystemShowcase` en `uxUpgrade.test.tsx`).
+  * **Build de producción (`npm.cmd --prefix apps/web run build`):** **2,300 módulos transformados limpiamente (0 errores TypeScript)** en `6.56s`, generando el chunk independiente `DesignSystemShowcase`.
+
