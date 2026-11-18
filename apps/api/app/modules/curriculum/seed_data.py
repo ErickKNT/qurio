@@ -26,6 +26,7 @@ class ExercisePublicDTO(BaseModel):
     check_order: bool
     sort_order: int
     operational_status: str = "active"
+    execution_mode: str = "read_only"
     hints: List[str] = []
     concept: Optional[ExerciseConcept] = None
     objectives: Optional[List[str]] = None
@@ -44,6 +45,9 @@ class ExerciseDetail(BaseModel):
     check_order: bool
     sort_order: int
     operational_status: str = "active"
+    execution_mode: str = "read_only"
+    verification_query: Optional[str] = None
+    setup_sql: Optional[str] = None
     hints: List[str] = []
     concept: Optional[ExerciseConcept] = None
     objectives: Optional[List[str]] = None
@@ -61,6 +65,7 @@ class ExerciseDetail(BaseModel):
             check_order=self.check_order,
             sort_order=self.sort_order,
             operational_status=self.operational_status,
+            execution_mode=self.execution_mode,
             hints=self.hints,
             concept=self.concept,
             objectives=self.objectives,
@@ -2221,5 +2226,594 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
             "3. Garantizar un orden cronológico determinista tanto en la ventana como en la salida."
         ],
         sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    # ==============================================================================
+    # RUTA 4: INGENIERÍA Y MANIPULACIÓN DE DATOS (DML & DDL) — RETOS 61 A 76
+    # ==============================================================================
+    # MÓDULO 13: Inserción de Registros (INSERT) — d0000000-0000-0000-0000-000000000013
+
+    "e0000000-0000-0000-0000-000000000061": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000061",
+        module_id="d0000000-0000-0000-0000-000000000013",
+        title="Alta de Nueva Categoría en Catálogo (INSERT VALUES)",
+        prompt="La tienda abrirá una línea especializada en sonido. Inserta una nueva fila en la tabla `categorias` especificando únicamente las columnas `nombre_categoria` con el valor `'Audio Profesional'` y `descripcion` con el valor `'Micrófonos de estudio, interfaces y monitores de audio'`, dejando que la clave primaria `categoria_id` se asigne automáticamente.",
+        initial_code="-- Inserta la nueva categoría especificando sus dos columnas de texto\nINSERT INTO ",
+        solution_query="INSERT INTO categorias (nombre_categoria, descripcion) VALUES ('Audio Profesional', 'Micrófonos de estudio, interfaces y monitores de audio');",
+        verification_query="SELECT categoria_id, nombre_categoria, descripcion FROM categorias ORDER BY categoria_id ASC;",
+        execution_mode="dml",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=61,
+        hints=[
+            "Al insertar en una tabla con clave primaria SERIAL autogenerada, enumera entre paréntesis solo las columnas de negocio y pasa sus valores en el mismo orden dentro de VALUES.",
+            "Usa INSERT INTO categorias con las columnas (nombre_categoria, descripcion) y asigna en VALUES la nueva categoría y su detalle.",
+            "INSERT INTO categorias (???, ???) VALUES ('Audio Profesional', '???');"
+        ],
+        concept=ExerciseConcept(
+            summary="`INSERT INTO` agrega nuevas filas a una tabla. Cuando la clave primaria es autogenerada (`SERIAL`), se omiten su nombre y su valor para que PostgreSQL asigne el siguiente número de la secuencia.",
+            syntax="INSERT INTO tabla_destino (columna_texto, detalle_opcional)\nVALUES ('Valor nuevo', 'Detalle descriptivo');",
+            key_points=[
+                "Enumerar explícitamente las columnas `(col_1, col_2)` protege la inserción ante futuros cambios en el orden físico de la tabla.",
+                "Cada literal de texto en `VALUES` debe ir entre comillas simples `'...'`.",
+                "Las columnas omitidas toman su valor `DEFAULT` o el siguiente valor de su secuencia."
+            ],
+            execution_order_note="💡 PostgreSQL evalúa los tipos y restricciones (`NOT NULL`, `UNIQUE`, `CHECK`) antes de confirmar la nueva tupla en la tabla temporal de trabajo.",
+        ),
+        objectives=[
+            "1. Declarar la tabla destino y la lista explícita de columnas a poblar.",
+            "2. Suministrar los valores literales exactos en la cláusula VALUES.",
+            "3. Verificar en la cuadrícula cómo se asignó automáticamente el nuevo identificador."
+        ],
+        sample_tables=[SAMPLE_TABLE_CATEGORIAS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000062": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000062",
+        module_id="d0000000-0000-0000-0000-000000000013",
+        title="Registro Múltiple de Almacenes Regionales (INSERT Multi-Fila)",
+        prompt="Expande la red logística registrando dos centros en una sola sentencia sobre la tabla `almacenes` (columnas `nombre_almacen`, `ciudad`, `capacidad_m2`): el primero con `'Centro Logístico Sur'`, `'Sevilla'` y `3200`; y el segundo con `'Hub Atlántico'`, `'Vigo'` y `2400`.",
+        initial_code="-- Inserta ambos almacenes en una única instrucción INSERT\nINSERT INTO ",
+        solution_query="INSERT INTO almacenes (nombre_almacen, ciudad, capacidad_m2) VALUES ('Centro Logístico Sur', 'Sevilla', 3200), ('Hub Atlántico', 'Vigo', 2400);",
+        verification_query="SELECT almacen_id, nombre_almacen, ciudad, capacidad_m2 FROM almacenes ORDER BY almacen_id ASC;",
+        execution_mode="dml",
+        xp_reward=55,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=62,
+        hints=[
+            "PostgreSQL permite insertar múltiples filas en un solo comando separando cada grupo de paréntesis con una coma dentro de la cláusula VALUES.",
+            "Declara INSERT INTO almacenes con las columnas (nombre_almacen, ciudad, capacidad_m2) y encadena las dos tuplas separadas por coma después de VALUES.",
+            "INSERT INTO almacenes (nombre_almacen, ciudad, capacidad_m2) VALUES ('Centro Logístico Sur', '???', ???), ('???', 'Vigo', 2400);"
+        ],
+        concept=ExerciseConcept(
+            summary="La inserción multi-fila permite registrar varios registros atómicamente en una sola sentencia separando cada tupla `(valor_1, valor_2)` mediante comas tras `VALUES`.",
+            syntax="INSERT INTO tabla_destino (col_a, col_b, col_num)\nVALUES\n    ('Fila 1A', 'Fila 1B', 100),\n    ('Fila 2A', 'Fila 2B', 200);",
+            key_points=[
+                "Insertar múltiples tuplas en una sola instrucción reduce viajes de red y es atómico: o se insertan todas o ninguna.",
+                "Todas las tuplas dentro de `VALUES` deben tener exactamente la misma cantidad y tipos de columnas.",
+                "La secuencia primaria avanza de forma continua para cada fila insertada."
+            ],
+            execution_order_note="💡 El motor valida todas las tuplas del bloque `VALUES` dentro de la misma operación atómica.",
+        ),
+        objectives=[
+            "1. Especificar las tres columnas de negocio de la tabla de almacenes.",
+            "2. Encadenar las dos tuplas separadas por coma en una única cláusula VALUES.",
+            "3. Comprobar que la tabla resultante cuenta ahora con los 5 centros logísticos."
+        ],
+        sample_tables=[SAMPLE_TABLE_ALMACENES],
+    ),
+
+    "e0000000-0000-0000-0000-000000000063": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000063",
+        module_id="d0000000-0000-0000-0000-000000000013",
+        title="Alta de Producto con Confirmación Inmediata (INSERT RETURNING)",
+        prompt="Registra un nuevo artículo en `productos` con `categoria_id = 3`, `proveedor_id = 5`, `nombre_producto = 'Webcam 4K Studio'`, `precio = 125.00` y `stock = 30`. En la misma sentencia, utiliza la cláusula `RETURNING` para devolver únicamente `producto_id`, `nombre_producto`, `precio` y `stock`.",
+        initial_code="-- Inserta el producto y devuelve las 4 columnas solicitadas con RETURNING\nINSERT INTO ",
+        solution_query="INSERT INTO productos (categoria_id, proveedor_id, nombre_producto, precio, stock) VALUES (3, 5, 'Webcam 4K Studio', 125.00, 30) RETURNING producto_id, nombre_producto, precio, stock;",
+        verification_query=None,
+        execution_mode="dml",
+        xp_reward=60,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=63,
+        hints=[
+            "En PostgreSQL no necesitas hacer un SELECT posterior para conocer el ID asignado: añade RETURNING al final del INSERT con las columnas que deseas proyectar.",
+            "Después de VALUES (3, 5, 'Webcam 4K Studio', 125.00, 30), agrega RETURNING producto_id, nombre_producto, precio, stock.",
+            "INSERT INTO productos (categoria_id, proveedor_id, nombre_producto, precio, stock) VALUES (3, 5, 'Webcam 4K Studio', 125.00, 30) RETURNING ???, nombre_producto, ???, stock;"
+        ],
+        concept=ExerciseConcept(
+            summary="La extensión `RETURNING` de PostgreSQL permite que una sentencia `INSERT`, `UPDATE` o `DELETE` proyecte y devuelva inmediatamente columnas de las filas afectadas como si fuera un `SELECT`.",
+            syntax="INSERT INTO tabla_articulos (grupo_id, titulo, importe)\nVALUES (2, 'Elemento Nuevo', 99.50)\nRETURNING articulo_id, titulo, importe;",
+            key_points=[
+                "`RETURNING` evita ejecutar una segunda consulta `SELECT` para recuperar claves `SERIAL` o marcas de tiempo `DEFAULT` recién generadas.",
+                "Puedes listar columnas específicas o expresiones calculadas con alias después de `RETURNING`.",
+                "El conjunto devuelto por `RETURNING` es recibido directamente por la aplicación cliente."
+            ],
+            execution_order_note="💡 PostgreSQL inserta primero la fila, calcula sus valores por defecto/secuencias y finalmente proyecta la lista de columnas indicada en `RETURNING`.",
+        ),
+        objectives=[
+            "1. Insertar el nuevo artículo con sus claves foráneas, precio y existencias.",
+            "2. Añadir la cláusula RETURNING al cierre de la sentencia.",
+            "3. Proyectar exactamente las cuatro columnas del registro recién creado."
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000064": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000064",
+        module_id="d0000000-0000-0000-0000-000000000013",
+        title="Abastecimiento de Inventario desde Catálogo (INSERT INTO ... SELECT)",
+        prompt="El almacén con `almacen_id = 3` va a incorporar un lote inicial de `12` unidades para todos los productos de la categoría `5` (`Mobiliario Ergonómico`) que aún no están registrados en ningún lote de ese almacén. Inserta en `inventario` las columnas `(almacen_id, producto_id, cantidad_disponible)` usando una consulta `SELECT 3, producto_id, 12 FROM productos WHERE categoria_id = 5 AND producto_id <> 15`.",
+        initial_code="-- Usa INSERT INTO ... SELECT para poblar inventario a partir de productos\nINSERT INTO ",
+        solution_query="INSERT INTO inventario (almacen_id, producto_id, cantidad_disponible) SELECT 3, producto_id, 12 FROM productos WHERE categoria_id = 5 AND producto_id <> 15;",
+        verification_query="SELECT almacen_id, producto_id, cantidad_disponible FROM inventario WHERE almacen_id = 3 ORDER BY producto_id ASC;",
+        execution_mode="dml",
+        xp_reward=65,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=64,
+        hints=[
+            "Cuando insertas datos provenientes de otra tabla, reemplazas la palabra VALUES por una consulta SELECT cuyas columnas coincidan en orden y tipo con las columnas destino.",
+            "Declara INSERT INTO inventario (almacen_id, producto_id, cantidad_disponible) y acompáñalo del SELECT sobre productos filtrando categoria_id = 5 AND producto_id <> 15.",
+            "INSERT INTO inventario (almacen_id, producto_id, cantidad_disponible) SELECT 3, ???, 12 FROM productos WHERE categoria_id = ??? AND producto_id <> 15;"
+        ],
+        concept=ExerciseConcept(
+            summary="`INSERT INTO ... SELECT` permite poblar una tabla destino con el resultado dinámico de una consulta sobre una o más tablas origen, sin escribir valores fila por fila.",
+            syntax="INSERT INTO tabla_destino (col_fija, entidad_id, cantidad_inicial)\nSELECT 1, entidad_id, 25\nFROM tabla_origen\nWHERE condicion_filtro;",
+            key_points=[
+                "En `INSERT INTO ... SELECT` **no** se escribe la palabra clave `VALUES`.",
+                "La cantidad y tipos de datos de las columnas proyectadas en el `SELECT` deben corresponder 1 a 1 con las columnas declaradas en `INSERT INTO`.",
+                "Puedes combinar columnas reales de la tabla origen con constantes literales en la proyección del `SELECT`."
+            ],
+            execution_order_note="💡 PostgreSQL ejecuta primero el `SELECT ... FROM ... WHERE` y canaliza todas las filas resultantes hacia la operación `INSERT`.",
+        ),
+        objectives=[
+            "1. Declarar la inserción sobre la tabla de inventario con sus tres columnas clave.",
+            "2. Construir el SELECT combinando las constantes 3 y 12 con el identificador del producto.",
+            "3. Filtrar los artículos de la categoría 5 excluyendo el producto 15 que ya existía en ese almacén."
+        ],
+        sample_tables=[SAMPLE_TABLE_INVENTARIO, SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    # MÓDULO 14: Actualización y Eliminación Segura (UPDATE & DELETE) — d0000000-0000-0000-0000-000000000014
+
+    "e0000000-0000-0000-0000-000000000065": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000065",
+        module_id="d0000000-0000-0000-0000-000000000014",
+        title="Actualización de Contacto de Proveedor (UPDATE WHERE)",
+        prompt="El proveedor con `proveedor_id = 2` (`Silicon Logistics`) actualizó su línea telefónica internacional. Modifica la tabla `proveedores` asignando `telefono = '+886-2-999888'` exclusivamente para el registro con `proveedor_id = 2`.",
+        initial_code="-- Actualiza el teléfono asegurándote de filtrar por clave primaria\nUPDATE ",
+        solution_query="UPDATE proveedores SET telefono = '+886-2-999888' WHERE proveedor_id = 2;",
+        verification_query="SELECT proveedor_id, nombre_proveedor, pais, telefono FROM proveedores ORDER BY proveedor_id ASC;",
+        execution_mode="dml",
+        xp_reward=50,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=65,
+        hints=[
+            "En toda sentencia UPDATE es indispensable incluir la cláusula WHERE para no sobrescribir todos los registros de la tabla.",
+            "Usa UPDATE sobre la tabla proveedores, asigna la columna telefono en SET y restringe la fila con WHERE proveedor_id = 2.",
+            "UPDATE proveedores SET ??? = '+886-2-999888' WHERE ??? = 2;"
+        ],
+        concept=ExerciseConcept(
+            summary="`UPDATE ... SET ... WHERE` modifica los valores de una o varias columnas únicamente en las filas que cumplen la condición de filtrado.",
+            syntax="UPDATE nombre_tabla\nSET columna_objetivo = 'nuevo_valor'\nWHERE entidad_id = 10;",
+            key_points=[
+                "`SET` define las asignaciones `columna = expresion` separadas por comas.",
+                "**Regla crítica de producción:** Omitir `WHERE` en un `UPDATE` actualiza absolutamente todas las filas de la tabla.",
+                "Filtrar por la clave primaria garantiza que la modificación afecte a una única entidad."
+            ],
+            execution_order_note="💡 PostgreSQL localiza primero las filas que cumplen `WHERE`, calcula las nuevas expresiones de `SET` y escribe las nuevas versiones de tupla (MVCC).",
+        ),
+        objectives=[
+            "1. Apuntar a la tabla de proveedores con la instrucción UPDATE.",
+            "2. Asignar el nuevo número telefónico mediante la cláusula SET.",
+            "3. Restringir el cambio al proveedor número 2 con WHERE."
+        ],
+        sample_tables=[SAMPLE_TABLE_PROVEEDORES],
+    ),
+
+    "e0000000-0000-0000-0000-000000000066": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000066",
+        module_id="d0000000-0000-0000-0000-000000000014",
+        title="Ajuste de Precios por Categoría con Confirmación (UPDATE RETURNING)",
+        prompt="Aplica un incremento del 10% al precio de todos los productos de la categoría `4` (`Almacenamiento`). Actualiza la tabla `productos` asignando `precio = ROUND(precio * 1.10, 2)` donde `categoria_id = 4`, y utiliza `RETURNING` para proyectar `producto_id`, `nombre_producto` y el nuevo `precio`.",
+        initial_code="-- Incrementa el precio un 10% con ROUND y proyecta los cambios con RETURNING\nUPDATE ",
+        solution_query="UPDATE productos SET precio = ROUND(precio * 1.10, 2) WHERE categoria_id = 4 RETURNING producto_id, nombre_producto, precio;",
+        verification_query=None,
+        execution_mode="dml",
+        xp_reward=60,
+        difficulty="Intermedio",
+        check_order=False,
+        sort_order=66,
+        hints=[
+            "En la cláusula SET puedes referenciar el valor actual de la columna (precio * 1.10) envuelto en ROUND(..., 2) y cerrar con RETURNING.",
+            "Filtra WHERE categoria_id = 4 y añade RETURNING producto_id, nombre_producto, precio al final de la instrucción.",
+            "UPDATE productos SET precio = ROUND(??? * 1.10, 2) WHERE categoria_id = 4 RETURNING producto_id, ???, precio;"
+        ],
+        concept=ExerciseConcept(
+            summary="Combinar expresiones aritméticas en `SET` con la cláusula `RETURNING` permite recalcular importes en lote y auditar en el acto los nuevos valores aplicados.",
+            syntax="UPDATE tabla_catalogo\nSET importe = ROUND(importe * 1.05, 2)\nWHERE grupo_id = 3\nRETURNING item_id, titulo, importe;",
+            key_points=[
+                "A la derecha del signo `=` en `SET`, el nombre de la columna representa su valor **previo** a la actualización.",
+                "Envolver cálculos monetarios en `ROUND(expresion, 2)` preserva la exactitud decimal.",
+                "`RETURNING` devuelve los valores **posteriores** a la actualización para cada fila modificada."
+            ],
+            execution_order_note="💡 El motor filtra por `WHERE`, aplica la fórmula redondeada en `SET` y proyecta los valores ya actualizados en `RETURNING`.",
+        ),
+        objectives=[
+            "1. Recalcular el precio con un aumento del 10% redondeado a 2 decimales.",
+            "2. Acotar la actualización exclusivamente a la categoría 4.",
+            "3. Devolver el identificador, nombre y nuevo precio mediante RETURNING."
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000067": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000067",
+        module_id="d0000000-0000-0000-0000-000000000014",
+        title="Actualización Cruzada de Inventario por Ciudad (UPDATE ... FROM)",
+        prompt="Suma `5` unidades de reserva (`cantidad_disponible = cantidad_disponible + 5`) en la tabla `inventario` únicamente para los registros pertenecientes a almacenes ubicados en la ciudad de `'Bilbao'`. Utiliza la sintaxis `UPDATE inventario i SET ... FROM almacenes a WHERE i.almacen_id = a.almacen_id AND a.ciudad = 'Bilbao'`.",
+        initial_code="-- Usa UPDATE ... FROM para actualizar inventario filtrando por una columna de almacenes\nUPDATE ",
+        solution_query="UPDATE inventario i SET cantidad_disponible = i.cantidad_disponible + 5 FROM almacenes a WHERE i.almacen_id = a.almacen_id AND a.ciudad = 'Bilbao';",
+        verification_query="SELECT almacen_id, producto_id, cantidad_disponible FROM inventario WHERE almacen_id = 2 ORDER BY producto_id ASC;",
+        execution_mode="dml",
+        xp_reward=70,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=67,
+        hints=[
+            "En PostgreSQL, cuando una actualización depende de columnas de otra tabla, se añade la cláusula FROM después de SET y se unen ambas tablas en el WHERE.",
+            "Usa UPDATE inventario i con SET cantidad_disponible = i.cantidad_disponible + 5, incorpora FROM almacenes a y une i.almacen_id = a.almacen_id en el WHERE.",
+            "UPDATE inventario i SET cantidad_disponible = i.cantidad_disponible + 5 FROM almacenes a WHERE i.??? = a.??? AND a.ciudad = 'Bilbao';"
+        ],
+        concept=ExerciseConcept(
+            summary="En PostgreSQL, la cláusula `UPDATE ... SET ... FROM tabla_auxiliar WHERE ...` permite modificar filas de una tabla cruzándola directamente con otra relación.",
+            syntax="UPDATE tabla_principal p\nSET metrica = p.metrica + 10\nFROM tabla_referencia r\nWHERE p.ref_id = r.ref_id\n  AND r.zona = 'Norte';",
+            key_points=[
+                "En `SET`, el nombre de la columna destino nunca lleva prefijo de alias (`SET metrica = ...`, no `SET p.metrica = ...`).",
+                "La cláusula `FROM` introduce las tablas secundarias que aportan el filtro o los datos de cruce.",
+                "La condición de unión (`p.ref_id = r.ref_id`) se declara explícitamente dentro del `WHERE`."
+            ],
+            execution_order_note="💡 PostgreSQL realiza el cruce entre la tabla objetivo y la tabla de `FROM` según el predicado `WHERE`, y actualiza las filas coincidentes.",
+        ),
+        objectives=[
+            "1. Incrementar en 5 unidades la columna cantidad_disponible.",
+            "2. Vincular la tabla de almacenes mediante la cláusula FROM.",
+            "3. Filtrar en WHERE tanto la igualdad de claves como la ciudad de Bilbao."
+        ],
+        sample_tables=[SAMPLE_TABLE_INVENTARIO, SAMPLE_TABLE_ALMACENES],
+    ),
+
+    "e0000000-0000-0000-0000-000000000068": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000068",
+        module_id="d0000000-0000-0000-0000-000000000014",
+        title="Depuración Segura de Líneas de Pedido Cancelado (DELETE WHERE)",
+        prompt="El pedido con `pedido_id = 105` fue cancelado definitivamente y Finanzas solicita limpiar sus líneas de detalle antes de archivar. Elimina de la tabla `detalle_pedidos` únicamente el registro que pertenece a `pedido_id = 105`.",
+        initial_code="-- Elimina exclusivamente las líneas del pedido 105 en detalle_pedidos\nDELETE FROM ",
+        solution_query="DELETE FROM detalle_pedidos WHERE pedido_id = 105;",
+        verification_query="SELECT detalle_id, pedido_id, producto_id, cantidad FROM detalle_pedidos WHERE pedido_id BETWEEN 103 AND 107 ORDER BY detalle_id ASC;",
+        execution_mode="dml",
+        xp_reward=60,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=68,
+        hints=[
+            "DELETE FROM elimina filas completas de una tabla, por lo que no lleva lista de columnas entre DELETE y FROM; solo requiere un WHERE preciso.",
+            "Combina la cláusula DELETE FROM sobre detalle_pedidos con el filtro WHERE por la columna pedido_id.",
+            "DELETE FROM ??? WHERE ??? = 105;"
+        ],
+        concept=ExerciseConcept(
+            summary="`DELETE FROM tabla WHERE condicion` remueve permanentemente las filas que satisfacen el predicado, respetando las restricciones de integridad referencial.",
+            syntax="DELETE FROM nombre_tabla\nWHERE referencia_id = 42;",
+            key_points=[
+                "`DELETE` opera sobre filas enteras, nunca sobre columnas individuales (para vaciar una columna se usa `UPDATE ... SET col = NULL`).",
+                "Ejecutar `DELETE FROM tabla;` sin cláusula `WHERE` vacía toda la tabla.",
+                "Si otra tabla apunta al registro eliminado mediante una `FOREIGN KEY` sin `ON DELETE CASCADE`, PostgreSQL bloqueará el borrado para proteger la integridad."
+            ],
+            execution_order_note="💡 El motor evalúa `WHERE`, verifica que ninguna clave foránea hija quede huérfana y marca las tuplas como eliminadas.",
+        ),
+        objectives=[
+            "1. Indicar la tabla detalle_pedidos como objetivo de DELETE FROM.",
+            "2. Aplicar el filtro exacto para el pedido 105 en la cláusula WHERE.",
+            "3. Comprobar en la cuadrícula de verificación que el pedido 105 ya no posee líneas de detalle."
+        ],
+        sample_tables=[SAMPLE_TABLE_DETALLE_PEDIDOS],
+    ),
+
+    # MÓDULO 15: Creación y Evolución de Tablas (CREATE, ALTER, DROP) — d0000000-0000-0000-0000-000000000015
+
+    "e0000000-0000-0000-0000-000000000069": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000069",
+        module_id="d0000000-0000-0000-0000-000000000015",
+        title="Diseño de Tabla de Cupones Promocionales (CREATE TABLE)",
+        prompt="Diseña una nueva tabla llamada `cupones_descuento` para gestionar campañas promocionales con exactamente estas 4 columnas en orden:\n1. `cupon_id` de tipo `SERIAL PRIMARY KEY`\n2. `codigo` de tipo `VARCHAR(25) NOT NULL`\n3. `descuento_pct` de tipo `NUMERIC(5, 2) NOT NULL`\n4. `fecha_expiracion` de tipo `DATE NOT NULL`",
+        initial_code="-- Define la tabla cupones_descuento con sus 4 columnas y tipos exactos\nCREATE TABLE ",
+        solution_query="CREATE TABLE cupones_descuento (cupon_id SERIAL PRIMARY KEY, codigo VARCHAR(25) NOT NULL, descuento_pct NUMERIC(5, 2) NOT NULL, fecha_expiracion DATE NOT NULL);",
+        verification_query="SELECT column_name AS columna, data_type AS tipo_dato, is_nullable AS permite_nulos FROM information_schema.columns WHERE table_schema = (SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()) AND table_name = 'cupones_descuento' ORDER BY ordinal_position ASC;",
+        execution_mode="ddl",
+        xp_reward=60,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=69,
+        hints=[
+            "En CREATE TABLE defines cada columna con su nombre, tipo de dato (SERIAL, VARCHAR(25), NUMERIC(5, 2), DATE) y restricciones (PRIMARY KEY, NOT NULL) separadas por comas.",
+            "Asegúrate de respetar el orden: cupon_id SERIAL PRIMARY KEY, codigo VARCHAR(25) NOT NULL, descuento_pct NUMERIC(5, 2) NOT NULL, fecha_expiracion DATE NOT NULL.",
+            "CREATE TABLE cupones_descuento (cupon_id SERIAL PRIMARY KEY, codigo VARCHAR(25) NOT NULL, descuento_pct ??? NOT NULL, fecha_expiracion ??? NOT NULL);"
+        ],
+        concept=ExerciseConcept(
+            summary="`CREATE TABLE` define una nueva relación en el catálogo especificando el nombre de cada atributo, su dominio o tipo de dato y su clave primaria.",
+            syntax="CREATE TABLE nombre_entidad (\n    entidad_id SERIAL PRIMARY KEY,\n    clave_texto VARCHAR(30) NOT NULL,\n    tasa NUMERIC(5, 2) NOT NULL,\n    fecha_limite DATE NOT NULL\n);",
+            key_points=[
+                "`SERIAL PRIMARY KEY` crea una columna entera autoincremental indexada que identifica de forma única cada fila.",
+                "`NUMERIC(p, s)` almacena decimales exactos sin errores de punto flotante (`p` dígitos totales, `s` decimales).",
+                "`NOT NULL` impide que se registren filas con valores vacíos o desconocidos en esa columna."
+            ],
+            execution_order_note="💡 En PostgreSQL, `CREATE TABLE` es transaccional: registra la estructura y sus secuencias en los catálogos del esquema activo.",
+        ),
+        objectives=[
+            "1. Declarar la creación de la tabla cupones_descuento.",
+            "2. Definir la clave primaria autoincremental cupon_id.",
+            "3. Especificar las columnas codigo, descuento_pct y fecha_expiracion como obligatorias (NOT NULL)."
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000070": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000070",
+        module_id="d0000000-0000-0000-0000-000000000015",
+        title="Tabla de Reseñas con Reglas de Integridad (CHECK & FOREIGN KEY)",
+        prompt="Crea la tabla `resenas_productos` para almacenar valoraciones verificadas con estas 5 columnas en orden:\n1. `resena_id` de tipo `SERIAL PRIMARY KEY`\n2. `producto_id` de tipo `INT NOT NULL REFERENCES productos(producto_id)`\n3. `cliente_id` de tipo `INT NOT NULL REFERENCES clientes(cliente_id)`\n4. `calificacion` de tipo `INT NOT NULL CHECK (calificacion BETWEEN 1 AND 5)`\n5. `comentario` de tipo `TEXT`",
+        initial_code="-- Crea la tabla resenas_productos con claves foráneas y restricción CHECK\nCREATE TABLE ",
+        solution_query="CREATE TABLE resenas_productos (resena_id SERIAL PRIMARY KEY, producto_id INT NOT NULL REFERENCES productos(producto_id), cliente_id INT NOT NULL REFERENCES clientes(cliente_id), calificacion INT NOT NULL CHECK (calificacion BETWEEN 1 AND 5), comentario TEXT);",
+        verification_query="SELECT c.column_name AS columna, c.data_type AS tipo_dato, c.is_nullable AS permite_nulos, (SELECT COUNT(*)::int FROM pg_constraint con JOIN pg_class rel ON rel.oid = con.conrelid WHERE rel.relnamespace = pg_my_temp_schema() AND rel.relname = 'resenas_productos' AND con.contype IN ('p', 'f', 'c')) AS total_restricciones_tabla FROM information_schema.columns c WHERE c.table_schema = (SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()) AND c.table_name = 'resenas_productos' ORDER BY c.ordinal_position ASC;",
+        execution_mode="ddl",
+        xp_reward=70,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=70,
+        hints=[
+            "Usa REFERENCES tabla(columna) para definir cada clave foránea inline y CHECK (calificacion BETWEEN 1 AND 5) para validar el rango permitido.",
+            "Declara las 5 columnas: resena_id SERIAL PRIMARY KEY, producto_id INT NOT NULL REFERENCES productos(producto_id), cliente_id INT NOT NULL REFERENCES clientes(cliente_id), calificacion INT NOT NULL CHECK (calificacion BETWEEN 1 AND 5), comentario TEXT.",
+            "CREATE TABLE resenas_productos (resena_id SERIAL PRIMARY KEY, producto_id INT NOT NULL REFERENCES productos(???), cliente_id INT NOT NULL REFERENCES clientes(???), calificacion INT NOT NULL CHECK (calificacion BETWEEN 1 AND 5), comentario TEXT);"
+        ],
+        concept=ExerciseConcept(
+            summary="Las restricciones declarativas (`FOREIGN KEY / REFERENCES`, `CHECK`, `NOT NULL`, `UNIQUE`) delegan al motor de base de datos la garantía de que ningún dato inválido pueda almacenarse jamás.",
+            syntax="CREATE TABLE tabla_evaluaciones (\n    eval_id SERIAL PRIMARY KEY,\n    autor_id INT NOT NULL REFERENCES tabla_autores(autor_id),\n    puntaje INT NOT NULL CHECK (puntaje BETWEEN 1 AND 10),\n    observaciones TEXT\n);",
+            key_points=[
+                "`REFERENCES tabla_padre(clave)` crea una restricción `FOREIGN KEY` que exige que el identificador exista en la tabla referenciada.",
+                "`CHECK (condicion)` rechaza cualquier `INSERT` o `UPDATE` cuya expresión booleana evalúe a `FALSE`.",
+                "Definir las reglas en el esquema protege la integridad incluso si múltiples aplicaciones escriben en la base de datos."
+            ],
+            execution_order_note="💡 PostgreSQL registra la tabla junto con sus restricciones `'p'` (Primary Key), `'f'` (Foreign Key) y `'c'` (Check) en `pg_constraint`.",
+        ),
+        objectives=[
+            "1. Vincular producto_id y cliente_id con sus tablas maestras mediante REFERENCES.",
+            "2. Blindar el dominio de calificacion entre 1 y 5 con una restricción CHECK.",
+            "3. Verificar que la tabla quede creada con sus 5 columnas y sus 4 restricciones activas."
+        ],
+        sample_tables=[SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_CLIENTES],
+    ),
+
+    "e0000000-0000-0000-0000-000000000071": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000071",
+        module_id="d0000000-0000-0000-0000-000000000015",
+        title="Evolución de Esquema en Almacenes (ALTER TABLE ADD COLUMN)",
+        prompt="Operaciones necesita identificar qué centros logísticos cuentan con cámara refrigerada. Modifica la tabla `almacenes` con `ALTER TABLE` para agregar una nueva columna llamada `refrigerado` de tipo `BOOLEAN NOT NULL DEFAULT FALSE`.",
+        initial_code="-- Agrega la columna refrigerado con su valor por defecto a la tabla almacenes\nALTER TABLE ",
+        solution_query="ALTER TABLE almacenes ADD COLUMN refrigerado BOOLEAN NOT NULL DEFAULT FALSE;",
+        verification_query="SELECT almacen_id, nombre_almacen, ciudad, capacidad_m2, refrigerado FROM almacenes ORDER BY almacen_id ASC;",
+        execution_mode="ddl",
+        xp_reward=65,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=71,
+        hints=[
+            "Para añadir un campo obligatorio (NOT NULL) a una tabla que ya tiene filas, debes acompañarlo de DEFAULT para que PostgreSQL rellene automáticamente los registros existentes.",
+            "Usa ALTER TABLE sobre almacenes junto con la cláusula ADD COLUMN definiendo el tipo BOOLEAN, la restricción NOT NULL y el valor por defecto.",
+            "ALTER TABLE almacenes ADD COLUMN ??? BOOLEAN NOT NULL DEFAULT ???;"
+        ],
+        concept=ExerciseConcept(
+            summary="`ALTER TABLE ... ADD COLUMN` permite evolucionar la estructura de una tabla en producción sin perder los datos existentes.",
+            syntax="ALTER TABLE nombre_tabla\nADD COLUMN nueva_columna BOOLEAN NOT NULL DEFAULT FALSE;",
+            key_points=[
+                "Si agregas una columna `NOT NULL` a una tabla con datos previos, es obligatorio indicar `DEFAULT valor_inicial`.",
+                "En PostgreSQL 11+, añadir una columna con un `DEFAULT` constante es una operación instantánea en catálogo que no reescribe toda la tabla en disco.",
+                "Todas las filas existentes adoptan inmediatamente el valor por defecto."
+            ],
+            execution_order_note="💡 El catálogo registra el nuevo atributo y proyecta el valor `DEFAULT` para todas las tuplas existentes.",
+        ),
+        objectives=[
+            "1. Seleccionar la tabla almacenes mediante ALTER TABLE.",
+            "2. Añadir la columna booleana refrigerado con ADD COLUMN.",
+            "3. Garantizar que no acepte nulos y tome FALSE por defecto en los almacenes actuales."
+        ],
+        sample_tables=[SAMPLE_TABLE_ALMACENES],
+    ),
+
+    "e0000000-0000-0000-0000-000000000072": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000072",
+        module_id="d0000000-0000-0000-0000-000000000015",
+        title="Retiro Controlado de Tabla Obsoleta (DROP TABLE IF EXISTS CASCADE)",
+        prompt="En el esquema de trabajo existe una tabla heredada llamada `auditoria_obsoleta` (junto con una vista dependiente) que debe retirarse limpiamente. Ejecuta la instrucción para eliminar la tabla `auditoria_obsoleta` utilizando `IF EXISTS` y `CASCADE` para remover también sus objetos dependientes.",
+        initial_code="-- Elimina la tabla auditoria_obsoleta de forma segura con IF EXISTS y CASCADE\nDROP TABLE ",
+        solution_query="DROP TABLE IF EXISTS auditoria_obsoleta CASCADE;",
+        setup_sql="CREATE TEMP TABLE auditoria_obsoleta (log_id SERIAL PRIMARY KEY, nota TEXT) ON COMMIT DROP; CREATE TEMP VIEW v_auditoria_obsoleta AS SELECT * FROM auditoria_obsoleta;",
+        verification_query="SELECT tablename AS tabla_activa FROM pg_tables WHERE schemaname = (SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()) ORDER BY tablename ASC;",
+        execution_mode="ddl",
+        xp_reward=60,
+        difficulty="Intermedio",
+        check_order=True,
+        sort_order=72,
+        hints=[
+            "Cuando una tabla tiene vistas o claves foráneas que dependen de ella, DROP TABLE normal falla a menos que especifiques CASCADE al final.",
+            "Combina DROP TABLE IF EXISTS con el nombre de la tabla heredada y cierra la instrucción con la palabra clave CASCADE.",
+            "DROP TABLE IF EXISTS ??? CASCADE;"
+        ],
+        concept=ExerciseConcept(
+            summary="`DROP TABLE IF EXISTS ... CASCADE` elimina del catálogo la definición, los datos, los índices y cualquier vista o restricción que dependa de la tabla retirada.",
+            syntax="DROP TABLE IF EXISTS tabla_temporal_legada CASCADE;",
+            key_points=[
+                "`IF EXISTS` evita que la migración falle con error si la tabla ya había sido eliminada previamente (idempotencia).",
+                "Por defecto, PostgreSQL aplica `RESTRICT` (impide borrar la tabla si otro objeto depende de ella).",
+                "`CASCADE` autoriza explícitamente a eliminar en cascada las vistas o restricciones foráneas dependientes."
+            ],
+            execution_order_note="💡 PostgreSQL resuelve el grafo de dependencias del objeto en `pg_depend`, retira los dependientes y elimina la tabla del esquema temporal.",
+        ),
+        objectives=[
+            "1. Invocar DROP TABLE con la cláusula idempotente IF EXISTS.",
+            "2. Especificar la tabla objetivo auditoria_obsoleta.",
+            "3. Añadir CASCADE para limpiar su vista dependiente y confirmar que solo quedan las 10 tablas canónicas."
+        ],
+        sample_tables=[SAMPLE_TABLE_ALMACENES],
+    ),
+
+    # MÓDULO 16: Índices y Optimización Estructural (CREATE INDEX) — d0000000-0000-0000-0000-000000000016
+
+    "e0000000-0000-0000-0000-000000000073": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000073",
+        module_id="d0000000-0000-0000-0000-000000000016",
+        title="Índice B-Tree para Búsqueda por Ciudad (CREATE INDEX)",
+        prompt="Las consultas de marketing filtran constantemente la tabla `clientes` por la columna `ciudad`, provocando escaneos secuenciales (`Seq Scan`). Crea un índice B-Tree estándar llamado `idx_clientes_ciudad` sobre la tabla `clientes` indexando la columna `(ciudad)`.",
+        initial_code="-- Crea el índice idx_clientes_ciudad sobre la tabla clientes\nCREATE INDEX ",
+        solution_query="CREATE INDEX idx_clientes_ciudad ON clientes (ciudad);",
+        verification_query="SELECT indexname AS nombre_indice, tablename AS tabla, regexp_replace(indexdef, 'pg_temp_[0-9]+\\.', '', 'g') AS definicion_indice FROM pg_indexes WHERE schemaname = (SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()) AND tablename = 'clientes' ORDER BY indexname ASC;",
+        execution_mode="ddl",
+        xp_reward=70,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=73,
+        hints=[
+            "La sintaxis estándar para crear un índice en PostgreSQL es CREATE INDEX nombre_indice ON nombre_tabla (columna).",
+            "Combina CREATE INDEX con el identificador solicitado, la cláusula ON apuntando a la tabla clientes y la columna entre paréntesis.",
+            "CREATE INDEX ??? ON clientes (???);"
+        ],
+        concept=ExerciseConcept(
+            summary="Un índice (`CREATE INDEX`) crea una estructura ordenada (B-Tree por defecto en PostgreSQL) que permite localizar filas con complejidad logarítmica $O(\\log N)$ en vez de recorrer toda la tabla ($O(N)$).",
+            syntax="CREATE INDEX idx_entidad_campo\nON nombre_tabla (columna_filtrada);",
+            key_points=[
+                "Si no se especifica método (`USING ...`), PostgreSQL construye automáticamente un árbol balanceado **B-Tree**.",
+                "Los índices B-Tree aceleran comparaciones de igualdad (`=`), rangos (`<`, `<=`, `>`, `>=`, `BETWEEN`) y ordenamientos (`ORDER BY`).",
+                "Conviene seguir una convención clara de nombres como `idx_<tabla>_<columna>`."
+            ],
+            execution_order_note="💡 PostgreSQL escanea la tabla actual, ordena las claves en un árbol B-Tree y registra el nuevo acceso en `pg_indexes`.",
+        ),
+        objectives=[
+            "1. Nombrar el nuevo índice como idx_clientes_ciudad.",
+            "2. Asociarlo a la tabla clientes mediante la palabra clave ON.",
+            "3. Indexar la columna ciudad y verificar su registro en el catálogo."
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES],
+    ),
+
+    "e0000000-0000-0000-0000-000000000074": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000074",
+        module_id="d0000000-0000-0000-0000-000000000016",
+        title="Índice Único Compuesto de Facturación (CREATE UNIQUE INDEX)",
+        prompt="Para garantizar que jamás se duplique un pago con el mismo método en la misma fecha para la misma factura y acelerar las conciliaciones, crea un índice **único** y **compuesto** llamado `idx_pagos_factura_metodo_unico` sobre la tabla `pagos` con las columnas `(factura_id, metodo_pago)` en ese orden.",
+        initial_code="-- Crea un índice único compuesto sobre factura_id y metodo_pago\nCREATE UNIQUE INDEX ",
+        solution_query="CREATE UNIQUE INDEX idx_pagos_factura_metodo_unico ON pagos (factura_id, metodo_pago);",
+        verification_query="SELECT indexname AS nombre_indice, tablename AS tabla, regexp_replace(indexdef, 'pg_temp_[0-9]+\\.', '', 'g') AS definicion_indice FROM pg_indexes WHERE schemaname = (SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()) AND tablename = 'pagos' ORDER BY indexname ASC;",
+        execution_mode="ddl",
+        xp_reward=75,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=74,
+        hints=[
+            "Un índice único compuesto usa CREATE UNIQUE INDEX y enumera las columnas entre paréntesis en el orden de selectividad y consulta.",
+            "Usa CREATE UNIQUE INDEX con el nombre solicitado, la cláusula ON sobre la tabla pagos y las dos columnas separadas por coma.",
+            "CREATE UNIQUE INDEX idx_pagos_factura_metodo_unico ON ??? (???, ???);"
+        ],
+        concept=ExerciseConcept(
+            summary="`CREATE UNIQUE INDEX` sobre múltiples columnas acelera las búsquedas combinadas y, al mismo tiempo, impone una restricción de unicidad sobre el par `(columna_1, columna_2)`.",
+            syntax="CREATE UNIQUE INDEX idx_tabla_col1_col2_unico\nON nombre_tabla (columna_izquierda, columna_derecha);",
+            key_points=[
+                "El orden de las columnas en un índice compuesto es crucial: un índice sobre `(A, B)` acelera búsquedas por `A` y por `(A, B)`, pero no búsquedas solo por `B`.",
+                "`UNIQUE` rechaza cualquier intento futuro de insertar dos filas con la misma combinación de valores.",
+                "En PostgreSQL, toda restricción `UNIQUE` se respalda físicamente mediante un índice B-Tree único."
+            ],
+            execution_order_note="💡 El motor verifica primero que no existan duplicados actuales en la tabla antes de publicar el índice único en el catálogo.",
+        ),
+        objectives=[
+            "1. Emplear la instrucción CREATE UNIQUE INDEX.",
+            "2. Definir el índice idx_pagos_factura_metodo_unico sobre la tabla pagos.",
+            "3. Declarar las columnas compuestas (factura_id, metodo_pago) en el orden exacto."
+        ],
+        sample_tables=[SAMPLE_TABLE_PAGOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000075": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000075",
+        module_id="d0000000-0000-0000-0000-000000000016",
+        title="Índice Parcial de Pedidos Pendientes (Partial Index WHERE)",
+        prompt="En producción el 95% de los pedidos históricos están `'completado'`, pero el panel operativo consulta miles de veces por minuto solo los pedidos con `estado_pedido = 'pendiente'` ordenados por `fecha_pedido`. Crea un **índice parcial** llamado `idx_pedidos_pendientes_fecha` sobre `pedidos (fecha_pedido)` que indexe únicamente las filas `WHERE estado_pedido = 'pendiente'`.",
+        initial_code="-- Crea un índice parcial filtrando con WHERE al final de CREATE INDEX\nCREATE INDEX ",
+        solution_query="CREATE INDEX idx_pedidos_pendientes_fecha ON pedidos (fecha_pedido) WHERE estado_pedido = 'pendiente';",
+        verification_query="SELECT indexname AS nombre_indice, tablename AS tabla, regexp_replace(indexdef, 'pg_temp_[0-9]+\\.', '', 'g') AS definicion_indice FROM pg_indexes WHERE schemaname = (SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()) AND tablename = 'pedidos' ORDER BY indexname ASC;",
+        execution_mode="ddl",
+        xp_reward=85,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=75,
+        hints=[
+            "Un índice parcial en PostgreSQL añade una cláusula WHERE al final de la sentencia CREATE INDEX para indexar solo el subconjunto de filas activas.",
+            "Define CREATE INDEX sobre pedidos (fecha_pedido) y añade al cierre la condición WHERE filtrando por estado_pedido.",
+            "CREATE INDEX idx_pedidos_pendientes_fecha ON pedidos (???) WHERE ??? = 'pendiente';"
+        ],
+        concept=ExerciseConcept(
+            summary="Un **índice parcial** (característica avanzada de PostgreSQL) incluye una cláusula `WHERE` en su definición para indexar únicamente el subconjunto de filas que interesa a las consultas críticas.",
+            syntax="CREATE INDEX idx_operaciones_activas_fecha\nON tabla_operaciones (fecha_creacion)\nWHERE estatus = 'activo';",
+            key_points=[
+                "Indexar solo el 5% de filas activas reduce drásticamente el tamaño del índice en RAM y evita penalizar los `INSERT/UPDATE` de filas históricas.",
+                "El optimizador de PostgreSQL utiliza automáticamente el índice parcial cuando la consulta incluye `WHERE estatus = 'activo'`.",
+                "Es una de las técnicas de mayor impacto en tablas transaccionales con estados de cola o trabajo pendiente."
+            ],
+            execution_order_note="💡 PostgreSQL evalúa el predicado `WHERE` durante la creación y mantenimiento del índice, guardando en el B-Tree solo los punteros (TIDs) que cumplen la condición.",
+        ),
+        objectives=[
+            "1. Crear el índice idx_pedidos_pendientes_fecha sobre la columna fecha_pedido de pedidos.",
+            "2. Incorporar el predicado parcial WHERE estado_pedido = 'pendiente'.",
+            "3. Comprobar la definición del índice parcial en pg_indexes."
+        ],
+        sample_tables=[SAMPLE_TABLE_PEDIDOS],
+    ),
+
+    "e0000000-0000-0000-0000-000000000076": ExerciseDetail(
+        id="e0000000-0000-0000-0000-000000000076",
+        module_id="d0000000-0000-0000-0000-000000000016",
+        title="Eliminación de Índice Redundante (DROP INDEX IF EXISTS)",
+        prompt="Durante una auditoría de rendimiento en la tabla `clientes` se detectó un índice duplicado y sin uso llamado `idx_clientes_pais_antiguo` que ralentiza las inserciones. Elimina dicho índice del catálogo de forma segura utilizando `DROP INDEX IF EXISTS`.",
+        initial_code="-- Elimina el índice idx_clientes_pais_antiguo con IF EXISTS\nDROP INDEX ",
+        solution_query="DROP INDEX IF EXISTS idx_clientes_pais_antiguo;",
+        setup_sql="CREATE INDEX idx_clientes_pais_antiguo ON pg_temp.clientes (pais);",
+        verification_query="SELECT indexname AS nombre_indice, tablename AS tabla FROM pg_indexes WHERE schemaname = (SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()) AND tablename = 'clientes' ORDER BY indexname ASC;",
+        execution_mode="ddl",
+        xp_reward=70,
+        difficulty="Avanzado",
+        check_order=True,
+        sort_order=76,
+        hints=[
+            "A diferencia de otros motores, en PostgreSQL DROP INDEX no lleva ON nombre_tabla: solo requiere DROP INDEX IF EXISTS nombre_indice.",
+            "Combina la instrucción DROP INDEX con la cláusula IF EXISTS seguida del nombre del índice redundante.",
+            "DROP INDEX IF EXISTS ???;"
+        ],
+        concept=ExerciseConcept(
+            summary="`DROP INDEX IF EXISTS` retira del catálogo un índice innecesario o redundante, liberando espacio en memoria y acelerando las operaciones `INSERT`, `UPDATE` y `DELETE` sobre la tabla.",
+            syntax="DROP INDEX IF EXISTS idx_obsoleto_nombre;",
+            key_points=[
+                "Cada índice adicional tiene un costo de escritura: en cada `INSERT` o `UPDATE`, PostgreSQL debe actualizar todos los índices de la tabla.",
+                "En PostgreSQL, los nombres de índices son únicos dentro de su esquema, por lo que `DROP INDEX` no lleva la cláusula `ON tabla`.",
+                "No se puede usar `DROP INDEX` para borrar el índice que respalda una `PRIMARY KEY` o restricción `UNIQUE` activa (esos se gestionan con `ALTER TABLE ... DROP CONSTRAINT`)."
+            ],
+            execution_order_note="💡 Al eliminar el índice redundante, la tabla conserva únicamente su índice de clave primaria (`clientes_pkey`) y su índice de correo único (`clientes_email_key`).",
+        ),
+        objectives=[
+            "1. Utilizar la instrucción DROP INDEX acompañada de IF EXISTS.",
+            "2. Indicar el identificador exacto idx_clientes_pais_antiguo.",
+            "3. Verificar en pg_indexes que en la tabla clientes solo permanecen sus índices esenciales."
+        ],
+        sample_tables=[SAMPLE_TABLE_CLIENTES],
     ),
 }

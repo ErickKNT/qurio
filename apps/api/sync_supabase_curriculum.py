@@ -76,6 +76,10 @@ def main():
         {"id": "c0000000-0000-0000-0000-000000000010", "path_id": "advanced-queries", "module_number": 10, "title": "Expresiones Condicionales (CASE)", "description": "Transforma, categoriza y pivota métricas y conteos al vuelo con lógica condicional CASE."},
         {"id": "c0000000-0000-0000-0000-000000000011", "path_id": "advanced-queries", "module_number": 11, "title": "Consultas Temporales con WITH (CTEs)", "description": "Estructura análisis temporales, comparativas entre grupos y flujos por etapas con la cláusula WITH."},
         {"id": "c0000000-0000-0000-0000-000000000012", "path_id": "advanced-queries", "module_number": 12, "title": "Funciones Analíticas de Ventana", "description": "Aplica clasificaciones, máximos por grupo, acumulados progresivos y análisis temporal (ROW_NUMBER, DENSE_RANK, SUM OVER, LAG)."},
+        {"id": "d0000000-0000-0000-0000-000000000013", "path_id": "data-manipulation-ddl", "module_number": 13, "title": "Inserción de Registros (INSERT)", "description": "Registra tuplas individuales, lotes multi-fila, proyecciones inmediatas con RETURNING y abastecimiento entre tablas con INSERT INTO ... SELECT."},
+        {"id": "d0000000-0000-0000-0000-000000000014", "path_id": "data-manipulation-ddl", "module_number": 14, "title": "Actualización y Eliminación Segura (UPDATE y DELETE)", "description": "Modifica y depura datos con precisión quirúrgica usando UPDATE ... WHERE, recálculos con RETURNING, cruces UPDATE ... FROM y DELETE seguro."},
+        {"id": "d0000000-0000-0000-0000-000000000015", "path_id": "data-manipulation-ddl", "module_number": 15, "title": "Creación y Evolución de Tablas (CREATE, ALTER y DROP)", "description": "Diseña tablas con claves primarias, foráneas y restricciones CHECK, evoluciona columnas con ALTER TABLE y retira estructuras con DROP TABLE CASCADE."},
+        {"id": "d0000000-0000-0000-0000-000000000016", "path_id": "data-manipulation-ddl", "module_number": 16, "title": "Índices y Optimización Estructural (CREATE INDEX)", "description": "Acelera consultas creando índices B-Tree simples, índices únicos compuestos, índices parciales filtrados con WHERE y limpieza con DROP INDEX."},
     ]
 
     for mod in official_modules:
@@ -139,10 +143,10 @@ def main():
     all_exs = api_request("exercises?select=id,title,sort_order&order=sort_order.asc")
     print(f"Total módulos en Cloud: {len(all_mods)}")
     print(f"Total ejercicios en Cloud: {len(all_exs)}")
-    if len(all_exs) == 60 and len(all_mods) == 12:
-        print("\n>>> ¡SINCRONIZACIÓN EXITOSA! 12 Módulos y 60 Ejercicios en Supabase Cloud <<<")
+    if len(all_exs) == 76 and len(all_mods) == 16:
+        print("\n>>> ¡SINCRONIZACIÓN EXITOSA! 16 Módulos y 76 Ejercicios en Supabase Cloud <<<")
     else:
-        print(f"\nAdvertencia: se esperaban 12 y 60, se obtuvieron {len(all_mods)} y {len(all_exs)}")
+        print(f"\nAdvertencia: se esperaban 16 y 76, se obtuvieron {len(all_mods)} y {len(all_exs)}")
 
 if __name__ == "__main__":
     main()
