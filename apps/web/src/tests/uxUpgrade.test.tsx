@@ -11,7 +11,9 @@ import { ErDiagramModal } from '@/components/organisms/ErDiagramModal/ErDiagramM
 import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/ModuleGuideModal';
 import { CertificateModal } from '@/components/organisms/CertificateModal/CertificateModal';
 import { ExerciseSpecPanel } from '@/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel';
-import { FALLBACK_EXERCISES } from '@/lib/fallbackCurriculum';
+import { UserProfileView } from '@/components/organisms/UserProfileView/UserProfileView';
+import { FALLBACK_EXERCISES, FALLBACK_TRACKS } from '@/lib/fallbackCurriculum';
+import { ACHIEVEMENTS_CATALOG } from '@/lib/api';
 import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
 import { parseLocation, pathToUrl } from '@/lib/routing';
 
@@ -164,5 +166,73 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     );
     expect(selectSpan?.className).toContain('text-cyan-accent');
     expect(selectSpan?.className).toContain('font-bold');
+  });
+
+  it('UserProfileView renderiza layout Bento real con heatmap 52 semanas, precisión SQL, insignias y EditProfileModal', () => {
+    const todayIso = new Date().toISOString().split('T')[0];
+    const { container } = render(
+      <UserProfileView
+        profile={{
+          id: 'usr-admin-1',
+          username: 'erick_sql',
+          full_name: 'Erick Bonilla',
+          bio: 'Ingeniero de Datos enfocado en PostgreSQL 16',
+          total_xp: 750,
+          current_level: 2,
+          current_streak_days: 4,
+          max_streak_days: 9,
+          preferred_theme: 'dark',
+          created_at: '2026-11-01T00:00:00Z',
+        }}
+        history={[
+          {
+            id: 'h1',
+            query: 'SELECT * FROM clientes;',
+            executed_at: 'Hace 1 min',
+            status: 'SUCCESS',
+            execution_time_ms: 8,
+            row_count: 15,
+          },
+        ]}
+        tracks={FALLBACK_TRACKS}
+        completedCount={12}
+        totalExercises={60}
+        totalAttemptsCount={10}
+        attemptStats={{
+          totalAttempts: 10,
+          passedAttempts: 8,
+          fastAttemptsUnder50ms: 9,
+          zeroHintPassedAttempts: 7,
+        }}
+        achievements={ACHIEVEMENTS_CATALOG}
+        dailyActivity={[{ activity_date: todayIso, exercises_solved: 3, xp_earned: 120 }]}
+        isCloudAuth={true}
+        isAdmin={true}
+        onUpdateProfile={async () => {}}
+      />
+    );
+
+    expect(screen.getByText('Erick Bonilla')).toBeInTheDocument();
+    expect(screen.getByText('@erick_sql')).toBeInTheDocument();
+    expect(screen.getByText(/Ingeniero de Datos enfocado en PostgreSQL 16/i)).toBeInTheDocument();
+    expect(screen.getByText('Mapa de Calor de Actividad (Último Año)')).toBeInTheDocument();
+
+    const heatmap = container.querySelector('[aria-label="Mapa anual de actividad"]');
+    expect(heatmap).not.toBeNull();
+    expect(heatmap!.querySelectorAll('span')).toHaveLength(364);
+
+    expect(screen.getByText('Precisión SQL')).toBeInTheDocument();
+    expect(screen.getByText('80%')).toBeInTheDocument();
+    expect(screen.getByText('90%')).toBeInTheDocument();
+    expect(screen.getByText('Insignias')).toBeInTheDocument();
+    expect(screen.getByText('Probar Global (QA)')).toBeInTheDocument();
+
+    // Abrir EditProfileModal y comprobar validación inline
+    fireEvent.click(screen.getByRole('button', { name: /Editar Perfil/i }));
+    expect(screen.getByText('Editar Perfil Técnico')).toBeInTheDocument();
+    const nameInput = screen.getByLabelText(/Nombre Completo/i);
+    fireEvent.change(nameInput, { target: { value: 'A' } });
+    fireEvent.click(screen.getByRole('button', { name: /Guardar Cambios/i }));
+    expect(screen.getByRole('alert')).toHaveTextContent(/al menos 2 caracteres/i);
   });
 });

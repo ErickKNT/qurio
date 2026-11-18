@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { UserProfile, EvaluationStatus, QueryHistoryItem } from '@/types';
+import { UserProfile, EvaluationStatus, QueryHistoryItem, AttemptStats } from '@/types';
 
 export const GUEST_PROGRESS_STORAGE_KEY = 'qurio_guest_progress_v1';
 export const LOCAL_PROFILE_STORAGE_KEY = 'qurio_user_profile';
@@ -319,12 +319,16 @@ export const persistence = {
 
   /**
    * Sincroniza y actualiza los datos del perfil en Supabase y localmente.
-   * 
-   * SEGURIDAD (C-02):
-   * Restringe dbUpdates estrictamente a campos visuales permitidos (display_name, avatar_url, username).
-   * Jamás envía 'xp' o 'level' desde el cliente.
+   *
+   * SEGURIDAD (C-02 + CLS 03_security_hardening.sql):
+   * Restringe dbUpdates estrictamente a las columnas con permiso UPDATE para 'authenticated'
+   * (display_name, avatar_url, bio, updated_at). Jamás envía 'username', 'xp' o 'level'.
    */
-  async updateProfile(userId: string, updates: Partial<UserProfile>): Promise<void> {
+  async updateProfile(
+    userId: string,
+    updates: Partial<UserProfile>,
+    syncCloud = true
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const current = this.getLocalProfile();
       const updated = { ...current, ...updates };
@@ -333,21 +337,27 @@ export const persistence = {
       console.warn('Error al guardar perfil localmente:', e);
     }
 
-    if (isSupabaseConfigured && userId && !userId.startsWith('demo-')) {
+    if (syncCloud && isSupabaseConfigured && userId && !userId.startsWith('demo-')) {
       try {
         const dbUpdates: Record<string, any> = {};
-        if (updates.full_name) dbUpdates.display_name = updates.full_name;
-        if (updates.avatar_url) dbUpdates.avatar_url = updates.avatar_url;
-        if (updates.username) dbUpdates.username = updates.username;
-        dbUpdates.updated_at = new Date().toISOString();
+        if (updates.full_name !== undefined) dbUpdates.display_name = updates.full_name;
+        if (updates.avatar_url !== undefined) dbUpdates.avatar_url = updates.avatar_url;
+        if (updates.bio !== undefined) dbUpdates.bio = updates.bio;
 
-        if (Object.keys(dbUpdates).length > 1) {
-          await supabase.from('user_profiles').update(dbUpdates).eq('id', userId);
+        if (Object.keys(dbUpdates).length > 0) {
+          dbUpdates.updated_at = new Date().toISOString();
+          const { error } = await supabase.from('user_profiles').update(dbUpdates).eq('id', userId);
+          if (error) {
+            console.warn('Error al sincronizar perfil en Supabase:', error.message);
+            return { success: false, error: error.message };
+          }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.warn('Error al sincronizar perfil en Supabase:', err);
+        return { success: false, error: err?.message || 'Error de conexión con Supabase.' };
       }
     }
+    return { success: true };
   },
 
   /**
@@ -374,17 +384,20 @@ export const persistence = {
   },
 
   /**
-   * Obtiene la actividad diaria registrada de los últimos 30 días para el usuario.
+   * Obtiene la actividad diaria registrada para el usuario (hasta 365 días para el heatmap anual).
    */
-  async getUserDailyActivity(userId: string): Promise<{ activity_date: string; exercises_solved: number; xp_earned: number }[]> {
+  async getUserDailyActivity(
+    userId: string,
+    daysWindow = 365
+  ): Promise<{ activity_date: string; exercises_solved: number; xp_earned: number }[]> {
     if (!userId || userId.startsWith('demo-') || !isSupabaseConfigured) {
       return [];
     }
 
     try {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - daysWindow);
+      const startDateStr = startDate.toISOString().split('T')[0];
 
       const { data, error } = await supabase
         .from('user_daily_activity')
@@ -402,6 +415,73 @@ export const persistence = {
     } catch (err) {
       console.warn('Error de red al consultar user_daily_activity:', err);
       return [];
+    }
+  },
+
+  /**
+   * Obtiene métricas agregadas de precisión y rendimiento sobre intentos reales evaluados.
+   */
+  async getUserAttemptStats(userId?: string): Promise<AttemptStats> {
+    if (!userId || userId.startsWith('demo-') || !isSupabaseConfigured) {
+      const local = this.getLocalAttempts();
+      let passedAttempts = 0;
+      let fastAttemptsUnder50ms = 0;
+      let zeroHintPassedAttempts = 0;
+      for (const att of local) {
+        if ((att.executionTimeMs ?? 0) > 0 && (att.executionTimeMs ?? 0) < 50) {
+          fastAttemptsUnder50ms++;
+        }
+        if (att.status === 'PASSED') {
+          passedAttempts++;
+          if ((att.hintsUsed ?? 0) === 0) {
+            zeroHintPassedAttempts++;
+          }
+        }
+      }
+      return {
+        totalAttempts: local.length,
+        passedAttempts,
+        fastAttemptsUnder50ms,
+        zeroHintPassedAttempts,
+      };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('exercise_attempts')
+        .select('status, execution_time_ms, hints_used')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (error || !data) {
+        return { totalAttempts: 0, passedAttempts: 0, fastAttemptsUnder50ms: 0, zeroHintPassedAttempts: 0 };
+      }
+
+      let passedAttempts = 0;
+      let fastAttemptsUnder50ms = 0;
+      let zeroHintPassedAttempts = 0;
+
+      for (const row of data) {
+        if ((row.execution_time_ms ?? 0) < 50) {
+          fastAttemptsUnder50ms++;
+        }
+        if (row.status === 'PASSED') {
+          passedAttempts++;
+          if ((row.hints_used ?? 0) === 0) {
+            zeroHintPassedAttempts++;
+          }
+        }
+      }
+
+      return {
+        totalAttempts: data.length,
+        passedAttempts,
+        fastAttemptsUnder50ms,
+        zeroHintPassedAttempts,
+      };
+    } catch {
+      return { totalAttempts: 0, passedAttempts: 0, fastAttemptsUnder50ms: 0, zeroHintPassedAttempts: 0 };
     }
   },
 

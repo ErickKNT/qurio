@@ -114,12 +114,20 @@ export interface UserProfile {
   username: string;
   full_name?: string;
   avatar_url?: string;
+  bio?: string;
   total_xp: number;
   current_level: number;
   current_streak_days: number;
   max_streak_days: number;
   preferred_theme: string;
   created_at: string;
+}
+
+export interface AttemptStats {
+  totalAttempts: number;
+  passedAttempts: number;
+  fastAttemptsUnder50ms: number;
+  zeroHintPassedAttempts: number;
 }
 
 export interface NavItem {

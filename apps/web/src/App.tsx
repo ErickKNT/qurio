@@ -131,6 +131,7 @@ import {
   TableSchemaInfo,
   QueryHistoryItem,
   AppPath,
+  AttemptStats,
 } from '@/types';
 
 export const App: React.FC = () => {
@@ -142,7 +143,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'components'>('overview');
   const [formEmail, setFormEmail] = useState('');
   const [formError, setFormError] = useState('');
-  const { profile, user, isCloudAuth, isAuthenticated, isAdmin, isPasswordRecovery, guestSyncCount, clearPasswordRecovery, signOut, refreshProfile } = useAuth();
+  const { profile, user, isCloudAuth, isAuthenticated, isAdmin, isPasswordRecovery, guestSyncCount, clearPasswordRecovery, signOut, updateProfile, refreshProfile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalInitialMode, setAuthModalInitialMode] = useState<AuthMode>('signin');
@@ -166,6 +167,12 @@ export const App: React.FC = () => {
   const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([]);
   const [dailyActivity, setDailyActivity] = useState<{ activity_date: string; exercises_solved: number; xp_earned: number }[]>([]);
   const [totalAttemptsCount, setTotalAttemptsCount] = useState<number>(0);
+  const [attemptStats, setAttemptStats] = useState<AttemptStats>({
+    totalAttempts: 0,
+    passedAttempts: 0,
+    fastAttemptsUnder50ms: 0,
+    zeroHintPassedAttempts: 0,
+  });
   const [playgroundInitialQuery, setPlaygroundInitialQuery] = useState<string | undefined>(undefined);
 
   // Estados del Ejercicio Activo y del IDE
@@ -364,6 +371,7 @@ export const App: React.FC = () => {
         persistence.getUserTotalAttemptsCount(profile.id).then((cnt) => {
           setTotalAttemptsCount(cnt);
         });
+        persistence.getUserAttemptStats(profile.id).then(setAttemptStats);
         persistence.getUserAttemptsHistory(profile.id).then((hist) => {
           if (hist && hist.length > 0) {
             setQueryHistory(hist);
@@ -377,6 +385,7 @@ export const App: React.FC = () => {
         );
         setDailyActivity([]);
         setTotalAttemptsCount(api.getQueryHistory().length);
+        persistence.getUserAttemptStats().then(setAttemptStats);
       }
       setIsProgressLoading(false);
     });
@@ -1222,6 +1231,9 @@ export const App: React.FC = () => {
               tracks={tracks}
               completedCount={authoritativeCompletedIds.size}
               totalExercises={exercises.length}
+              totalAttemptsCount={totalAttemptsCount}
+              attemptStats={attemptStats}
+              achievements={evaluatedAchievements}
               dailyActivity={dailyActivity}
               onOpenPlayground={(query?: string) => {
                 if (query) {
@@ -1231,6 +1243,9 @@ export const App: React.FC = () => {
               }}
               onOpenAuth={() => setAuthModalOpen(true)}
               onOpenVerifyPage={(code) => navigate('verify', { verifyCode: code })}
+              onSelectTrack={(trackSlug) => navigate('tracks', { trackSlug })}
+              onNavigateAchievements={() => navigate('achievements')}
+              onUpdateProfile={updateProfile}
               isCloudAuth={isCloudAuth}
               isAdmin={isAdmin}
             />
