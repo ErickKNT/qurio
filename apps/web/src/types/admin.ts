@@ -233,3 +233,11 @@ export interface AdminUserModerationResponse {
   updated_by: string;
   message: string;
 }
+
+export interface AdminUserDeleteResponse {
+  user_id: string;
+  deleted: boolean;
+  deleted_at: string;
+  deleted_by: string;
+  message: string;
+}

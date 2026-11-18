@@ -32,6 +32,7 @@ export interface AdminUsersPanelProps {
   onInspectAttempts: (userId: string) => void;
   onModerateRole: (userId: string, nextRole: AdminUserRole) => Promise<void>;
   onModerateBan: (userId: string, banned: boolean, reason?: string) => Promise<void>;
+  onDeleteUser?: (userId: string) => Promise<void>;
 }
 
 export const AdminUsersPanel: React.FC<AdminUsersPanelProps> = ({
@@ -49,6 +50,7 @@ export const AdminUsersPanel: React.FC<AdminUsersPanelProps> = ({
   onInspectAttempts,
   onModerateRole,
   onModerateBan,
+  onDeleteUser,
 }) => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
@@ -351,6 +353,7 @@ export const AdminUsersPanel: React.FC<AdminUsersPanelProps> = ({
         onInspectAttempts={onInspectAttempts}
         onModerateRole={onModerateRole}
         onModerateBan={onModerateBan}
+        onDeleteUser={onDeleteUser}
       />
     </section>
   );

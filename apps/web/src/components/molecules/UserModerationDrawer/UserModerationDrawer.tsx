@@ -7,6 +7,7 @@ import {
   Flame,
   ShieldCheck,
   ShieldOff,
+  Trash2,
   Trophy,
   X,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ export interface UserModerationDrawerProps {
   onInspectAttempts: (userId: string) => void;
   onModerateRole: (userId: string, nextRole: AdminUserRole) => Promise<void>;
   onModerateBan: (userId: string, banned: boolean, reason?: string) => Promise<void>;
+  onDeleteUser?: (userId: string) => Promise<void>;
 }
 
 function formatDateTime(iso: string | null | undefined): string {
@@ -37,16 +39,21 @@ export const UserModerationDrawer: React.FC<UserModerationDrawerProps> = ({
   onInspectAttempts,
   onModerateRole,
   onModerateBan,
+  onDeleteUser,
 }) => {
   const [confirmRoleStep, setConfirmRoleStep] = useState<AdminUserRole | null>(null);
   const [confirmBanStep, setConfirmBanStep] = useState<boolean | null>(null);
   const [banReason, setBanReason] = useState('');
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setConfirmRoleStep(null);
     setConfirmBanStep(null);
     setBanReason('');
+    setConfirmDeleteOpen(false);
+    setDeleteConfirmText('');
     setIsSubmitting(false);
   }, [user?.id]);
 
@@ -62,6 +69,9 @@ export const UserModerationDrawer: React.FC<UserModerationDrawerProps> = ({
   if (!user) return null;
 
   const isSelf = Boolean(currentAdminId && currentAdminId === user.id);
+  const isTargetAdmin = user.role === 'admin';
+  const expectedDeleteTarget = user.email || user.username || user.id;
+  const canConfirmDelete = deleteConfirmText.trim() === expectedDeleteTarget;
   const nextRole: AdminUserRole = user.role === 'admin' ? 'student' : 'admin';
   const completionPct =
     user.total_exercises > 0
@@ -90,6 +100,19 @@ export const UserModerationDrawer: React.FC<UserModerationDrawerProps> = ({
       await onModerateBan(user.id, confirmBanStep, banReason.trim() || undefined);
       setConfirmBanStep(null);
       setBanReason('');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!onDeleteUser || !canConfirmDelete || isSelf || isTargetAdmin || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onDeleteUser(user.id);
+      setConfirmDeleteOpen(false);
+      setDeleteConfirmText('');
+      onClose();
     } finally {
       setIsSubmitting(false);
     }
@@ -411,6 +434,84 @@ export const UserModerationDrawer: React.FC<UserModerationDrawerProps> = ({
                 </div>
               )}
             </div>
+
+            {/* 3. Eliminación Definitiva (Solo Cuentas de Prueba) */}
+            {onDeleteUser && (
+              <div className="p-3.5 rounded-lg bg-canvas border border-error/30 flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="text-xs font-semibold text-error">
+                      Eliminar Cuenta Definitivamente (Solo Pruebas)
+                    </div>
+                    <p className="text-[11px] text-content-muted">
+                      Elimina la cuenta de Supabase Auth y purga en cascada perfil, intentos, progreso y constancias. Acción irreversible.
+                    </p>
+                  </div>
+
+                  {!confirmDeleteOpen && (
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      disabled={isSelf || isTargetAdmin}
+                      onClick={() => setConfirmDeleteOpen(true)}
+                      leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                    >
+                      Eliminar Cuenta
+                    </Button>
+                  )}
+                </div>
+
+                {(isSelf || isTargetAdmin) && (
+                  <p className="text-[11px] font-mono text-amber-streak">
+                    {isSelf
+                      ? 'Protección activa: no puedes eliminar tu propia cuenta de administrador.'
+                      : 'Protección activa: no se permite eliminar cuentas con rol administrador.'}
+                  </p>
+                )}
+
+                {confirmDeleteOpen && (
+                  <div className="p-3 rounded-lg bg-error/10 border border-error/30 flex flex-col gap-2.5">
+                    <span className="text-xs text-content-primary">
+                      Para confirmar el borrado definitivo, escribe exactamente{' '}
+                      <strong className="font-mono text-error">{expectedDeleteTarget}</strong>:
+                    </span>
+                    <input
+                      type="text"
+                      value={deleteConfirmText}
+                      onChange={(e) => setDeleteConfirmText(e.target.value)}
+                      placeholder={expectedDeleteTarget}
+                      aria-label="Confirmar identificador de cuenta a eliminar"
+                      className="px-3 py-1.5 rounded-lg bg-canvas border border-error/40 text-xs font-mono text-content-primary"
+                    />
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={isSubmitting}
+                        onClick={() => {
+                          setConfirmDeleteOpen(false);
+                          setDeleteConfirmText('');
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        size="sm"
+                        disabled={!canConfirmDelete}
+                        isLoading={isSubmitting}
+                        onClick={handleConfirmDelete}
+                      >
+                        Confirmar Eliminación
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

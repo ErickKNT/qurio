@@ -663,3 +663,60 @@ async def test_moderation_ban_suspends_reactivates_and_blocks_self_ban(
     assert unban_resp.status_code == 200
     assert unban_resp.json()["is_banned"] is False
     assert calls[-1][1] == {"ban_duration": "none"}
+
+
+@pytest.mark.asyncio
+async def test_delete_user_account_enforces_guards_and_deletes_test_student(
+    client: AsyncClient, admin_ec_keys, mock_jwks, monkeypatch
+):
+    private_key, _ = admin_ec_keys
+    admin_sub = "00000000-0000-0000-0000-00000000a001"
+    admin_token = _build_es256_token(private_key, sub=admin_sub, app_metadata={"role": "admin"})
+    student_token = _build_es256_token(private_key, sub="u-student-1", app_metadata={"role": "student"})
+
+    # 1. Estudiante no puede invocar DELETE
+    forbidden = await client.delete(
+        "/api/v1/admin/users/u-test-1",
+        headers={"Authorization": f"Bearer {student_token}"},
+    )
+    assert forbidden.status_code == 403
+
+    # 2. Bloquear auto-eliminación
+    self_delete = await client.delete(
+        f"/api/v1/admin/users/{admin_sub}",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert self_delete.status_code == 400
+
+    # 3. Bloquear eliminación de otro administrador
+    async def fake_get_user(user_id: str):
+        if user_id == "u-other-admin":
+            return {"id": user_id, "email": "other@qurio.dev", "app_metadata": {"role": "admin"}}
+        return {"id": user_id, "email": "test@qurio.dev", "app_metadata": {"role": "student"}}
+
+    deleted_ids = []
+
+    async def fake_delete_user(user_id: str):
+        deleted_ids.append(user_id)
+
+    monkeypatch.setattr(admin_service, "_get_supabase_auth_user", fake_get_user)
+    monkeypatch.setattr(admin_service, "_delete_supabase_auth_user", fake_delete_user)
+
+    admin_target_resp = await client.delete(
+        "/api/v1/admin/users/u-other-admin",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert admin_target_resp.status_code == 400
+    assert deleted_ids == []
+
+    # 4. Eliminación válida de cuenta de prueba (student)
+    ok_resp = await client.delete(
+        "/api/v1/admin/users/u-test-1",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert ok_resp.status_code == 200
+    body = ok_resp.json()
+    assert body["deleted"] is True
+    assert body["user_id"] == "u-test-1"
+    assert body["deleted_by"] == admin_sub
+    assert deleted_ids == ["u-test-1"]

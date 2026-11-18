@@ -26,6 +26,7 @@ const mockListUsers = vi.fn();
 const mockListAttempts = vi.fn();
 const mockUpdateUserRole = vi.fn();
 const mockUpdateUserBan = vi.fn();
+const mockDeleteUser = vi.fn();
 
 vi.mock('@/lib/adminApi', () => ({
   adminApi: {
@@ -34,6 +35,7 @@ vi.mock('@/lib/adminApi', () => ({
     listUsers: (...args: unknown[]) => mockListUsers(...args),
     updateUserRole: (...args: unknown[]) => mockUpdateUserRole(...args),
     updateUserBan: (...args: unknown[]) => mockUpdateUserBan(...args),
+    deleteUser: (...args: unknown[]) => mockDeleteUser(...args),
     listAttempts: (...args: unknown[]) => mockListAttempts(...args),
     getSecurityAuditLog: vi.fn().mockResolvedValue({ audit_logs: [], rate_limit_buckets: [] }),
     updateKillswitches: vi.fn(),
@@ -325,6 +327,14 @@ describe('Qurio Admin Console — RBAC Stealth Guard & Componentes Operativos', 
       message: 'Cuenta student-target-2 suspendida por moderación administrativa.',
     });
 
+    mockDeleteUser.mockResolvedValue({
+      user_id: 'student-target-2',
+      deleted: true,
+      deleted_at: '2026-11-18T12:18:00Z',
+      deleted_by: 'admin-self-1',
+      message: 'Cuenta de prueba (ana@qurio.dev) eliminada definitivamente.',
+    });
+
     render(React.createElement(App));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /\[Usuarios\]/i })).toBeInTheDocument();
@@ -365,6 +375,22 @@ describe('Qurio Admin Console — RBAC Stealth Guard & Componentes Operativos', 
     await waitFor(() => {
       expect(mockUpdateUserBan).toHaveBeenCalledWith('student-target-2', true, 'Pruebas de moderación');
     });
+
+    // 3b. Eliminación definitiva requiere escribir el correo exacto
+    fireEvent.click(screen.getByRole('button', { name: /Eliminar Cuenta/i }));
+    const confirmDeleteBtn = screen.getByRole('button', { name: /Confirmar Eliminación/i });
+    expect(confirmDeleteBtn).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/Confirmar identificador de cuenta a eliminar/i), {
+      target: { value: 'ana@qurio.dev' },
+    });
+    expect(confirmDeleteBtn).toBeEnabled();
+    fireEvent.click(confirmDeleteBtn);
+    await waitFor(() => {
+      expect(mockDeleteUser).toHaveBeenCalledWith('student-target-2');
+    });
+
+    // Reabrir drawer para probar salto a forense
+    fireEvent.click(screen.getAllByRole('button', { name: /Inspeccionar \/ Moderar/i })[1]);
 
     // 4. Salto directo a [Forense de Intentos] prefiltrado por user_id
     fireEvent.click(screen.getByRole('button', { name: /Ver Intentos en Forense/i }));

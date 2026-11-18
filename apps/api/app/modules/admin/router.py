@@ -16,6 +16,7 @@ from app.modules.admin.schemas import (
     SecurityAuditResponse,
     UpdateUserBanRequest,
     UpdateUserRoleRequest,
+    UserDeleteResponse,
     UserModerationResponse,
 )
 from app.modules.admin.service import admin_service
@@ -138,4 +139,16 @@ async def update_user_ban(
         banned=payload.banned,
         admin_id=admin_user.id,
         reason=payload.reason,
+    )
+
+
+@router.delete("/users/{user_id}", response_model=UserDeleteResponse)
+async def delete_user_account(
+    user_id: str,
+    admin: AuthenticatedUser = Depends(require_admin),
+) -> UserDeleteResponse:
+    """Elimina definitivamente una cuenta de estudiante/prueba en Supabase Auth (cascada en DB)."""
+    return await admin_service.delete_user(
+        target_user_id=user_id,
+        admin_id=admin.id,
     )

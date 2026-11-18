@@ -302,6 +302,18 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     }
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    clearBanners();
+    try {
+      const res = await adminApi.deleteUser(userId);
+      setBannerSuccess(res.message);
+      await fetchUsers(usersAppliedFilters);
+    } catch (err) {
+      setBannerError(err instanceof Error ? err.message : 'No se pudo eliminar la cuenta.');
+      throw err;
+    }
+  };
+
   const handleOpenForensicReplay = async (attemptId: string) => {
     setSelectedAttemptId(attemptId);
     setReplayResult(null);
@@ -545,6 +557,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             onInspectAttempts={handleInspectUserAttempts}
             onModerateRole={handleModerateUserRole}
             onModerateBan={handleModerateUserBan}
+            onDeleteUser={handleDeleteUser}
           />
         )}
 

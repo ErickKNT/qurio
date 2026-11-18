@@ -11,8 +11,9 @@ import {
   CertificateRecord,
 } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { resolveApiBaseUrl } from '@/lib/apiBase';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = resolveApiBaseUrl();
 
 export const INITIAL_EXERCISE_STUB: Exercise = {
   id: 'e0000000-0000-0000-0000-000000000001',
@@ -161,9 +162,9 @@ export const api = {
   getQueryHistory(): QueryHistoryItem[] {
     try {
       const data = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
-      return data ? JSON.parse(data) : DEFAULT_QUERY_HISTORY;
+      return data ? JSON.parse(data) : [];
     } catch {
-      return DEFAULT_QUERY_HISTORY;
+      return [];
     }
   },
 

@@ -37,6 +37,7 @@ from app.modules.admin.schemas import (
     SecurityAuditEntry,
     SecurityAuditResponse,
     UserModerationResponse,
+    UserDeleteResponse,
 )
 from app.modules.curriculum.repository import exercise_repository
 from app.modules.runner.evaluator import evaluate_solution, row_to_comparable_tuple
@@ -632,6 +633,33 @@ class AdminService:
                 best_raw = raw
         return best_raw
 
+    async def _delete_supabase_auth_user(self, user_id: str) -> None:
+        headers = self._supabase_admin_headers()
+        if not headers:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="SUPABASE_SERVICE_ROLE_KEY no está configurada para eliminar usuarios.",
+            )
+        url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/admin/users/{user_id}"
+        try:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                resp = await client.delete(url, headers=headers)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Error eliminando usuario en Supabase Auth Admin: {exc}",
+            )
+        if resp.status_code == 404:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Usuario '{user_id}' no encontrado en Supabase Auth.",
+            )
+        if resp.status_code not in (200, 204):
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Supabase Auth Admin devolvió estado {resp.status_code} al eliminar usuario.",
+            )
+
     async def _fetch_supabase_auth_users(self) -> Optional[List[Dict[str, Any]]]:
         headers = self._supabase_admin_headers()
         if not headers:
@@ -1023,6 +1051,40 @@ class AdminService:
                 if banned
                 else f"Cuenta {target_user_id} reactivada correctamente."
             ),
+        )
+
+    async def delete_user(
+        self,
+        *,
+        target_user_id: str,
+        admin_id: str,
+    ) -> UserDeleteResponse:
+        if target_user_id == admin_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No puedes eliminar tu propia cuenta de administrador.",
+            )
+
+        existing_user = await self._get_supabase_auth_user(target_user_id)
+        existing_app_meta = existing_user.get("app_metadata") or {}
+        if existing_app_meta.get("role") == "admin":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se permite eliminar cuentas con rol administrador. Degrádala a estudiante primero si es necesario.",
+            )
+
+        target_email = existing_user.get("email") or "sin-correo"
+        logger.warning(
+            f"[ADMIN AUDIT] Admin {admin_id} eliminó definitivamente la cuenta {target_user_id} (email={target_email})."
+        )
+        await self._delete_supabase_auth_user(target_user_id)
+
+        return UserDeleteResponse(
+            user_id=target_user_id,
+            deleted=True,
+            deleted_at=datetime.now(timezone.utc).isoformat(),
+            deleted_by=admin_id,
+            message=f"Cuenta de prueba ({target_email}) eliminada definitivamente.",
         )
 
 

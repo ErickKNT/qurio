@@ -102,8 +102,6 @@ export function useCurriculumState({
         console.error('[useCurriculumState] Error cargando rutas:', err);
       });
 
-    setQueryHistory(api.getQueryHistory());
-
     return () => {
       cancelled = true;
     };
@@ -139,12 +137,16 @@ export function useCurriculumState({
           if (actRes.status === 'fulfilled') setDailyActivity(actRes.value);
           if (cntRes.status === 'fulfilled') setTotalAttemptsCount(cntRes.value);
           if (statsRes.status === 'fulfilled') setAttemptStats(statsRes.value);
-          if (histRes.status === 'fulfilled' && histRes.value && histRes.value.length > 0) {
-            setQueryHistory(histRes.value);
+          if (histRes.status === 'fulfilled') {
+            setQueryHistory(histRes.value ?? []);
+          } else {
+            setQueryHistory([]);
           }
         } else {
           setDailyActivity([]);
-          setTotalAttemptsCount(api.getQueryHistory().length);
+          const localHist = api.getQueryHistory();
+          setQueryHistory(localHist);
+          setTotalAttemptsCount(localHist.length);
           const stats = await persistence.getUserAttemptStats();
           if (!cancelled) {
             setAttemptStats(stats);

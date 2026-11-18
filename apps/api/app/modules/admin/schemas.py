@@ -237,3 +237,11 @@ class UserModerationResponse(BaseModel):
     updated_at: str
     updated_by: str
     message: str
+
+
+class UserDeleteResponse(BaseModel):
+    user_id: str
+    deleted: bool = True
+    deleted_at: str
+    deleted_by: str
+    message: str

@@ -1735,3 +1735,29 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Frontend (`npm.cmd --prefix apps/web test`):** **8 archivos / 49 pruebas aprobadas** en `3.67s` (incluyendo `admin.test.ts` sobre `<App />` y la nueva prueba de `DashboardHomeView` y `DesignSystemShowcase` en `uxUpgrade.test.tsx`).
   * **Build de producción (`npm.cmd --prefix apps/web run build`):** **2,300 módulos transformados limpiamente (0 errores TypeScript)** en `6.56s`, generando el chunk independiente `DesignSystemShowcase`.
 
+---
+
+### Entrada 59: Aislamiento de Historial en Cuentas Nuevas, Proxy LAN en Vite y Eliminación Segura de Cuentas de Prueba
+
+* **Fecha:** 18 de Noviembre de 2026
+* **Rama de Trabajo:** `main`
+* **Objetivo:**
+  1. Evitar que cuentas nuevas autenticadas hereden historial local de `localStorage` o datos de ejemplo (`DEFAULT_QUERY_HISTORY`) en su perfil.
+  2. Resolver errores `Failed to fetch` al acceder desde IPs de red local (ej. `http://172.18.96.95:5173/`) hacia la API FastAPI.
+  3. Habilitar la eliminación definitiva de cuentas de prueba desde `[Usuarios]` en Qurio Admin bajo guardias estrictas de seguridad.
+* **Entregables Implementados:**
+  1. **Aislamiento de Historial y Métricas de Perfil ([`useCurriculumState.ts`](../apps/web/src/hooks/useCurriculumState.ts), [`api.ts`](../apps/web/src/lib/api.ts), [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx)):**
+     * `useCurriculumState` asigna `setQueryHistory(histRes.value ?? [])` sin omitir arreglos vacíos en cuentas nuevas.
+     * `api.getQueryHistory()` retorna `[]` cuando no existen registros reales en `localStorage`.
+     * `UserProfileView` evita el fallback de métricas hacia `history.length` cuando `isCloudAuth === true`.
+  2. **Proxy de Desarrollo para Acceso en Red ([`vite.config.ts`](../apps/web/vite.config.ts), [`apiBase.ts`](../apps/web/src/lib/apiBase.ts), [`adminApi.ts`](../apps/web/src/lib/adminApi.ts)):**
+     * Añadido proxy `/api` $\to$ `http://127.0.0.1:8000` en Vite y helper compartido `resolveApiBaseUrl()` para operar en el mismo origen durante `vite dev` sin bloqueos CORS ni referencias a `localhost` desde otros dispositivos.
+  3. **Eliminación Segura de Cuentas de Prueba (`DELETE /api/v1/admin/users/{user_id}`):**
+     * **Backend ([`schemas.py`](../apps/api/app/modules/admin/schemas.py), [`service.py`](../apps/api/app/modules/admin/service.py), [`router.py`](../apps/api/app/modules/admin/router.py)):** Endpoint protegido por `require_admin` que bloquea auto-eliminación (`400`), bloquea eliminar cuentas con rol `admin` (`400`), registra auditoría en log y ejecuta `DELETE` en Supabase Auth Admin.
+     * **Frontend ([`UserModerationDrawer.tsx`](../apps/web/src/components/molecules/UserModerationDrawer/UserModerationDrawer.tsx), [`AdminUsersPanel.tsx`](../apps/web/src/components/organisms/AdminUsersPanel/AdminUsersPanel.tsx), [`AdminDashboardView.tsx`](../apps/web/src/components/organisms/AdminDashboardView/AdminDashboardView.tsx)):** Confirmación de alta fricción que exige escribir el correo o identificador exacto de la cuenta antes de habilitar el borrado.
+* **Verificación:**
+  * **Backend (`pytest apps/api/tests/test_admin.py -k "delete_user_account or moderation" -v`):** **3/3 pruebas aprobadas** en `4.32s`.
+  * **Frontend (`npm.cmd --prefix apps/web test`):** **8 archivos / 49 pruebas aprobadas** en `4.90s`.
+  * **Build (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,301 módulos**, 0 errores) en `8.15s`.
+
+

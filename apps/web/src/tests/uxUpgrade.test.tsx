@@ -294,7 +294,7 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
         profile={null}
         activeLearningData={{
           activeTrack: FALLBACK_TRACKS[0],
-          activeModule: FALLBACK_TRACKS[0].modules[0],
+          activeModule: FALLBACK_TRACKS[0]?.modules?.[0],
           nextExercise: FALLBACK_EXERCISES[0],
           exerciseNumberInTrack: 1,
           trackTotal: 24,

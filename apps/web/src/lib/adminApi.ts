@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { resolveApiBaseUrl } from '@/lib/apiBase';
 import {
   AdminAttemptsPageResponse,
   AdminCancelQueryResponse,
@@ -9,12 +10,13 @@ import {
   AdminPoolRecycleResponse,
   AdminReplayAttemptResponse,
   AdminSecurityAuditResponse,
+  AdminUserDeleteResponse,
   AdminUserModerationResponse,
   AdminUserRole,
   AdminUsersPageResponse,
 } from '@/types/admin';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = resolveApiBaseUrl();
 
 export class AdminApiError extends Error {
   constructor(message: string, public readonly status?: number) {
@@ -142,6 +144,12 @@ export const adminApi = {
     return requestAdminJson<AdminUserModerationResponse>(`/users/${userId}/ban`, {
       method: 'POST',
       body: JSON.stringify({ banned, reason }),
+    });
+  },
+
+  deleteUser(userId: string): Promise<AdminUserDeleteResponse> {
+    return requestAdminJson<AdminUserDeleteResponse>(`/users/${userId}`, {
+      method: 'DELETE',
     });
   },
 };

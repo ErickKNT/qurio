@@ -201,10 +201,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
   // Métricas derivadas de intentos reales
   const effectiveStats = useMemo<AttemptStats>(() => {
-    if (attemptStats && attemptStats.totalAttempts > 0) {
+    if (attemptStats && (attemptStats.totalAttempts > 0 || isCloudAuth)) {
       return attemptStats;
     }
-    if (history.length > 0) {
+    if (!isCloudAuth && history.length > 0) {
       let passedAttempts = 0;
       let fastAttemptsUnder50ms = 0;
       for (const h of history) {
@@ -219,12 +219,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
       };
     }
     return DEFAULT_ATTEMPT_STATS;
-  }, [attemptStats, history]);
+  }, [attemptStats, history, isCloudAuth]);
 
-  const effectiveAttemptsTotal =
-    totalAttemptsCount !== undefined && totalAttemptsCount > 0
-      ? totalAttemptsCount
-      : effectiveStats.totalAttempts || history.length;
+  const effectiveAttemptsTotal = isCloudAuth
+    ? (totalAttemptsCount ?? effectiveStats.totalAttempts)
+    : (totalAttemptsCount !== undefined && totalAttemptsCount > 0
+        ? totalAttemptsCount
+        : effectiveStats.totalAttempts || history.length);
 
   const completedTracksCount = tracks.filter(
     (tr) => (tr.total_exercises || 0) > 0 && (tr.completed_exercises ?? 0) >= (tr.total_exercises || 1)
