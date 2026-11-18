@@ -46,6 +46,10 @@ const SKILL_META: Record<number, SkillNodeMeta> = {
   10: { moduleNumber: 10, title: 'Lógica Condicional', sqlTags: 'CASE WHEN • Pivoteo', prereqs: [7, 8] },
   11: { moduleNumber: 11, title: 'CTEs Modulares', sqlTags: 'WITH • Encadenadas', prereqs: [9, 10] },
   12: { moduleNumber: 12, title: 'Funciones de Ventana', sqlTags: 'ROW_NUMBER • DENSE_RANK • LAG', prereqs: [11] },
+  13: { moduleNumber: 13, title: 'Inserción DML', sqlTags: 'INSERT • VALUES • RETURNING', prereqs: [12] },
+  14: { moduleNumber: 14, title: 'Mutación Segura', sqlTags: 'UPDATE • FROM • DELETE • WHERE', prereqs: [13] },
+  15: { moduleNumber: 15, title: 'Diseño de Tablas', sqlTags: 'CREATE • ALTER • DROP • CHECK', prereqs: [13] },
+  16: { moduleNumber: 16, title: 'Índices y Tuning', sqlTags: 'CREATE INDEX • UNIQUE • PARTIAL', prereqs: [14, 15] },
 };
 
 // Bandas verticales (arriba → abajo) con alineación natural por etapa formativa
@@ -80,6 +84,14 @@ const SKILL_ZONES: {
     accentColor: '#34D399',
     borderTint: 'border-emerald/25 bg-emerald/[0.03]',
     rows: [[9, 10], [11], [12]],
+  },
+  {
+    trackId: 'data-manipulation-ddl',
+    zoneLabel: 'Etapa 4 • Ingeniería y Manipulación de Datos',
+    levelLabel: 'Intermedio → Avanzado',
+    accentColor: '#F59E0B',
+    borderTint: 'border-amber-streak/25 bg-amber-streak/[0.03]',
+    rows: [[13], [14, 15], [16]],
   },
 ];
 
@@ -284,7 +296,7 @@ export const LearningRoadmapMap: React.FC<LearningRoadmapMapProps> = ({
               Mapa Curricular Interactivo
             </Badge>
             <span className="text-[11px] font-mono text-content-muted">
-              12 Módulos • {exercises.length} Retos
+              {moduleEntries.length} Módulos • {exercises.length} Retos
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-bold text-content-primary tracking-tight">
@@ -503,7 +515,7 @@ export const LearningRoadmapMap: React.FC<LearningRoadmapMapProps> = ({
                             {meta.prereqs.length > 0 && (
                               <span className="hidden sm:block absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-surface border border-border-subtle" />
                             )}
-                            {num < 12 && (
+                            {num < 16 && (
                               <span className="hidden sm:block absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-surface border border-border-subtle" />
                             )}
 
@@ -575,7 +587,7 @@ export const LearningRoadmapMap: React.FC<LearningRoadmapMapProps> = ({
       {/* MODO ALTERNATIVO: CAMINO POR ETAPAS (SECUENCIAL CONECTADO)           */}
       {/* ==================================================================== */}
       {viewMode === 'stages' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 animate-fadeIn">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 animate-fadeIn">
           {tracks.map((track, trackIdx) => {
             const trackEntries = moduleEntries.filter((e) => e.track.id === track.id);
             const trackCompleted = trackEntries.reduce((acc, e) => acc + e.completedCount, 0);
@@ -592,7 +604,7 @@ export const LearningRoadmapMap: React.FC<LearningRoadmapMapProps> = ({
                 )}
               >
                 {trackIdx < tracks.length - 1 && (
-                  <div className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-surface border border-border-subtle items-center justify-center text-cyan-accent shadow-sm">
+                  <div className="hidden xl:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-surface border border-border-subtle items-center justify-center text-cyan-accent shadow-sm">
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 )}

@@ -14,6 +14,7 @@ import { ExerciseSpecPanel } from '@/components/organisms/ExerciseSpecPanel/Exer
 import { UserProfileView } from '@/components/organisms/UserProfileView/UserProfileView';
 import { DashboardHomeView } from '@/components/organisms/DashboardHomeView/DashboardHomeView';
 import { DesignSystemShowcase } from '@/components/organisms/DesignSystemShowcase/DesignSystemShowcase';
+import { TracksView } from '@/components/organisms/TracksView/TracksView';
 import { FALLBACK_EXERCISES, FALLBACK_TRACKS } from '@/lib/fallbackCurriculum';
 import { ACHIEVEMENTS_CATALOG, ECOMMERCE_TABLES_SCHEMA } from '@/lib/api';
 import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
@@ -329,5 +330,31 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     const emailInput = screen.getByLabelText(/Correo Electrónico de Registro/i);
     fireEvent.change(emailInput, { target: { value: 'invalido' } });
     expect(screen.getByText(/formato de correo electrónico válido/i)).toBeInTheDocument();
+  });
+
+  it('TracksView y LearningRoadmapMap despliegan las 4 rutas en grid 2x2 y los 16 módulos en el mapa curricular interactivo', () => {
+    const { container } = render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        onSelectExercise={() => {}}
+      />
+    );
+
+    expect(screen.getByText('4 Rutas')).toBeInTheDocument();
+    expect(screen.getByText('16 Módulos • 76 Retos')).toBeInTheDocument();
+    expect(screen.getByText(/Etapa 4 • Ingeniería y Manipulación de Datos/i)).toBeInTheDocument();
+    expect(screen.getByText('M13')).toBeInTheDocument();
+    expect(screen.getByText('M14')).toBeInTheDocument();
+    expect(screen.getByText('M15')).toBeInTheDocument();
+    expect(screen.getByText('M16')).toBeInTheDocument();
+
+    // Verificar grid 2x2 simétrico en las tarjetas de ruta
+    const tracksGrid = container.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.gap-5');
+    expect(tracksGrid).not.toBeNull();
+
+    // Cambiar al modo Camino por Etapas y verificar que renderiza las 4 etapas
+    fireEvent.click(screen.getByRole('button', { name: /Camino por Etapas/i }));
+    expect(screen.getByText(/Etapa 4: Ingeniería y Manipulación de Datos/i)).toBeInTheDocument();
   });
 });
