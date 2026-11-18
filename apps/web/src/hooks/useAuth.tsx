@@ -28,7 +28,7 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string; message?: string; isDemo?: boolean }>;
   updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; error?: string } | void>;
   refreshProfile: () => void;
 }
 
@@ -74,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           username: data.username || oauthUsername,
           full_name: data.display_name || oauthDisplayName,
           avatar_url: data.avatar_url || oauthAvatar,
+          bio: data.bio || '',
           total_xp: data.xp ?? 0,
           current_level: data.level ?? 1,
           current_streak_days: data.current_streak_days ?? 0,
@@ -82,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           created_at: data.created_at || new Date().toISOString(),
         };
         setProfile(loadedProfile);
-        persistence.updateProfile(userId, loadedProfile);
+        persistence.updateProfile(userId, loadedProfile, false);
         return;
       }
 
@@ -125,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           username: created?.username || username,
           full_name: created?.display_name || displayName,
           avatar_url: created?.avatar_url || avatarUrl,
+          bio: created?.bio || '',
           total_xp: created?.xp ?? 0,
           current_level: created?.level ?? 1,
           current_streak_days: created?.current_streak_days ?? 1,
@@ -134,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         setProfile(finalProfile);
-        persistence.updateProfile(userId, finalProfile);
+        persistence.updateProfile(userId, finalProfile, false);
       }
     } catch (err: any) {
       console.warn('Error al sincronizar perfil de Supabase:', err);
@@ -491,10 +493,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateProfileState = useCallback(async (updates: Partial<UserProfile>) => {
-    if (!profile) return;
+    if (!profile) return { success: false, error: 'Sesión no inicializada' };
+    const result = await persistence.updateProfile(profile.id, updates, true);
+    if (!result.success) {
+      return result;
+    }
     const updated = { ...profile, ...updates };
     setProfile(updated);
-    await persistence.updateProfile(profile.id, updates);
+    return { success: true };
   }, [profile]);
 
   const isAdmin = useMemo(

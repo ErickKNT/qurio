@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 16: Constancias Verificables en PDF/QR, LinkedIn (`/verify/:code`), Rediseño *Terminal Glow Minimal* y Controles QA Admin — Concluida y Fusionada en `main`**  
-* **Próxima Fase:** **Ejecución de `05_certificates.sql` en Supabase Cloud + Planificación de Ruta 4 (DDL & DML en PostgreSQL Transaccional)**  
-* **Rama Git Activa:** `main` (merge verificado de `feat/verifiable-certificates-pdf-linkedin`)  
+* **Fase Actual:** **Fase 17: Rediseño Bento del Perfil de Usuario, Heatmap Anual 52 Semanas, Precisión SQL Real & Edición CLS — Implementada en Rama Aislada**  
+* **Próxima Fase:** **Validación visual en navegador + Merge de `feat/profile-bento-redesign` hacia `main` + Ejecución de `05_certificates.sql` en Supabase Cloud**  
+* **Rama Git Activa:** `feat/profile-bento-redesign` (bifurcada desde `main`)  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
   * Contenedor Docker Sandbox (`qurio-postgres-sandbox` en `localhost:5433`): Activo y saludable (`healthy`).
   * API FastAPI (`apps/api`, `uvicorn` en `http://127.0.0.1:8000`): **100% Verificado** — Suite de **96 pruebas automatizadas pasando limpiamente en 93.28s** en `apps/api/tests/` (`85` existentes + `11` nuevas en `test_admin.py`).
@@ -40,6 +40,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **12** | **Consola de Administración, Live Ops y Observabilidad** | ✅ Implementada (Aislada) | `feat/phase-12-admin-console` | RBAC criptográfico `app_metadata.role`, API `/admin/*` (Live Ops, `pg_stat_activity`, Replay Forense, Auditoría AST, Killswitches), UI Atomic Design lazy en `vendor-admin` y code splitting base (`114.72 kB`). |
 | **15** | **Evolución UX, Consola SQL, Diagrama ER & Guías Modulares** | ✅ Concluida | `main` (vía `feat/ux-pedagogy-and-er-upgrade`) | Drawer móvil + tabs en Playground, modo dual Probar/Enviar, Playground multi-tab + Historial, Diagrama ER interactivo (`10` tablas), `12` guías teóricas con micro-diagramas, Referencia SQL + `⌘K`, OAuth GitHub y Constancias. |
 | **16** | **Constancias Verificables PDF/QR, LinkedIn & Modo QA Admin** | ✅ Concluida | `main` (vía `feat/verifiable-certificates-pdf-linkedin`) | Emisión idempotente (`user_certificates`), PDF vectorial A4 oscuro con QR (`reportlab`), enlace público `/verify/:code`, QR SVG, *Añadir a LinkedIn*, UI *Terminal Glow Minimal* y desbloqueo QA Admin (`app_metadata.role === 'admin'`). |
+| **17** | **Rediseño Bento del Perfil de Usuario & Métricas Reales** | ✅ Implementada (Aislada) | `feat/profile-bento-redesign` | Banner heroico, edición CLS (`display_name`, `bio`, `avatar_url`), heatmap anual 52 semanas (`user_daily_activity` 365d), rutas activas, vitrina de insignias, precisión SQL real y certificaciones. |
 
 ---
 
@@ -1687,3 +1688,27 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   2. **PDF Vectorial Oscuro & QR SVG ([`pdf_generator.py`](../apps/api/app/modules/certificates/pdf_generator.py), [`service.py`](../apps/api/app/modules/certificates/service.py), [`router.py`](../apps/api/app/modules/certificates/router.py)):**
      * PDF A4 apaisado rediseñado con lienzo `#080D1D`, retícula técnica punteada, corner brackets, 4 métricas, firmas vectoriales Bézier, sello orbital con `QrCodeWidget` escaneable real sobre placa de alto contraste y hash `SHA-256` determinístico.
      * Nuevo endpoint público `GET /api/v1/certificates/{verification_code}/qr.svg` usando `reportlab.graphics.renderSVG`.
+
+
+---
+
+### Entrada 57: Rediseño Bento del Perfil de Usuario (`qurio_perfil_de_usuario`), Heatmap 52 Semanas y Edición CLS
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/profile-bento-redesign` (bifurcada desde `main`)
+* **Objetivo:** Adoptar el layout Bento del diseño [`qurio_perfil_de_usuario/code.html`](stitch_qurio_interactive_sql_platform/stitch_qurio_interactive_sql_platform/qurio_perfil_de_usuario/code.html) manteniendo compatibilidad total con temas claro/oscuro, reglas Atomic Design Pragmático y métricas 100% reales (cero datos ficticios).
+* **Entregables Implementados:**
+  1. **Capa de Persistencia y Seguridad CLS ([`types/index.ts`](../apps/web/src/types/index.ts), [`persistence.ts`](../apps/web/src/lib/persistence.ts), [`useAuth.tsx`](../apps/web/src/hooks/useAuth.tsx)):**
+     * Corrección de `updateProfile` para enviar a Supabase únicamente columnas con permiso `UPDATE` para `authenticated` (`display_name`, `avatar_url`, `bio`, `updated_at`), evitando bloqueos CLS sobre `username`.
+     * Ampliación de `getUserDailyActivity` a **365 días** (`daysWindow = 365`) y nuevo `getUserAttemptStats` sobre `exercise_attempts` (`PASSED`, `<50ms`, `hints_used == 0`).
+  2. **Nuevas Moléculas Atomic Design (`apps/web/src/components/molecules/`):**
+     * [`EditProfileModal.tsx`](../apps/web/src/components/molecules/EditProfileModal/EditProfileModal.tsx): edición validada inline de nombre visible, bio profesional y URL de avatar con `@username` de solo lectura.
+     * [`ProfileBadgesShowcase.tsx`](../apps/web/src/components/molecules/ProfileBadgesShowcase/ProfileBadgesShowcase.tsx): vitrina de 6 insignias destacadas con enlace a `/achievements`.
+     * [`ProfilePrecisionCard.tsx`](../apps/web/src/components/molecules/ProfilePrecisionCard/ProfilePrecisionCard.tsx): porcentaje de éxito `PASSED`, velocidad `<50ms` y resolución sin pistas con grado calculado.
+     * [`QueryHistoryModal.tsx`](../apps/web/src/components/molecules/QueryHistoryModal/QueryHistoryModal.tsx): componente compartido `QueryHistoryRow` + modal buscable con filtro `Todas / Solo Exitosas` y paginación real de 10 en servidor (`getUserAttemptsPage` con `.range()`).
+  3. **Regla Permanente de Ingeniería ([`critical-sparring.md`](../.agents/rules/critical-sparring.md) & [`AGENTS.md`](../AGENTS.md)):**
+     * Formalización de criterio técnico crítico (cero complacencia) antes de implementar sugerencias de diseño o arquitectura.
+  4. **Rediseño de [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx) y Conexión en [`App.tsx`](../apps/web/src/App.tsx):**
+     * Banner heroico Bento + 4 KPIs reales + grid `8/4` (mapa de calor anual **52 semanas**, rutas en progreso con salto directo a `Continuar`/`Ver Constancia`, historial compacto **Top 5** con acceso a historial completo, insignias, precisión SQL y sección `#cert-section` con tarjetas emitidas, descarga PDF y botones **QA Admin**).
+* **Verificación:**
+  * **Frontend (`npm.cmd test`):** **8 archivos / 47 pruebas aprobadas** en `3.04s` (incluyendo prueba de heatmap de 364 celdas, métricas de precisión y validación inline de `EditProfileModal` en [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).

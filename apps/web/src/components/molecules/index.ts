@@ -13,3 +13,7 @@ export * from './RevealSolutionModal/RevealSolutionModal';
 export * from './PedagogyPillarsCard/PedagogyPillarsCard';
 export * from './MethodologyModal/MethodologyModal';
 export * from './SqlTransformDiagram/SqlTransformDiagram';
+export * from './EditProfileModal/EditProfileModal';
+export * from './ProfileBadgesShowcase/ProfileBadgesShowcase';
+export * from './ProfilePrecisionCard/ProfilePrecisionCard';
+export * from './QueryHistoryModal/QueryHistoryModal';

@@ -68,3 +68,6 @@ Toda la interfaz visual de Qurio en React debe estructurarse obligatoriamente ba
 * **Actualización del Grafo de Conocimiento (Graphify — Obligatorio):**
   * Ante cada cambio grande, cierre de fase, modificación arquitectónica relevante o adición sustancial de archivos/ejercicios, se debe actualizar obligatoriamente el grafo de conocimiento del proyecto ejecutando `python -m graphify update .`.
   * Esto preserva la sincronización del mapa de dependencias, las comunidades de código y los artefactos de análisis en `graphify-out/` (`graph.json`, `graph.html`, `GRAPH_REPORT.md`).
+* **Criterio Técnico Crítico / Cero Complacencia (Obligatorio):**
+  * Prohibido dar la razón por defecto al usuario o validar propuestas de diseño/arquitectura por inercia.
+  * Antes de implementar una sugerencia del usuario, evaluar críticamente sus desventajas, fricciones de UX, costos de mantenimiento o brechas frente al código real; cuestionar activamente la propuesta y plantear alternativas concretas mejor fundamentadas cuando existan, ver también [`.agents/rules/critical-sparring.md`](file:///c:/Desarrollo/Qurio/.agents/rules/critical-sparring.md).
