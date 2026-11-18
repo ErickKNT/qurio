@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>«Aprende SQL. Piensa en queries.»</strong><br />
-  Plataforma de alta fidelidad técnica para dominar SQL moderno mediante práctica activa contra una base de datos relacional real en un entorno sandbox aislado y seguro.
+  Plataforma de alta fidelidad técnica para dominar SQL moderno mediante práctica activa contra PostgreSQL 16 real en un sandbox aislado, con evaluación semántica, guías visuales y constancias verificables en PDF/QR.
 </p>
 
 <p align="center">
@@ -17,8 +17,8 @@
   <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38BDF8?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 3.4" />
   <img src="https://img.shields.io/badge/Docker-Sandbox-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Sandbox" />
-  <img src="https://img.shields.io/badge/Backend_Pytest-102%2F102%20Passing-22C55E?style=for-the-badge" alt="Backend Pytest 102/102 Passing" />
-  <img src="https://img.shields.io/badge/Frontend_Vitest-35%2F35%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 35/35 Passing" />
+  <img src="https://img.shields.io/badge/Backend_Pytest-105%2F105%20Passing-22C55E?style=for-the-badge" alt="Backend Pytest 105/105 Passing" />
+  <img src="https://img.shields.io/badge/Frontend_Vitest-46%2F46%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 46/46 Passing" />
   <img src="https://img.shields.io/badge/Curr%C3%ADculo-60%20Retos%20%2F%20180%20Pistas-6366F1?style=for-the-badge" alt="60 Retos SQL" />
   <img src="https://img.shields.io/badge/Security-Hardened%20(RLS%20%2B%20CLS%20%2B%20RPC)-059669?style=for-the-badge" alt="Security Hardened" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=for-the-badge" alt="MIT License" />
@@ -39,8 +39,8 @@
 - [Instalación y Puesta en Marcha Local](#-instalación-y-puesta-en-marcha-local)
   - [Prerrequisitos](#prerrequisitos)
   - [1. Clonar el Repositorio](#1-clonar-el-repositorio)
-  - [2. Iniciar el Sandbox PostgreSQL (Docker)](#2-iniciar-el-sandbox-postgresql-docker)
-  - [3. Configurar y Ejecutar la API (FastAPI)](#3-configurar-y-ejecutar-la-api-fastapi)
+  - [2. Iniciar Contenedores Sandbox y API (Docker)](#2-iniciar-contenedores-sandbox-y-api-docker)
+  - [3. Ejecutar la API manualmente con Python (Opcional)](#3-ejecutar-la-api-manualmente-con-python-opcional)
   - [4. Configurar y Ejecutar el Frontend (React + Vite)](#4-configurar-y-ejecutar-el-frontend-react--vite)
   - [5. Ejecutar la Suite de Pruebas Automatizadas](#5-ejecutar-la-suite-de-pruebas-automatizadas)
 - [Variables de Entorno](#-variables-de-entorno)
@@ -56,74 +56,66 @@ La mayoría de las plataformas de aprendizaje de SQL caen en dos extremos: o son
 **Qurio** fue concebido bajo una premisa fundamental: **el usuario debe escribir código SQL real contra un motor PostgreSQL real.**
 
 - **Evaluador Semántico de Conjuntos:** No compara el texto de tu consulta. Ejecuta tu código en el sandbox y compara el **conjunto relacional resultante** (filas, columnas, tipos de datos, cardinalidad, multiconjuntos con `Counter` y comprobación estricta de orden cuando se especifica). Si tu lógica arroja el conjunto de datos esperado, tu solución es aprobada, sin importar si usaste mayúsculas, minúsculas o alias alternativos.
-- **Entorno Aislado e Inmune:** Cada consulta enviada se ejecuta en un contenedor Docker con PostgreSQL 16 bajo el rol restringido `readonly_student`, con `statement_timeout = 2000ms`, transacciones de solo lectura y un sanitizador de seguridad de doble capa en FastAPI.
-- **Experiencia de Estación de Trabajo:** Diseñado para sentirse como una herramienta profesional (estilo DataGrip, TablePlus o VS Code), no como un juguete interactivo infantil.
+- **Entorno Aislado e Inmune:** Cada consulta enviada se ejecuta en un contenedor Docker con PostgreSQL 16 bajo el rol restringido `readonly_student`, con `statement_timeout = 2000ms`, transacciones de solo lectura y un sanitizador de seguridad AST (SQLGlot) + Regex en FastAPI.
+- **Experiencia de Estación de Trabajo:** Diseñado para sentirse como una herramienta profesional (estilo DataGrip, TablePlus o VS Code), con soporte real para escritorio, tablet y móvil.
 
 ---
 
 ## ✨ Características Principales
 
-### ⚡ IDE de Estación de Trabajo (Monaco Editor)
+### ⚡ IDE de Estación de Trabajo (Monaco Editor) & Modo Dual Probar / Enviar
 - Integración completa con el motor de **Monaco Editor** (el núcleo de VS Code) y temas personalizados `qurio-dark` y `qurio-light`.
-- Autocompletado inteligente de SQL PostgreSQL (palabras clave, tablas y columnas reales del esquema y aliases).
+- Autocompletado inteligente de SQL PostgreSQL (palabras clave, tablas, columnas reales del esquema y aliases).
 - Tipografía técnica `JetBrains Mono` con **ligaduras desactivadas** (`fontLigatures: false` y `font-variant-ligatures: none`), garantizando que operadores como `>=`, `<=`, `!=` y `<>` se muestren literalmente tal como aparecen en el teclado.
-- **Formateador jerárquico SQL (`sql-formatter`):** reestructura consultas bajo estilo PostgreSQL (palabras clave en mayúsculas, saltos por cláusula raíz e indentación a 2 espacios) mediante botón en barra o atajo **`Shift + Alt + F`**.
-- Atajo de ejecución inmediata **`⌘ + Enter`** (macOS) o **`Ctrl + Enter`** (Windows/Linux), guardado automático de borradores por ejercicio y botón de restablecimiento.
+- **Resaltado Sintáctico de SQL en Consignas y Guías:** Tanto en las tarjetas de ejercicio, pistas y solución oficial como en las guías teóricas, todas las palabras reservadas y cláusulas SQL destacan automáticamente en `JetBrains Mono` (`formatSqlProse` / `highlightSqlBlock`).
+- **Flujo Dual sin Penalización:**
+  - **`Probar` (`⌘/Ctrl + Shift + Enter`):** Ejecuta consultas exploratorias libres sobre el Sandbox (`/api/v1/playground/execute`) sin evaluar ni sumar intentos fallidos.
+  - **`Enviar Solución` (`⌘/Ctrl + Enter`):** Ejecuta la evaluación semántica completa contra la solución oficial.
+- **Formateador jerárquico SQL (`sql-formatter`):** reestructura consultas bajo estilo PostgreSQL mediante botón o atajo **`Shift + Alt + F`**.
 
-### 🌓 Soporte Nativo de Tema Claro y Oscuro
-- Sistema reactivo de tokens de diseño con Tailwind CSS y variables CSS dinámicas en `:root` y `.dark`.
-- Conmutador instantáneo en la cabecera superior y en la barra de herramientas del espacio de trabajo.
-- Persistencia automática de la preferencia en `localStorage` (`qurio_theme`) y detección inteligente de la preferencia del sistema operativo (`prefers-color-scheme`).
-- Script anti-parpadeo (anti-FOUC) integrado en el encabezado HTML para una carga limpia y fluida.
-
-### 🔬 SQL Playground Libre
-- Entorno de experimentación interactivo sin restricciones de ejercicio para escribir cualquier consulta `SELECT`.
-- Explorador lateral de esquemas en vivo con las **10 tablas relacionales** de `ecommerce_sandbox` (`Ecommerce_Production_DB`), recuento de filas y claves primarias/foráneas.
-- Inserción de plantillas rápidas (*Top 5 Clientes Recientes*, *Stock y Valor de Inventario*, *Pedidos por Estado*, *Clientes sin Compras*).
-- Consulta express en un clic (`SELECT * FROM tabla LIMIT 10`) y métricas de latencia de ejecución en milisegundos reales.
+### 🔬 SQL Playground Multi-Tab, Diagrama ER & Referencia `⌘K`
+- **Playground Multi-Pestaña e Historial:** Hasta **6 pestañas simultáneas** persistentes (`localStorage`), previsualización de tablas en 1 clic (`SELECT * FROM ... LIMIT 50;`), plantillas rápidas y pestaña integrada de **Historial**.
+- **Diagrama Entidad-Relación Interactivo (`ErDiagramModal`):** Visualización de las **10 tablas canónicas** y **9 relaciones FK** con conectores SVG curvos, zoom ajustable, resaltado de relaciones y salto directo al Playground.
+- **Referencia Rápida PostgreSQL 16 (`/reference`) + Paleta `⌘K`:** Catálogo buscable de sintaxis (incluida referencia informativa DDL/DML) y paleta de comandos rápida (`⌘K` / `Ctrl+K`) para saltar entre retos, guías, tablas y sintaxis.
+- **Responsividad Móvil Real:** Barra lateral en drawer deslizable, pestañas móviles dedicada en Playground (`Tablas`, `Editor SQL`, `Resultados`) y salto automático a resultados.
 
 ### 📊 Visualizador Tabular DataGrid Redimensionable
-- Cuadrícula de datos interactiva con numeración de filas, visualización de tipos de datos inferidos (`VARCHAR`, `INT4`, `DECIMAL`, `TIMESTAMPTZ`, `BOOL`) y chips explícitos para valores `NULL`.
-- **Panel ergonómico redimensionable:** divisor horizontal arrastrable entre el editor y los resultados (`28%`–`78%`, guardado en `localStorage` con doble clic para restablecer) y botón **Expandir / Restaurar** (`76%`) para inspeccionar tablas extensas con comodidad.
-- Visualizador de discrepancias semánticas (`DiffResult`) y sincronización automática para mostrar la tabla de resultados tras ejecuciones exitosas.
-- Consola de terminal para visualización limpia de errores de PostgreSQL o bloqueos de seguridad AST.
+- Cuadrícula de datos interactiva con numeración de filas, tipos de datos inferidos (`VARCHAR`, `INT4`, `DECIMAL`, `TIMESTAMPTZ`, `BOOL`) y chips explícitos para valores `NULL`.
+- **Panel ergonómico redimensionable:** divisor horizontal arrastrable entre el editor y los resultados (`28%`–`78%`, persistido en `localStorage`) y botón **Expandir / Restaurar** (`76%`).
+- Visualizador de discrepancias semánticas (`DiffResult`) y consola de terminal para errores de PostgreSQL o bloqueos AST.
 
-### 🗺️ Mapa Visual Curricular, Pedagogía Basada en Evidencia y 60 Retos Anti-Spoilers
-El plan de estudios de Qurio está organizado en **3 rutas formativas (12 módulos, 60 retos y 180 pistas progresivas)** con consignas redactadas en lenguaje de negocio cotidiano bajo los estándares documentados en [`docs/pedagogia/`](./docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md) y la regla permanente [`.agents/rules/sql-pedagogy.md`](./.agents/rules/sql-pedagogy.md):
-1. **Fundamentos de SQL (`24` Retos - `40%`):** `SELECT`, `WHERE`, operadores lógicos, ordenamiento con `ORDER BY`, agregaciones (`COUNT`, `SUM`, `AVG`), agrupamiento con `GROUP BY` y filtrado posterior con `HAVING`.
-2. **SQL Relacional (`20` Retos - `33%`):** Claves foráneas, `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, operaciones de conjuntos (`UNION`, `UNION ALL`, `INTERSECT`, `EXCEPT`) y subconsultas correlacionadas / `NOT EXISTS`.
-3. **Consultas Avanzadas (`16` Retos - `27%`):** Funciones de ventana (`ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LEAD`, `LAG`, agregados con `OVER`), expresiones de tabla comunes (`WITH` / CTEs), lógica condicional con `CASE WHEN` y consultas analíticas de negocio.
+### 🗺️ Mapa Visual Curricular, 12 Guías Teóricas Modulares & 60 Retos Anti-Spoilers
+El currículo oficial consta de **3 rutas formativas (12 módulos, 60 retos y 180 pistas progresivas)** bajo los estándares documentados en [`docs/pedagogia/`](./docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md) y [`.agents/rules/sql-pedagogy.md`](./.agents/rules/sql-pedagogy.md):
+1. **Fundamentos de SQL (`24` Retos - `40%`):** `SELECT`, `WHERE`, operadores lógicos, `ORDER BY`, agregaciones (`COUNT`, `SUM`, `AVG`), `GROUP BY` y `HAVING`.
+2. **SQL Relacional (`20` Retos - `33%`):** Claves foráneas, `INNER JOIN`, `LEFT JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `SELF JOIN`, operaciones de conjunto (`UNION`, `INTERSECT`, `EXCEPT`) y `COALESCE`.
+3. **Consultas Avanzadas (`16` Retos - `27%`):** Subconsultas correlacionadas (`EXISTS` / `NOT EXISTS`), `CASE WHEN`, CTEs con `WITH` y funciones analíticas de ventana (`ROW_NUMBER`, `DENSE_RANK`, `SUM OVER`, `LAG`).
 
-- **Mapa Curricular Dual (`LearningRoadmapMap`):** Selector interactivo entre **Árbol de Habilidades** (circuito top-down de 3 niveles con rutas SVG conectadas dinámicamente y resaltado de cadena de prerrequisitos) y **Camino por Etapas**, conectado al panel inferior de estaciones (`#01..#60`) con salto directo al IDE.
-- **Metodología Visible y Basada en Evidencia:** Banda informativa (`PedagogyPillarsCard`) y modal técnico-pedagógico (`MethodologyModal`) que explican la *Teoría de Carga Cognitiva* (Sweller), el andamiaje decreciente en 3 capas (*Nivel 1: Enfoque Conceptual*, *Nivel 2: Estructura SQL*, *Nivel 3: Plantilla Guiada*), la taxonomía de errores semánticos reales y la arquitectura en PostgreSQL 16 Sandbox.
-- **Pedagogía Libre de Spoilers:** Tanto los objetivos interactivos como los **60 bloques** *"Concepto Clave & Sintaxis"* utilizan plantillas abstractas (`columna_1`, `nombre_tabla`, `valor_umbral`) y notas técnicas de comportamiento del motor sin revelar la consulta solución.
-- **Revelación Controlada de Solución Oficial:** Tras acumular al menos **2 intentos fallidos**, el estudiante puede desbloquear la solución oficial mediante `RevealSolutionModal` (`/api/v1/exercises/{id}/reveal-solution`), con registro de telemetría pedagógica y acreditación estricta de **0 XP** cuando se resuelve tras verla.
-- **Modo Prueba para Invitados y Conversión:** Los visitantes pueden resolver los 3 retos iniciales del Módulo 1 con XP de prueba y sincronizar su progreso automáticamente al crear cuenta o iniciar sesión.
+- **12 Guías Teóricas con Micro-Diagramas (`ModuleGuideModal`):** Explicación del orden lógico de ejecución en PostgreSQL 16, diagramas `Entrada → Cláusula → Salida`, ejemplos ilustrativos libres de spoilers y errores frecuentes por módulo.
+- **Mapa Curricular Dual (`LearningRoadmapMap`):** Selector entre **Árbol de Habilidades** y **Camino por Etapas** conectado al panel de estaciones (`#01..#60`).
+- **Revelación Controlada de Solución Oficial:** Disponible tras acumular al menos **2 intentos fallidos** (`/api/v1/exercises/{id}/reveal-solution`, acreditando **0 XP** si se resuelve tras verla).
+- **Modo Invitado & Fusión Reactiva:** Los visitantes pueden resolver los primeros 3 retos y fusionar automáticamente su progreso al iniciar sesión.
 
-### 🛠️ Consola Administrativa y Live Ops (`Qurio Admin` — `/admin`)
-Panel operativo aislado en chunk lazy dedicado (`vendor-admin`) y protegido mediante validación criptográfica del claim **`app_metadata.role == 'admin'`** en backend y guard silencioso en frontend:
-- **`[Operaciones en Vivo]`:** Telemetría del pool `asyncpg`, memoria RSS del proceso FastAPI, RTT al Sandbox Docker, inspección en tiempo real de `pg_stat_activity` y cancelación quirúrgica por `PID` (`pg_cancel_backend`).
-- **`[Usuarios]`:** Directorio consolidado (Supabase Auth Admin API + `user_profiles` + `user_progress` + `exercise_attempts`), KPIs de comunidad, búsqueda por correo/`@username`/UUID, filtros por rol y estado, panel `UserModerationDrawer` con confirmación inline en 2 pasos (promoción/degradación de rol y suspensión/reactivación de cuentas con protección anti-auto-moderación) y salto directo a los intentos del usuario en Forense.
-- **`[Analítica Pedagógica]`:** Embudo curricular, tasas de *first-pass*, abandono, distribución de uso de pistas y tiempos medianos de ejecución por reto.
-- **`[Forense de Intentos]` y `[Auditoría AST & Seguridad]`:** Historial paginado de envíos con *Replay Forense* en vivo (`SqlDiffViewer` comparando código estudiante vs. oficial) y bitácora de bloqueos AST (SQLGlot) + limitador de tasa.
-- **`[Control del Sistema]`:** Interruptores (*Killswitches*) en 2 pasos para modo de mantenimiento global (`HTTP 503`), cambio de estado operativo por reto (`active`, `under_review`, `hidden`) y reciclado del pool de conexiones.
+### 🎓 Constancias Verificables en PDF Oscuro, QR SVG, LinkedIn y `/verify/:code`
+- **Estética *Terminal Glow Minimal* (Web y PDF):** Lienzo oscuro `#080d1d`, retícula relacional SVG, rosetones técnicos, 4 tarjetas de métricas auditadas, firmas vectoriales Bézier, sello orbital `QURIO VERIFIED` con QR escaneable y huella determinística **`SHA-256`**.
+- **Descarga Oficial en PDF A4 (`reportlab`):** Generación vectorial en backend (`GET /api/v1/certificates/{code}/pdf`) con **`QrCodeWidget`** escaneable integrado y endpoint público de QR SVG (`/qr.svg`).
+- **Verificación Pública (`/verify/:code`) & LinkedIn:** Página pública sin autenticación para reclutadores, botón **`Añadir a LinkedIn`** (`linkedin.com/profile/add`), copia de badge HTML embeddable y publicación directa en X.
+- **Persistencia Idempotente:** Tabla `public.user_certificates` con unicidad `(user_id, track_id)` y RLS estricto (`database/supabase/05_certificates.sql`), más respaldo local en memoria para pruebas locales.
+
+### 🛠️ Consola Administrativa, Live Ops y Controles QA Admin (`Qurio Admin` — `/admin`)
+Panel operativo aislado en chunk lazy dedicado (`vendor-admin`) y protegido criptográficamente mediante **`app_metadata.role === 'admin'`**:
+- **`[Operaciones en Vivo]`:** Telemetría del pool `asyncpg`, memoria RSS, RTT al Sandbox, `pg_stat_activity` en vivo y `pg_cancel_backend`.
+- **`[Usuarios]`:** Directorio unificado, búsqueda, filtros y `UserModerationDrawer` con confirmación en 2 pasos.
+- **`[Analítica Pedagógica]`**, **`[Forense de Intentos]` (`SqlDiffViewer`)**, **`[Auditoría AST & Seguridad]`** y **`[Control del Sistema]`** (killswitches globales y por reto).
+- **Controles QA Desbloqueados para Admin:** Botones exclusivos para probar constancias con 0% de avance (`qa_preview`), desbloquear todas las pistas al instante y revelar la solución oficial sin requerir 2 fallos previos.
 
 ### 🔐 Autenticación Cloud y Recuperación de Contraseña (Supabase Auth)
-- Flujos dedicados con HTML5 History API (`/auth/confirm` y `/reset-password`), soporte de verificación por `token_hash` (`verifyOtp`), eventos `PASSWORD_RECOVERY` y normalización automática de URLs de callback.
-- Manejo diagnóstico de enlaces expirados (`otp_expired`) o sesiones ausentes con opción directa para solicitar un nuevo correo de recuperación.
+- Inicio de sesión por correo/contraseña y **OAuth con GitHub** vía Supabase Auth (con botón de Google preparado para futura activación).
+- Flujos dedicados `/auth/confirm` (`verifyOtp`), `/reset-password` (`PASSWORD_RECOVERY`) y manejo de errores inline.
 
-### 🏆 Gamificación y Rangos Técnicos
-- Sistema de **Puntos de Experiencia (XP)** con cálculo autoritativo en servidor y penalizaciones progresivas por pistas (-15% por pista consultada, 0 XP si se reveló la solución oficial).
-- **Centro de Avance Continuo en Dashboard:** barra de progreso dinámica de la ruta activa y acceso directo al siguiente reto.
-- **Medallas de Ingeniería Desbloqueables:** Insignias de *Habilidad*, *Constancia* y *Progreso* (ej. *Primer Commit SQL*, *Maestro del Join*, *Arquitecto de Agregaciones*, *Sin Pistas*).
-- **Perfil del Estudiante:** Gráfico de cadencia diaria de 30 días, barra de progreso hacia rangos de ingeniería e historial de consultas ejecutable directamente en el Playground.
-
-### 🛡️ Autenticidad & Estándares Anti-AI Slop
-- **Validación Inline Rigurosa:** Cero uso de `alert()` o `confirm()` nativos; todos los errores se muestran inline con tokens de diseño.
-- **Página 404 Temática SQL:** Consola interactiva con código de error `SQLSTATE 42P01: relation does not exist in schema public` y sugerencia (`HINT`).
-- **Favicon Vectorial Propio:** Isotipo matemático puro (cilindro relacional en capas con núcleo verde esmeralda activo).
-- **Metadatos Open Graph:** Imagen y descripción institucional para previsualizaciones sociales atractivas.
-- **Transparencia Total:** Política de privacidad honesta (sin cookies publicitarias de terceros) y enlaces reales a perfiles y código fuente (sin direcciones ficticias).
+### 🌓 Temas Claro/Oscuro, Gamificación & Estándares Anti-AI Slop
+- Tokens reactivos en `:root` y `.dark` con script anti-FOUC.
+- Sistema de XP autoritativo en servidor, racha de práctica, 30-day heatmap en Perfil e insignias técnicas desbloqueables.
+- Página 404 temática (`SQLSTATE 42P01`), favicon SVG propio, cero `alert()`/`confirm()` y transparencia total en privacidad.
 
 ---
 
@@ -135,39 +127,39 @@ Qurio utiliza un modelo arquitectónico desacoplado de alto rendimiento:
 
 ```mermaid
 flowchart TD
-    User["👤 Estudiante / Analista"] -->|"Navega / Escribe SQL"| Frontend["🌐 Frontend: React 18 + Vite\n(Atomic Design, Tailwind, Monaco)"]
-    
-    subgraph ClientLayer["Capa de Cliente"]
+    User["Estudiante / Analista"] -->|"Escribe SQL o explora rutas"| Frontend["Frontend: React 18 + Vite<br/>Atomic Design, Tailwind, Monaco"]
+
+    subgraph ClientLayer["Capa de Cliente Web"]
         Frontend
-        Monaco["Monaco Editor\n(qurio-dark / qurio-light)"]
-        DataGrid["DataGrid Tabular\n(Tipos, Diffs, Métricas)"]
+        Monaco["Monaco Editor<br/>qurio-dark / qurio-light"]
+        DataGrid["DataGrid Tabular<br/>Tipos, Diffs y Métricas"]
+        CertUI["Constancias PDF y Verify View<br/>Link de LinkedIn y QR"]
     end
 
-    Frontend -->|"Auth / Sesión JWT (GoTrue)"| SupabaseAuth["☁️ Supabase Auth / JWKS\n(Claves públicas ES256)"]
-    Frontend -->|"POST /submit o /execute\n(Bearer JWT + Rate Limit)"| Backend["⚡ Backend API: FastAPI\n(Python 3.12, asyncpg, Pydantic)"]
+    Frontend -->|"Auth y Sesión JWT via GoTrue"| SupabaseAuth["Supabase Auth / JWKS<br/>Claves públicas ES256"]
+    Frontend -->|"POST /submit, /execute o /certificates"| Backend["Backend API: FastAPI<br/>Python 3.12, asyncpg, ReportLab"]
 
-    subgraph BackendSecurity["Blindaje de Aplicación (FastAPI)"]
-        Backend -->|"1. Rate Limiting (Token Bucket)"| RateLimiter["Limitador de Tasa\n(IP / Usuario autenticado)"]
-        RateLimiter -->|"2. Validación JWT Asimétrica"| JWTValidator["Auth Validator\n(JWKS ES256 / claims)"]
-        JWTValidator -->|"3. Sanitización AST & Regex"| SecurityFilter["Filtro de Seguridad\n(Bloqueo DDL/DML destructivo)"]
+    subgraph BackendSecurity["Blindaje de Aplicación en FastAPI"]
+        Backend -->|"1. Rate Limiting"| RateLimiter["Limitador de Tasa<br/>Token Bucket por IP/Usuario"]
+        RateLimiter -->|"2. Validación JWT"| JWTValidator["Auth Validator<br/>JWKS ES256 y app_metadata"]
+        JWTValidator -->|"3. Sanitización AST y Regex"| SecurityFilter["Filtro de Seguridad SQLGlot<br/>Bloqueo DDL y DML destructivo"]
     end
 
     subgraph SecurityBoundary["Límite de Seguridad del Runner"]
-        SecurityFilter -->|"Conexión asyncpg (timeout = 2000ms)"| Pool["Pool Asíncrono"]
-        Pool -->|"Ejecuta bajo rol 'readonly_student'"| DockerSandbox["🐳 Sandbox Docker: PostgreSQL 16\n(Puerto 5433, Base: Ecommerce_Production_DB)"]
+        SecurityFilter -->|"Pool asyncpg timeout 2000ms"| Pool["Pool Asíncrono"]
+        Pool -->|"Ejecuta como rol readonly_student"| DockerSandbox["Sandbox Docker PostgreSQL 16<br/>Puerto 5433 - ecommerce_sandbox"]
     end
 
-    DockerSandbox -->|"Resultado del Estudiante"| Evaluator["🧪 Motor de Evaluación Semántica\n(FastAPI Evaluator)"]
-    DockerSandbox -->|"Resultado de la Solución Oficial"| Evaluator
-    
-    subgraph SupabaseCloud["Persistencia y Reglas de Negocio (Supabase Cloud)"]
-        Evaluator -->|"Registro seguro (service_role)"| SecureRPC["RPC record_verified_attempt\n(SECURITY DEFINER, search_path='')"]
-        SecureRPC -->|"SELECT ... FOR UPDATE"| RowLock["Bloqueo Transaccional Perfil"]
-        RowLock -->|"Anti-duplicidad de XP"| PartialIndex["Índice Único Parcial\n(idx_single_awarded_passed_attempt)"]
-        PartialIndex -->|"Cálculo Autoritativo"| Storage["Tablas Protegidas (RLS + CLS)\n(user_profiles, exercise_attempts)"]
+    DockerSandbox -->|"Resultado del Estudiante"| Evaluator["Motor de Evaluación Semántica<br/>Comparación de conjuntos"]
+    DockerSandbox -->|"Resultado Solución Oficial"| Evaluator
+
+    subgraph SupabaseCloud["Persistencia y Reglas en Supabase Cloud"]
+        Evaluator -->|"Registro con service_role"| SecureRPC["RPC record_verified_attempt<br/>SECURITY DEFINER y search_path aislado"]
+        SecureRPC -->|"Bloqueo SELECT FOR UPDATE"| RowLock["Bloqueo Transaccional de Perfil"]
+        RowLock -->|"Anti-duplicidad de XP"| Storage["Tablas Protegidas con RLS y CLS<br/>user_profiles, exercise_attempts, user_certificates"]
     end
 
-    Evaluator -->|"Veredicto, Diffs, XP & Latencia"| Frontend
+    Evaluator -->|"Veredicto, Diffs, XP y Latencia"| Frontend
 ```
 
 ### Flujo de Evaluación Semántica y Registro Protegido
@@ -176,35 +168,35 @@ flowchart TD
 sequenceDiagram
     autonumber
     actor U as Estudiante
-    participant FE as Frontend (Monaco)
+    participant FE as Frontend Monaco
     participant API as FastAPI Runner
-    participant DB as Docker PostgreSQL Sandbox
+    participant DB as Sandbox PostgreSQL 16
     participant EV as Evaluador Semántico
-    participant SB as Supabase Cloud (RPC)
+    participant SB as Supabase Cloud RPC
 
-    U->>FE: Escribe query y presiona ⌘ + Enter
-    FE->>API: POST /api/v1/exercises/{id}/submit (Bearer JWT, query, hints)
-    API->>API: Valida Rate Limit y firma JWT (ES256 vía JWKS)
-    API->>API: Sanitización de seguridad (Bloqueo DDL/DML, multi-statement)
+    U->>FE: Escribe query y presiona Cmd/Ctrl + Enter
+    FE->>API: POST /api/v1/exercises/id/submit con Bearer JWT y pistas
+    API->>API: Valida Rate Limit y firma JWT ES256 via JWKS
+    API->>API: Sanitización AST SQLGlot - Bloqueo DDL/DML y multi-statement
     alt Contiene sentencias destructivas o inyección
-        API-->>FE: 400 Bad Request (Explicación técnica en terminal)
-    else Consulta válida
+        API-->>FE: 400 Bad Request con detalle técnico en terminal
+    else Consulta SQL válida
         par Ejecutar consulta del estudiante
-            API->>DB: SET statement_timeout = 2000; <query_estudiante>
-            DB-->>API: Resultado del Estudiante (filas, columnas, tipos)
+            API->>DB: SET statement_timeout = 2000 y query del estudiante
+            DB-->>API: Resultado del Estudiante - filas, columnas y tipos
         and Ejecutar solución de referencia
-            API->>DB: SET statement_timeout = 2000; <query_esperada>
-            DB-->>API: Resultado Esperado
+            API->>DB: SET statement_timeout = 2000 y query esperada
+            DB-->>API: Resultado Esperado oficial
         end
-        API->>EV: Comparar conjuntos (Columnas, Cardinalidad, Tipos, Multiconjunto)
-        EV-->>API: Veredicto semántico (is_correct, diffs, metrics)
+        API->>EV: Comparar conjuntos - Columnas, Cardinalidad, Tipos y Multiconjunto
+        EV-->>API: Veredicto semántico - is_correct, diffs y métricas
         opt Usuario autenticado y consulta aprobada
-            API->>SB: RPC record_verified_attempt(sub_jwt, id_ejercicio, ...) [service_role]
-            Note over SB: Bloqueo transaccional FOR UPDATE<br/>Cálculo proporcional de XP autoritativo<br/>Validación estricta de unicidad en PASSED
-            SB-->>API: 200 OK { attempt_id, xp_awarded, is_first_passed, ... }
+            API->>SB: RPC record_verified_attempt con sub_jwt y service_role
+            Note over SB: Bloqueo transaccional FOR UPDATE<br/>Cálculo proporcional de XP autoritativo<br/>Unicidad estricta en intento PASSED
+            SB-->>API: 200 OK con attempt_id, xp_awarded e is_first_passed
         end
         API-->>FE: 200 OK con veredicto estructurado y XP consolidado
-        FE->>U: Renderiza DataGrid + SuccessModal / Consola de Diffs
+        FE->>U: Renderiza DataGrid, DiffResult y SuccessModal
     end
 ```
 
@@ -212,79 +204,78 @@ sequenceDiagram
 
 ## 📂 Estructura del Monorepo
 
-```
+```text
 Qurio/
 ├── .agents/
-│   ├── rules/                  # Reglas permanentes del repositorio (ej. sql-pedagogy.md)
+│   ├── rules/                  # Reglas permanentes del repositorio (sql-pedagogy.md)
 │   └── skills/                 # Colección de habilidades para desarrollo asistido
 ├── apps/
 │   ├── api/                    # ⚡ Backend FastAPI (Python 3.12)
 │   │   ├── app/
-│   │   │   ├── core/           # Configuración Pydantic, Auth ES256/JWKS, Rate Limit, System State y Supabase Service
-│   │   │   │   ├── auth.py     # Autenticación autoritativa JWT (ES256/JWKS Supabase) y guard require_admin
-│   │   │   │   ├── config.py   # Configuración de entornos y secretos
-│   │   │   │   ├── rate_limit.py # Limitador de tasa por token-bucket
-│   │   │   │   └── supabase.py # Cliente seguro para invocación de RPCs
+│   │   │   ├── core/           # Config, Auth ES256/JWKS, Rate Limit, System State, Supabase
 │   │   │   ├── modules/
-│   │   │   │   ├── admin/      # API /admin/* (Live Ops, Usuarios y Moderación, Analítica, Replay Forense, Killswitches)
-│   │   │   │   ├── curriculum/ # Catálogo de 60 ejercicios, 180 pistas, conceptos saneados y fallback
+│   │   │   │   ├── admin/      # API /admin/* (Live Ops, Usuarios, Analítica, Forense, Killswitches)
+│   │   │   │   ├── certificates/ # Constancias PDF/QR ReportLab, SHA-256, LinkedIn y /verify
+│   │   │   │   ├── curriculum/ # Catálogo de 60 ejercicios, 180 pistas y fallback
 │   │   │   │   └── runner/     # Pool asyncpg, Evaluador semántico, Seguridad AST/Regex y Router
-│   │   │   └── main.py         # Punto de entrada FastAPI y cabeceras de endurecimiento HTTP
-│   │   ├── tests/              # Suite de 102 pruebas automáticas (Pytest + Asyncio)
-│   │   │   ├── test_admin.py   # Pruebas RBAC, Live Ops, Replay Forense, Usuarios, Moderación y Killswitches
-│   │   │   ├── test_auth.py    # Pruebas de tokens ES256, expiración y audiencias
-│   │   │   ├── test_evaluator.py # Pruebas del motor de evaluación de conjuntos
-│   │   │   ├── test_integration.py # Pruebas HTTP, Sandbox y reveal-solution (0 XP / >=2 fallos)
-│   │   │   ├── test_rate_limit.py  # Pruebas de límites de tasa (Token Bucket)
-│   │   │   ├── test_schema_consistency.py # Consistencia de 60 ejercicios, SQL, determinismo y no-spoilers
-│   │   │   ├── test_security.py    # Pruebas de sanitización AST (SQLGlot) y regex
-│   │   │   └── test_supabase_migration.py # Auditoría de privilegios, CLS, concurrencia y RPC
-│   │   ├── Dockerfile          # Contenerización de la API
-│   │   └── requirements.txt    # Dependencias de Python
+│   │   │   └── main.py         # Punto de entrada FastAPI y cabeceras HTTP
+│   │   ├── tests/              # Suite de 105 pruebas automáticas (Pytest + Asyncio)
+│   │   │   ├── test_admin.py
+│   │   │   ├── test_auth.py
+│   │   │   ├── test_certificates.py # Emisión QA, PDF %PDF-, QR SVG, LinkedIn y bypass Admin
+│   │   │   ├── test_evaluator.py
+│   │   │   ├── test_integration.py
+│   │   │   ├── test_rate_limit.py
+│   │   │   ├── test_schema_consistency.py
+│   │   │   ├── test_security.py
+│   │   │   └── test_supabase_migration.py
+│   │   ├── Dockerfile
+│   │   └── requirements.txt    # Incluye reportlab>=4.2.0 para PDF/QR vectoriales
 │   │
 │   └── web/                    # 🌐 Frontend React 18 + Vite + TypeScript
-│       ├── public/             # Isotipo SVG, Favicon y vector Open Graph
+│       ├── public/             # favicon.svg y og-preview.svg
 │       ├── src/
-│       │   ├── components/     # Árbol estricto bajo Atomic Design Pragmático
+│       │   ├── components/     # Atomic Design Pragmático estricto
 │       │   │   ├── atoms/      # Button, Badge, AdminBadge, TextInput, KbdShortcut, RadioTab
-│       │   │   ├── molecules/  # SearchInput, FormField, MetricTile, AdminMetricTile, PedagogyPillarsCard,
-│       │   │   │               # MethodologyModal, KillswitchToggle, SqlDiffViewer, UserModerationDrawer,
-│       │   │   │               # RevealSolutionModal, GuestTrialCompleteModal, SuccessModal, AuthModal, etc.
-│       │   │   ├── organisms/  # MonacoEditorPanel, DataGridResults, ExerciseSpecPanel, LearningRoadmapMap,
-│       │   │   │               # TracksView, SqlPlaygroundView, AdminDashboardView, AdminUsersPanel, etc.
-│       │   │   └── templates/  # DashboardLayout, WorkspaceLayout (divisor arrastrable y expansión)
-│       │   ├── hooks/          # useAuth (ES256, app_metadata.role, PASSWORD_RECOVERY), useTheme
-│       │   ├── lib/            # Cliente API, adminApi, Supabase normalizado, routing, persistence y tests Vitest
-│       │   ├── tests/          # Pruebas de integración UI (admin.test.ts, pedagogy.test.ts)
-│       │   ├── types/          # Definiciones estrictas de TypeScript (incl. admin.ts)
-│       │   ├── App.tsx         # Coordinador principal y enrutador HTML5 History API
-│       │   └── index.css       # Tokens de diseño Tailwind y desactivación de ligaduras monoespaciadas
-│       ├── tailwind.config.js  # Paleta de diseño Terminal Glow Minimal
-│       └── vite.config.ts      # Configuración de compilación Vite y code splitting (incl. vendor-admin)
+│       │   │   ├── molecules/  # SearchInput, FormField, MetricTile, PedagogyPillarsCard,
+│       │   │   │               # MethodologyModal, SqlTransformDiagram, AuthModal, SuccessModal, etc.
+│       │   │   ├── organisms/  # MonacoEditorPanel, DataGridResults, ExerciseSpecPanel,
+│       │   │   │               # ErDiagramModal, ModuleGuideModal, SqlReferenceView, CommandPaletteModal,
+│       │   │   │               # CertificateModal (+ CertificateShowcase), CertificateVerifyView,
+│       │   │   │               # TracksView, SqlPlaygroundView, AdminDashboardView, SidebarNav, TopHeader
+│       │   │   └── templates/  # DashboardLayout, WorkspaceLayout
+│       │   ├── hooks/          # useAuth (GitHub OAuth, app_metadata.role, PASSWORD_RECOVERY), useTheme
+│       │   ├── lib/            # api, adminApi, schemaGraph, moduleGuides, sqlReference, format, routing
+│       │   ├── tests/          # 8 suites Vitest / 46 pruebas (incl. uxUpgrade.test.tsx y admin.test.ts)
+│       │   ├── types/          # Definiciones estrictas TypeScript
+│       │   ├── App.tsx         # Enrutador HTML5 History API y coordinador de estado
+│       │   └── index.css
+│       ├── tailwind.config.js
+│       └── vite.config.ts      # Code splitting (vendor-admin, vendor-monaco, vendor-sql-formatter)
 │
 ├── database/
-│   ├── sandbox/                # 🐳 Definición del contenedor PostgreSQL Sandbox
-│   │   ├── init.sql            # Rol de solo lectura readonly_student y timeouts
-│   │   └── ecommerce_seed.sql  # Dataset de 10 tablas de ecommerce_sandbox
+│   ├── sandbox/                # 🐳 PostgreSQL Sandbox (init.sql + ecommerce_seed.sql)
 │   └── supabase/               # ☁️ Esquemas DDL, catálogo y endurecimiento Supabase Cloud
-│       ├── 01_schema.sql       # Tablas de perfiles, rutas, módulos, intentos y logros
-│       ├── 02_seed_curriculum.sql # Catálogo semilla de 60 ejercicios y 180 pistas
-│       ├── 03_security_hardening.sql # Hardening v5.0: RPC autoritativa, RLS/CLS, anti-NULL, search_path=''
-│       ├── 04_admin_rbac.sql   # Función is_admin(), métricas curriculares admin y RLS para consola admin
-│       ├── rollback_security_hardening.sql # Reversión segura preservando índices de integridad
-│       └── diagnose_privileges.sql # Auditoría de privilegios tabla/columna y consistencia de XP
+│       ├── 01_schema.sql
+│       ├── 02_seed_curriculum.sql
+│       ├── 03_security_hardening.sql
+│       ├── 04_admin_rbac.sql
+│       ├── 05_certificates.sql # Tabla user_certificates + RLS SELECT
+│       ├── rollback_security_hardening.sql
+│       └── diagnose_privileges.sql
 │
-├── docs/                       # 📚 Documentación técnica, PRD, SAD, pedagogía, auditorías y bitácora
-│   ├── audits/                 # Reportes de línea base operativa y estabilización (Fase 10)
-│   ├── pedagogia/              # Especificación pedagógica y psicología cognitiva del currículo SQL
-│   ├── security/               # 🛡️ Auditorías y resultados de seguridad de Fases 9 y 11
-│   ├── BITACORA.md             # Registro cronológico detallado de hitos y decisiones
-│   ├── CURRICULUM_SPEC.md      # Especificación pedagógica de referencia
-│   ├── PRD.md                  # Especificación de requerimientos de producto
-│   └── SAD.md                  # Documento de arquitectura de software
+├── docs/                       # 📚 PRD, SAD, pedagogía, constancias, auditorías y bitácora
+│   ├── audits/
+│   ├── constancias/            # DESIGN.md, code.html y screen.png (Terminal Glow Minimal)
+│   ├── pedagogia/
+│   ├── security/
+│   ├── BITACORA.md
+│   ├── CURRICULUM_SPEC.md
+│   ├── PRD.md
+│   └── SAD.md
 │
 ├── graphify-out/               # 🧠 Grafo de conocimiento estructural del proyecto
-├── docker-compose.yml          # Orquestación de contenedores locales (Sandbox + API)
+├── docker-compose.yml          # Orquestación local (postgres-sandbox + api)
 ├── AGENTS.md                   # Reglas de ingeniería, Anti-AI Slop y Atomic Design
 └── README.md                   # Este documento
 ```
@@ -293,7 +284,7 @@ Qurio/
 
 ## 🗄️ El Dataset: `Ecommerce_Production_DB`
 
-El sandbox PostgreSQL contiene una base de datos relacional realista de comercio electrónico con 10 tablas interconectadas diseñadas para permitir consultas de cualquier nivel de complejidad:
+El sandbox PostgreSQL contiene una base de datos relacional realista de comercio electrónico con **10 tablas** y **9 relaciones FK**:
 
 | Tabla | Registros | Descripción y Contenido |
 | :--- | :---: | :--- |
@@ -308,11 +299,24 @@ El sandbox PostgreSQL contiene una base de datos relacional realista de comercio
 | **`almacenes`** | 3 | Ubicaciones físicas de distribución (Madrid, Bilbao, Valencia) con capacidad en m². |
 | **`inventario`** | 19 | Existencias físicas por producto y almacén con control de stock y actualización temporal. |
 
+```mermaid
+erDiagram
+    clientes ||--o{ pedidos : "realiza"
+    pedidos ||--o{ detalle_pedidos : "contiene"
+    productos ||--o{ detalle_pedidos : "aparece_en"
+    categorias ||--o{ productos : "agrupa"
+    proveedores ||--o{ productos : "suministra"
+    pedidos ||--o| facturas : "genera"
+    facturas ||--o{ pagos : "recibe"
+    productos ||--o{ inventario : "se_almacena"
+    almacenes ||--o{ inventario : "resguarda"
+```
+
 ---
 
 ## 🔒 Seguridad Multicapa y Endurecimiento de Producción
 
-La regla de oro de Qurio es la **seguridad incondicional**. La ejecución de código SQL arbitrario introducido por usuarios y la asignación de recompensas de ingeniería requieren múltiples anillos concéntricos de defensa, formalizados y certificados en la **Fase 9 de Hardening**:
+La regla de oro de Qurio es la **seguridad incondicional**. La ejecución de código SQL arbitrario introducido por usuarios y la asignación de recompensas de ingeniería requieren múltiples anillos concéntricos de defensa:
 
 ### 1. Aislamiento del Sandbox de Ejecución (PostgreSQL en Docker)
 * **Contenedor Dedicado:** El sandbox de práctica se ejecuta en un contenedor Docker aislado (`postgres:16-alpine`), físicamente desacoplado de las bases de datos de producción o autenticación.
@@ -322,34 +326,16 @@ La regla de oro de Qurio es la **seguridad incondicional**. La ejecución de có
   * Transacciones forzadas de solo lectura: `SET TRANSACTION READ ONLY`.
 * **Límites de Recursos y Tiempos de Espera:**
   * `statement_timeout = 2000ms` (bloquea de forma determinista cualquier consulta que exceda 2 segundos).
-  * `work_mem = 16MB` (limita la memoria RAM por consulta para mitigar ataques de denegación de servicio por consumo exhaustivo).
+  * `work_mem = 16MB`.
 * **Filtro AST y Expresiones Regulares en FastAPI (`security.py`):**
-  * Bloqueo de sentencias múltiples separadas por punto y coma (prevención de SQL Injection y stacked queries).
-  * Bloqueo de DDL: `DROP`, `ALTER`, `CREATE`, `TRUNCATE`.
-  * Bloqueo de DML destructivo: `INSERT`, `UPDATE`, `DELETE`, `MERGE`.
-  * Bloqueo de funciones de sistema o escalamiento: `pg_sleep`, `pg_terminate_backend`, `dblink`, etc.
-  * Limitador automático a un máximo de 1,000 registros devueltos para salvaguardar el ancho de banda.
+  * Bloqueo de sentencias múltiples separadas por punto y coma, DDL (`DROP`, `ALTER`, `CREATE`, `TRUNCATE`), DML destructivo (`INSERT`, `UPDATE`, `DELETE`, `MERGE`) y funciones de sistema (`pg_sleep`, `pg_terminate_backend`, `dblink`).
+  * Limitador automático a un máximo de 1,000 registros devueltos.
 
-### 2. Blindaje de Backend y Supabase Cloud (Hardening v5.0)
-* **Autenticación Autoritativa JWT (`auth.py`):**
-  * Validación estricta asimétrica con algoritmo **ES256 (ECDSA P-256)** mediante el endpoint oficial JWKS de Supabase con caché de claves públicas en memoria y verificación de `aud`, `iss` y vigencia temporal (`exp`).
-  * La identidad del usuario (`user_id`) proviene exclusivamente del claim verificado `sub` del JWT en el backend; el cliente web no tiene capacidad de declarar su identidad ni modificar recompensas.
-* **Función RPC Atómica y Autoritativa (`public.record_verified_attempt`):**
-  * Definida como `SECURITY DEFINER` con blindaje total `SET search_path = ''` para prevenir ataques de secuestro de esquemas (*search_path hijacking*).
-  * Acceso estrictamente restringido: `REVOKE EXECUTE ... FROM PUBLIC, anon, authenticated` y otorgado con exclusividad a `service_role` (invocado únicamente desde FastAPI).
-  * Bloqueo transaccional de concurrencia: ejecuta `SELECT ... FOR UPDATE` sobre la fila del perfil de usuario, garantizando idempotencia y evitando condiciones de carrera en ráfagas de consultas.
-  * Cálculo autoritativo de XP: la función calcula de forma proporcional el XP ganado basado en la recompensa del ejercicio (`xp_reward`) y la tasa de penalización por pistas (-15% por pista utilizada), sin mínimos artificiales y validando rangos $[0, \text{xp\_reward}]$.
-  * Actualización atómica del progreso de módulos: calcula en tiempo real los ejercicios únicos aprobados y marca el módulo completado si y solo si todos los ejercicios fueron superados.
-* **Seguridad a Nivel de Columna (Column-Level Security - CLS) & RLS:**
-  * Prohibición absoluta de mutación: se revocaron todos los permisos de `INSERT`, `UPDATE` y `DELETE` sobre `public.exercise_attempts` para roles de cliente (`anon`, `authenticated`), canalizando todo intento exclusivamente por la RPC verificada.
-  * Se revocaron los privilegios `SELECT` por columna en `exercise_attempts` a `PUBLIC` y `anon`.
-  * Las columnas sensibles `xp` y `level` de `public.user_profiles` no admiten mutación por parte de `authenticated` ni `anon`.
-* **Restricción de Integridad Fuerte:**
-  * Índice único parcial `idx_single_awarded_passed_attempt` sobre `(user_id, exercise_id) WHERE status = 'PASSED' AND xp_awarded > 0`. Protege la base de datos a nivel de motor ante cualquier intento de doble otorgamiento de XP en un ejercicio ya aprobado.
-* **Privacidad Estricta en `user_profiles`:** Políticas RLS acotadas estrictamente a `auth.uid() = id`, revocación de `SELECT` al rol `anon` y eliminación de vistas públicas innecesarias.
-* **Rate Limiting & Cabeceras HTTP (`rate_limit.py`, `main.py`):**
-  * Limitador de tasa en memoria por Token Bucket: protege `/submit`, `/execute` y `/reveal-solution` (`RATE_LIMIT_AUTH_PER_MINUTE = 120` para usuarios autenticados y `RATE_LIMIT_GUEST_PER_MINUTE = 20` para invitados/IPs anónimas).
-  * Cabeceras de seguridad en todas las respuestas: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy` y `Permissions-Policy`.
+### 2. Blindaje de Backend y Supabase Cloud (Hardening v5.0+)
+* **Autenticación Autoritativa JWT (`auth.py`):** Validación asimétrica **ES256 (ECDSA P-256)** mediante JWKS de Supabase, verificación de `aud`, `iss` y `exp`.
+* **Función RPC Atómica (`public.record_verified_attempt`):** `SECURITY DEFINER` con `SET search_path = ''`, acceso exclusivo a `service_role`, bloqueo `SELECT ... FOR UPDATE` y cálculo autoritativo de XP.
+* **CLS, RLS e Integridad Fuerte:** Sin permisos de mutación directos para clientes en `exercise_attempts`, `xp`/`level` protegidos en `user_profiles`, RLS por `auth.uid()` en `user_certificates` e índice único parcial `idx_single_awarded_passed_attempt`.
+* **Rate Limiting & Cabeceras HTTP:** Token Bucket (`120/min` autenticados, `20/min` invitados) y cabeceras `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y `Permissions-Policy`.
 
 ---
 
@@ -358,8 +344,8 @@ La regla de oro de Qurio es la **seguridad incondicional**. La ejecución de có
 ### Prerrequisitos
 
 - **Docker Desktop** (con soporte para Docker Compose).
-- **Node.js 18+** y **npm** (para el frontend de React).
-- **Python 3.12+** (para el backend de FastAPI).
+- **Node.js 18+** y **npm**.
+- **Python 3.12+** (solo si deseas correr la API o las pruebas fuera de Docker).
 - **Git**.
 
 ---
@@ -373,39 +359,32 @@ cd Qurio
 
 ---
 
-### 2. Iniciar el Sandbox PostgreSQL (Docker)
+### 2. Iniciar Contenedores Sandbox y API (Docker)
 
-Levanta el contenedor de PostgreSQL 16 con el dataset pre-cargado y el usuario de solo lectura:
-
-```bash
-docker compose up -d postgres-sandbox
-```
-
-Verifica que el contenedor esté saludable (`healthy`):
+Levanta el Sandbox PostgreSQL 16 y el backend FastAPI en contenedores:
 
 ```bash
-docker ps --filter "name=qurio-postgres-sandbox"
+docker compose up -d --build
 ```
 
-> **Puerto Local:** `localhost:5433`  
-> **Base de Datos:** `ecommerce_sandbox`  
-> **Usuario de Lectura:** `readonly_student`  
-> **Contraseña:** `student_safe_pass`  
-> *(Puedes conectar tu cliente favorito como DataGrip, DBeaver o TablePlus directamente a este puerto).*
+Verifica que ambos contenedores estén activos y saludables:
+
+```bash
+docker ps --filter "name=qurio-"
+```
+
+> **Sandbox PostgreSQL:** `localhost:5433` · DB: `ecommerce_sandbox` · Usuario: `readonly_student` · Password: `student_safe_pass`  
+> **API FastAPI:** `http://localhost:8000` · Health: `http://localhost:8000/api/v1/health` · Docs: `http://localhost:8000/docs`
 
 ---
 
-### 3. Configurar y Ejecutar la API (FastAPI)
+### 3. Ejecutar la API manualmente con Python (Opcional)
 
-Navega a la carpeta de la API:
+Si prefieres ejecutar la API fuera de Docker para desarrollo con `--reload`, levanta primero solo el sandbox (`docker compose up -d postgres-sandbox`) y luego:
 
 ```bash
 cd apps/api
-```
 
-Crea y activa un entorno virtual de Python:
-
-```bash
 # En Windows (PowerShell):
 python -m venv .venv
 .venv\Scripts\Activate.ps1
@@ -413,33 +392,11 @@ python -m venv .venv
 # En Linux / macOS:
 python3 -m venv .venv
 source .venv/bin/activate
-```
 
-Instala las dependencias:
-
-```bash
 pip install -r requirements.txt
-```
-
-Crea el archivo `.env` a partir del ejemplo:
-
-```bash
-# En Windows:
-copy .env.example .env
-
-# En Linux / macOS:
-cp .env.example .env
-```
-
-Inicia el servidor de desarrollo de FastAPI:
-
-```bash
+copy .env.example .env   # o `cp .env.example .env` en Linux/macOS
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-
-> **API activa en:** `http://localhost:8000`  
-> **Documentación interactiva Swagger:** `http://localhost:8000/docs`  
-> **Documentación ReDoc:** `http://localhost:8000/redoc`
 
 ---
 
@@ -449,27 +406,8 @@ En una nueva terminal, navega a la carpeta del frontend:
 
 ```bash
 cd apps/web
-```
-
-Instala los paquetes de Node:
-
-```bash
 npm install
-```
-
-Crea el archivo `.env` para el frontend:
-
-```bash
-# En Windows:
-copy .env.example .env
-
-# En Linux / macOS:
-cp .env.example .env
-```
-
-Inicia el servidor de desarrollo con Vite:
-
-```bash
+copy .env.example .env   # o `cp .env.example .env` en Linux/macOS
 npm run dev
 ```
 
@@ -479,30 +417,27 @@ npm run dev
 
 ### 5. Ejecutar la Suite de Pruebas Automatizadas
 
-La suite de pruebas automatizadas de Qurio evalúa la seguridad AST/Regex, autenticación ES256, rate limiting, evaluación semántica, consistencia curricular anti-spoilers, privilegios de base de datos e interfaz frontend:
-
-**Backend (Pytest — 102 pruebas):**
+**Backend (Pytest — 105 pruebas):**
 ```bash
 cd apps/api
 pytest tests/ -v
-# En Windows con el entorno virtual activo:
+# En Windows con el entorno virtual:
 .\.venv\Scripts\pytest.exe tests -v
 ```
 
 ```text
 tests/test_admin.py ................ RBAC Admin, Live Ops, Forense, Usuarios, Moderación y Killswitches
 tests/test_auth.py ................. JWT ES256, expiración, audiencias e invitados
+tests/test_certificates.py ......... Emisión QA Admin, PDF %PDF-, QR SVG, LinkedIn y bypass de solución
 tests/test_evaluator.py ............ Comparador semántico, multiconjuntos, NULLs y orden
 tests/test_integration.py .......... Endpoints REST, Sandbox Docker y reveal-solution (0 XP)
 tests/test_rate_limit.py ........... Límites por Token Bucket (invitado vs autenticado)
-tests/test_schema_consistency.py ... 60 retos, citas SQL, determinismo y verificación anti-spoilers
+tests/test_schema_consistency.py ... 60 retos, SQL en sandbox, determinismo y verificación anti-spoilers
 tests/test_security.py ............. Sanitización AST (SQLGlot) y bloqueo DDL/DML
 tests/test_supabase_migration.py ... Privilegios, CLS, concurrencia y RPC autoritativa
-
-======================= 102 passed in 92.36s ========================
 ```
 
-**Frontend (Vitest — 35 pruebas) y Build de Producción:**
+**Frontend (Vitest — 46 pruebas en 8 archivos) y Build de Producción:**
 ```bash
 cd apps/web
 npm test
@@ -515,10 +450,11 @@ npm run build
  ✓ src/lib/__tests__/supabase.test.ts (4 tests)
  ✓ src/lib/__tests__/achievements.test.ts (4 tests)
  ✓ src/lib/__tests__/persistence.test.ts (7 tests)
- ✓ src/tests/pedagogy.test.ts (4 tests)
+ ✓ src/tests/pedagogy.test.ts (6 tests)
+ ✓ src/tests/uxUpgrade.test.tsx (9 tests)
  ✓ src/tests/admin.test.ts (5 tests)
 
- Test Files  7 passed (7) | Tests  35 passed (35)
+ Test Files  8 passed (8) | Tests  46 passed (46)
 ```
 
 ---
@@ -540,13 +476,13 @@ npm run build
 | `SANDBOX_STATEMENT_TIMEOUT_MS` | Entero | `2000` | Límite máximo de ejecución por consulta (ms). |
 | `SUPABASE_URL` | String | *(Opcional)* | URL del proyecto Supabase Cloud (`https://<id>.supabase.co`). |
 | `SUPABASE_ANON_KEY` | String | *(Opcional)* | Clave anónima pública de Supabase. |
-| `SUPABASE_SERVICE_ROLE_KEY` | String | *(Privada)* | Clave maestra privilegiada de backend para ejecutar la RPC `record_verified_attempt` y administrar usuarios vía Auth Admin API. **Nunca exponer al cliente**. |
-| `SUPABASE_JWT_SECRET` | String | *(Opcional)* | Secreto simétrico HMAC para validación de tokens de prueba. |
-| `SUPABASE_JWKS_URL` | String | *(Auto)* | URL de claves públicas JWKS (`<SUPABASE_URL>/auth/v1/.well-known/jwks.json`). |
+| `SUPABASE_SERVICE_ROLE_KEY` | String | *(Privada)* | Clave privilegiada de backend para RPCs, `user_certificates` y Admin API. **Nunca exponer al cliente**. |
+| `SUPABASE_JWT_SECRET` | String | *(Opcional)* | Secreto simétrico HMAC para tokens locales de prueba. |
+| `SUPABASE_JWKS_URL` | String | *(Auto)* | URL JWKS (`<SUPABASE_URL>/auth/v1/.well-known/jwks.json`). |
 | `SUPABASE_JWT_AUDIENCE` | String | `authenticated` | Audiencia esperada del JWT. |
 | `SUPABASE_JWT_ISSUER` | String | *(Auto)* | Emisor esperado del JWT (`<SUPABASE_URL>/auth/v1`). |
 
-*(Nota: Si no se configuran las credenciales de Supabase, el backend utiliza automáticamente un repositorio de datos semilla en memoria con resiliencia total).*
+*(Nota: Si no se configuran las credenciales de Supabase, el backend utiliza automáticamente repositorios semilla en memoria).*
 
 ### Frontend (`apps/web/.env`)
 
@@ -565,22 +501,22 @@ El desarrollo de Qurio sigue directrices estrictas establecidas en [`AGENTS.md`]
 ### 1. Atomic Design Pragmático
 Todo componente reutilizable pertenece obligatoriamente a uno de los 4 niveles jerárquicos:
 - **Átomos (`src/components/atoms/`):** Bloques indivisibles estilizados (`Button`, `Badge`, `AdminBadge`, `TextInput`, `KbdShortcut`, `RadioTab`).
-- **Moléculas (`src/components/molecules/`):** Combinaciones funcionales (`SearchInput`, `StreakPill`, `FormField`, `MetricTile`, `AdminMetricTile`, `TrackCard`, `AchievementCard`, `PedagogyPillarsCard`, `MethodologyModal`, `UserModerationDrawer`, `KillswitchToggle`, `SqlDiffViewer`).
-- **Organismos (`src/components/organisms/`):** Módulos autónomos complejos (`MonacoEditorPanel`, `DataGridResults`, `ExerciseSpecPanel`, `LearningRoadmapMap`, `TracksView`, `SqlPlaygroundView`, `UserProfileView`, `AdminDashboardView`, `AdminUsersPanel`, `SidebarNav`, `TopHeader`).
-- **Plantillas (`src/components/templates/`):** Estructuras de layout de página desacopladas de la lógica de datos (`DashboardLayout`, `WorkspaceLayout`).
+- **Moléculas (`src/components/molecules/`):** Combinaciones funcionales (`SearchInput`, `StreakPill`, `FormField`, `MetricTile`, `AdminMetricTile`, `TrackCard`, `AchievementCard`, `PedagogyPillarsCard`, `MethodologyModal`, `SqlTransformDiagram`, `UserModerationDrawer`, `KillswitchToggle`, `SqlDiffViewer`).
+- **Organismos (`src/components/organisms/`):** Módulos autónomos complejos (`MonacoEditorPanel`, `DataGridResults`, `ExerciseSpecPanel`, `LearningRoadmapMap`, `ErDiagramModal`, `ModuleGuideModal`, `SqlReferenceView`, `CommandPaletteModal`, `CertificateModal`, `CertificateShowcase`, `CertificateVerifyView`, `TracksView`, `SqlPlaygroundView`, `UserProfileView`, `AdminDashboardView`, `AdminUsersPanel`, `SidebarNav`, `TopHeader`).
+- **Plantillas (`src/components/templates/`):** Estructuras de layout desacopladas (`DashboardLayout`, `WorkspaceLayout`).
 
 ### 2. Estética *Terminal Glow Minimal*
-- **Paleta Oscura:** Fondo `#0B1020`, superficies `#111827` / `#172033`, bordes `#1E293B`.
+- **Paleta Oscura:** Fondo `#080d1d` / `#0e1323`, superficies `#161b2b` / `#25293a`, bordes `#2f3446` / `#464554`.
 - **Paleta Clara:** Fondo `#F8FAFC`, superficies `#FFFFFF` / `#F1F5F9`, bordes `#E2E8F0`.
-- **Acentos Técnicos:** Cyan `#38BDF8`, Índigo `#6366F1`, Esmeralda `#22C55E`, Ámbar `#F59E0B`, Salmón de Error `#EF4444`.
-- **Tipografía Dual:** `Inter` / `Plus Jakarta Sans` para lectura de interfaz y `JetBrains Mono` para código SQL, latencias, tipos de datos y atajos de teclado.
+- **Acentos Técnicos:** Cyan `#7bd0ff`, Índigo `#8083ff` / `#c0c1ff`, Esmeralda `#4ae176`, Ámbar `#F59E0B`, Error `#ffb4ab`.
+- **Tipografía Dual:** `Inter` / `Plus Jakarta Sans` para lectura de interfaz y `JetBrains Mono` (sin ligaduras) para código SQL, latencias, tipos de datos y atajos de teclado.
 
 ---
 
 ## 📄 Licencia y Autoría
 
 - **Desarrollado por:** [Erick KNT](https://github.com/ErickKNT/qurio) (`erickipn14@gmail.com`).
-- **Licencia:** Este proyecto se distribuye bajo los términos de la **Licencia MIT**. Consulta el archivo `LICENSE` para más información.
+- **Licencia:** Este proyecto se distribuye bajo los términos de la **Licencia MIT**.
 
 ---
 
