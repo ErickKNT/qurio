@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38BDF8?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 3.4" />
   <img src="https://img.shields.io/badge/Docker-Sandbox-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Sandbox" />
   <img src="https://img.shields.io/badge/Backend_Pytest-105%2F105%20Passing-22C55E?style=for-the-badge" alt="Backend Pytest 105/105 Passing" />
-  <img src="https://img.shields.io/badge/Frontend_Vitest-46%2F46%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 46/46 Passing" />
+  <img src="https://img.shields.io/badge/Frontend_Vitest-49%2F49%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 49/49 Passing" />
   <img src="https://img.shields.io/badge/Curr%C3%ADculo-60%20Retos%20%2F%20180%20Pistas-6366F1?style=for-the-badge" alt="60 Retos SQL" />
   <img src="https://img.shields.io/badge/Security-Hardened%20(RLS%20%2B%20CLS%20%2B%20RPC)-059669?style=for-the-badge" alt="Security Hardened" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=for-the-badge" alt="MIT License" />
@@ -112,9 +112,9 @@ Panel operativo aislado en chunk lazy dedicado (`vendor-admin`) y protegido crip
 - Inicio de sesión por correo/contraseña y **OAuth con GitHub** vía Supabase Auth (con botón de Google preparado para futura activación).
 - Flujos dedicados `/auth/confirm` (`verifyOtp`), `/reset-password` (`PASSWORD_RECOVERY`) y manejo de errores inline.
 
-### 🌓 Temas Claro/Oscuro, Gamificación & Estándares Anti-AI Slop
+### 🌓 Temas Claro/Oscuro, Perfil Bento, Gamificación & Estándares Anti-AI Slop
 - Tokens reactivos en `:root` y `.dark` con script anti-FOUC.
-- Sistema de XP autoritativo en servidor, racha de práctica, 30-day heatmap en Perfil e insignias técnicas desbloqueables.
+- Sistema de XP autoritativo en servidor, racha de práctica, **perfil Bento** con mapa de calor anual (**52 semanas**), tarjeta de precisión SQL (`ProfilePrecisionCard`), edición de perfil con protección CLS (`EditProfileModal`), historial buscable/paginado (`QueryHistoryModal`) e insignias técnicas desbloqueables.
 - Página 404 temática (`SQLSTATE 42P01`), favicon SVG propio, cero `alert()`/`confirm()` y transparencia total en privacidad.
 
 ---
@@ -207,7 +207,7 @@ sequenceDiagram
 ```text
 Qurio/
 ├── .agents/
-│   ├── rules/                  # Reglas permanentes del repositorio (sql-pedagogy.md)
+│   ├── rules/                  # Reglas permanentes del repositorio (sql-pedagogy.md, critical-sparring.md)
 │   └── skills/                 # Colección de habilidades para desarrollo asistido
 ├── apps/
 │   ├── api/                    # ⚡ Backend FastAPI (Python 3.12)
@@ -238,17 +238,18 @@ Qurio/
 │       │   ├── components/     # Atomic Design Pragmático estricto
 │       │   │   ├── atoms/      # Button, Badge, AdminBadge, TextInput, KbdShortcut, RadioTab
 │       │   │   ├── molecules/  # SearchInput, FormField, MetricTile, PedagogyPillarsCard,
-│       │   │   │               # MethodologyModal, SqlTransformDiagram, AuthModal, SuccessModal, etc.
-│       │   │   ├── organisms/  # MonacoEditorPanel, DataGridResults, ExerciseSpecPanel,
+│       │   │   │               # MethodologyModal, SqlTransformDiagram, AuthModal, SuccessModal,
+│   │   │   │   │               # EditProfileModal, ProfilePrecisionCard, ProfileBadgesShowcase, QueryHistoryModal, etc.
+│       │   │   ├── organisms/  # MonacoEditorPanel, DataGridResults, ExerciseSpecPanel, DashboardHomeView, ExerciseHeaderBar, DesignSystemShowcase,
 │       │   │   │               # ErDiagramModal, ModuleGuideModal, SqlReferenceView, CommandPaletteModal,
 │       │   │   │               # CertificateModal (+ CertificateShowcase), CertificateVerifyView,
 │       │   │   │               # TracksView, SqlPlaygroundView, AdminDashboardView, SidebarNav, TopHeader
 │       │   │   └── templates/  # DashboardLayout, WorkspaceLayout
-│       │   ├── hooks/          # useAuth (GitHub OAuth, app_metadata.role, PASSWORD_RECOVERY), useTheme
+│       │   ├── hooks/          # useAuth, useTheme, useAppRouter, useCurriculumState, useExerciseWorkspace
 │       │   ├── lib/            # api, adminApi, schemaGraph, moduleGuides, sqlReference, format, routing
-│       │   ├── tests/          # 8 suites Vitest / 46 pruebas (incl. uxUpgrade.test.tsx y admin.test.ts)
+│       │   ├── tests/          # 8 suites Vitest / 49 pruebas (incl. uxUpgrade.test.tsx y admin.test.ts)
 │       │   ├── types/          # Definiciones estrictas TypeScript
-│       │   ├── App.tsx         # Enrutador HTML5 History API y coordinador de estado
+│       │   ├── App.tsx         # Orquestador modular de plantillas, rutas y modales globales
 │       │   └── index.css
 │       ├── tailwind.config.js
 │       └── vite.config.ts      # Code splitting (vendor-admin, vendor-monaco, vendor-sql-formatter)
@@ -271,6 +272,7 @@ Qurio/
 │   ├── security/
 │   ├── BITACORA.md
 │   ├── CURRICULUM_SPEC.md
+│   ├── GUIA_EJECUCION_LOCAL.md # Guía paso a paso para levantar la pila local
 │   ├── PRD.md
 │   └── SAD.md
 │
@@ -437,7 +439,7 @@ tests/test_security.py ............. Sanitización AST (SQLGlot) y bloqueo DDL/D
 tests/test_supabase_migration.py ... Privilegios, CLS, concurrencia y RPC autoritativa
 ```
 
-**Frontend (Vitest — 46 pruebas en 8 archivos) y Build de Producción:**
+**Frontend (Vitest — 49 pruebas en 8 archivos) y Build de Producción:**
 ```bash
 cd apps/web
 npm test
@@ -451,10 +453,10 @@ npm run build
  ✓ src/lib/__tests__/achievements.test.ts (4 tests)
  ✓ src/lib/__tests__/persistence.test.ts (7 tests)
  ✓ src/tests/pedagogy.test.ts (6 tests)
- ✓ src/tests/uxUpgrade.test.tsx (9 tests)
+ ✓ src/tests/uxUpgrade.test.tsx (12 tests)
  ✓ src/tests/admin.test.ts (5 tests)
 
- Test Files  8 passed (8) | Tests  46 passed (46)
+ Test Files  8 passed (8) | Tests  49 passed (49)
 ```
 
 ---
@@ -501,8 +503,8 @@ El desarrollo de Qurio sigue directrices estrictas establecidas en [`AGENTS.md`]
 ### 1. Atomic Design Pragmático
 Todo componente reutilizable pertenece obligatoriamente a uno de los 4 niveles jerárquicos:
 - **Átomos (`src/components/atoms/`):** Bloques indivisibles estilizados (`Button`, `Badge`, `AdminBadge`, `TextInput`, `KbdShortcut`, `RadioTab`).
-- **Moléculas (`src/components/molecules/`):** Combinaciones funcionales (`SearchInput`, `StreakPill`, `FormField`, `MetricTile`, `AdminMetricTile`, `TrackCard`, `AchievementCard`, `PedagogyPillarsCard`, `MethodologyModal`, `SqlTransformDiagram`, `UserModerationDrawer`, `KillswitchToggle`, `SqlDiffViewer`).
-- **Organismos (`src/components/organisms/`):** Módulos autónomos complejos (`MonacoEditorPanel`, `DataGridResults`, `ExerciseSpecPanel`, `LearningRoadmapMap`, `ErDiagramModal`, `ModuleGuideModal`, `SqlReferenceView`, `CommandPaletteModal`, `CertificateModal`, `CertificateShowcase`, `CertificateVerifyView`, `TracksView`, `SqlPlaygroundView`, `UserProfileView`, `AdminDashboardView`, `AdminUsersPanel`, `SidebarNav`, `TopHeader`).
+- **Moléculas (`src/components/molecules/`):** Combinaciones funcionales (`SearchInput`, `StreakPill`, `FormField`, `MetricTile`, `AdminMetricTile`, `TrackCard`, `AchievementCard`, `PedagogyPillarsCard`, `MethodologyModal`, `SqlTransformDiagram`, `UserModerationDrawer`, `KillswitchToggle`, `SqlDiffViewer`, `EditProfileModal`, `ProfilePrecisionCard`, `ProfileBadgesShowcase`, `QueryHistoryModal`).
+- **Organismos (`src/components/organisms/`):** Módulos autónomos complejos (`MonacoEditorPanel`, `DataGridResults`, `ExerciseSpecPanel`, `DashboardHomeView`, `ExerciseHeaderBar`, `DesignSystemShowcase`, `LearningRoadmapMap`, `ErDiagramModal`, `ModuleGuideModal`, `SqlReferenceView`, `CommandPaletteModal`, `CertificateModal`, `CertificateShowcase`, `CertificateVerifyView`, `TracksView`, `SqlPlaygroundView`, `UserProfileView`, `AdminDashboardView`, `AdminUsersPanel`, `SidebarNav`, `TopHeader`).
 - **Plantillas (`src/components/templates/`):** Estructuras de layout desacopladas (`DashboardLayout`, `WorkspaceLayout`).
 
 ### 2. Estética *Terminal Glow Minimal*
