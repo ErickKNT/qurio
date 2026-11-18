@@ -72,7 +72,36 @@ const CommandPaletteModal = React.lazy(() =>
 const ModuleGuideModal = React.lazy(() =>
   import('@/components/organisms/ModuleGuideModal/ModuleGuideModal').then((m) => ({ default: m.ModuleGuideModal }))
 );
+const CertificateVerifyView = React.lazy(() =>
+  import('@/components/organisms/CertificateVerifyView/CertificateVerifyView').then((m) => ({ default: m.CertificateVerifyView }))
+);
+const CertificateModal = React.lazy(() =>
+  import('@/components/organisms/CertificateModal/CertificateModal').then((m) => ({ default: m.CertificateModal }))
+);
+import type { CertificateData } from '@/components/organisms/CertificateModal/CertificateModal';
+import type { CertificateRecord } from '@/types';
 import type { ModuleGuide } from '@/lib/moduleGuides';
+
+function toCertificateData(record: CertificateRecord): CertificateData {
+  return {
+    id: record.id,
+    recipientName: record.recipient_name,
+    trackTitle: record.track_title,
+    completedExercises: record.completed_exercises,
+    totalExercises: record.total_exercises,
+    issuedDate: new Date(record.issued_at).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }),
+    verificationCode: record.verification_code,
+    isGlobal: record.track_id === 'global-curriculum',
+    isQaPreview: record.is_qa_preview,
+    verifyUrl: record.verify_url,
+    pdfUrl: record.pdf_url,
+    linkedinUrl: record.linkedin_url,
+  };
+}
 
 const ViewLoadingFallback: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-[360px] gap-3 text-content-muted">
@@ -169,6 +198,8 @@ export const App: React.FC = () => {
   const [isTrialResult, setIsTrialResult] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [activePaletteGuide, setActivePaletteGuide] = useState<ModuleGuide | null>(null);
+  const [verifyCode, setVerifyCode] = useState<string>('');
+  const [tracksCertificate, setTracksCertificate] = useState<CertificateData | null>(null);
 
   // Atajo global Cmd+K / Ctrl+K para Búsqueda Rápida
   useEffect(() => {
@@ -186,9 +217,12 @@ export const App: React.FC = () => {
 
   // Navegación con History API
   const navigate = useCallback(
-    (newPath: AppPath, params?: { exerciseId?: string; trackSlug?: string }, replace = false) => {
+    (newPath: AppPath, params?: { exerciseId?: string; trackSlug?: string; verifyCode?: string }, replace = false) => {
       if (newPath !== 'reset-password') {
         clearPasswordRecovery();
+      }
+      if (params?.verifyCode) {
+        setVerifyCode(params.verifyCode);
       }
       setCurrentPath(newPath);
       const targetUrl = pathToUrl(newPath, params);
@@ -241,6 +275,10 @@ export const App: React.FC = () => {
 
       // 2. Enrutamiento estándar con History API
       setCurrentPath(parsed.path);
+
+      if (parsed.path === 'verify' && parsed.verifyCode) {
+        setVerifyCode(parsed.verifyCode);
+      }
 
       if (parsed.path === 'exercise' && parsed.exerciseId) {
         const idx = exercises.findIndex((e) => e.id === parsed.exerciseId);
@@ -461,6 +499,7 @@ export const App: React.FC = () => {
         tracks: 'Rutas de Aprendizaje | Qurio',
         playground: 'Laboratorio SQL | Qurio',
         reference: 'Referencia SQL | Qurio',
+        verify: 'Verificar Constancia | Qurio',
         achievements: 'Logros & Rangos | Qurio',
         profile: 'Mi Perfil | Qurio',
         'not-found': 'ERROR 404: Relation Not Found | Qurio',
@@ -532,10 +571,53 @@ export const App: React.FC = () => {
     [activeExercise]
   );
 
-  // Confirmar y solicitar al backend la solución oficial tras >= 2 intentos fallidos
+  // Desbloquear todas las pistas en modo QA Admin
+  const handleAdminUnlockAllHints = useCallback(() => {
+    if (!isAdmin) return;
+    const totalHints = activeExercise.hints ? activeExercise.hints.length : 0;
+    setHintsUnlocked(totalHints);
+  }, [isAdmin, activeExercise]);
+
+  // Revelar solución oficial al instante en modo QA Admin (sin esperar 2 fallos)
+  const handleAdminInstantReveal = useCallback(async () => {
+    if (!isAdmin) return;
+    setIsRevealingSolution(true);
+    try {
+      const resp = await api.revealSolution(activeExercise.id, 0);
+      setRevealedSolutions((prev) => ({
+        ...prev,
+        [activeExercise.id]: resp.solution_query,
+      }));
+    } catch (err: any) {
+      setResultError(err.message || 'No se pudo obtener la solución oficial en modo QA.');
+    } finally {
+      setIsRevealingSolution(false);
+    }
+  }, [isAdmin, activeExercise]);
+
+  // Emitir constancia desde Rutas (soporta QA Admin Preview)
+  const handleIssueTrackCertificate = useCallback(
+    async (track: Track, qaPreview: boolean) => {
+      try {
+        const record = await api.issueCertificate({
+          track_id: track.id,
+          track_title: track.title,
+          recipient_name: profile?.full_name || profile?.username || 'Estudiante Qurio',
+          total_exercises: track.total_exercises || 20,
+          qa_preview: qaPreview,
+        });
+        setTracksCertificate(toCertificateData(record));
+      } catch (err: any) {
+        setResultError(err?.message || 'No se pudo emitir la constancia.');
+      }
+    },
+    [profile]
+  );
+
+  // Confirmar y solicitar al backend la solución oficial tras >= 2 intentos fallidos (o Admin QA)
   const handleConfirmRevealSolution = useCallback(async () => {
     const failedCount = failedAttemptsByExercise[activeExercise.id] || 0;
-    if (failedCount < 2) return;
+    if (failedCount < 2 && !isAdmin) return;
 
     setIsRevealingSolution(true);
     try {
@@ -935,6 +1017,9 @@ export const App: React.FC = () => {
                 solutionQuery={revealedSolutions[activeExercise.id] || null}
                 onOpenRevealModal={() => setIsRevealModalOpen(true)}
                 onLoadSolutionIntoEditor={handleLoadSolutionIntoEditor}
+                isAdmin={isAdmin}
+                onAdminUnlockAllHints={handleAdminUnlockAllHints}
+                onAdminInstantReveal={handleAdminInstantReveal}
               />
             </React.Suspense>
           }
@@ -1052,6 +1137,8 @@ export const App: React.FC = () => {
         return 'Laboratorio SQL';
       case 'reference':
         return 'Referencia SQL';
+      case 'verify':
+        return 'Verificación de Constancia';
       case 'achievements':
         return 'Logros & Rangos';
       case 'profile':
@@ -1089,6 +1176,8 @@ export const App: React.FC = () => {
               completedExerciseIds={authoritativeCompletedIds}
               onSelectExercise={handleOpenExerciseFromCatalog}
               onOpenMethodology={() => setMethodologyModalOpen(true)}
+              onIssueTrackCertificate={handleIssueTrackCertificate}
+              isAdmin={isAdmin}
               isLoading={isProgressLoading}
             />
           </React.Suspense>
@@ -1141,7 +1230,19 @@ export const App: React.FC = () => {
                 navigate('playground');
               }}
               onOpenAuth={() => setAuthModalOpen(true)}
+              onOpenVerifyPage={(code) => navigate('verify', { verifyCode: code })}
               isCloudAuth={isCloudAuth}
+              isAdmin={isAdmin}
+            />
+          </React.Suspense>
+        )}
+
+        {/* VISTA D2: VERIFICACIÓN PÚBLICA DE CONSTANCIA (/verify/:code) */}
+        {currentPath === 'verify' && (
+          <React.Suspense fallback={<ViewLoadingFallback />}>
+            <CertificateVerifyView
+              verificationCode={verifyCode}
+              onNavigateDashboard={() => navigate('dashboard')}
             />
           </React.Suspense>
         )}
@@ -1657,6 +1758,12 @@ export const App: React.FC = () => {
         guide={activePaletteGuide}
         isOpen={Boolean(activePaletteGuide)}
         onClose={() => setActivePaletteGuide(null)}
+      />
+      <CertificateModal
+        certificate={tracksCertificate}
+        isOpen={Boolean(tracksCertificate)}
+        onClose={() => setTracksCertificate(null)}
+        onOpenVerifyPage={(code) => navigate('verify', { verifyCode: code })}
       />
     </React.Suspense>
 

@@ -13,6 +13,7 @@ import { CertificateModal } from '@/components/organisms/CertificateModal/Certif
 import { ExerciseSpecPanel } from '@/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel';
 import { FALLBACK_EXERCISES } from '@/lib/fallbackCurriculum';
 import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
+import { parseLocation, pathToUrl } from '@/lib/routing';
 
 describe('Qurio UX, ER, Guías y Referencia SQL', () => {
   it('schemaGraph expone exactamente las 10 tablas canónicas y 9 relaciones FK válidas', () => {
@@ -99,7 +100,19 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     );
     expect(screen.getByText('erick_sql')).toBeInTheDocument();
     expect(screen.getByText('1. Fundamentos de SQL')).toBeInTheDocument();
-    expect(screen.getByText(/QURIO-SQL-FO-123456/)).toBeInTheDocument();
+    expect(screen.getByText(/^ID: QURIO-SQL-FO-123456$/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Añadir a LinkedIn/i })).toHaveAttribute(
+      'href',
+      expect.stringContaining('https://www.linkedin.com/profile/add')
+    );
+  });
+
+  it('routing soporta /verify/:code para verificación pública de constancias', () => {
+    expect(pathToUrl('verify', { verifyCode: 'QURIO-2026-ABC123' })).toBe('/verify/QURIO-2026-ABC123');
+    expect(parseLocation('/verify/QURIO-2026-ABC123')).toEqual({
+      path: 'verify',
+      verifyCode: 'QURIO-2026-ABC123',
+    });
   });
 
   it('formatSqlProse y highlightSqlBlock resaltan palabras reservadas SQL en JetBrains Mono', () => {

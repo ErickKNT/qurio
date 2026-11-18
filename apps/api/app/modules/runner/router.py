@@ -144,7 +144,8 @@ async def reveal_exercise_solution(
     """
     await check_rate_limit(http_request, user)
 
-    if request.failed_attempts < 2:
+    is_admin = (user.app_metadata or {}).get("role") == "admin"
+    if request.failed_attempts < 2 and not is_admin:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Se requieren al menos 2 intentos fallidos previos para poder desbloquear la solución oficial.",

@@ -16,11 +16,18 @@ import {
   ChevronDown,
   ChevronUp,
   Lock,
+  ShieldAlert,
+  Sparkles,
 } from 'lucide-react';
 import { UserProfile, QueryHistoryItem, Track } from '@/types';
 import { Badge, Button } from '@/components/atoms';
 import { MetricTile } from '@/components/molecules/MetricTile/MetricTile';
-import { CertificateModal, CertificateData } from '@/components/organisms/CertificateModal/CertificateModal';
+import {
+  CertificateModal,
+  CertificateData,
+  mapCertificateRecordToData,
+} from '@/components/organisms/CertificateModal/CertificateModal';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 export interface UserProfileViewProps {
@@ -32,7 +39,9 @@ export interface UserProfileViewProps {
   dailyActivity?: { activity_date: string; exercises_solved: number; xp_earned: number }[];
   onOpenPlayground?: (initialQuery?: string) => void;
   onOpenAuth?: () => void;
+  onOpenVerifyPage?: (code: string) => void;
   isCloudAuth?: boolean;
+  isAdmin?: boolean;
   className?: string;
 }
 
@@ -45,11 +54,39 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   dailyActivity = [],
   onOpenPlayground,
   onOpenAuth,
+  onOpenVerifyPage,
   isCloudAuth = false,
+  isAdmin = false,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedCertificate, setSelectedCertificate] = useState<CertificateData | null>(null);
+  const [issuingId, setIssuingId] = useState<string | null>(null);
+  const [certError, setCertError] = useState<string | null>(null);
+
+  const handleIssueAndOpen = async (params: {
+    trackId: string;
+    trackTitle: string;
+    totalCount: number;
+    qaPreview: boolean;
+  }) => {
+    setCertError(null);
+    setIssuingId(params.trackId);
+    try {
+      const record = await api.issueCertificate({
+        track_id: params.trackId,
+        track_title: params.trackTitle,
+        recipient_name: profile?.full_name || profile?.username || 'Estudiante Qurio',
+        total_exercises: params.totalCount,
+        qa_preview: params.qaPreview,
+      });
+      setSelectedCertificate(mapCertificateRecordToData(record));
+    } catch (err: any) {
+      setCertError(err?.message || 'No se pudo emitir la constancia desde la API.');
+    } finally {
+      setIssuingId(null);
+    }
+  };
 
   const handleCopy = (id: string, text: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -291,24 +328,47 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           <div className="flex flex-col">
             <h3 className="text-sm font-bold text-content-primary flex items-center gap-2">
               <Award className="w-4 h-4 text-amber-streak" />
-              Constancias de Finalización
+              Constancias de Finalización (PDF + LinkedIn)
             </h3>
             <p className="text-xs text-content-secondary mt-0.5">
-              Completa el 100% de una ruta oficial o de los {totalExercises} retos para emitir tu constancia verificable en PDF.
+              Completa el 100% de una ruta oficial o de los {totalExercises} retos para emitir tu constancia verificable en PDF y vincularla a LinkedIn.
             </p>
           </div>
-          {!isCloudAuth && (
-            <Badge variant="amber" size="sm">
-              Requiere cuenta autenticada
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Badge variant="cyan" dot size="sm">
+                Modo QA Admin Desbloqueado
+              </Badge>
+            )}
+            {!isCloudAuth && (
+              <Badge variant="amber" size="sm">
+                Requiere cuenta autenticada
+              </Badge>
+            )}
+          </div>
         </div>
+
+        {isAdmin && (
+          <div className="p-3 rounded-xl bg-cyan-accent/10 border border-cyan-accent/30 flex items-center gap-2.5 text-xs text-content-secondary">
+            <ShieldAlert className="w-4 h-4 text-cyan-accent shrink-0" />
+            <span>
+              Tu sesión tiene rol <strong className="font-mono text-cyan-accent">admin</strong>: puedes emitir y probar constancias reales (PDF vectorial + QR + LinkedIn + verificación pública) en cualquier ruta sin completar los 60 retos primero.
+            </span>
+          </div>
+        )}
+
+        {certError && (
+          <div role="alert" className="p-3 rounded-xl bg-error/10 border border-error/30 text-xs font-mono text-error">
+            {certError}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {tracks.map((tr) => {
             const trTotal = tr.total_exercises || 1;
             const trDone = tr.completed_exercises ?? 0;
             const unlocked = isCloudAuth && trDone >= trTotal && trTotal > 0;
+            const canIssue = unlocked || isAdmin;
             return (
               <div
                 key={tr.id}
@@ -316,6 +376,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                   'p-4 rounded-xl border flex items-center justify-between gap-3',
                   unlocked
                     ? 'bg-emerald/[0.06] border-emerald/35'
+                    : isAdmin
+                    ? 'bg-cyan-accent/[0.04] border-cyan-accent/30'
                     : 'bg-surface-dim/50 border-border-subtle/50'
                 )}
               >
@@ -328,28 +390,23 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                   </span>
                 </div>
 
-                {unlocked ? (
+                {canIssue ? (
                   <Button
                     size="sm"
-                    variant="emerald"
+                    variant={unlocked ? 'emerald' : 'outline'}
+                    isLoading={issuingId === tr.id}
+                    leftIcon={!unlocked ? <Sparkles className="w-3 h-3 text-cyan-accent" /> : undefined}
                     onClick={() =>
-                      setSelectedCertificate({
-                        id: tr.id,
-                        recipientName: profile?.full_name || profile?.username || 'Estudiante Qurio',
+                      handleIssueAndOpen({
+                        trackId: tr.id,
                         trackTitle: tr.title,
-                        completedExercises: trDone,
-                        totalExercises: trTotal,
-                        issuedDate: new Date().toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        }),
-                        verificationCode: `QURIO-${tr.slug.slice(0, 6).toUpperCase()}-${(profile?.id || 'LOCAL').slice(0, 6).toUpperCase()}`,
+                        totalCount: trTotal,
+                        qaPreview: !unlocked,
                       })
                     }
                     className="shrink-0 text-xs"
                   >
-                    Ver Constancia
+                    {unlocked ? 'Ver Constancia' : 'Probar Constancia (QA)'}
                   </Button>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-content-muted shrink-0">
@@ -364,12 +421,15 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           {/* Constancia Global (60 retos) */}
           {(() => {
             const globalUnlocked = isCloudAuth && completedCount >= totalExercises && totalExercises > 0;
+            const canIssueGlobal = globalUnlocked || isAdmin;
             return (
               <div
                 className={cn(
                   'p-4 rounded-xl border flex items-center justify-between gap-3',
                   globalUnlocked
                     ? 'bg-primary/10 border-primary/40'
+                    : isAdmin
+                    ? 'bg-cyan-accent/[0.04] border-cyan-accent/30'
                     : 'bg-surface-dim/50 border-border-subtle/50'
                 )}
               >
@@ -382,29 +442,23 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                   </span>
                 </div>
 
-                {globalUnlocked ? (
+                {canIssueGlobal ? (
                   <Button
                     size="sm"
-                    variant="primary"
+                    variant={globalUnlocked ? 'primary' : 'outline'}
+                    isLoading={issuingId === 'global-curriculum'}
+                    leftIcon={!globalUnlocked ? <Sparkles className="w-3 h-3 text-cyan-accent" /> : undefined}
                     onClick={() =>
-                      setSelectedCertificate({
-                        id: 'global',
-                        recipientName: profile?.full_name || profile?.username || 'Estudiante Qurio',
+                      handleIssueAndOpen({
+                        trackId: 'global-curriculum',
                         trackTitle: 'Currículum Completo SQL • PostgreSQL 16',
-                        completedExercises: completedCount,
-                        totalExercises,
-                        issuedDate: new Date().toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        }),
-                        verificationCode: `QURIO-FULL-${(profile?.id || 'LOCAL').slice(0, 6).toUpperCase()}`,
-                        isGlobal: true,
+                        totalCount: totalExercises,
+                        qaPreview: !globalUnlocked,
                       })
                     }
                     className="shrink-0 text-xs"
                   >
-                    Ver Certificado
+                    {globalUnlocked ? 'Ver Certificado' : 'Probar Certificado (QA)'}
                   </Button>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-content-muted shrink-0">
@@ -538,6 +592,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         certificate={selectedCertificate}
         isOpen={Boolean(selectedCertificate)}
         onClose={() => setSelectedCertificate(null)}
+        onOpenVerifyPage={onOpenVerifyPage}
       />
     </div>
   );

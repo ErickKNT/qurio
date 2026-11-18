@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GitBranch, Play } from 'lucide-react';
+import { GitBranch, Play, Award } from 'lucide-react';
 import { Track, Exercise } from '@/types';
 import { TrackCard } from '@/components/molecules/TrackCard/TrackCard';
 import { ModuleAccordion } from '@/components/molecules/ModuleAccordion/ModuleAccordion';
@@ -15,6 +15,8 @@ export interface TracksViewProps {
   completedExerciseIds?: Set<string>;
   onSelectExercise: (exercise: Exercise) => void;
   onOpenMethodology?: () => void;
+  onIssueTrackCertificate?: (track: Track, qaPreview: boolean) => void;
+  isAdmin?: boolean;
   isLoading?: boolean;
   className?: string;
 }
@@ -25,6 +27,8 @@ export const TracksView: React.FC<TracksViewProps> = ({
   completedExerciseIds,
   onSelectExercise,
   onOpenMethodology,
+  onIssueTrackCertificate,
+  isAdmin = false,
   isLoading = false,
 }) => {
   const [selectedTrackId, setSelectedTrackId] = useState<string>(tracks[0]?.id || 'sql-foundations');
@@ -132,7 +136,26 @@ export const TracksView: React.FC<TracksViewProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+              {onIssueTrackCertificate &&
+                (() => {
+                  const trTotal = selectedTrack.total_exercises || 1;
+                  const trDone = selectedTrack.completed_exercises ?? 0;
+                  const isTrackComplete = trDone >= trTotal && trTotal > 0;
+                  if (!isTrackComplete && !isAdmin) return null;
+                  return (
+                    <Button
+                      variant={isTrackComplete ? 'emerald' : 'outline'}
+                      size="sm"
+                      onClick={() => onIssueTrackCertificate(selectedTrack, !isTrackComplete)}
+                      leftIcon={<Award className="w-3.5 h-3.5 shrink-0" />}
+                      className="text-xs whitespace-nowrap shrink-0"
+                    >
+                      {isTrackComplete ? 'Ver Constancia' : 'Probar Constancia (QA)'}
+                    </Button>
+                  );
+                })()}
+
               <Button
                 variant="primary"
                 onClick={() => handleStartTrackFirstAvailable(selectedTrack)}

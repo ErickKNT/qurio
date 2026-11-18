@@ -3,6 +3,7 @@ import { AppPath } from '@/types';
 export interface RouteParams {
   exerciseId?: string;
   trackSlug?: string;
+  verifyCode?: string;
 }
 
 /**
@@ -24,6 +25,8 @@ export function pathToUrl(path: AppPath, params?: RouteParams): string {
       return '/profile';
     case 'exercise':
       return params?.exerciseId ? `/exercises/${params.exerciseId}` : '/exercises';
+    case 'verify':
+      return params?.verifyCode ? `/verify/${params.verifyCode}` : '/verify';
     case 'admin':
       return '/admin';
     case 'auth-confirm':
@@ -40,7 +43,7 @@ export function pathToUrl(path: AppPath, params?: RouteParams): string {
 /**
  * Parsea window.location.pathname en un AppPath y parámetros estructurados (C-05).
  */
-export function parseLocation(pathname: string): { path: AppPath; exerciseId?: string; trackSlug?: string } {
+export function parseLocation(pathname: string): { path: AppPath; exerciseId?: string; trackSlug?: string; verifyCode?: string } {
   const clean = pathname.replace(/\/+$/, '') || '/';
   if (clean === '/' || clean === '') return { path: 'dashboard' };
   if (clean === '/tracks') return { path: 'tracks' };
@@ -56,6 +59,10 @@ export function parseLocation(pathname: string): { path: AppPath; exerciseId?: s
   if (clean.startsWith('/exercises/')) {
     const id = clean.replace('/exercises/', '');
     return { path: 'exercise', exerciseId: id };
+  }
+  if (clean.startsWith('/verify/')) {
+    const code = clean.replace('/verify/', '');
+    return { path: 'verify', verifyCode: code };
   }
   if (clean === '/auth/confirm' || clean === '/auth-confirm') return { path: 'auth-confirm' };
   if (clean === '/reset-password') return { path: 'reset-password' };

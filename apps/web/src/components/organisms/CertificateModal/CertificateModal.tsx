@@ -1,6 +1,35 @@
-import React, { useEffect } from 'react';
-import { X, Award, ShieldCheck, Printer } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Award, ShieldCheck, Printer, Download, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button, Badge } from '@/components/atoms';
+import { api } from '@/lib/api';
+import type { CertificateRecord } from '@/types';
+
+export function mapCertificateRecordToData(record: CertificateRecord): CertificateData {
+  return {
+    id: record.id,
+    recipientName: record.recipient_name,
+    trackTitle: record.track_title,
+    completedExercises: record.completed_exercises,
+    totalExercises: record.total_exercises,
+    issuedDate: new Date(record.issued_at).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }),
+    verificationCode: record.verification_code,
+    isGlobal: record.track_id === 'global-curriculum',
+    isQaPreview: record.is_qa_preview,
+    verifyUrl: record.verify_url,
+    pdfUrl: record.pdf_url,
+    linkedinUrl: record.linkedin_url,
+  };
+}
+
+const LinkedInLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+  </svg>
+);
 
 export interface CertificateData {
   id: string;
@@ -11,19 +40,27 @@ export interface CertificateData {
   issuedDate: string;
   verificationCode: string;
   isGlobal?: boolean;
+  isQaPreview?: boolean;
+  verifyUrl?: string;
+  pdfUrl?: string;
+  linkedinUrl?: string;
 }
 
 export interface CertificateModalProps {
   certificate: CertificateData | null;
   isOpen: boolean;
   onClose: () => void;
+  onOpenVerifyPage?: (code: string) => void;
 }
 
 export const CertificateModal: React.FC<CertificateModalProps> = ({
   certificate,
   isOpen,
   onClose,
+  onOpenVerifyPage,
 }) => {
+  const [copiedLink, setCopiedLink] = useState(false);
+
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -34,6 +71,28 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
   }, [isOpen, onClose]);
 
   if (!isOpen || !certificate) return null;
+
+  const verifyUrl =
+    certificate.verifyUrl ||
+    `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'}/verify/${certificate.verificationCode}`;
+
+  const pdfDownloadUrl = certificate.pdfUrl
+    ? api.getCertificatePdfUrl(certificate.verificationCode)
+    : null;
+
+  const linkedinUrl =
+    certificate.linkedinUrl ||
+    `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(
+      `${certificate.trackTitle} (SQL PostgreSQL 16)`
+    )}&organizationName=Qurio&issueYear=${new Date().getFullYear()}&issueMonth=${
+      new Date().getMonth() + 1
+    }&certUrl=${encodeURIComponent(verifyUrl)}&certId=${encodeURIComponent(certificate.verificationCode)}`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard?.writeText(verifyUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 1800);
+  };
 
   return (
     <div
@@ -47,19 +106,46 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
     >
       <div className="w-full max-w-2xl rounded-2xl bg-surface border border-border-subtle shadow-2xl overflow-hidden flex flex-col print:shadow-none print:border-2 print:border-slate-300">
         {/* Barra superior (oculta al imprimir) */}
-        <div className="px-5 py-3 bg-surface-dim border-b border-border-subtle flex items-center justify-between print:hidden">
-          <span className="text-xs font-mono font-semibold text-cyan-accent flex items-center gap-2">
-            <Award className="w-4 h-4 text-amber-streak" />
-            <span>Constancia Oficial de Ruta SQL</span>
-          </span>
+        <div className="px-4 sm:px-5 py-3 bg-surface-dim border-b border-border-subtle flex flex-wrap items-center justify-between gap-2 print:hidden">
           <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-semibold text-cyan-accent flex items-center gap-2">
+              <Award className="w-4 h-4 text-amber-streak" />
+              <span>Constancia Oficial de Ruta SQL</span>
+            </span>
+            {certificate.isQaPreview && (
+              <Badge variant="amber" size="sm">
+                QA Admin Preview
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {pdfDownloadUrl && (
+              <a
+                href={pdfDownloadUrl}
+                download={`constancia-qurio-${certificate.verificationCode.toLowerCase()}.pdf`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold transition-colors shadow-glow-primary"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Descargar PDF</span>
+              </a>
+            )}
+            <a
+              href={linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0A66C2] hover:bg-[#004182] text-white text-xs font-semibold transition-colors"
+            >
+              <LinkedInLogo className="w-3.5 h-3.5" />
+              <span>Añadir a LinkedIn</span>
+            </a>
             <Button
-              variant="primary"
+              variant="outline"
               size="sm"
               onClick={() => window.print()}
               leftIcon={<Printer className="w-3.5 h-3.5" />}
+              title="Imprimir vista previa"
             >
-              Imprimir / Guardar PDF
+              Imprimir
             </Button>
             <button
               type="button"
@@ -120,13 +206,52 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({
             </div>
           </div>
 
-          <div className="w-full pt-5 mt-2 border-t border-border-subtle/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-content-muted">
-            <span className="flex items-center gap-1.5 text-emerald">
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span>Progreso Auditado en Servidor</span>
-            </span>
-            <span>Emitido: {certificate.issuedDate}</span>
-            <span>ID: {certificate.verificationCode}</span>
+          {/* Barra de verificación pública */}
+          <div className="w-full pt-5 mt-2 border-t border-border-subtle/50 flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-content-muted">
+              <span className="flex items-center gap-1.5 text-emerald">
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                <span>{certificate.isQaPreview ? 'Emitido en Modo QA Admin' : 'Progreso Auditado en Servidor'}</span>
+              </span>
+              <span>Emitido: {certificate.issuedDate}</span>
+              <span>ID: {certificate.verificationCode}</span>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl bg-surface-dim/80 border border-border-subtle/60 text-[11px] font-mono print:hidden">
+              <span className="text-content-muted truncate max-w-sm">{verifyUrl}</span>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-card border border-border-subtle hover:border-cyan-accent/50 text-content-primary transition-colors"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald" />
+                      <span className="text-emerald">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span>Copiar enlace</span>
+                    </>
+                  )}
+                </button>
+                {onOpenVerifyPage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenVerifyPage(certificate.verificationCode);
+                    }}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-surface-card border border-border-subtle hover:border-primary/50 text-cyan-accent transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span>Abrir verificación</span>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
