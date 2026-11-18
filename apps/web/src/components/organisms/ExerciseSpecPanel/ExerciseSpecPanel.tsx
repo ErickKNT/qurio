@@ -35,6 +35,9 @@ export interface ExerciseSpecPanelProps {
   solutionQuery?: string | null;
   onOpenRevealModal?: () => void;
   onLoadSolutionIntoEditor?: (sql: string) => void;
+  isAdmin?: boolean;
+  onAdminUnlockAllHints?: () => void;
+  onAdminInstantReveal?: () => void;
   className?: string;
 }
 
@@ -50,6 +53,9 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
   solutionQuery,
   onOpenRevealModal,
   onLoadSolutionIntoEditor,
+  isAdmin = false,
+  onAdminUnlockAllHints,
+  onAdminInstantReveal,
   className,
 }) => {
   const [activeTab, setActiveTab] = useState<SpecTab>('guide');
@@ -583,6 +589,32 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 </button>
               )}
             </div>
+
+            {isAdmin && (
+              <div className="p-3 rounded-xl bg-cyan-accent/10 border border-cyan-accent/30 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
+                <span className="text-cyan-accent font-semibold">QA Admin:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {onAdminUnlockAllHints && unlockedHintsCount < totalHints && (
+                    <button
+                      type="button"
+                      onClick={onAdminUnlockAllHints}
+                      className="px-2 py-1 rounded bg-surface-card border border-cyan-accent/40 text-cyan-accent hover:bg-cyan-accent/15 transition-colors"
+                    >
+                      Desbloquear {totalHints} pistas
+                    </button>
+                  )}
+                  {onAdminInstantReveal && !isSolutionRevealed && (
+                    <button
+                      type="button"
+                      onClick={onAdminInstantReveal}
+                      className="px-2 py-1 rounded bg-surface-card border border-amber-streak/40 text-amber-streak hover:bg-amber-streak/15 transition-colors"
+                    >
+                      Revelar Solución (QA)
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col gap-2">
               {exercise.hints?.slice(0, unlockedHintsCount).map((hint, index) => {

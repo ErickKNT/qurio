@@ -8,6 +8,7 @@ import {
   TableSchemaInfo,
   QueryHistoryItem,
   UserProfile,
+  CertificateRecord,
 } from '@/types';
 import { supabase } from '@/lib/supabase';
 
@@ -279,6 +280,69 @@ export const api = {
     }
 
     return await res.json();
+  },
+
+  /**
+   * Emite o recupera de forma idempotente una constancia verificable en el backend FastAPI.
+   */
+  async issueCertificate(params: {
+    track_id: string;
+    track_title: string;
+    recipient_name?: string;
+    total_exercises: number;
+    qa_preview?: boolean;
+  }): Promise<CertificateRecord> {
+    const headers = await getAuthHeaders();
+    const verifyBaseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
+    const res = await fetch(`${API_BASE_URL}/certificates/issue`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        ...params,
+        verify_base_url: verifyBaseUrl,
+      }),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new ApiError(errorData.detail || 'No se pudo emitir la constancia verificable.', res.status);
+    }
+    return await res.json();
+  },
+
+  /**
+   * Lista las constancias emitidas del estudiante autenticado.
+   */
+  async getMyCertificates(): Promise<CertificateRecord[]> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE_URL}/certificates/me`, { headers });
+    if (!res.ok) return [];
+    return await res.json();
+  },
+
+  /**
+   * Consulta pública de verificación de constancia por código.
+   */
+  async verifyCertificate(verificationCode: string): Promise<CertificateRecord> {
+    const res = await fetch(`${API_BASE_URL}/certificates/${encodeURIComponent(verificationCode)}`);
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new ApiError(errorData.detail || 'Constancia no encontrada.', res.status);
+    }
+    return await res.json();
+  },
+
+  /**
+   * Devuelve la URL directa de descarga del PDF oficial en FastAPI.
+   */
+  getCertificatePdfUrl(verificationCode: string): string {
+    return `${API_BASE_URL}/certificates/${encodeURIComponent(verificationCode)}/pdf`;
+  },
+
+  /**
+   * Devuelve la URL del código QR SVG vectorial en FastAPI.
+   */
+  getCertificateQrSvgUrl(verificationCode: string): string {
+    return `${API_BASE_URL}/certificates/${encodeURIComponent(verificationCode)}/qr.svg`;
   },
 };
 

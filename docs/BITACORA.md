@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 15: Evolución UX, Consola SQL, Diagrama ER & Guías Teóricas Modulares — Implementada en Rama Aislada**  
-* **Próxima Fase:** **Revisión visual en navegador + Merge de `feat/ux-pedagogy-and-er-upgrade` hacia `main` + Planificación de Ruta 4 (DDL & DML en PostgreSQL Transaccional)**  
-* **Rama Git Activa:** `feat/ux-pedagogy-and-er-upgrade` (aislada, bifurcada desde `main`)  
+* **Fase Actual:** **Fase 16: Constancias Verificables en PDF/QR, LinkedIn (`/verify/:code`), Rediseño *Terminal Glow Minimal* y Controles QA Admin — Concluida y Fusionada en `main`**  
+* **Próxima Fase:** **Ejecución de `05_certificates.sql` en Supabase Cloud + Planificación de Ruta 4 (DDL & DML en PostgreSQL Transaccional)**  
+* **Rama Git Activa:** `main` (merge verificado de `feat/verifiable-certificates-pdf-linkedin`)  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
   * Contenedor Docker Sandbox (`qurio-postgres-sandbox` en `localhost:5433`): Activo y saludable (`healthy`).
   * API FastAPI (`apps/api`, `uvicorn` en `http://127.0.0.1:8000`): **100% Verificado** — Suite de **96 pruebas automatizadas pasando limpiamente en 93.28s** en `apps/api/tests/` (`85` existentes + `11` nuevas en `test_admin.py`).
@@ -38,7 +38,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **10 (Ejec)** | **Estabilización Técnica Integral (Bloques A, B, C, D)** | ✅ Concluida | `feat/phase-10-stabilization` | Resolución de brechas `C-01` a `C-05`, suites de pruebas 100% exitosas (69 backend / 8 frontend), build limpio y sandbox apagado. |
 | **11** | **Preparación del Piloto, Hardening v6.3 y E2E** | ✅ Concluida | `main` (vía `feat/phase-11-pilot-readiness`) | Endurecimiento CLS/RLS, RPC autoritativa de XP/rachas, rollback v4.0 y suite E2E Playwright. |
 | **12** | **Consola de Administración, Live Ops y Observabilidad** | ✅ Implementada (Aislada) | `feat/phase-12-admin-console` | RBAC criptográfico `app_metadata.role`, API `/admin/*` (Live Ops, `pg_stat_activity`, Replay Forense, Auditoría AST, Killswitches), UI Atomic Design lazy en `vendor-admin` y code splitting base (`114.72 kB`). |
-| **15** | **Evolución UX, Consola SQL, Diagrama ER & Guías Modulares** | ✅ Implementada (Aislada) | `feat/ux-pedagogy-and-er-upgrade` | Drawer móvil + tabs en Playground, modo dual Probar/Enviar, Playground multi-tab + Historial, Diagrama ER interactivo (`10` tablas), `12` guías teóricas con micro-diagramas, Referencia SQL + `⌘K`, OAuth y Constancias PDF. |
+| **15** | **Evolución UX, Consola SQL, Diagrama ER & Guías Modulares** | ✅ Concluida | `main` (vía `feat/ux-pedagogy-and-er-upgrade`) | Drawer móvil + tabs en Playground, modo dual Probar/Enviar, Playground multi-tab + Historial, Diagrama ER interactivo (`10` tablas), `12` guías teóricas con micro-diagramas, Referencia SQL + `⌘K`, OAuth GitHub y Constancias. |
+| **16** | **Constancias Verificables PDF/QR, LinkedIn & Modo QA Admin** | ✅ Concluida | `main` (vía `feat/verifiable-certificates-pdf-linkedin`) | Emisión idempotente (`user_certificates`), PDF vectorial A4 oscuro con QR (`reportlab`), enlace público `/verify/:code`, QR SVG, *Añadir a LinkedIn*, UI *Terminal Glow Minimal* y desbloqueo QA Admin (`app_metadata.role === 'admin'`). |
 
 ---
 
@@ -1643,3 +1644,46 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Frontend (`vitest run`):** **8 archivos / 43 pruebas aprobadas** en `3.37s` (incluidas 6 pruebas nuevas en `src/tests/uxUpgrade.test.tsx`).
   * **Build de producción (`tsc && vite build`):** **2,288 módulos transformados en `6.52s`**, 0 errores TypeScript (`index` base en `107.79 kB`).
   * **Backend (`test_schema_consistency.py`):** Las 4 comprobaciones estáticas y de sincronización curricular aprobaron (`PASSED`); la 5.ª prueba de ejecución en vivo contra Docker (`test_curriculum_pedagogical_rubric_and_sandbox_determinism`) quedó pendiente de levantar el contenedor local `qurio-postgres-sandbox` (`localhost:5433` rechazó conexión).
+
+
+---
+
+### Entrada 55: Constancias Verificables PDF/QR, LinkedIn (`/verify/:code`) y Desbloqueo QA Admin
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/verifiable-certificates-pdf-linkedin` (bifurcada desde `main` tras el merge de Fase 15)
+* **Objetivo:** Implementar la emisión, verificación pública (`/verify/:code`), descarga real en PDF vectorial con QR y vinculación directa con LinkedIn (`Add to profile`), así como controles QA desbloqueados estrictamente para cuentas con `app_metadata.role === 'admin'`.
+* **Entregables Implementados:**
+  1. **Persistencia Supabase (`database/supabase/05_certificates.sql`):**
+     * Tabla idempotente `public.user_certificates` con unicidad `UNIQUE (user_id, track_id)` y política RLS `SELECT` para `auth.uid() = user_id`.
+  2. **Módulo Backend de Constancias (`apps/api/app/modules/certificates/`):**
+     * [`schemas.py`](../apps/api/app/modules/certificates/schemas.py), [`pdf_generator.py`](../apps/api/app/modules/certificates/pdf_generator.py), [`service.py`](../apps/api/app/modules/certificates/service.py) y [`router.py`](../apps/api/app/modules/certificates/router.py) montado en [`main.py`](../apps/api/app/main.py) bajo `/api/v1`.
+     * Generación de PDF A4 apaisado con `reportlab` (>= `4.2.0` en [`requirements.txt`](../apps/api/requirements.txt)) y código QR embebido (`QrCodeWidget`), URL oficial `linkedin.com/profile/add`, endpoints públicos `/certificates/{code}` y `/certificates/{code}/pdf`, y soporte `qa_preview` restringido a `app_metadata.role == "admin"`.
+  3. **Desbloqueo QA Admin en Backend (`apps/api/app/modules/runner/router.py`):**
+     * `reveal_exercise_solution` permite a usuarios con `app_metadata.role == "admin"` revelar la solución oficial sin exigir `failed_attempts >= 2`.
+  4. **Frontend: Constancias, Verificación Pública y Botones QA (`apps/web/src/`):**
+     * [`types/index.ts`](../apps/web/src/types/index.ts), [`lib/routing.ts`](../apps/web/src/lib/routing.ts) y [`lib/api.ts`](../apps/web/src/lib/api.ts): tipos `CertificateRecord`, ruta pública `/verify/:code` y métodos API (`issueCertificate`, `getMyCertificates`, `verifyCertificate`, `getCertificatePdfUrl`).
+     * [`CertificateModal.tsx`](../apps/web/src/components/organisms/CertificateModal/CertificateModal.tsx) y [`CertificateVerifyView.tsx`](../apps/web/src/components/organisms/CertificateVerifyView/CertificateVerifyView.tsx): descarga PDF, botón *Añadir a LinkedIn* con `LinkedInLogo` SVG, copia/apertura de enlace público, insignia `QA Admin Preview` y pantalla pública de validación.
+     * [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx), [`TracksView.tsx`](../apps/web/src/components/organisms/TracksView/TracksView.tsx), [`ExerciseSpecPanel.tsx`](../apps/web/src/components/organisms/ExerciseSpecPanel/ExerciseSpecPanel.tsx) y [`App.tsx`](../apps/web/src/App.tsx): botones QA condicionales a `isAdmin` (`Probar Constancia (QA)`, `Probar Certificado (QA)`, `Desbloquear N pistas`, `Revelar Solución (QA)`).
+* **Verificación:**
+  * **Backend (`pytest apps/api/tests/test_certificates.py apps/api/tests/test_schema_consistency.py -v`):** **8 pruebas aprobadas** (`2.43s`) contra `qurio-postgres-sandbox` conectado (`3` pruebas nuevas de constancias/RBAC Admin + `5` pruebas de consistencia curricular).
+  * **Docker (`qurio-api`):** Reconstruido con `reportlab-5.1.0` y validado en vivo vía `GET /api/v1/health` (`{"status":"healthy","sandbox_database":"connected","error":null}`).
+  * **Frontend (`vitest run` y `tsc && vite build`):** Suites y build de producción verificados tras la implementación en `apps/web/src/tests/uxUpgrade.test.tsx`.
+
+
+---
+
+### Entrada 56: Rediseño Visual *Terminal Glow Minimal* para Constancias Web y PDF
+
+* **Fecha:** 17 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/verifiable-certificates-pdf-linkedin`
+* **Objetivo:** Alinear tanto la vista modal / pública (`/verify/:code`) como el documento PDF descargable con la referencia oficial de diseño en [`docs/constancias/`](constancias/screen.png) (*Terminal Glow Minimal*).
+* **Entregables Implementados:**
+  1. **Componente Compartido [`CertificateShowcase.tsx`](../apps/web/src/components/organisms/CertificateModal/CertificateShowcase.tsx):**
+     * Cabecera con breadcrumbs, badges `EMITIDO OFICIALMENTE` / `QA ADMIN PREVIEW`, `INMUTABLE • SHA-256`, chip `ID: {verification_code}` y barra de acciones (`Copiar Enlace`, `Imprimir`, `Añadir a LinkedIn`, `Descargar PDF`).
+     * Lienzo heroico `#080d1d` con retícula relacional punteada SVG, luminiscencia radial indigo/cyan, rosetones técnicos en las 4 esquinas, isotipo Qurio, nombre del titular con subrayado gradiente, 4 tarjetas de métricas auditadas, firmas vectoriales con sello holográfico orbital `QURIO VERIFIED` + QR SVG (`/certificates/{code}/qr.svg`) y pie criptográfico `HASH SHA-256`.
+     * Bloque inferior de **Habilidades Técnicas Validadas**, **Validación Pública** y barra de portafolio (`Copiar Badge HTML` y `Publicar en X`).
+     * Reutilizado de forma unificada en [`CertificateModal.tsx`](../apps/web/src/components/organisms/CertificateModal/CertificateModal.tsx) y [`CertificateVerifyView.tsx`](../apps/web/src/components/organisms/CertificateVerifyView/CertificateVerifyView.tsx).
+  2. **PDF Vectorial Oscuro & QR SVG ([`pdf_generator.py`](../apps/api/app/modules/certificates/pdf_generator.py), [`service.py`](../apps/api/app/modules/certificates/service.py), [`router.py`](../apps/api/app/modules/certificates/router.py)):**
+     * PDF A4 apaisado rediseñado con lienzo `#080D1D`, retícula técnica punteada, corner brackets, 4 métricas, firmas vectoriales Bézier, sello orbital con `QrCodeWidget` escaneable real sobre placa de alto contraste y hash `SHA-256` determinístico.
+     * Nuevo endpoint público `GET /api/v1/certificates/{verification_code}/qr.svg` usando `reportlab.graphics.renderSVG`.

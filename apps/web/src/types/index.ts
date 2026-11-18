@@ -169,6 +169,26 @@ export interface QueryHistoryItem {
   row_count: number;
 }
 
+export interface CertificateRecord {
+  id: string;
+  user_id: string;
+  track_id: string;
+  track_title: string;
+  recipient_name: string;
+  verification_code: string;
+  completed_exercises: number;
+  total_exercises: number;
+  is_qa_preview: boolean;
+  issued_at: string;
+  verify_url: string;
+  pdf_url: string;
+  linkedin_url: string;
+  sha256_hash?: string;
+  modules_count?: number;
+  validated_skills?: string[];
+  qr_svg_url?: string;
+}
+
 export type AppPath =
   | 'dashboard'
   | 'playground'
@@ -177,6 +197,7 @@ export type AppPath =
   | 'achievements'
   | 'profile'
   | 'exercise'
+  | 'verify'
   | 'admin'
   | 'auth-confirm'
   | 'reset-password'

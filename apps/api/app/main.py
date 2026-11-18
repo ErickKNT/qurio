@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.modules.runner.service import sandbox_runner
 from app.modules.runner.router import router as runner_router
 from app.modules.admin.router import router as admin_router
+from app.modules.certificates.router import router as certificates_router
 
 # Configurar logging
 logging.basicConfig(
@@ -68,6 +69,7 @@ async def add_security_headers(request, call_next):
 # Incluir routers modulares
 app.include_router(runner_router, prefix=settings.API_V1_PREFIX)
 app.include_router(admin_router, prefix=settings.API_V1_PREFIX)
+app.include_router(certificates_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/", tags=["General"])

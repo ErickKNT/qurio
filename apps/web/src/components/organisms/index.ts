@@ -16,3 +16,4 @@ export * from './ModuleGuideModal/ModuleGuideModal';
 export * from './SqlReferenceView/SqlReferenceView';
 export * from './CommandPaletteModal/CommandPaletteModal';
 export * from './CertificateModal/CertificateModal';
+export * from './CertificateVerifyView/CertificateVerifyView';
