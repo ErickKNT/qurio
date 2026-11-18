@@ -46,6 +46,10 @@ class ExerciseRepository:
                                     item["sample_tables"] = cached.sample_tables
                                 if not item.get("hints"):
                                     item["hints"] = cached.hints
+                                if not item.get("execution_mode"):
+                                    item["execution_mode"] = cached.execution_mode
+                                if not item.get("verification_query"):
+                                    item["verification_query"] = cached.verification_query
                             return ExerciseDetail(**item)
             except Exception as e:
                 logger.warning(f"No se pudo consultar Supabase para el ejercicio {exercise_id}: {e}. Usando catálogo local.")
@@ -104,7 +108,7 @@ class ExerciseRepository:
                     if resp.status_code == 200:
                         data = resp.json()
                         if data:
-                            results = []
+                            by_id: Dict[str, ExerciseDetail] = self._cache.copy()
                             for item in data:
                                 cached = self._cache.get(item.get("id"))
                                 if cached:
@@ -118,8 +122,12 @@ class ExerciseRepository:
                                         item["sample_tables"] = cached.sample_tables
                                     if not item.get("hints"):
                                         item["hints"] = cached.hints
-                                results.append(ExerciseDetail(**item))
-                            return results
+                                    if not item.get("execution_mode"):
+                                        item["execution_mode"] = cached.execution_mode
+                                    if not item.get("verification_query"):
+                                        item["verification_query"] = cached.verification_query
+                                by_id[str(item.get("id"))] = ExerciseDetail(**item)
+                            return sorted(by_id.values(), key=lambda ex: ex.sort_order)
             except Exception as e:
                 logger.warning(f"No se pudo listar ejercicios desde Supabase: {e}. Usando catálogo local.")
 

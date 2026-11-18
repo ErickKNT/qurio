@@ -47,6 +47,49 @@ def main():
         except Exception as e:
             print(f"Nota ejercicio {ex_id}:", e)
 
+    print("\n--- PASO 1.5: Sincronizando las 4 Rutas Formativas (learning_paths) ---")
+    official_paths = [
+        {
+            "id": "sql-foundations",
+            "title": "1. Fundamentos de SQL",
+            "description": "Domina las bases de consultas relacionales: proyección, filtrado lógico, ordenamiento y funciones de agregación.",
+            "difficulty": "Principiante",
+            "sort_order": 1,
+            "estimated_hours": 7,
+            "icon_name": "Database",
+        },
+        {
+            "id": "relational-sql",
+            "title": "2. SQL Relacional",
+            "description": "Conecta múltiples tablas mediante claves primarias y foráneas usando INNER JOIN, LEFT JOIN, manejo de NULL y operadores de conjuntos.",
+            "difficulty": "Intermedio",
+            "sort_order": 2,
+            "estimated_hours": 9,
+            "icon_name": "GitMerge",
+        },
+        {
+            "id": "advanced-queries",
+            "title": "3. Consultas Avanzadas",
+            "description": "Resuelve problemas analíticos complejos con subconsultas, lógica condicional CASE, expresiones comunes de tabla (CTEs) y funciones de ventana.",
+            "difficulty": "Avanzado",
+            "sort_order": 3,
+            "estimated_hours": 14,
+            "icon_name": "Layers",
+        },
+        {
+            "id": "data-manipulation-ddl",
+            "title": "4. Ingeniería y Manipulación de Datos",
+            "description": "Domina la inserción, actualización y eliminación transaccional de registros (DML), el diseño estructural de tablas con restricciones y la optimización con índices (DDL).",
+            "difficulty": "Intermedio",
+            "sort_order": 4,
+            "estimated_hours": 12,
+            "icon_name": "Wrench",
+        },
+    ]
+    for lp in official_paths:
+        api_request("learning_paths", method="POST", data=lp)
+        print(f"Ruta verificada: {lp['id']} — {lp['title']}")
+
     print("\n--- PASO 2: Limpiando y alineando Módulos en Supabase Cloud ---")
     # Eliminar módulos de track 3 legacy para recrearlos con orden y IDs correctos
     legacy_mod_ids = [

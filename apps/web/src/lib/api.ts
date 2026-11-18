@@ -87,20 +87,28 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/exercises`);
       if (!res.ok) throw new ApiError('No se pudo cargar la lista de ejercicios', res.status);
       const apiExercises: Exercise[] = await res.json();
-      // Enriquecer con metadatos pedagógicos del catálogo local (concept, objectives, sample_tables, prompt actualizado)
-      return apiExercises.map((apiEx) => {
-        const fallback = FALLBACK_EXERCISES.find((f) => f.id === apiEx.id);
-        if (!fallback) return apiEx;
-        return {
-          ...fallback,
-          ...apiEx,
-          prompt: fallback.prompt || apiEx.prompt,
-          concept: apiEx.concept || fallback.concept,
-          objectives: (apiEx.objectives && apiEx.objectives.length > 0) ? apiEx.objectives : fallback.objectives,
-          sample_tables: (apiEx.sample_tables && apiEx.sample_tables.length > 0) ? apiEx.sample_tables : fallback.sample_tables,
-          hints: (apiEx.hints && apiEx.hints.length > 0) ? apiEx.hints : fallback.hints,
-        };
-      });
+      // Enriquecer con metadatos pedagógicos del catálogo local y garantizar que ningún reto nuevo de FALLBACK_EXERCISES quede fuera si Supabase aún no fue sincronizado
+      const mergedMap = new Map<string, Exercise>();
+      for (const f of FALLBACK_EXERCISES) {
+        mergedMap.set(f.id, f);
+      }
+      for (const apiEx of apiExercises) {
+        const fallback = mergedMap.get(apiEx.id);
+        if (!fallback) {
+          mergedMap.set(apiEx.id, apiEx);
+        } else {
+          mergedMap.set(apiEx.id, {
+            ...fallback,
+            ...apiEx,
+            prompt: fallback.prompt || apiEx.prompt,
+            concept: apiEx.concept || fallback.concept,
+            objectives: (apiEx.objectives && apiEx.objectives.length > 0) ? apiEx.objectives : fallback.objectives,
+            sample_tables: (apiEx.sample_tables && apiEx.sample_tables.length > 0) ? apiEx.sample_tables : fallback.sample_tables,
+            hints: (apiEx.hints && apiEx.hints.length > 0) ? apiEx.hints : fallback.hints,
+          });
+        }
+      }
+      return Array.from(mergedMap.values()).sort((a, b) => a.sort_order - b.sort_order);
     } catch (err: any) {
       console.warn('Usando catálogo fallback local:', err.message);
       return FALLBACK_EXERCISES;
