@@ -157,3 +157,35 @@
 
 
 
+
+## Fase 18: Ruta 4 — Ingeniería y Manipulación de Datos (DML & DDL) (`feat/track-4-dml-ddl-engineering`) — En Progreso
+
+- [x] **T18.1 (Task 1):** Habilitar `GRANT TEMP ON DATABASE ecommerce_sandbox TO readonly_student;` en `database/sandbox/init.sql` y aplicarlo al contenedor Docker activo, conservando `public.*` estrictamente sin permisos de escritura ni DDL.
+  - *Acceptance:* `readonly_student` puede crear tablas temporales en `pg_temp`, pero recibe `permission denied` si intenta modificar `public.clientes`.
+  - *Verify:* `pytest apps/api/tests/test_integration.py -v`
+- [x] **T18.2 (Task 2):** Implementar `ExecutionMode` (`read_only`, `dml`, `ddl`) en `apps/api/app/modules/runner/schemas.py` y `apps/api/app/modules/runner/security.py`, omitiendo `enforce_row_limit()` en raíces mutables y bloqueando siempre `COPY`, `GRANT`, `REVOKE`, `CREATE FUNCTION`, `CREATE EXTENSION` y sentencias múltiples (`;`).
+  - *Acceptance:* `validate_sql_security()` valida contextualmente según `mode` y bloquea todo vector de escalada o inyección multi-sentencia.
+  - *Verify:* `pytest apps/api/tests/test_security.py -v`
+- [x] **T18.3 (Task 3):** Implementar ejecución transaccional efímera sobre `pg_temp` con `setup_sql`, `verification_query` y `ROLLBACK` determinista en `apps/api/app/modules/runner/service.py`, extender el inspector AST en `evaluator.py` y conectar `router.py`.
+  - *Acceptance:* Consultas DML y DDL se ejecutan y evalúan en `pg_temp` devolviendo la proyección de `RETURNING` o `verification_query`, dejando `public.*` intacto tras el `ROLLBACK`.
+  - *Verify:* `pytest apps/api/tests/test_evaluator.py apps/api/tests/test_integration.py -v`
+- [x] **Checkpoint 1 (Foundation):** Pruebas de seguridad AST, evaluador e integración pasando al 100%.
+- [x] **T18.4 (Task 4):** Diseñar e incorporar los 16 ejercicios de la Ruta 4 (`sort_order` 61..76, Módulos 13 a 16) en `apps/api/app/modules/curriculum/seed_data.py` siguiendo `.agents/rules/sql-pedagogy.md`.
+  - *Acceptance:* 16 nuevos ejercicios con 3 pistas progresivas, `concept` sin spoilers, `execution_mode`, `verification_query` y `setup_sql`.
+  - *Verify:* Revisión de paridad con PostgreSQL 16.
+- [x] **T18.5 (Task 5):** Sincronizar la Ruta 4 y los 16 nuevos ejercicios en `apps/web/src/lib/fallbackCurriculum.ts` (sin `solution_query`, `verification_query` ni `setup_sql`), `database/supabase/02_seed_curriculum.sql` y `apps/api/sync_supabase_curriculum.py`.
+  - *Acceptance:* Sincronía triple exacta para los 76 ejercicios y 228 pistas.
+  - *Verify:* `pytest apps/api/tests/test_schema_consistency.py -v`
+- [x] **T18.6 (Task 6):** Actualizar `apps/api/tests/test_schema_consistency.py` para auditar los 76 ejercicios, ejecutar las soluciones DML/DDL en el sandbox `pg_temp` (`1..20` filas) y comprobar inmutabilidad de `public.*`.
+  - *Acceptance:* `test_schema_consistency.py` pasa al 100% con 0 fallos.
+  - *Verify:* `pytest apps/api/tests/test_schema_consistency.py -v`
+- [x] **Checkpoint 2 (Core Curriculum):** 76 ejercicios verificados en PostgreSQL 16 Sandbox con 0 fallos.
+- [x] **T18.7 (Task 7):** Conectar `exercise_id` opcional en `api.executePlayground()` (`apps/web/src/lib/api.ts`) y `handleRunExerciseTrial` (`apps/web/src/hooks/useExerciseWorkspace.ts`) para soportar **"Probar Consulta"** en ejercicios DML/DDL.
+  - *Acceptance:* El botón "Probar Consulta" ejecuta la sentencia DML/DDL en `pg_temp` con `ROLLBACK` y muestra la tabla resultante sin otorgar XP.
+  - *Verify:* `npm --prefix apps/web test -- --run`
+- [x] **T18.8 (Task 8):** Agregar las 4 guías teóricas interactivas (Módulos 13 a 16) en `apps/web/src/lib/moduleGuides.ts`, ampliar snippets DML/DDL en `sqlCompleter.ts` y registrar `data-manipulation-ddl` en `certificates/service.py` y `CertificateShowcase.tsx`.
+  - *Acceptance:* 16 guías modulares completas, autocompletado DML/DDL funcional y soporte de constancias PDF/QR para las 4 rutas.
+  - *Verify:* `npm --prefix apps/web test -- --run && npm --prefix apps/web run build`
+- [x] **T18.9 (Task 9):** Actualizar `docs/CURRICULUM_SPEC.md`, `docs/BITACORA.md` y actualizar el grafo de conocimiento con `python -m graphify update .`.
+  - *Acceptance:* Suites completas de backend y frontend pasando al 100% y grafo actualizado.
+  - *Verify:* `pytest apps/api/tests/ -v && npm --prefix apps/web test -- --run && npm --prefix apps/web run build`

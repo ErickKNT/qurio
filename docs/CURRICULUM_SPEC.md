@@ -167,6 +167,43 @@ El currículum de Qurio entrena al estudiante para internalizar este modelo ment
 
 ---
 
+### RUTA 4: Ingeniería y Manipulación de Datos (DML & DDL — 16 Retos, `sort_order` 61..76)
+*Objetivo de Ruta:* Dominar la escritura transaccional (`INSERT`, `UPDATE`, `DELETE`, `RETURNING`), el diseño evolutivo de tablas (`CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`, `CHECK`, `FOREIGN KEY`) y la optimización física con índices B-Tree (`CREATE INDEX`, `UNIQUE`, `Partial Index WHERE`, `DROP INDEX`) en un entorno transaccional efímero aislado en `pg_temp` con `ROLLBACK` determinista.
+
+#### Módulo 13: Inserción de Registros (`INSERT`) (4 Retos)
+| `sort_order` | ID | Título | Bloom | Fuente Oficial PostgreSQL 16 | Concepto / Reto de Negocio |
+| :-: | :--- | :--- | :-: | :--- | :--- |
+| **61** | `e0000000-...-0061` | **Alta de Nueva Categoría en Catálogo (INSERT VALUES)** | Aplicar | [6.1. Inserting Data](https://www.postgresql.org/docs/16/dml-insert.html) | Inserción de tupla explícita delegando la secuencia `SERIAL` de `categoria_id`. |
+| **62** | `e0000000-...-0062` | **Registro Múltiple de Almacenes Regionales (INSERT Multi-Fila)** | Aplicar | [6.1. Inserting Data](https://www.postgresql.org/docs/16/dml-insert.html) | Inserción atómica multi-tupla en una única cláusula `VALUES (...), (...)`. |
+| **63** | `e0000000-...-0063` | **Alta de Producto con Confirmación Inmediata (INSERT RETURNING)** | Aplicar | [6.4. Returning Data from Modified Rows](https://www.postgresql.org/docs/16/dml-returning.html) | Proyección inmediata del `producto_id` recién asignado mediante `RETURNING`. |
+| **64** | `e0000000-...-0064` | **Abastecimiento de Inventario desde Catálogo (INSERT INTO ... SELECT)** | Analizar | [INSERT Command Reference](https://www.postgresql.org/docs/16/sql-insert.html) | Poblamiento cruzado de `inventario` proyectando constantes y filas filtradas desde `productos`. |
+
+#### Módulo 14: Actualización y Eliminación Segura (`UPDATE` y `DELETE`) (4 Retos)
+| `sort_order` | ID | Título | Bloom | Fuente Oficial PostgreSQL 16 | Concepto / Reto de Negocio |
+| :-: | :--- | :--- | :-: | :--- | :--- |
+| **65** | `e0000000-...-0065` | **Actualización de Contacto de Proveedor (UPDATE WHERE)** | Aplicar | [6.2. Updating Data](https://www.postgresql.org/docs/16/dml-update.html) | Modificación puntual filtrada por clave primaria `WHERE proveedor_id = 2`. |
+| **66** | `e0000000-...-0066` | **Ajuste de Precios por Categoría con Confirmación (UPDATE RETURNING)** | Aplicar | [6.4. Returning Data](https://www.postgresql.org/docs/16/dml-returning.html) | Recálculo aritmético con `ROUND(precio * 1.10, 2)` y auditoría inmediata con `RETURNING`. |
+| **67** | `e0000000-...-0067` | **Actualización Cruzada de Inventario por Ciudad (UPDATE ... FROM)** | Analizar | [UPDATE Command Reference](https://www.postgresql.org/docs/16/sql-update.html) | Actualización relacional multi-tabla uniendo `inventario` con `almacenes` en `FROM ... WHERE`. |
+| **68** | `e0000000-...-0068` | **Depuración Segura de Líneas de Pedido Cancelado (DELETE WHERE)** | Aplicar | [6.3. Deleting Data](https://www.postgresql.org/docs/16/dml-delete.html) | Eliminación selectiva de líneas de detalle para un pedido cancelado (`WHERE pedido_id = 105`). |
+
+#### Módulo 15: Creación y Evolución de Tablas (`CREATE`, `ALTER` y `DROP`) (4 Retos)
+| `sort_order` | ID | Título | Bloom | Fuente Oficial PostgreSQL 16 | Concepto / Reto de Negocio |
+| :-: | :--- | :--- | :-: | :--- | :--- |
+| **69** | `e0000000-...-0069` | **Diseño de Tabla de Cupones Promocionales (CREATE TABLE)** | Aplicar | [5.1. Table Basics](https://www.postgresql.org/docs/16/ddl-basics.html) | Definición de tabla con `SERIAL PRIMARY KEY`, `VARCHAR`, `NUMERIC(5, 2)` y `DATE NOT NULL`. |
+| **70** | `e0000000-...-0070` | **Tabla de Reseñas con Reglas de Integridad (CHECK & FOREIGN KEY)** | Analizar | [5.4. Constraints](https://www.postgresql.org/docs/16/ddl-constraints.html) | Restricciones declarativas `REFERENCES` (`FOREIGN KEY`) y `CHECK (calificacion BETWEEN 1 AND 5)`. |
+| **71** | `e0000000-...-0071` | **Evolución de Esquema en Almacenes (ALTER TABLE ADD COLUMN)** | Aplicar | [5.6. Modifying Tables](https://www.postgresql.org/docs/16/ddl-alter.html) | Adición sin pérdida de datos de columna `BOOLEAN NOT NULL DEFAULT FALSE`. |
+| **72** | `e0000000-...-0072` | **Retiro Controlado de Tabla Obsoleta (DROP TABLE IF EXISTS CASCADE)** | Aplicar | [5.14. Dependency Tracking](https://www.postgresql.org/docs/16/ddl-depend.html) | Eliminación idempotente de tabla heredada y su vista dependiente con `IF EXISTS ... CASCADE`. |
+
+#### Módulo 16: Índices y Optimización Estructural (`CREATE INDEX`) (4 Retos)
+| `sort_order` | ID | Título | Bloom | Fuente Oficial PostgreSQL 16 | Concepto / Reto de Negocio |
+| :-: | :--- | :--- | :-: | :--- | :--- |
+| **73** | `e0000000-...-0073` | **Índice B-Tree para Búsqueda por Ciudad (CREATE INDEX)** | Aplicar | [11.1. Indexes Introduction](https://www.postgresql.org/docs/16/indexes-intro.html) | Creación de índice B-Tree unicolumna sobre `clientes (ciudad)`. |
+| **74** | `e0000000-...-0074` | **Índice Único Compuesto de Facturación (CREATE UNIQUE INDEX)** | Analizar | [11.3. Multicolumn & Unique Indexes](https://www.postgresql.org/docs/16/indexes-multicolumn.html) | Índice único compuesto sobre `pagos (factura_id, metodo_pago)`. |
+| **75** | `e0000000-...-0075` | **Índice Parcial de Pedidos Pendientes (Partial Index WHERE)** | Evaluar | [11.8. Partial Indexes](https://www.postgresql.org/docs/16/indexes-partial.html) | Índice filtrado con predicado `WHERE estado_pedido = 'pendiente'` para optimizar colas operativas. |
+| **76** | `e0000000-...-0076` | **Eliminación de Índice Redundante (DROP INDEX IF EXISTS)** | Aplicar | [DROP INDEX Reference](https://www.postgresql.org/docs/16/sql-dropindex.html) | Mantenimiento de catálogo retirando un índice duplicado que penaliza escrituras. |
+
+---
+
 ## 5. Garantía de Calidad y Verificación Técnica
 
 Cada uno de los 50 ejercicios definidos en esta especificación cumple las siguientes garantías de ingeniería:

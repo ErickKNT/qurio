@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 17: Rediseño Bento del Perfil de Usuario, Heatmap Anual 52 Semanas, Precisión SQL Real & Edición CLS — Implementada en Rama Aislada**  
-* **Próxima Fase:** **Validación visual en navegador + Merge de `feat/profile-bento-redesign` hacia `main` + Ejecución de `05_certificates.sql` en Supabase Cloud**  
-* **Rama Git Activa:** `feat/profile-bento-redesign` (bifurcada desde `main`)  
+* **Fase Actual:** **Fase 18: Ruta 4 — Ingeniería y Manipulación de Datos (DML & DDL: INSERT, UPDATE, DELETE, CREATE/ALTER/DROP TABLE, CREATE INDEX) en Sandbox Efímero `pg_temp` — Completada**  
+* **Próxima Fase:** **Sincronización con GitHub (`git push`) y fusión de `feat/track-4-dml-ddl-engineering` hacia `main`**  
+* **Rama Git Activa:** `feat/track-4-dml-ddl-engineering` (bifurcada desde `main`)  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
   * Contenedor Docker Sandbox (`qurio-postgres-sandbox` en `localhost:5433`): Activo y saludable (`healthy`).
   * API FastAPI (`apps/api`, `uvicorn` en `http://127.0.0.1:8000`): **100% Verificado** — Suite de **96 pruebas automatizadas pasando limpiamente en 93.28s** en `apps/api/tests/` (`85` existentes + `11` nuevas en `test_admin.py`).
@@ -40,7 +40,8 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **12** | **Consola de Administración, Live Ops y Observabilidad** | ✅ Implementada (Aislada) | `feat/phase-12-admin-console` | RBAC criptográfico `app_metadata.role`, API `/admin/*` (Live Ops, `pg_stat_activity`, Replay Forense, Auditoría AST, Killswitches), UI Atomic Design lazy en `vendor-admin` y code splitting base (`114.72 kB`). |
 | **15** | **Evolución UX, Consola SQL, Diagrama ER & Guías Modulares** | ✅ Concluida | `main` (vía `feat/ux-pedagogy-and-er-upgrade`) | Drawer móvil + tabs en Playground, modo dual Probar/Enviar, Playground multi-tab + Historial, Diagrama ER interactivo (`10` tablas), `12` guías teóricas con micro-diagramas, Referencia SQL + `⌘K`, OAuth GitHub y Constancias. |
 | **16** | **Constancias Verificables PDF/QR, LinkedIn & Modo QA Admin** | ✅ Concluida | `main` (vía `feat/verifiable-certificates-pdf-linkedin`) | Emisión idempotente (`user_certificates`), PDF vectorial A4 oscuro con QR (`reportlab`), enlace público `/verify/:code`, QR SVG, *Añadir a LinkedIn*, UI *Terminal Glow Minimal* y desbloqueo QA Admin (`app_metadata.role === 'admin'`). |
-| **17** | **Rediseño Bento del Perfil de Usuario & Métricas Reales** | ✅ Implementada (Aislada) | `feat/profile-bento-redesign` | Banner heroico, edición CLS (`display_name`, `bio`, `avatar_url`), heatmap anual 52 semanas (`user_daily_activity` 365d), rutas activas, vitrina de insignias, precisión SQL real y certificaciones. |
+| **17** | **Rediseño Bento del Perfil de Usuario & Métricas Reales** | ✅ Concluida | `main` (vía `feat/profile-bento-redesign`) | Banner heroico, edición CLS (`display_name`, `bio`, `avatar_url`), heatmap anual 52 semanas (`user_daily_activity` 365d), rutas activas, vitrina de insignias, precisión SQL real y certificaciones. |
+| **18** | **Ruta 4: Ingeniería y Manipulación de Datos (DML & DDL)** | ✅ Concluida | `feat/track-4-dml-ddl-engineering` | Motor transaccional efímero en `pg_temp` con `ROLLBACK` determinista, seguridad AST contextual (`read_only`, `dml`, `ddl`), 16 nuevos retos (`sort_order` 61..76 en Módulos 13 a 16), 4 guías interactivas, snippets DML/DDL en Monaco y constancia PDF/QR. |
 
 ---
 
@@ -1778,6 +1779,34 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Verificación:**
   * **Frontend (`npm.cmd --prefix apps/web test`):** **9 archivos / 55 pruebas aprobadas** en `5.41s` (incluidas 6 pruebas nuevas en [`sqlCompleter.test.ts`](../apps/web/src/tests/sqlCompleter.test.ts)).
   * **Build (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,303 módulos**, 0 errores) en `9.61s`.
+
+---
+
+### Entrada 61: Fase 18 — Ruta 4: Ingeniería y Manipulación de Datos (DML & DDL) y Sandbox Transaccional Efímero en `pg_temp`
+
+* **Fecha:** 18 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/track-4-dml-ddl-engineering`
+* **Objetivo:** Implementar una nueva ruta formativa completa basada en manipulación (DML: `INSERT`, `UPDATE`, `DELETE`, `RETURNING`) y definición de esquemas e índices (DDL: `CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`, `CREATE/DROP INDEX`), garantizando aislamiento transaccional total en el sandbox Docker (`512MB RAM`) sin contaminar ni bloquear `public.*`.
+* **Entregables Implementados:**
+  1. **Especificación y Gobernanza (`interview-me` $\to$ `spec-driven-development` $\to$ `planning-and-task-breakdown`):**
+     * [`docs/intent/ruta-4-dml-ddl.md`](intent/ruta-4-dml-ddl.md): Declaración de intención confirmada.
+     * [`docs/SPEC-ruta-4-dml-ddl.md`](SPEC-ruta-4-dml-ddl.md): Especificación técnica de seguridad AST, aislamiento `pg_temp` y catálogo de 16 retos.
+  2. **Aislamiento Transaccional Efímero en `pg_temp` y Defensa en Profundidad AST ([`init.sql`](../database/sandbox/init.sql), [`schemas.py`](../apps/api/app/modules/runner/schemas.py), [`security.py`](../apps/api/app/modules/runner/security.py), [`service.py`](../apps/api/app/modules/runner/service.py), [`evaluator.py`](../apps/api/app/modules/runner/evaluator.py), [`router.py`](../apps/api/app/modules/runner/router.py)):**
+     * Concesión de permiso `TEMP` sobre `ecommerce_sandbox` a `readonly_student` manteniendo `public.*` 100% libre de permisos de escritura o DDL.
+     * Validación AST contextual por `ExecutionMode` (`read_only`, `dml`, `ddl`) con bloqueo permanente de `COPY`, `GRANT`, `REVOKE`, `CREATE FUNCTION`, `CREATE EXTENSION`, `CREATE ROLE`, funciones peligrosas (`pg_sleep`, `dblink`, `pg_read_file`) y sentencias múltiples (`;`).
+     * Clonación efímera de las 10 tablas canónicas y secuencias reiniciadas dentro de `pg_temp` por transacción (`SET LOCAL transaction_read_only = off`, `lock_timeout = '500ms'`, `work_mem = '16MB'`), ejecución de `verification_query` post-mutación (o proyección directa de `RETURNING`) y `ROLLBACK` incondicional.
+     * Inspector AST pedagógico en `evaluator.py` que verifica la raíz DML/DDL exigida (`INSERT`, `UPDATE`, `DELETE`, `CREATE`, `ALTER`, `DROP`), la presencia de `RETURNING` y `UNIQUE` en índices únicos.
+  3. **Currículo de la Ruta 4 y Sincronía Triple ([`seed_data.py`](../apps/api/app/modules/curriculum/seed_data.py), [`fallbackCurriculum.ts`](../apps/web/src/lib/fallbackCurriculum.ts), [`02_seed_curriculum.sql`](../database/supabase/02_seed_curriculum.sql), [`sync_supabase_curriculum.py`](../apps/api/sync_supabase_curriculum.py)):**
+     * 16 nuevos ejercicios (`sort_order` 61..76, pasando de 60 a **76 retos** y **228 pistas** en 3 niveles) distribuidos en 4 módulos: **Módulo 13 (`INSERT`)**, **Módulo 14 (`UPDATE` y `DELETE`)**, **Módulo 15 (`CREATE`, `ALTER` y `DROP TABLE`)** y **Módulo 16 (`CREATE` y `DROP INDEX`)**.
+  4. **Integración Frontend, Guías Modulares, Autocompletado y Constancias ([`api.ts`](../apps/web/src/lib/api.ts), [`useExerciseWorkspace.ts`](../apps/web/src/hooks/useExerciseWorkspace.ts), [`moduleGuides.ts`](../apps/web/src/lib/moduleGuides.ts), [`sqlCompleter.ts`](../apps/web/src/components/organisms/MonacoEditorPanel/sqlCompleter.ts), [`certificates/service.py`](../apps/api/app/modules/certificates/service.py), [`CertificateShowcase.tsx`](../apps/web/src/components/organisms/CertificateModal/CertificateShowcase.tsx)):**
+     * Soporte de `exercise_id` en el botón **"Probar Consulta"** para previsualizar mutaciones en `pg_temp` sin otorgar XP.
+     * 4 nuevas guías teóricas interactivas con diagramas `SqlTransformDiagram` (total 16 guías), snippets DML/DDL en Monaco y emisión de constancia verificable PDF/QR para `data-manipulation-ddl`.
+* **Verificación:**
+  * **Consistencia Curricular y Sandbox (`pytest apps/api/tests/test_schema_consistency.py -v`):** **5/5 pruebas aprobadas** (76 retos ejecutados en PostgreSQL 16 Sandbox devolviendo `1..20` filas con 0 mutaciones en `public.*`).
+  * **Seguridad AST, Evaluador e Integración (`pytest apps/api/tests/test_security.py apps/api/tests/test_evaluator.py apps/api/tests/test_integration.py -v`):** **64/64 pruebas aprobadas**.
+  * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **9 archivos / 55 pruebas aprobadas** en `3.24s`.
+  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,303 módulos**, 0 errores TypeScript) en `6.24s`.
+
 
 
 
