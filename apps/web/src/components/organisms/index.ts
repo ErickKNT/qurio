@@ -17,3 +17,6 @@ export * from './SqlReferenceView/SqlReferenceView';
 export * from './CommandPaletteModal/CommandPaletteModal';
 export * from './CertificateModal/CertificateModal';
 export * from './CertificateVerifyView/CertificateVerifyView';
+export * from './DashboardHomeView/DashboardHomeView';
+export * from './DesignSystemShowcase/DesignSystemShowcase';
+export * from './ExerciseHeaderBar/ExerciseHeaderBar';
