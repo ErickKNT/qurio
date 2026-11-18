@@ -225,8 +225,8 @@ export function useExerciseWorkspace({
   }, [activeExercise.id, failedAttemptsByExercise, isAdmin]);
 
   // Ejecución exploratoria libre dentro de un reto estabilizada con ref (H10)
-  const handleRunExerciseTrial = useCallback(async () => {
-    const currentSql = sqlCodeRef.current;
+  const handleRunExerciseTrial = useCallback(async (trialSql?: string) => {
+    const currentSql = trialSql && trialSql.trim() ? trialSql : sqlCodeRef.current;
     if (!currentSql.trim() || isExecutingRef.current) return;
 
     setIsExecuting(true);

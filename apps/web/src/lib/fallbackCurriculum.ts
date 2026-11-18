@@ -738,8 +738,8 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       summary: "Combinar `WHERE` con `GROUP BY` permite depurar qué filas individuales entran en cada grupo antes de calcular los resúmenes.",
       syntax: "SELECT columna_entidad,\n       COUNT(*) AS total_registros,\n       SUM(columna_importe) AS suma_filtrada\nFROM nombre_tabla\nWHERE columna_estado = 'valor_valido'\nGROUP BY columna_entidad\nORDER BY suma_filtrada DESC;",
       key_points: [
-        "El orden sintáctico obligatorio es: `FROM` $\\to$ `WHERE` $\\to$ `GROUP BY` $\\to$ `ORDER BY`.",
-        "`WHERE` filtra filas individuales *antes* de formar los grupos; por eso es más eficiente descartar registros inválidos aquí.",
+        "El orden sintáctico obligatorio es: `FROM` → `WHERE` → `GROUP BY` → `ORDER BY`.",
+        "`WHERE` filtra filas individuales antes de formar los grupos; por eso es más eficiente descartar registros inválidos aquí.",
         "Toda columna no agregada del `SELECT` debe aparecer en `GROUP BY`."
       ],
       execution_order_note: "💡 Al filtrar primero con `WHERE`, el motor procesa menos filas al construir los grupos y calcular `SUM` o `COUNT`.",
@@ -834,7 +834,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       summary: "`HAVING` es el filtro de los grupos: se aplica sobre los resultados calculados por funciones de agregación, donde `WHERE` no tiene alcance.",
       syntax: "SELECT columna_grupo,\n       SUM(columna_metrica) AS acumulado\nFROM nombre_tabla\nGROUP BY columna_grupo\nHAVING SUM(columna_metrica) > valor_corte;",
       key_points: [
-        "Regla de oro: `WHERE` filtra filas individuales *antes* de agrupar; `HAVING` filtra grupos *después* de agrupar.",
+        "Regla de oro: `WHERE` filtra filas individuales antes de agrupar; `HAVING` filtra grupos después de agrupar.",
         "En la cláusula `HAVING` se escriben directamente funciones agregadas como `SUM(...) > umbral` o `COUNT(...) >= N`.",
         "La cláusula `HAVING` siempre se posiciona inmediatamente después de `GROUP BY`."
       ],
@@ -1988,7 +1988,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "`SUM(col)` con `GROUP BY` reduce filas; `SUM(col) OVER (ORDER BY ...)` conserva todas las filas y acumula hasta la fila actual.",
         "Incluir el identificador único después de la fecha en `OVER (ORDER BY fecha, id)` evita sumar a la vez operaciones distintas del mismo día.",
-        "Las condiciones en `WHERE` se aplican *antes* de calcular el acumulado de ventana."
+        "Las condiciones en `WHERE` se aplican antes de calcular el acumulado de ventana."
       ],
       execution_order_note: "💡 PostgreSQL ejecuta la ventana sobre las filas filtradas por `WHERE`, acumulando exactamente el saldo progresivo tras cada operación válida.",
     },

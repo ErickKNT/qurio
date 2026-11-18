@@ -14,7 +14,7 @@ export interface MonacoEditorPanelProps {
   value: string;
   onChange: (val: string) => void;
   onExecute: (activeSql?: string) => void;
-  onRunTrial?: () => void;
+  onRunTrial?: (trialSql?: string) => void;
   onReset?: () => void;
   isLoading?: boolean;
   isSubmitMode?: boolean;
@@ -56,9 +56,9 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
     executeActiveStatementRef.current = executeActiveStatement;
   }, [executeActiveStatement]);
 
-  const getExecutableSql = (): string | undefined => {
+  const getExecutableSql = (forceStatementScope = false): string | undefined => {
     const editor = editorRef.current;
-    if (!executeActiveStatementRef.current || !editor) return undefined;
+    if ((!forceStatementScope && !executeActiveStatementRef.current) || !editor) return undefined;
     const model = editor.getModel?.();
     if (!model) return undefined;
     const selection = editor.getSelection?.();
@@ -147,7 +147,7 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
     // Cmd/Ctrl + Shift + Enter -> onRunTrial (si existe)
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
       if (onRunTrialRef.current) {
-        onRunTrialRef.current();
+        onRunTrialRef.current(getExecutableSql(true));
       } else {
         onExecuteRef.current(getExecutableSql());
       }
@@ -235,8 +235,8 @@ export const MonacoEditorPanel: React.FC<MonacoEditorPanelProps> = ({
               variant="outline"
               size="sm"
               disabled={isLoading}
-              onClick={onRunTrial}
-              title="Ejecutar consulta libre en el sandbox sin evaluar ni contar intentos (⌘⇧↵)"
+              onClick={() => onRunTrial(getExecutableSql(true))}
+              title="Ejecutar selección o sentencia bajo el cursor en el sandbox sin evaluar (⌘⇧↵)"
               className="text-xs px-2.5"
             >
               Probar
