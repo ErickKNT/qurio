@@ -239,3 +239,58 @@ def test_evaluator_pedagogical_ast_check_passes_when_round_present():
     assert res.status == EvaluationStatus.PASSED
     assert res.diff is None
 
+
+def test_evaluator_pedagogical_ast_enforces_dml_and_ddl_root_and_returning():
+    """
+    Verifica que el inspector AST exija que la raíz de la consulta del estudiante coincida
+    con la operación DML/DDL de expected_sql (INSERT, UPDATE, DELETE, CREATE, ALTER, DROP)
+    y que exija RETURNING si la solución oficial lo utiliza.
+    """
+    cols = ["producto_id", "nombre_producto", "precio"]
+    rows = [[16, "Webcam 4K", 120.0]]
+    student_res = make_result(cols, rows)
+    expected_res = make_result(cols, rows)
+
+    expected_insert_returning = (
+        "INSERT INTO productos (categoria_id, proveedor_id, nombre_producto, precio, stock) "
+        "VALUES (3, 5, 'Webcam 4K', 120.00, 30) RETURNING producto_id, nombre_producto, precio;"
+    )
+    # 1. El alumno omitió RETURNING en un reto que exige RETURNING
+    student_insert_no_returning = (
+        "INSERT INTO productos (categoria_id, proveedor_id, nombre_producto, precio, stock) "
+        "VALUES (3, 5, 'Webcam 4K', 120.00, 30);"
+    )
+    res_no_ret = evaluate_solution(
+        student_result=student_res,
+        expected_result=expected_res,
+        student_sql=student_insert_no_returning,
+        expected_sql=expected_insert_returning,
+    )
+    assert res_no_ret.status == EvaluationStatus.FAILED
+    assert "RETURNING" in res_no_ret.diff.reason
+
+    # 2. El alumno envió un UPDATE cuando la solución exige DELETE
+    expected_delete = "DELETE FROM pagos WHERE estado_pago = 'rechazado';"
+    student_wrong_dml = "UPDATE pagos SET estado_pago = 'aprobado' WHERE estado_pago = 'rechazado';"
+    res_wrong_dml = evaluate_solution(
+        student_result=student_res,
+        expected_result=expected_res,
+        student_sql=student_wrong_dml,
+        expected_sql=expected_delete,
+    )
+    assert res_wrong_dml.status == EvaluationStatus.FAILED
+    assert "DELETE" in res_wrong_dml.diff.reason
+
+    # 3. En CREATE UNIQUE INDEX, el alumno olvidó la palabra clave UNIQUE
+    expected_unique_idx = "CREATE UNIQUE INDEX idx_pedidos_cliente_fecha ON pedidos (cliente_id, fecha_pedido);"
+    student_non_unique_idx = "CREATE INDEX idx_pedidos_cliente_fecha ON pedidos (cliente_id, fecha_pedido);"
+    res_non_unique = evaluate_solution(
+        student_result=student_res,
+        expected_result=expected_res,
+        student_sql=student_non_unique_idx,
+        expected_sql=expected_unique_idx,
+    )
+    assert res_non_unique.status == EvaluationStatus.FAILED
+    assert "UNIQUE" in res_non_unique.diff.reason
+
+

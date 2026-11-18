@@ -9,6 +9,12 @@ class EvaluationStatus(str, Enum):
     ERROR = "ERROR"
 
 
+class ExecutionMode(str, Enum):
+    READ_ONLY = "read_only"
+    DML = "dml"
+    DDL = "ddl"
+
+
 class ColumnInfo(BaseModel):
     name: str
     type: str
@@ -17,6 +23,10 @@ class ColumnInfo(BaseModel):
 class QueryExecuteRequest(BaseModel):
     query: str = Field(..., min_length=1, description="Consulta SQL a ejecutar")
     database: str = Field(default="ecommerce_sandbox", description="Base de datos destino")
+    exercise_id: Optional[str] = Field(
+        default=None,
+        description="ID opcional del ejercicio cuando se ejecuta una prueba desde un reto",
+    )
 
 
 class ExecutionResult(BaseModel):

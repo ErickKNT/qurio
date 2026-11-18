@@ -1,13 +1,15 @@
 from collections import deque
 from datetime import datetime, timezone
+from enum import Enum
 import logging
 import re
 import threading
-from typing import Deque, Dict, List, Tuple
+from typing import Deque, Dict, List, Tuple, Union
 
 import sqlglot
 from sqlglot import exp
 from sqlglot.errors import ParseError
+from app.modules.runner.schemas import ExecutionMode
 
 logger = logging.getLogger(__name__)
 
@@ -66,11 +68,36 @@ MUTATION_NODES = (
     exp.Copy,
 )
 
-# Raíces válidas permitidas para consultas de solo lectura
+# Nodos prohibidos siempre en CUALQUIER modo (RCE, escalada de privilegios, manipulación de sesión/archivos)
+ALWAYS_FORBIDDEN_NODES = (
+    exp.Command,
+    exp.Grant,
+    exp.Revoke,
+    exp.TruncateTable,
+    exp.Transaction,
+    exp.Merge,
+    exp.Copy,
+)
+
+# Raíces válidas permitidas según el modo de ejecución del ejercicio
 ALLOWED_ROOTS = (
     exp.Query,
     exp.Subquery,
 )
+
+DML_ALLOWED_ROOTS = (
+    exp.Insert,
+    exp.Update,
+    exp.Delete,
+)
+
+DDL_ALLOWED_ROOTS = (
+    exp.Create,
+    exp.Alter,
+    exp.Drop,
+)
+
+ALLOWED_DDL_KINDS = {"TABLE", "INDEX", "VIEW"}
 
 # Funciones del sistema con potencial de DoS, acceso al sistema de archivos o escape de red
 DANGEROUS_FUNCTIONS = {
@@ -126,21 +153,24 @@ def validate_sql_security(
     sql: str,
     client_ip: str = "unknown",
     user_id: str = "guest",
+    mode: Union[ExecutionMode, str] = ExecutionMode.READ_ONLY,
 ) -> Tuple[bool, str]:
     """
     Valida que la consulta SQL enviada sea segura y apta para ejecución en el sandbox
     mediante análisis sintáctico de AST con SQLGlot (dialecto PostgreSQL).
     
-    Aplica defensa en profundidad:
+    Aplica defensa en profundidad según el modo de ejecución (`read_only`, `dml`, `ddl`):
     1. Comprobación de consulta no vacía.
     2. Parseo sintáctico y control de sentencias múltiples (permite punto y coma en literales).
-    3. Allowlist de nodos raíz (SELECT, UNION, INTERSECT, EXCEPT, WITH ...).
-    4. Denylist de operaciones de mutación / DDL en cualquier parte del AST (incluyendo CTEs).
+    3. Allowlist contextual de nodos raíz según `mode`.
+    4. Denylist profunda en todo el árbol AST (bloquea siempre COPY, GRANT, REVOKE, FUNCTION, EXTENSION, etc.).
     5. Restricción de funciones peligrosas del sistema (pg_sleep, dblink, pg_read_file, etc.).
-    6. Restricción de acceso a catálogos internos sensibles (pg_shadow, pg_authid).
+    6. Restricción de acceso a catálogos internos sensibles (pg_shadow, pg_authid, pg_roles).
     
     Retorna (is_valid, error_message).
     """
+    exec_mode = ExecutionMode(mode) if isinstance(mode, str) else mode
+
     if not sql or not sql.strip():
         return False, "La consulta SQL no puede estar vacía."
 
@@ -188,8 +218,18 @@ def validate_sql_security(
 
     root = statements[0]
 
-    # 3. Allowlist de nodos raíz permitidos (lectura)
-    if not isinstance(root, ALLOWED_ROOTS):
+    # 3. Allowlist contextual de nodos raíz permitidos
+    if exec_mode == ExecutionMode.READ_ONLY:
+        allowed_roots = ALLOWED_ROOTS
+        mode_hint = "Solo se permiten consultas de lectura (SELECT o CTEs con WITH)."
+    elif exec_mode == ExecutionMode.DML:
+        allowed_roots = DML_ALLOWED_ROOTS
+        mode_hint = "Este reto requiere una instrucción de manipulación de datos (INSERT, UPDATE o DELETE)."
+    else:
+        allowed_roots = DDL_ALLOWED_ROOTS
+        mode_hint = "Este reto requiere una instrucción de definición de esquema o índices (CREATE, ALTER o DROP)."
+
+    if not isinstance(root, allowed_roots):
         blocked_name = type(root).__name__
         for node_type, name in KEYWORD_NAMES.items():
             if isinstance(root, node_type):
@@ -209,11 +249,37 @@ def validate_sql_security(
             client_ip=client_ip,
             user_id=user_id,
         )
-        return False, "Solo se permiten consultas de lectura (SELECT o CTEs con WITH)."
+        return False, mode_hint
 
-    # 4. Denylist profunda: inspección de TODO el árbol AST (previene mutaciones en CTEs recursivas o subconsultas)
+    # En modo DDL, validar que el tipo de objeto sea exclusivamente TABLE, INDEX o VIEW
+    if exec_mode == ExecutionMode.DDL:
+        ddl_kind = str(root.args.get("kind") or "").upper()
+        if not ddl_kind and isinstance(root, exp.Alter):
+            ddl_kind = "TABLE"
+        if ddl_kind not in ALLOWED_DDL_KINDS:
+            record_security_violation(
+                rule_violated="DISALLOWED_DDL_OBJECT_KIND",
+                submitted_sql=sql,
+                blocked_node=ddl_kind or type(root).__name__,
+                client_ip=client_ip,
+                user_id=user_id,
+            )
+            return False, f"No está permitido definir o modificar objetos de tipo '{ddl_kind or 'sistema'}' en el sandbox."
+
+    # 4. Denylist profunda: inspección de TODO el árbol AST
     for node in root.walk():
-        if isinstance(node, MUTATION_NODES):
+        if isinstance(node, ALWAYS_FORBIDDEN_NODES):
+            keyword = KEYWORD_NAMES.get(type(node), type(node).__name__.upper())
+            record_security_violation(
+                rule_violated="ALWAYS_FORBIDDEN_NODE_BLOCKED",
+                submitted_sql=sql,
+                blocked_node=keyword,
+                client_ip=client_ip,
+                user_id=user_id,
+            )
+            return False, f"La instrucción '{keyword}' no está permitida en este entorno de práctica."
+
+        if exec_mode == ExecutionMode.READ_ONLY and isinstance(node, MUTATION_NODES):
             keyword = "operación no permitida"
             for node_type, name in KEYWORD_NAMES.items():
                 if isinstance(node, node_type):
@@ -229,6 +295,28 @@ def validate_sql_security(
                 user_id=user_id,
             )
             return False, f"La instrucción '{keyword}' no está permitida en este entorno de práctica."
+
+        if exec_mode == ExecutionMode.DML and isinstance(node, DDL_ALLOWED_ROOTS):
+            keyword = KEYWORD_NAMES.get(type(node), type(node).__name__.upper())
+            record_security_violation(
+                rule_violated="DDL_IN_DML_MODE_BLOCKED",
+                submitted_sql=sql,
+                blocked_node=keyword,
+                client_ip=client_ip,
+                user_id=user_id,
+            )
+            return False, f"La instrucción '{keyword}' no está permitida en un ejercicio de manipulación DML."
+
+        if exec_mode == ExecutionMode.DDL and isinstance(node, DML_ALLOWED_ROOTS):
+            keyword = KEYWORD_NAMES.get(type(node), type(node).__name__.upper())
+            record_security_violation(
+                rule_violated="DML_IN_DDL_MODE_BLOCKED",
+                submitted_sql=sql,
+                blocked_node=keyword,
+                client_ip=client_ip,
+                user_id=user_id,
+            )
+            return False, f"La instrucción '{keyword}' no está permitida en un ejercicio de definición DDL."
 
     # 5. Detección de funciones peligrosas del sistema
     for func in root.find_all(exp.Func):
@@ -265,11 +353,13 @@ def validate_sql_security(
 
 def enforce_row_limit(sql: str, max_rows: int = 1000) -> str:
     """
-    Asegura mediante manipulación del AST que la consulta tenga una cláusula LIMIT
-    que no supere max_rows, protegiendo el consumo de memoria del sandbox.
+    Asegura mediante manipulación del AST que la consulta de lectura tenga una cláusula LIMIT
+    que no supere max_rows. Si la raíz es una sentencia DML o DDL, la devuelve intacta.
     """
     try:
         tree = sqlglot.parse_one(sql, read="postgres")
+        if not isinstance(tree, ALLOWED_ROOTS):
+            return sql.strip()
         limit_node = tree.args.get("limit")
         if limit_node and limit_node.expression:
             try:
@@ -283,6 +373,8 @@ def enforce_row_limit(sql: str, max_rows: int = 1000) -> str:
         return tree.sql(dialect="postgres")
     except Exception:
         clean = strip_sql_comments(sql).rstrip(";").strip()
+        if not re.match(r"^\s*(SELECT|WITH|\()", clean, re.IGNORECASE):
+            return sql.strip()
         limit_match = re.search(r"\bLIMIT\s+(\d+)\b", clean, re.IGNORECASE)
         if limit_match:
             current_limit = int(limit_match.group(1))
