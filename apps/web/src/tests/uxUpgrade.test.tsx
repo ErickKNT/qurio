@@ -40,12 +40,12 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     expect(pedidosRelated.has('detalle_pedidos')).toBe(true);
   });
 
-  it('moduleGuides cubre los 12 módulos oficiales con diagramas y ejemplos sin spoilers de Ecommerce DB', () => {
-    expect(MODULE_GUIDES).toHaveLength(12);
+  it('moduleGuides cubre los 16 módulos oficiales con diagramas y ejemplos sin spoilers de Ecommerce DB', () => {
+    expect(MODULE_GUIDES).toHaveLength(16);
     const ecommerceTables = ['detalle_pedidos', 'almacenes', 'inventario', 'proveedores'];
 
-    for (let i = 1; i <= 12; i++) {
-      const prefix = i <= 4 ? 'a' : i <= 8 ? 'b' : 'c';
+    for (let i = 1; i <= 16; i++) {
+      const prefix = i <= 4 ? 'a' : i <= 8 ? 'b' : i <= 12 ? 'c' : 'd';
       const id = `${prefix}0000000-0000-0000-0000-0000000000${String(i).padStart(2, '0')}`;
       const guide = getModuleGuide(id);
       expect(guide).toBeDefined();

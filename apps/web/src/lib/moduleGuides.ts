@@ -604,6 +604,193 @@ export const MODULE_GUIDES: ModuleGuide[] = [
     productionTip:
       'Combina PARTITION BY + ORDER BY en OVER() con un desempate único cuando uses ROW_NUMBER() o LAG() para que el resultado sea 100% reproducible.',
   },
+  {
+    moduleId: 'd0000000-0000-0000-0000-000000000013',
+    moduleNumber: 13,
+    title: 'Inserción de Registros (INSERT)',
+    trackTitle: '4. Ingeniería y Manipulación de Datos',
+    summary:
+      'Aprenderás a registrar nuevas tuplas con INSERT INTO ... VALUES, cargar lotes multi-fila de forma atómica, proyectar inmediatamente claves generadas con RETURNING y poblar tablas a partir de consultas con INSERT INTO ... SELECT.',
+    executionOrder: 'Evalúa expresiones VALUES / ejecuta SELECT origen → Asigna secuencias SERIAL / DEFAULT → Valida restricciones (NOT NULL, UNIQUE, FK, CHECK) → Inserta tuplas → Proyecta RETURNING',
+    transformDiagram: {
+      title: 'Inserción atómica con proyección RETURNING',
+      clauseBadge: 'INSERT INTO · VALUES · RETURNING',
+      inputs: [
+        {
+          title: 'departamentos (antes)',
+          accent: 'indigo',
+          columns: ['depto_id', 'nombre'],
+          rows: [
+            [1, 'Soporte'],
+            [2, 'Ventas'],
+          ],
+        },
+      ],
+      operationLabel: "INSERT INTO departamentos (nombre) VALUES ('Datos') RETURNING depto_id, nombre",
+      output: {
+        title: 'Tupla insertada y confirmada',
+        accent: 'emerald',
+        columns: ['depto_id', 'nombre'],
+        rows: [[3, 'Datos']],
+      },
+      caption: 'La secuencia SERIAL asigna automáticamente depto_id = 3 y RETURNING devuelve la fila creada sin necesidad de otro SELECT.',
+    },
+    workedExamples: [
+      {
+        title: 'Inserción multi-fila con retorno de identificadores',
+        sql: "INSERT INTO sucursales (ciudad, capacidad)\nVALUES\n  ('Monterrey', 1500),\n  ('Bogotá', 1800)\nRETURNING sucursal_id, ciudad;",
+        explanation: 'Inserta múltiples filas en una sola transacción atómica y devuelve los IDs asignados por la secuencia.',
+      },
+      {
+        title: 'Abastecimiento entre tablas con INSERT INTO ... SELECT',
+        sql: "INSERT INTO archivo_inactivos (usuario_id, correo)\nSELECT usuario_id, correo\nFROM usuarios\nWHERE activo = FALSE;",
+        explanation: 'Copia directamente las filas que cumplen la condición desde la tabla origen hacia la tabla destino sin usar VALUES.',
+      },
+    ],
+    commonMistakes: [
+      'Escribir la palabra VALUES cuando se utiliza INSERT INTO ... SELECT (en ese patrón el SELECT reemplaza por completo a VALUES).',
+      'Omitir la lista explícita de columnas en INSERT INTO tabla (col1, col2): si el esquema cambia de orden en el futuro, la inserción fallará o corromperá datos.',
+    ],
+    productionTip:
+      'En APIs backend sobre PostgreSQL, utiliza siempre INSERT ... RETURNING id, created_at para obtener las claves autogeneradas en un solo viaje de red.',
+  },
+  {
+    moduleId: 'd0000000-0000-0000-0000-000000000014',
+    moduleNumber: 14,
+    title: 'Actualización y Eliminación Segura (UPDATE y DELETE)',
+    trackTitle: '4. Ingeniería y Manipulación de Datos',
+    summary:
+      'Modificarás registros existentes con UPDATE ... SET ... WHERE, auditarás cambios al vuelo con RETURNING, cruzarás tablas en actualizaciones mediante UPDATE ... FROM y depurarás registros obsoletos de forma segura con DELETE FROM ... WHERE.',
+    executionOrder: 'FROM (tablas auxiliares si existen) → WHERE (localiza tuplas objetivo) → SET / DELETE (valida FK/CHECK y genera nueva versión de tupla MVCC) → RETURNING',
+    transformDiagram: {
+      title: 'Actualización selectiva acotada por WHERE',
+      clauseBadge: 'UPDATE · SET · FROM · DELETE',
+      inputs: [
+        {
+          title: 'tarifas (antes)',
+          accent: 'indigo',
+          columns: ['plan_id', 'nivel', 'costo'],
+          rows: [
+            [1, 'Básico', 100],
+            [2, 'Pro', 200],
+          ],
+        },
+      ],
+      operationLabel: "UPDATE tarifas SET costo = 220 WHERE plan_id = 2 RETURNING plan_id, costo",
+      output: {
+        title: 'tarifas (después)',
+        accent: 'emerald',
+        columns: ['plan_id', 'nivel', 'costo'],
+        rows: [
+          [1, 'Básico', 100],
+          [2, 'Pro', 220],
+        ],
+      },
+      caption: 'El predicado WHERE garantiza que únicamente la fila con plan_id = 2 sea modificada.',
+    },
+    workedExamples: [
+      {
+        title: 'Actualización cruzada entre dos tablas (UPDATE ... FROM)',
+        sql: "UPDATE cuentas c\nSET limite_credito = c.limite_credito + 500\nFROM niveles_vip v\nWHERE c.nivel_id = v.nivel_id\n  AND v.categoria = 'Platino';",
+        explanation: 'En PostgreSQL, UPDATE ... FROM permite filtrar o tomar valores de otra tabla uniendo ambas en la cláusula WHERE.',
+      },
+      {
+        title: 'Eliminación precisa verificando clave primaria o estado',
+        sql: "DELETE FROM sesiones_temporales\nWHERE expirada = TRUE\nRETURNING sesion_id;",
+        explanation: 'Elimina únicamente las filas que cumplen la condición y devuelve los identificadores borrados.',
+      },
+    ],
+    commonMistakes: [
+      'Ejecutar UPDATE o DELETE olvidando la cláusula WHERE: esto modifica o vacía el 100% de las filas de la tabla.',
+      'Poner el alias de la tabla destino en la parte izquierda del SET (SET c.limite = 100 es inválido en PostgreSQL; debe ser SET limite = 100).',
+    ],
+    productionTip:
+      'Antes de ejecutar un UPDATE o DELETE delicado en producción, escribe primero un SELECT con exactamente el mismo WHERE para confirmar cuántas filas serán afectadas.',
+  },
+  {
+    moduleId: 'd0000000-0000-0000-0000-000000000015',
+    moduleNumber: 15,
+    title: 'Creación y Evolución de Tablas (CREATE, ALTER y DROP)',
+    trackTitle: '4. Ingeniería y Manipulación de Datos',
+    summary:
+      'Diseñarás esquemas relacionales robustos con CREATE TABLE, tipos de datos exactos, claves primarias y foráneas (REFERENCES), reglas de negocio con CHECK, evolución sin pérdida de datos mediante ALTER TABLE y retiro limpio con DROP TABLE IF EXISTS ... CASCADE.',
+    executionOrder: 'Verifica existencia en catálogo → Registra estructura y tipos en pg_class/pg_attribute → Crea índices implícitos (PK/UNIQUE) y enlaces en pg_constraint',
+    transformDiagram: {
+      title: 'Evolución estructural con ALTER TABLE',
+      clauseBadge: 'CREATE TABLE · CHECK · ALTER · DROP',
+      inputs: [
+        {
+          title: 'sucursales (esquema v1)',
+          accent: 'indigo',
+          columns: ['id (PK)', 'ciudad'],
+          rows: [[1, 'Madrid']],
+        },
+      ],
+      operationLabel: 'ALTER TABLE sucursales ADD COLUMN activa BOOLEAN NOT NULL DEFAULT TRUE',
+      output: {
+        title: 'sucursales (esquema v2)',
+        accent: 'emerald',
+        columns: ['id (PK)', 'ciudad', 'activa'],
+        rows: [[1, 'Madrid', 'true']],
+      },
+      caption: 'Las filas existentes adoptan instantáneamente el valor DEFAULT sin necesidad de reescribir la tabla.',
+    },
+    workedExamples: [
+      {
+        title: 'Tabla con integridad referencial y validación de dominio CHECK',
+        sql: "CREATE TABLE valoraciones (\n  valoracion_id SERIAL PRIMARY KEY,\n  articulo_id INT NOT NULL REFERENCES articulos(articulo_id),\n  puntos INT NOT NULL CHECK (puntos BETWEEN 1 AND 5),\n  creado_en DATE NOT NULL DEFAULT CURRENT_DATE\n);",
+        explanation: 'Combina clave primaria autoincremental, clave foránea y una regla CHECK que impide calificaciones fuera de 1..5.',
+      },
+    ],
+    commonMistakes: [
+      'Usar FLOAT o REAL para almacenar dinero o porcentajes financieros en lugar de NUMERIC(p, s): los tipos flotantes binarios introducen errores de redondeo.',
+      'Agregar una columna NOT NULL con ALTER TABLE sobre una tabla poblada sin especificar un valor DEFAULT.',
+    ],
+    productionTip:
+      'En PostgreSQL el DDL es transaccional: puedes envolver migraciones complejas (CREATE, ALTER, DROP) dentro de BEGIN ... COMMIT para que, si algo falla, todo el esquema revierta limpiamente.',
+  },
+  {
+    moduleId: 'd0000000-0000-0000-0000-000000000016',
+    moduleNumber: 16,
+    title: 'Índices y Optimización Estructural (CREATE INDEX)',
+    trackTitle: '4. Ingeniería y Manipulación de Datos',
+    summary:
+      'Optimizarás el acceso físico a los datos creando índices B-Tree simples, índices únicos compuestos (CREATE UNIQUE INDEX), índices parciales filtrados con WHERE para colas operativas y limpieza de índices redundantes con DROP INDEX IF EXISTS.',
+    executionOrder: 'Escanea tuplas de la tabla → Filtra predicado WHERE (si es índice parcial) → Ordena claves y verifica unicidad → Construye páginas del árbol B-Tree → Publica en pg_indexes',
+    transformDiagram: {
+      title: 'De escaneo secuencial O(N) a búsqueda B-Tree O(log N)',
+      clauseBadge: 'CREATE INDEX · UNIQUE · PARTIAL WHERE · DROP INDEX',
+      inputs: [
+        {
+          title: 'Sin índice (Seq Scan)',
+          accent: 'amber',
+          columns: ['Operación', 'Filas leídas'],
+          rows: [['WHERE estado = pendiente', '100% de la tabla']],
+        },
+      ],
+      operationLabel: "CREATE INDEX idx_pendientes ON ordenes (fecha) WHERE estado = 'pendiente'",
+      output: {
+        title: 'Con índice parcial (Index Scan)',
+        accent: 'emerald',
+        columns: ['Operación', 'Filas leídas'],
+        rows: [['WHERE estado = pendiente', 'Solo punteros activos']],
+      },
+      caption: 'Un índice parcial indexa únicamente el subconjunto que cumple el WHERE, ahorrando RAM y manteniendo escrituras rápidas.',
+    },
+    workedExamples: [
+      {
+        title: 'Índice único compuesto e índice parcial filtrado',
+        sql: "-- 1. Índice único compuesto (importa el orden izquierda a derecha)\nCREATE UNIQUE INDEX idx_suscripcion_usuario_plan\nON suscripciones (usuario_id, plan_id);\n\n-- 2. Índice parcial solo para tickets abiertos\nCREATE INDEX idx_tickets_abiertos_prioridad\nON tickets (prioridad)\nWHERE cerrado = FALSE;",
+        explanation: 'El índice compuesto acelera búsquedas por usuario_id y por (usuario_id, plan_id), mientras que el índice parcial ignora el histórico cerrado.',
+      },
+    ],
+    commonMistakes: [
+      'Crear índices en todas las columnas indiscriminadamente: cada índice adicional ralentiza los INSERT, UPDATE y DELETE y consume memoria.',
+      'Colocar en primer lugar de un índice compuesto una columna que rara vez se incluye en el WHERE de las consultas.',
+    ],
+    productionTip:
+      'En tablas donde el 90%+ de las filas son históricas (ej. pedidos completados) y las consultas buscan el 5% activo (pendientes), un índice parcial con WHERE reduce hasta 10 veces el peso del índice.',
+  },
 ];
 
 export function getModuleGuide(moduleId: string): ModuleGuide | undefined {

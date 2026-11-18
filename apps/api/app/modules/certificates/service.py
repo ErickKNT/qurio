@@ -45,7 +45,8 @@ _TRACK_MODULES_COUNT: Dict[str, int] = {
     "sql-foundations": 4,
     "relational-sql": 4,
     "advanced-queries": 4,
-    "global-curriculum": 12,
+    "data-manipulation-ddl": 4,
+    "global-curriculum": 16,
 }
 
 _TRACK_SKILLS_MAP: Dict[str, List[str]] = {
@@ -73,14 +74,22 @@ _TRACK_SKILLS_MAP: Dict[str, List[str]] = {
         "Funciones de Ventana (OVER, PARTITION BY)",
         "Ranking & Análisis Temporal (LAG / SUM OVER)",
     ],
+    "data-manipulation-ddl": [
+        "Inserción Transaccional (INSERT & RETURNING)",
+        "Poblamiento Analítico (INSERT INTO ... SELECT)",
+        "Actualización Cruzada (UPDATE ... FROM)",
+        "Depuración Segura (DELETE & Integridad FK)",
+        "Diseño de Esquemas (CREATE/ALTER/DROP & CHECK)",
+        "Indexación B-Tree, Compuesta y Parcial (WHERE)",
+    ],
     "global-curriculum": [
-        "Sintaxis ANSI SQL",
+        "Sintaxis ANSI SQL & DQL",
         "INNER, LEFT & SELF JOINS",
         "Agrupación GROUP BY & HAVING",
-        "Normalización 3NF & Modelado",
-        "Subconsultas & CTEs (WITH)",
+        "Subconsultas, CTEs & Window Functions",
+        "Manipulación DML (INSERT, UPDATE, DELETE, RETURNING)",
+        "Diseño DDL, Restricciones & Índices B-Tree",
         "Evaluación PostgreSQL 16 Sandbox",
-        "Funciones de Ventana (OVER, PARTITION BY)",
     ],
 }
 
@@ -144,6 +153,7 @@ _TRACK_PREFIX_MAP = {
     "sql-foundations": "a0000000-",
     "relational-sql": "b0000000-",
     "advanced-queries": "c0000000-",
+    "data-manipulation-ddl": "d0000000-",
 }
 
 

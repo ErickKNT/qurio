@@ -1,5 +1,7 @@
 export type Difficulty = 'Principiante' | 'Intermedio' | 'Avanzado';
 
+export type ExecutionMode = 'read_only' | 'dml' | 'ddl';
+
 export type EvaluationStatus = 'PASSED' | 'FAILED' | 'ERROR' | 'AUTH_REQUIRED';
 
 export interface ColumnInfo {
@@ -76,6 +78,7 @@ export interface Exercise {
   difficulty: Difficulty;
   check_order: boolean;
   sort_order: number;
+  execution_mode?: ExecutionMode;
   hints?: string[];
   is_completed?: boolean;
   concept?: ExerciseConcept;

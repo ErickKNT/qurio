@@ -182,15 +182,23 @@ export const api = {
   },
 
   /**
-   * Ejecuta una consulta arbitraria en el Playground del Sandbox Docker.
+   * Ejecuta una consulta arbitraria en el Playground del Sandbox Docker (o prueba de un ejercicio si se pasa exerciseId).
    */
-  async executePlayground(query: string, database = 'ecommerce_sandbox'): Promise<ExecutionResult> {
+  async executePlayground(
+    query: string,
+    database = 'ecommerce_sandbox',
+    exerciseId?: string
+  ): Promise<ExecutionResult> {
     try {
       const headers = await getAuthHeaders();
       const res = await fetch(`${API_BASE_URL}/playground/execute`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ query, database }),
+        body: JSON.stringify({
+          query,
+          database,
+          ...(exerciseId ? { exercise_id: exerciseId } : {}),
+        }),
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
