@@ -699,8 +699,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <section className="flex flex-col gap-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <AdminMetricTile
-                label="Retos del Currículum"
-                value={curriculum?.total_exercises ?? 50}
+                label="Retos del Plan de Estudios"
+                value={curriculum?.total_exercises ?? 76}
                 subLabel={`Fuente: ${curriculum?.data_source ?? 'cargando...'}`}
                 accent="indigo"
               />

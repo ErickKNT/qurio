@@ -106,4 +106,21 @@ describe('evaluateUserAchievements', () => {
     expect(masterAt76?.progress).toBe(100);
     expect(masterAt76?.unlocked_at).not.toBeNull();
   });
+
+  it('desbloquea logros con UUIDs canónicos reales de Ruta 2, 3 y 4 (JOIN, CTE, DML, DDL, INDEX)', () => {
+    const completed = new Set<string>([
+      'e0000000-0000-0000-0000-000000000025', // M05 INNER JOIN
+      'e0000000-0000-0000-0000-000000000052', // M11 CTE WITH
+      'e0000000-0000-0000-0000-000000000065', // M14 UPDATE/DELETE
+      'e0000000-0000-0000-0000-000000000069', // M15 CREATE TABLE
+      'e0000000-0000-0000-0000-000000000073', // M16 CREATE INDEX
+    ]);
+
+    const evaluated = evaluateUserAchievements(ACHIEVEMENTS_CATALOG, baseProfile, completed, 5);
+    for (const id of ['join-apprentice', 'cte-architect', 'dml-operator', 'ddl-designer', 'index-tuner']) {
+      const ach = evaluated.find((a) => a.id === id);
+      expect(ach?.progress).toBe(100);
+      expect(ach?.unlocked_at).not.toBeNull();
+    }
+  });
 });

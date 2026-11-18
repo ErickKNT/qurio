@@ -568,7 +568,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'window-wizard',
     title: 'Maestro de Ventanas',
-    description: 'Resuelve un ejercicio analítico utilizando funciones de ventana (ROW_NUMBER).',
+    description: 'Resuelve un ejercicio analítico utilizando funciones de ventana (ROW_NUMBER, RANK, LAG).',
     icon: 'Layers',
     category: 'habilidad',
     xp_reward: 150,
@@ -579,9 +579,87 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     unit: 'ejercicio',
   },
   {
+    id: 'cte-architect',
+    title: 'Arquitecto de CTEs',
+    description: 'Modulariza consultas analíticas complejas utilizando expresiones temporales WITH.',
+    icon: 'GitBranch',
+    category: 'habilidad',
+    xp_reward: 125,
+    unlocked_at: null,
+    progress: 0,
+    required_threshold: 1,
+    current_value: 0,
+    unit: 'ejercicio',
+  },
+  {
+    id: 'dml-operator',
+    title: 'Operador Transaccional',
+    description: 'Ejecuta tu primera mutación segura DML (INSERT, UPDATE, DELETE o RETURNING) en pg_temp.',
+    icon: 'Wrench',
+    category: 'habilidad',
+    xp_reward: 150,
+    unlocked_at: null,
+    progress: 0,
+    required_threshold: 1,
+    current_value: 0,
+    unit: 'ejercicio',
+  },
+  {
+    id: 'ddl-designer',
+    title: 'Arquitecto de Esquemas',
+    description: 'Diseña o evoluciona tablas relacionales y restricciones CHECK/FK con DDL.',
+    icon: 'Database',
+    category: 'habilidad',
+    xp_reward: 175,
+    unlocked_at: null,
+    progress: 0,
+    required_threshold: 1,
+    current_value: 0,
+    unit: 'ejercicio',
+  },
+  {
+    id: 'index-tuner',
+    title: 'Especialista en Índices',
+    description: 'Optimiza consultas creando o depurando índices B-Tree, UNIQUE o parciales.',
+    icon: 'Gauge',
+    category: 'habilidad',
+    xp_reward: 200,
+    unlocked_at: null,
+    progress: 0,
+    required_threshold: 1,
+    current_value: 0,
+    unit: 'ejercicio',
+  },
+  {
+    id: 'quarter-master',
+    title: 'Impulso Relacional',
+    description: 'Completa 20 retos verificados dentro del plan de estudios.',
+    icon: 'ShieldCheck',
+    category: 'progreso',
+    xp_reward: 120,
+    unlocked_at: null,
+    progress: 0,
+    required_threshold: 20,
+    current_value: 0,
+    unit: 'ejercicios',
+  },
+  {
+    id: 'halfway-engineer',
+    title: 'Mitad del Camino',
+    description: 'Supera la marca de 40 retos resueltos en PostgreSQL 16.',
+    icon: 'Trophy',
+    category: 'progreso',
+    xp_reward: 250,
+    unlocked_at: null,
+    progress: 0,
+    required_threshold: 40,
+    current_value: 0,
+    unit: 'ejercicios',
+  },
+  {
     id: 'master-sql',
     title: 'Ingeniero Relacional',
-    description: 'Completa al 100% las 4 rutas formativas del currículum (DQL, DML y DDL).',
+    description: 'Completa al 100% las 4 rutas formativas del plan de estudios (DQL, DML y DDL).',
     icon: 'Sparkles',
     category: 'progreso',
     xp_reward: 500,
@@ -592,6 +670,29 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     unit: 'ejercicios',
   },
 ];
+
+function parseCanonicalExerciseNumber(id: string): number | null {
+  const match = /^e0000000-0000-0000-0000-0000000000(\d{2})$/i.exec(id.trim());
+  return match ? Number(match[1]) : null;
+}
+
+function hasCompletedInModuleRange(
+  completedExerciseIds: Set<string>,
+  minSortOrder: number,
+  maxSortOrder: number,
+  legacyTokens: string[] = []
+): boolean {
+  for (const id of completedExerciseIds) {
+    const num = parseCanonicalExerciseNumber(id);
+    if (num !== null && num >= minSortOrder && num <= maxSortOrder) {
+      return true;
+    }
+    if (legacyTokens.some((token) => id.includes(token))) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Evalúa reactiva y autoritativamente las medallas del usuario en base a sus métricas reales.
@@ -617,16 +718,12 @@ export function evaluateUserAchievements(
         break;
 
       case 'join-apprentice':
-        unlocked = Array.from(completedExerciseIds).some(
-          (id) => id.includes('m05') || id.includes('join')
-        );
+        unlocked = hasCompletedInModuleRange(completedExerciseIds, 25, 29, ['m05', 'join']);
         currentValue = unlocked ? 1 : 0;
         break;
 
       case 'null-detective':
-        unlocked = Array.from(completedExerciseIds).some(
-          (id) => id.includes('m06') || id.includes('null')
-        );
+        unlocked = hasCompletedInModuleRange(completedExerciseIds, 30, 35, ['m06', 'null']);
         currentValue = unlocked ? 1 : 0;
         break;
 
@@ -650,12 +747,32 @@ export function evaluateUserAchievements(
         break;
 
       case 'window-wizard':
-        unlocked = Array.from(completedExerciseIds).some(
-          (id) => id.includes('m09') || id.includes('m10') || id.includes('window')
-        );
+        unlocked = hasCompletedInModuleRange(completedExerciseIds, 56, 60, ['m09', 'm10', 'm12', 'window']);
         currentValue = unlocked ? 1 : 0;
         break;
 
+      case 'cte-architect':
+        unlocked = hasCompletedInModuleRange(completedExerciseIds, 52, 55, ['m11', 'cte']);
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'dml-operator':
+        unlocked = hasCompletedInModuleRange(completedExerciseIds, 61, 68, ['m13', 'm14', 'dml']);
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'ddl-designer':
+        unlocked = hasCompletedInModuleRange(completedExerciseIds, 69, 72, ['m15', 'ddl']);
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'index-tuner':
+        unlocked = hasCompletedInModuleRange(completedExerciseIds, 73, 76, ['m16', 'index']);
+        currentValue = unlocked ? 1 : 0;
+        break;
+
+      case 'quarter-master':
+      case 'halfway-engineer':
       case 'master-sql':
         currentValue = completedCount;
         unlocked = completedCount >= ach.required_threshold;

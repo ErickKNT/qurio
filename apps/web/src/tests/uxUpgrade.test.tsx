@@ -144,6 +144,24 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     );
     expect(selectToken?.className).toContain('text-cyan-accent');
     expect(selectToken?.className).toContain('font-bold');
+
+    cleanup();
+
+    const { container: ddlContainer } = render(
+      <div>
+        <p data-testid="ddl-prose">{formatSqlProse('Usa DELETE, UNIQUE, INDEX, RETURNING y CASCADE en DDL/DML.')}</p>
+        <pre data-testid="ddl-block">{highlightSqlBlock('CREATE UNIQUE INDEX idx_email ON clientes (email); DELETE FROM logs RETURNING *;')}</pre>
+      </div>
+    );
+
+    const ddlProseCodes = Array.from(ddlContainer.querySelectorAll('[data-testid="ddl-prose"] code')).map((el) => el.textContent);
+    expect(ddlProseCodes).toEqual(['DELETE', 'UNIQUE', 'INDEX', 'RETURNING', 'CASCADE']);
+
+    const uniqueIndexSpan = Array.from(ddlContainer.querySelectorAll('[data-testid="ddl-block"] span')).find(
+      (el) => el.textContent === 'CREATE UNIQUE INDEX'
+    );
+    expect(uniqueIndexSpan?.className).toContain('text-cyan-accent');
+    expect(uniqueIndexSpan?.className).toContain('font-bold');
   });
 
   it('ExerciseSpecPanel resalta palabras reservadas SQL en pistas y solución oficial', () => {

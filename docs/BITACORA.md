@@ -1805,11 +1805,16 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * Reorganización del grid de rutas en `TracksView` de 3 columnas (3+1 huérfana) a una cuadrícula simétrica **Bento 2×2** (`grid-cols-1 md:grid-cols-2 gap-5`) con variantes cromáticas y horas reales (`7h`, `9h`, `14h`, `12h`).
      * Expansión de `SKILL_META` y `SKILL_ZONES` en `LearningRoadmapMap` para incluir la **Etapa 4 • Ingeniería y Manipulación de Datos** con topología en diamante (`M12 → M13 → [M14, M15] → M16`) y vista de 4 etapas en `xl:grid-cols-4`.
      * Actualización del logro `master-sql` (*Ingeniero Relacional*) a **76 ejercicios (4 rutas)**, vinculación de términos DDL/DML en `sqlReference.ts` a los Módulos 14–16 y actualización de contadores globales (`76 retos`, `4 rutas`, `228 pistas`) en perfil y metodología.
+  6. **Expansión del Sistema de Logros (14 Medallas), Terminología "Plan de Estudios" y Resaltado Léxico DML/DDL ([`api.ts`](../apps/web/src/lib/api.ts), [`AchievementCard.tsx`](../apps/web/src/components/molecules/AchievementCard/AchievementCard.tsx), [`format.tsx`](../apps/web/src/lib/format.tsx), [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx)):**
+     * Ampliación de `ACHIEVEMENTS_CATALOG` de 8 a **14 logros** incorporando `cte-architect`, `dml-operator`, `ddl-designer`, `index-tuner`, `quarter-master` (20 retos) y `halfway-engineer` (40 retos).
+     * Corrección de `evaluateUserAchievements` para evaluar los rangos canónicos de UUIDs (`e0000000-...-000000000025`..`0076`) además de los tokens de prueba.
+     * Reemplazo integral del término visible `"currículum"` por **"Plan de Estudios"** (incluida la constancia global `"Plan de Estudios Completo — SQL Engineering"`), manteniendo el identificador interno `'global-curriculum'`.
+     * Ampliación de `formatSqlProse` y `highlightSqlBlock` en `format.tsx` para resaltar palabras reservadas DML/DDL sueltas y compuestas (`DELETE`, `UNIQUE`, `INDEX`, `RETURNING`, `CASCADE`, `CHECK`, `ON CONFLICT`, `CREATE UNIQUE INDEX`, tipos SQL).
 * **Verificación:**
   * **Consistencia Curricular y Sandbox (`pytest apps/api/tests/test_schema_consistency.py -v`):** **5/5 pruebas aprobadas** (76 retos ejecutados en PostgreSQL 16 Sandbox devolviendo `1..20` filas con 0 mutaciones en `public.*`).
   * **Seguridad AST, Evaluador e Integración (`pytest apps/api/tests/test_security.py apps/api/tests/test_evaluator.py apps/api/tests/test_integration.py -v`):** **64/64 pruebas aprobadas**.
-  * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **9 archivos / 57 pruebas aprobadas** en `3.34s`.
-  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,303 módulos**, 0 errores TypeScript) en `6.34s`.
+  * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **9 archivos / 58 pruebas aprobadas** en `3.47s`.
+  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,303 módulos**, 0 errores TypeScript).
 
 
 

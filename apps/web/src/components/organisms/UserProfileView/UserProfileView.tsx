@@ -498,7 +498,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <MetricTile
           label="Retos Completados"
           value={`${completedCount} / ${totalExercises}`}
-          subValue={`${Math.round((completedCount / (totalExercises || 1)) * 100)}% del currículum`}
+          subValue={`${Math.round((completedCount / (totalExercises || 1)) * 100)}% del plan de estudios`}
           icon={<Award className="w-4 h-4" />}
           accent="purple"
         />
@@ -990,7 +990,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 );
               })}
 
-              {/* Certificado Global del Currículum */}
+              {/* Certificado Global del Plan de Estudios */}
               <div
                 className={cn(
                   'p-3 rounded-xl border flex items-center justify-between gap-2.5',
@@ -1003,10 +1003,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               >
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-content-primary truncate">
-                    Certificado Global SQL Engineering
+                    Constancia Global — Plan de Estudios
                   </span>
                   <span className="text-[10px] font-mono text-content-muted">
-                    {completedCount} / {totalExercises} retos globales
+                    {completedCount} / {totalExercises} retos totales
                   </span>
                 </div>
 
@@ -1019,7 +1019,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     onClick={() =>
                       handleIssueAndOpen({
                         trackId: 'global-curriculum',
-                        trackTitle: 'Currículum Completo SQL Engineering',
+                        trackTitle: 'Plan de Estudios Completo — SQL Engineering',
                         totalCount: totalExercises,
                         qaPreview: !globalUnlocked,
                       })

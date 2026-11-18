@@ -234,7 +234,7 @@ export const MethodologyModal: React.FC<MethodologyModalProps> = ({ isOpen, onCl
           <section className="flex flex-col gap-3">
             <div className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-amber-streak">
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>3. Trampas Semánticas Reales que Entrena el Currículum</span>
+              <span>3. Trampas Semánticas Reales que Entrena el Plan de Estudios</span>
             </div>
 
             <div className="flex flex-col gap-2">

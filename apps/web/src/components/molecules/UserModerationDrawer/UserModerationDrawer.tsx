@@ -221,7 +221,7 @@ export const UserModerationDrawer: React.FC<UserModerationDrawerProps> = ({
 
             <div className="p-3 rounded-lg bg-surface border border-border-subtle/80">
               <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase text-content-muted mb-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald" /> Currículum
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald" /> Plan de Estudios
               </div>
               <div className="font-mono text-base font-bold text-content-primary tabular-nums">
                 {user.completed_exercises} / {user.total_exercises}

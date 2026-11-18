@@ -48,9 +48,9 @@
     "semantic_hash": "81051bcc2cf1bedf378224b0a93e2877"
   },
   "apps/api/app/modules/curriculum/repository.py": {
-    "mtime": 1794947181.2865143,
-    "seen": 1794949174.6846864,
-    "ast_hash": "2128dc2d8e054bc232ccf562c2ca91b0",
+    "mtime": 1795040839.491907,
+    "seen": 1795041475.1029708,
+    "ast_hash": "d7ec5de41bf2a1ebcffd8ca4aa09b238",
     "semantic_hash": ""
   },
   "apps/api/app/modules/curriculum/seed_data.py": {
@@ -174,10 +174,10 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/AchievementCard/AchievementCard.tsx": {
-    "mtime": 1794246864.7763112,
-    "seen": 1794252886.8074,
-    "ast_hash": "20d09cbc90e1967fe0f7d6be706e7b5c",
-    "semantic_hash": "20d09cbc90e1967fe0f7d6be706e7b5c"
+    "mtime": 1795041386.0867205,
+    "seen": 1795041475.113555,
+    "ast_hash": "2907425c73805cb0969aaa9733186091",
+    "semantic_hash": ""
   },
   "apps/web/src/components/molecules/AuthModal/AuthModal.tsx": {
     "mtime": 1794959735.6519794,
@@ -234,9 +234,9 @@
     "semantic_hash": "5412a3ac5b19099fc0c2deee00a037d1"
   },
   "apps/web/src/components/molecules/TrackCard/TrackCard.tsx": {
-    "mtime": 1795040243.6018257,
-    "seen": 1795040477.2341018,
-    "ast_hash": "ca75a490e163a6309ffe81d7d3070ec8",
+    "mtime": 1795041393.3815372,
+    "seen": 1795041475.1200252,
+    "ast_hash": "b29249d245d8e545d81567ead7f3b42f",
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/index.ts": {
@@ -312,15 +312,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/TracksView/TracksView.tsx": {
-    "mtime": 1795040241.4352043,
-    "seen": 1795040477.2420168,
+    "mtime": 1795040530.7405179,
+    "seen": 1795041475.1275048,
     "ast_hash": "14e823bfc7db24c5d1211e3a51abcc68",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx": {
-    "mtime": 1795040330.580564,
-    "seen": 1795040477.24202,
-    "ast_hash": "63c5b2720b28fd73981ce3a759bef81d",
+    "mtime": 1795041392.0875301,
+    "seen": 1795041475.1275082,
+    "ast_hash": "1c0be7ab0f31e71e7ceaff9194f19f2f",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/index.ts": {
@@ -360,9 +360,9 @@
     "semantic_hash": "501dbefce3bdfe944cecf55933c7a6ee"
   },
   "apps/web/src/lib/api.ts": {
-    "mtime": 1795040323.621323,
-    "seen": 1795040477.2461758,
-    "ast_hash": "ad96999399383ecd5d34f6456db70ace",
+    "mtime": 1795041387.3688252,
+    "seen": 1795041475.1321764,
+    "ast_hash": "baca85fa844f2602bb95c3714dfe0e94",
     "semantic_hash": ""
   },
   "apps/web/src/lib/persistence.ts": {
@@ -714,9 +714,9 @@
     "semantic_hash": "613a655990116fd57d207e240da52905"
   },
   "docs/BITACORA.md": {
-    "mtime": 1795040454.5705428,
-    "seen": 1795040477.2683198,
-    "ast_hash": "ee02944e05b53b53605aaf7e66d117e6",
+    "mtime": 1795041441.8871512,
+    "seen": 1795041475.1538212,
+    "ast_hash": "21288393b1af894f113be85e8aa2a486",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -1044,21 +1044,21 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/__tests__/achievements.test.ts": {
-    "mtime": 1795040374.4079497,
-    "seen": 1795040477.2448554,
-    "ast_hash": "d1df2fda3ba800efe56f050445bd5df6",
+    "mtime": 1795041407.9752061,
+    "seen": 1795041475.1306193,
+    "ast_hash": "49150369d46ff58e8e21cfc8c03d1fcf",
     "semantic_hash": ""
   },
   "apps/api/sync_supabase_curriculum.py": {
-    "mtime": 1795035177.5138075,
-    "seen": 1795040477.219232,
-    "ast_hash": "cffbd5994851747e48be2cb370c8c71f",
+    "mtime": 1795040679.7030573,
+    "seen": 1795041475.1051433,
+    "ast_hash": "5e983a2164c0d82d225d1a64123f4ddf",
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/GuestTrialCompleteModal/GuestTrialCompleteModal.tsx": {
-    "mtime": 1794947181.302191,
-    "seen": 1794949174.6921554,
-    "ast_hash": "42d9576fad1dabc49458eff6b537cf68",
+    "mtime": 1795041396.4600198,
+    "seen": 1795041475.1151762,
+    "ast_hash": "21fe25a0f8096b0cbd3f0b1499a3ad1d",
     "semantic_hash": ""
   },
   "docs/PROPUESTA_HUMANIZACION_CURRICULUM.md": {
@@ -1080,9 +1080,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/format.tsx": {
-    "mtime": 1794959735.6719818,
-    "seen": 1794960318.9294505,
-    "ast_hash": "605c534868c68ff90b9f9d10feba2783",
+    "mtime": 1795041388.9369204,
+    "seen": 1795041475.132784,
+    "ast_hash": "a24f8036cd966703a5f7e88a60ea2a77",
     "semantic_hash": ""
   },
   "apps/web/src/lib/__tests__/supabase.test.ts": {
@@ -1116,8 +1116,8 @@
     "semantic_hash": ""
   },
   "apps/api/app/modules/admin/service.py": {
-    "mtime": 1795040338.9845626,
-    "seen": 1795040477.215418,
+    "mtime": 1795040530.2711773,
+    "seen": 1795041475.1010323,
     "ast_hash": "452e289d01c6838529f0ef35083b5e91",
     "semantic_hash": ""
   },
@@ -1158,9 +1158,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/AdminDashboardView/AdminDashboardView.tsx": {
-    "mtime": 1795025897.567777,
-    "seen": 1795026725.1559558,
-    "ast_hash": "9262481bdc147acfe057aa7e8247f628",
+    "mtime": 1795041397.9617891,
+    "seen": 1795041475.120667,
+    "ast_hash": "e17d601f0523459700189c5ef912f413",
     "semantic_hash": ""
   },
   "apps/web/src/lib/adminApi.ts": {
@@ -1194,14 +1194,14 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/MethodologyModal/MethodologyModal.tsx": {
-    "mtime": 1795040335.386983,
-    "seen": 1795040477.229668,
-    "ast_hash": "3b59995a8a3cf9e65e249ae7fff79232",
+    "mtime": 1795041395.2247226,
+    "seen": 1795041475.115513,
+    "ast_hash": "d10dcf4d4945f34781fd743e2c308929",
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/PedagogyPillarsCard/PedagogyPillarsCard.tsx": {
-    "mtime": 1795040337.469229,
-    "seen": 1795040477.230302,
+    "mtime": 1795040530.4233785,
+    "seen": 1795041475.1162074,
     "ast_hash": "5dc4621376e1ff553ea94ca18c1fee89",
     "semantic_hash": ""
   },
@@ -1218,15 +1218,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/LearningRoadmapMap/LearningRoadmapMap.tsx": {
-    "mtime": 1795040248.6601846,
-    "seen": 1795040477.2389371,
+    "mtime": 1795040530.6498835,
+    "seen": 1795041475.1245449,
     "ast_hash": "95d7b20900c3d0b27133dfc2bde82074",
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/UserModerationDrawer/UserModerationDrawer.tsx": {
-    "mtime": 1795025883.7611673,
-    "seen": 1795026725.155198,
-    "ast_hash": "8a46b5b9fc9756164dd9061efd3c28f1",
+    "mtime": 1795041399.5142782,
+    "seen": 1795041475.1200285,
+    "ast_hash": "121e5cdb44641afc069ef195d4603ace",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/AdminUsersPanel/AdminUsersPanel.tsx": {
@@ -1290,15 +1290,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/sqlReference.ts": {
-    "mtime": 1795040332.1855142,
-    "seen": 1795040477.2486668,
+    "mtime": 1795040531.0144737,
+    "seen": 1795041475.1343062,
     "ast_hash": "32fe84ee4d4aa359dbecde739cddc5f5",
     "semantic_hash": ""
   },
   "apps/web/src/tests/uxUpgrade.test.tsx": {
-    "mtime": 1795040405.0455337,
-    "seen": 1795040477.2504983,
-    "ast_hash": "ef5dd1face5aabea549687a102e132ac",
+    "mtime": 1795041409.0410163,
+    "seen": 1795041475.1361372,
+    "ast_hash": "5007c88b75a90692fdbbd0d36cba44a1",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/__init__.py": {

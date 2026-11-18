@@ -109,7 +109,7 @@ export const GuestTrialCompleteModal: React.FC<GuestTrialCompleteModalProps> = (
             Has dominado las proyecciones básicas, alias y cálculos con IVA. Tus <strong className="text-content-primary font-mono">+{earnedXp} XP</strong> están guardados temporalmente en tu navegador.
           </p>
           <p className="text-content-muted text-[11px]">
-            Crea tu cuenta gratuita para certificar tu XP en la nube, registrar tu racha diaria y desbloquear los <strong className="text-cyan-accent">{remainingCount} retos restantes</strong> del currículum.
+            Crea tu cuenta gratuita para certificar tu XP en la nube, registrar tu racha diaria y desbloquear los <strong className="text-cyan-accent">{remainingCount} retos restantes</strong> del plan de estudios.
           </p>
         </div>
 

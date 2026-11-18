@@ -124,7 +124,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({
         {/* Progress Bar */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-[11px] font-mono">
-            <span className="text-content-muted">Progreso del currículum</span>
+            <span className="text-content-muted">Progreso de la ruta</span>
             {isLoading ? (
               <span className="text-cyan-accent/80 font-medium animate-pulse">Calculando...</span>
             ) : (
