@@ -189,3 +189,10 @@
 - [x] **T18.9 (Task 9):** Actualizar `docs/CURRICULUM_SPEC.md`, `docs/BITACORA.md` y actualizar el grafo de conocimiento con `python -m graphify update .`.
   - *Acceptance:* Suites completas de backend y frontend pasando al 100% y grafo actualizado.
   - *Verify:* `pytest apps/api/tests/ -v && npm --prefix apps/web test -- --run && npm --prefix apps/web run build`
+
+## Fase 19: Actualización de Imagen de Perfil (`feat/profile-avatar-upload`) — Completada
+
+- [x] **T19.1:** Crear script idempotente `database/supabase/07_avatar_storage.sql` para bucket `avatars` (`2 MiB`, `jpeg/png/webp`, sin SVG) y políticas RLS por `auth.uid()`.
+- [x] **T19.2:** Implementar `apps/web/src/lib/avatar.ts` (validación, recorte cuadrado `256×256` en `<canvas>`, fallback centralizado) y métodos de Storage en `persistence.ts` + resolución de fallback OAuth en `useAuth.tsx`.
+- [x] **T19.3:** Implementar Átomo `UserAvatar` y Molécula `AvatarUploader`, integrarlos en `EditProfileModal`, `UserProfileView`, `TopHeader`, `SidebarNav` y `ExerciseHeaderBar`, eliminando el input de URL externa.
+- [x] **T19.4:** Añadir/actualizar tests unitarios (`avatar.test.ts`, `persistence.test.ts`, `uxUpgrade.test.tsx`), verificar `vitest` y `npm run build`, actualizar `docs/BITACORA.md`, ejecutar `python -m graphify update .`, merge a `main` y `git push`.
