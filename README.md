@@ -17,9 +17,9 @@
   <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38BDF8?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 3.4" />
   <img src="https://img.shields.io/badge/Docker-Sandbox-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Sandbox" />
-  <img src="https://img.shields.io/badge/Backend_Pytest-105%2F105%20Passing-22C55E?style=for-the-badge" alt="Backend Pytest 105/105 Passing" />
-  <img src="https://img.shields.io/badge/Frontend_Vitest-49%2F49%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 49/49 Passing" />
-  <img src="https://img.shields.io/badge/Curr%C3%ADculo-60%20Retos%20%2F%20180%20Pistas-6366F1?style=for-the-badge" alt="60 Retos SQL" />
+  <img src="https://img.shields.io/badge/Backend_Pytest-111%2F111%20Passing-22C55E?style=for-the-badge" alt="Backend Pytest 111/111 Passing" />
+  <img src="https://img.shields.io/badge/Frontend_Vitest-58%2F58%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 58/58 Passing" />
+  <img src="https://img.shields.io/badge/Plan_de_Estudios-76%20Retos%20%2F%20228%20Pistas-6366F1?style=for-the-badge" alt="76 Retos SQL" />
   <img src="https://img.shields.io/badge/Security-Hardened%20(RLS%20%2B%20CLS%20%2B%20RPC)-059669?style=for-the-badge" alt="Security Hardened" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=for-the-badge" alt="MIT License" />
 </p>
@@ -84,14 +84,16 @@ La mayoría de las plataformas de aprendizaje de SQL caen en dos extremos: o son
 - **Panel ergonómico redimensionable:** divisor horizontal arrastrable entre el editor y los resultados (`28%`–`78%`, persistido en `localStorage`) y botón **Expandir / Restaurar** (`76%`).
 - Visualizador de discrepancias semánticas (`DiffResult`) y consola de terminal para errores de PostgreSQL o bloqueos AST.
 
-### 🗺️ Mapa Visual Curricular, 12 Guías Teóricas Modulares & 60 Retos Anti-Spoilers
-El currículo oficial consta de **3 rutas formativas (12 módulos, 60 retos y 180 pistas progresivas)** bajo los estándares documentados en [`docs/pedagogia/`](./docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md) y [`.agents/rules/sql-pedagogy.md`](./.agents/rules/sql-pedagogy.md):
-1. **Fundamentos de SQL (`24` Retos - `40%`):** `SELECT`, `WHERE`, operadores lógicos, `ORDER BY`, agregaciones (`COUNT`, `SUM`, `AVG`), `GROUP BY` y `HAVING`.
-2. **SQL Relacional (`20` Retos - `33%`):** Claves foráneas, `INNER JOIN`, `LEFT JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `SELF JOIN`, operaciones de conjunto (`UNION`, `INTERSECT`, `EXCEPT`) y `COALESCE`.
-3. **Consultas Avanzadas (`16` Retos - `27%`):** Subconsultas correlacionadas (`EXISTS` / `NOT EXISTS`), `CASE WHEN`, CTEs con `WITH` y funciones analíticas de ventana (`ROW_NUMBER`, `DENSE_RANK`, `SUM OVER`, `LAG`).
+### 🗺️ Mapa Curricular (16 Módulos), 16 Guías Teóricas Modulares & 76 Retos Anti-Spoilers
+El plan de estudios oficial consta de **4 rutas formativas (16 módulos, 76 retos y 228 pistas progresivas)** bajo los estándares documentados en [`docs/pedagogia/`](./docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md) y [`.agents/rules/sql-pedagogy.md`](./.agents/rules/sql-pedagogy.md):
+1. **Fundamentos de SQL (`24` Retos):** `SELECT`, `WHERE`, operadores lógicos, `ORDER BY`, agregaciones (`COUNT`, `SUM`, `AVG`), `GROUP BY` y `HAVING`.
+2. **SQL Relacional (`20` Retos):** Claves foráneas, `INNER JOIN`, `LEFT JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `SELF JOIN`, operaciones de conjunto (`UNION`, `INTERSECT`, `EXCEPT`) y `COALESCE`.
+3. **Consultas Avanzadas (`16` Retos):** Subconsultas correlacionadas (`EXISTS` / `NOT EXISTS`), `CASE WHEN`, CTEs con `WITH` y funciones analíticas de ventana (`ROW_NUMBER`, `DENSE_RANK`, `SUM OVER`, `LAG`).
+4. **Ingeniería y Manipulación de Datos (`16` Retos — DML & DDL):** `INSERT`, `INSERT INTO ... SELECT`, `UPDATE ... FROM`, `DELETE`, `RETURNING`, diseño y evolución de tablas (`CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`, `CHECK`, claves `PK`/`FK`) e índices B-Tree, compuestos y parciales (`CREATE/DROP INDEX`), ejecutados en **esquemas efímeros transaccionales `pg_temp` con `ROLLBACK` determinista**.
 
-- **12 Guías Teóricas con Micro-Diagramas (`ModuleGuideModal`):** Explicación del orden lógico de ejecución en PostgreSQL 16, diagramas `Entrada → Cláusula → Salida`, ejemplos ilustrativos libres de spoilers y errores frecuentes por módulo.
-- **Mapa Curricular Dual (`LearningRoadmapMap`):** Selector entre **Árbol de Habilidades** y **Camino por Etapas** conectado al panel de estaciones (`#01..#60`).
+- **16 Guías Teóricas con Micro-Diagramas (`ModuleGuideModal`):** Explicación del orden lógico de ejecución en PostgreSQL 16, diagramas `Entrada → Cláusula → Salida`, ejemplos ilustrativos libres de spoilers y errores frecuentes por módulo.
+- **Grid Bento 2×2 & Mapa Curricular Dual (`LearningRoadmapMap`):** Selector entre **Árbol de Habilidades** (16 nodos en topología DAG hasta `M13 → [M14, M15] → M16`) y **Camino por Etapas** (4 columnas) conectado al panel de estaciones (`#01..#76`).
+- **14 Medallas de Ingeniería:** Logros reactivos por progreso (`20`, `40`, `76` retos), racha (`3`, `7` días), baja latencia (`<5 ms`) y dominio técnico (`JOIN`, `NULL`, `CTEs`, `Window Functions`, `DML`, `DDL`, `Índices`).
 - **Revelación Controlada de Solución Oficial:** Disponible tras acumular al menos **2 intentos fallidos** (`/api/v1/exercises/{id}/reveal-solution`, acreditando **0 XP** si se resuelve tras verla).
 - **Modo Invitado & Fusión Reactiva:** Los visitantes pueden resolver los primeros 3 retos y fusionar automáticamente su progreso al iniciar sesión.
 
@@ -216,10 +218,10 @@ Qurio/
 │   │   │   ├── modules/
 │   │   │   │   ├── admin/      # API /admin/* (Live Ops, Usuarios, Analítica, Forense, Killswitches)
 │   │   │   │   ├── certificates/ # Constancias PDF/QR ReportLab, SHA-256, LinkedIn y /verify
-│   │   │   │   ├── curriculum/ # Catálogo de 60 ejercicios, 180 pistas y fallback
-│   │   │   │   └── runner/     # Pool asyncpg, Evaluador semántico, Seguridad AST/Regex y Router
+│   │   │   │   ├── curriculum/ # Catálogo de 76 ejercicios, 228 pistas y fallback
+│   │   │   │   └── runner/     # Pool asyncpg, Sandbox pg_temp, Evaluador semántico + AST y Seguridad contextual
 │   │   │   └── main.py         # Punto de entrada FastAPI y cabeceras HTTP
-│   │   ├── tests/              # Suite de 105 pruebas automáticas (Pytest + Asyncio)
+│   │   ├── tests/              # Suite de 111 pruebas automáticas (Pytest + Asyncio)
 │   │   │   ├── test_admin.py
 │   │   │   ├── test_auth.py
 │   │   │   ├── test_certificates.py # Emisión QA, PDF %PDF-, QR SVG, LinkedIn y bypass Admin
@@ -247,7 +249,7 @@ Qurio/
 │       │   │   └── templates/  # DashboardLayout, WorkspaceLayout
 │       │   ├── hooks/          # useAuth, useTheme, useAppRouter, useCurriculumState, useExerciseWorkspace
 │       │   ├── lib/            # api, adminApi, schemaGraph, moduleGuides, sqlReference, format, routing
-│       │   ├── tests/          # 8 suites Vitest / 49 pruebas (incl. uxUpgrade.test.tsx y admin.test.ts)
+│       │   ├── tests/          # 9 suites Vitest / 58 pruebas (incl. uxUpgrade.test.tsx y admin.test.ts)
 │       │   ├── types/          # Definiciones estrictas TypeScript
 │       │   ├── App.tsx         # Orquestador modular de plantillas, rutas y modales globales
 │       │   └── index.css
@@ -322,15 +324,16 @@ La regla de oro de Qurio es la **seguridad incondicional**. La ejecución de có
 
 ### 1. Aislamiento del Sandbox de Ejecución (PostgreSQL en Docker)
 * **Contenedor Dedicado:** El sandbox de práctica se ejecuta en un contenedor Docker aislado (`postgres:16-alpine`), físicamente desacoplado de las bases de datos de producción o autenticación.
-* **Rol de Base de Datos Restringido (`readonly_student`):**
-  * Permisos exclusivos: `GRANT SELECT ON ALL TABLES IN SCHEMA public`.
-  * Revocación total de permisos DDL: `REVOKE CREATE ON SCHEMA public FROM PUBLIC`.
-  * Transacciones forzadas de solo lectura: `SET TRANSACTION READ ONLY`.
+* **Rol de Base de Datos Restringido (`readonly_student`) + Aislamiento Efímero `pg_temp`:**
+  * Permisos exclusivos sobre tablas base: `GRANT SELECT ON ALL TABLES IN SCHEMA public` y `GRANT CONNECT, TEMP ON DATABASE ecommerce_sandbox`.
+  * Revocación total de DDL en `public`: `REVOKE CREATE ON SCHEMA public FROM PUBLIC`.
+  * **Consultas DQL (`read_only`):** Transacciones forzadas de solo lectura (`SET TRANSACTION READ ONLY`).
+  * **Prácticas DML & DDL (`dml` / `ddl`):** Clonación efímera de las 10 tablas canónicas en `pg_temp` por transacción (`SET LOCAL transaction_read_only = off`, `lock_timeout = '500ms'`), verificación post-mutación y **`ROLLBACK` determinista**, dejando `public.*` 100% intacto.
 * **Límites de Recursos y Tiempos de Espera:**
   * `statement_timeout = 2000ms` (bloquea de forma determinista cualquier consulta que exceda 2 segundos).
   * `work_mem = 16MB`.
-* **Filtro AST y Expresiones Regulares en FastAPI (`security.py`):**
-  * Bloqueo de sentencias múltiples separadas por punto y coma, DDL (`DROP`, `ALTER`, `CREATE`, `TRUNCATE`), DML destructivo (`INSERT`, `UPDATE`, `DELETE`, `MERGE`) y funciones de sistema (`pg_sleep`, `pg_terminate_backend`, `dblink`).
+* **Filtro AST Contextual y Expresiones Regulares en FastAPI (`security.py`):**
+  * Validación contextual por `ExecutionMode` (`read_only`, `dml`, `ddl`): bloquea siempre sentencias múltiples (`;`), `COPY`, `GRANT`, `REVOKE`, `CREATE FUNCTION`, `CREATE EXTENSION`, `CREATE ROLE` y funciones peligrosas (`pg_sleep`, `pg_terminate_backend`, `dblink`, `pg_read_file`).
   * Limitador automático a un máximo de 1,000 registros devueltos.
 
 ### 2. Blindaje de Backend y Supabase Cloud (Hardening v5.0+)
@@ -419,7 +422,7 @@ npm run dev
 
 ### 5. Ejecutar la Suite de Pruebas Automatizadas
 
-**Backend (Pytest — 105 pruebas):**
+**Backend (Pytest — 111 pruebas):**
 ```bash
 cd apps/api
 pytest tests/ -v
@@ -434,12 +437,12 @@ tests/test_certificates.py ......... Emisión QA Admin, PDF %PDF-, QR SVG, Linke
 tests/test_evaluator.py ............ Comparador semántico, multiconjuntos, NULLs y orden
 tests/test_integration.py .......... Endpoints REST, Sandbox Docker y reveal-solution (0 XP)
 tests/test_rate_limit.py ........... Límites por Token Bucket (invitado vs autenticado)
-tests/test_schema_consistency.py ... 60 retos, SQL en sandbox, determinismo y verificación anti-spoilers
-tests/test_security.py ............. Sanitización AST (SQLGlot) y bloqueo DDL/DML
+tests/test_schema_consistency.py ... 76 retos, SQL en sandbox, determinismo y verificación anti-spoilers
+tests/test_security.py ............. Sanitización AST contextual (SQLGlot) para read_only, dml y ddl
 tests/test_supabase_migration.py ... Privilegios, CLS, concurrencia y RPC autoritativa
 ```
 
-**Frontend (Vitest — 49 pruebas en 8 archivos) y Build de Producción:**
+**Frontend (Vitest — 58 pruebas en 9 archivos) y Build de Producción:**
 ```bash
 cd apps/web
 npm test
@@ -450,13 +453,14 @@ npm run build
  ✓ src/lib/__tests__/routing.test.ts (5 tests)
  ✓ src/lib/__tests__/progress.test.ts (6 tests)
  ✓ src/lib/__tests__/supabase.test.ts (4 tests)
- ✓ src/lib/__tests__/achievements.test.ts (4 tests)
+ ✓ src/lib/__tests__/achievements.test.ts (6 tests)
+ ✓ src/tests/sqlCompleter.test.ts (6 tests)
  ✓ src/lib/__tests__/persistence.test.ts (7 tests)
  ✓ src/tests/pedagogy.test.ts (6 tests)
- ✓ src/tests/uxUpgrade.test.tsx (12 tests)
  ✓ src/tests/admin.test.ts (5 tests)
+ ✓ src/tests/uxUpgrade.test.tsx (13 tests)
 
- Test Files  8 passed (8) | Tests  49 passed (49)
+ Test Files  9 passed (9) | Tests  58 passed (58)
 ```
 
 ---
