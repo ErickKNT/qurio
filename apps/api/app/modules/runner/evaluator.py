@@ -47,8 +47,8 @@ def inspect_pedagogical_requirements(
 ) -> Tuple[bool, Optional[str]]:
     """
     Capa 2 de Evaluación: Inspección del AST para verificar el cumplimiento
-    de requisitos didácticos esenciales (ej. uso explícito de ROUND, GROUP BY, JOIN)
-    incluso si los datos numéricos coinciden por simple multiplicación.
+    de requisitos didácticos esenciales (ej. uso explícito de ROUND, comando DML/DDL, RETURNING, UNIQUE)
+    incluso si los datos numéricos o la consulta de verificación coinciden.
     """
     try:
         expected_ast = sqlglot.parse_one(expected_sql, read="postgres")
@@ -57,7 +57,42 @@ def inspect_pedagogical_requirements(
         # Si no es parseable en este punto, el SQL runner ya lo habrá filtrado
         return True, None
 
-    # 1. Comprobación de ROUND: Si la solución de referencia exige ROUND
+    # 0. Comprobación de tipo de sentencia raíz para retos DML y DDL
+    dml_ddl_root_types = (
+        (exp.Insert, "INSERT"),
+        (exp.Update, "UPDATE"),
+        (exp.Delete, "DELETE"),
+        (exp.Create, "CREATE"),
+        (exp.Alter, "ALTER"),
+        (exp.Drop, "DROP"),
+    )
+    for node_cls, label in dml_ddl_root_types:
+        if isinstance(expected_ast, node_cls) and not isinstance(student_ast, node_cls):
+            return (
+                False,
+                f"Requisito pedagógico no cumplido: La consigna requiere utilizar una instrucción {label}.",
+            )
+
+    # 1. Comprobación de cláusula RETURNING cuando la solución oficial la exige
+    expected_has_returning = expected_ast.find(exp.Returning) is not None
+    if expected_has_returning and student_ast.find(exp.Returning) is None:
+        return (
+            False,
+            "Requisito pedagógico no cumplido: La consigna requiere utilizar la cláusula RETURNING "
+            "para proyectar inmediatamente las columnas de los registros afectados.",
+        )
+
+    # 2. Comprobación de CREATE UNIQUE INDEX cuando la solución oficial lo exige
+    if isinstance(expected_ast, exp.Create) and str(expected_ast.args.get("kind") or "").upper() == "INDEX":
+        expected_unique = bool(expected_ast.args.get("unique"))
+        student_unique = bool(student_ast.args.get("unique"))
+        if expected_unique and not student_unique:
+            return (
+                False,
+                "Requisito pedagógico no cumplido: La consigna requiere definir un índice único (CREATE UNIQUE INDEX).",
+            )
+
+    # 3. Comprobación de ROUND: Si la solución de referencia exige ROUND
     expected_has_round = any(
         isinstance(n, exp.Round)
         or (isinstance(n, exp.Anonymous) and (n.name or "").lower() == "round")

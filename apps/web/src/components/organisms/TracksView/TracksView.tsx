@@ -71,7 +71,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
             Rutas de Aprendizaje y Temario
           </h1>
           <p className="text-xs text-content-secondary mt-1">
-            Avanza paso a paso desde consultas básicas hasta análisis complejos con verificación real en cada reto.
+            Avanza paso a paso desde consultas base hasta ingeniería de tablas, mutación transaccional y optimización con índices.
           </p>
         </div>
 
@@ -100,8 +100,8 @@ export const TracksView: React.FC<TracksViewProps> = ({
         </div>
       </div>
 
-      {/* Track Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {/* Track Cards Grid — 2x2 Balanced Bento Symmetry */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {tracks.map((track) => (
           <TrackCard
             key={track.id}

@@ -238,7 +238,11 @@ export function useExerciseWorkspace({
     setAwardedXp(0);
 
     try {
-      const res = await api.executePlayground(currentSql);
+      const res = await api.executePlayground(
+        currentSql,
+        'ecommerce_sandbox',
+        activeExercise.id
+      );
       setExecutionTime(res.execution_time_ms);
 
       if (res.status === 'SUCCESS') {
@@ -264,7 +268,7 @@ export function useExerciseWorkspace({
     } finally {
       setIsExecuting(false);
     }
-  }, []);
+  }, [activeExercise.id]);
 
   // Ejecución / Evaluación Semántica End-to-End estabilizada con ref (H10)
   const handleExecuteSolution = useCallback(async () => {

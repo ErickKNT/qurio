@@ -45,7 +45,8 @@ _TRACK_MODULES_COUNT: Dict[str, int] = {
     "sql-foundations": 4,
     "relational-sql": 4,
     "advanced-queries": 4,
-    "global-curriculum": 12,
+    "data-manipulation-ddl": 4,
+    "global-curriculum": 16,
 }
 
 _TRACK_SKILLS_MAP: Dict[str, List[str]] = {
@@ -73,16 +74,32 @@ _TRACK_SKILLS_MAP: Dict[str, List[str]] = {
         "Funciones de Ventana (OVER, PARTITION BY)",
         "Ranking & Análisis Temporal (LAG / SUM OVER)",
     ],
+    "data-manipulation-ddl": [
+        "Inserción Transaccional (INSERT & RETURNING)",
+        "Poblamiento Analítico (INSERT INTO ... SELECT)",
+        "Actualización Cruzada (UPDATE ... FROM)",
+        "Depuración Segura (DELETE & Integridad FK)",
+        "Diseño de Esquemas (CREATE/ALTER/DROP & CHECK)",
+        "Indexación B-Tree, Compuesta y Parcial (WHERE)",
+    ],
     "global-curriculum": [
-        "Sintaxis ANSI SQL",
+        "Sintaxis ANSI SQL & DQL",
         "INNER, LEFT & SELF JOINS",
         "Agrupación GROUP BY & HAVING",
-        "Normalización 3NF & Modelado",
-        "Subconsultas & CTEs (WITH)",
+        "Subconsultas, CTEs & Window Functions",
+        "Manipulación DML (INSERT, UPDATE, DELETE, RETURNING)",
+        "Diseño DDL, Restricciones & Índices B-Tree",
         "Evaluación PostgreSQL 16 Sandbox",
-        "Funciones de Ventana (OVER, PARTITION BY)",
     ],
 }
+
+
+def _normalize_track_title(track_id: str, raw_title: str) -> str:
+    if track_id == "global-curriculum":
+        lowered = (raw_title or "").lower()
+        if not raw_title or "currículum" in lowered or "curriculum" in lowered:
+            return "Plan de Estudios Completo — SQL Engineering"
+    return raw_title
 
 
 def _row_to_dto(row: dict, base_url: str) -> CertificateDTO:
@@ -93,20 +110,22 @@ def _row_to_dto(row: dict, base_url: str) -> CertificateDTO:
     else:
         issued_dt = issued_raw
 
+    track_id = row["track_id"]
+    normalized_title = _normalize_track_title(track_id, row["track_title"])
+
     clean_base = (base_url or "http://localhost:5173").rstrip("/")
     verify_url = f"{clean_base}/verify/{code}"
     api_prefix = settings.API_V1_PREFIX.rstrip("/")
     pdf_url = f"{api_prefix}/certificates/{code}/pdf"
     qr_svg_url = f"{api_prefix}/certificates/{code}/qr.svg"
     linkedin_url = build_linkedin_add_url(
-        cert_name=f"{row['track_title']} (SQL PostgreSQL 16)",
+        cert_name=f"{normalized_title} (SQL PostgreSQL 16)",
         issued_at=issued_dt,
         verify_url=verify_url,
         cert_id=code,
     )
     completed = int(row["completed_exercises"])
     total = int(row["total_exercises"])
-    track_id = row["track_id"]
     sha256_hash = hashlib.sha256(
         f"{code}|{row['user_id']}|{track_id}|{completed}/{total}|{issued_dt.isoformat()}".encode("utf-8")
     ).hexdigest()
@@ -115,7 +134,7 @@ def _row_to_dto(row: dict, base_url: str) -> CertificateDTO:
         id=str(row["id"]),
         user_id=str(row["user_id"]),
         track_id=track_id,
-        track_title=row["track_title"],
+        track_title=normalized_title,
         recipient_name=row["recipient_name"],
         verification_code=code,
         completed_exercises=completed,
@@ -144,6 +163,7 @@ _TRACK_PREFIX_MAP = {
     "sql-foundations": "a0000000-",
     "relational-sql": "b0000000-",
     "advanced-queries": "c0000000-",
+    "data-manipulation-ddl": "d0000000-",
 }
 
 
@@ -221,6 +241,25 @@ async def issue_certificate_for_user(
                 )
                 if existing_res.status_code == 200 and existing_res.json():
                     row = existing_res.json()[0]
+                    normalized_title = _normalize_track_title(payload.track_id, payload.track_title)
+                    if row.get("track_title") != normalized_title or int(row.get("total_exercises") or 0) != effective_total:
+                        patch_body = {
+                            "track_title": normalized_title,
+                            "total_exercises": effective_total,
+                            "completed_exercises": completed_val,
+                        }
+                        try:
+                            patch_res = await client.patch(
+                                f"{rest_url}?id=eq.{row['id']}",
+                                json=patch_body,
+                                headers={**_supabase_headers(), "Prefer": "return=representation"},
+                            )
+                            if patch_res.status_code in (200, 204) and patch_res.json():
+                                row = patch_res.json()[0]
+                            else:
+                                row = {**row, **patch_body}
+                        except Exception:
+                            row = {**row, **patch_body}
                     _LOCAL_CERT_BY_KEY[cert_key] = row
                     _LOCAL_CERT_BY_CODE[row["verification_code"]] = row
                     return _row_to_dto(row, base_url)

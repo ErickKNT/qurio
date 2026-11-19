@@ -23,8 +23,8 @@ ALTER ROLE readonly_student SET work_mem = '16MB';
 ALTER ROLE readonly_student SET temp_file_limit = '32MB';
 ALTER ROLE readonly_student SET default_transaction_read_only = on;
 
--- 3. Permisos de conexión y esquema
-GRANT CONNECT ON DATABASE ecommerce_sandbox TO readonly_student;
+-- 3. Permisos de conexión, objetos temporales (pg_temp) y esquema
+GRANT CONNECT, TEMP ON DATABASE ecommerce_sandbox TO readonly_student;
 GRANT USAGE ON SCHEMA public TO readonly_student;
 
 -- 4. Permisos de solo lectura sobre tablas existentes y futuras

@@ -91,4 +91,36 @@ describe('evaluateUserAchievements', () => {
     expect(streak3Unlocked?.progress).toBe(100);
     expect(streak3Unlocked?.unlocked_at).not.toBeNull();
   });
+
+  it('exige 76 ejercicios completados (las 4 rutas formativas) para desbloquear "master-sql"', () => {
+    const partial60 = new Set<string>(Array.from({ length: 60 }, (_, i) => `ex-${i + 1}`));
+    const evaluated60 = evaluateUserAchievements(ACHIEVEMENTS_CATALOG, baseProfile, partial60, 60);
+    const masterAt60 = evaluated60.find((a) => a.id === 'master-sql');
+    expect(masterAt60?.required_threshold).toBe(76);
+    expect(masterAt60?.progress).toBe(79); // 60/76 = 78.94% -> 79%
+    expect(masterAt60?.unlocked_at).toBeNull();
+
+    const full76 = new Set<string>(Array.from({ length: 76 }, (_, i) => `ex-${i + 1}`));
+    const evaluated76 = evaluateUserAchievements(ACHIEVEMENTS_CATALOG, baseProfile, full76, 76);
+    const masterAt76 = evaluated76.find((a) => a.id === 'master-sql');
+    expect(masterAt76?.progress).toBe(100);
+    expect(masterAt76?.unlocked_at).not.toBeNull();
+  });
+
+  it('desbloquea logros con UUIDs canónicos reales de Ruta 2, 3 y 4 (JOIN, CTE, DML, DDL, INDEX)', () => {
+    const completed = new Set<string>([
+      'e0000000-0000-0000-0000-000000000025', // M05 INNER JOIN
+      'e0000000-0000-0000-0000-000000000052', // M11 CTE WITH
+      'e0000000-0000-0000-0000-000000000065', // M14 UPDATE/DELETE
+      'e0000000-0000-0000-0000-000000000069', // M15 CREATE TABLE
+      'e0000000-0000-0000-0000-000000000073', // M16 CREATE INDEX
+    ]);
+
+    const evaluated = evaluateUserAchievements(ACHIEVEMENTS_CATALOG, baseProfile, completed, 5);
+    for (const id of ['join-apprentice', 'cte-architect', 'dml-operator', 'ddl-designer', 'index-tuner']) {
+      const ach = evaluated.find((a) => a.id === id);
+      expect(ach?.progress).toBe(100);
+      expect(ach?.unlocked_at).not.toBeNull();
+    }
+  });
 });

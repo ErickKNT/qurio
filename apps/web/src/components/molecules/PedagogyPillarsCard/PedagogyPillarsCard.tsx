@@ -34,7 +34,7 @@ const PILLARS = [
     title: 'Motor Real PostgreSQL 16',
     subtitle: 'Mitrovic • Brass & Goldberg',
     description:
-      'Evaluación semántica de conjuntos, nulidad y tipos en un entorno aislado readonly (máx. 2,000 ms), sin comparar texto rígido.',
+      'Evaluación semántica de conjuntos, nulidad, mutaciones DML y catálogos DDL en esquemas efímeros pg_temp con ROLLBACK (máx. 2,000 ms).',
     icon: ShieldCheck,
     accentClass: 'text-emerald border-emerald/25 bg-emerald/10',
   },

@@ -699,8 +699,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <section className="flex flex-col gap-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <AdminMetricTile
-                label="Retos del Currículum"
-                value={curriculum?.total_exercises ?? 50}
+                label="Retos del Plan de Estudios"
+                value={curriculum?.total_exercises ?? 76}
                 subLabel={`Fuente: ${curriculum?.data_source ?? 'cargando...'}`}
                 accent="indigo"
               />
@@ -731,7 +731,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   value={curriculumSearch}
                   onChange={(e) => setCurriculumSearch(e.target.value)}
                   placeholder="Buscar reto por título, orden o UUID..."
-                  aria-label="Filtrar retos del currículum"
+                  aria-label="Filtrar retos del plan de estudios"
                   className="px-3 py-2 rounded-lg bg-surface border border-border-subtle text-xs font-mono text-content-primary placeholder:text-content-muted focus:outline-none focus:border-cyan-accent min-w-[260px]"
                 />
                 <Select

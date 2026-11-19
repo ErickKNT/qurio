@@ -10,6 +10,11 @@ import {
   Sparkles,
   CheckCircle2,
   Lock,
+  Database,
+  Wrench,
+  ShieldCheck,
+  Gauge,
+  Trophy,
 } from 'lucide-react';
 import { Achievement } from '@/types';
 import { Badge } from '@/components/atoms';
@@ -29,6 +34,11 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Zap,
   Layers,
   Sparkles,
+  Database,
+  Wrench,
+  ShieldCheck,
+  Gauge,
+  Trophy,
 };
 
 export const AchievementCard: React.FC<AchievementCardProps> = ({

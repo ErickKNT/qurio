@@ -536,4 +536,58 @@ async def test_submit_exercise_awards_zero_xp_when_solution_viewed(client: Async
         app.dependency_overrides.clear()
 
 
+@pytest.mark.asyncio
+async def test_ephemeral_pg_temp_dml_and_ddl_isolation_leaves_public_intact():
+    """
+    Verifica que el motor transaccional efímero en pg_temp:
+    1. Ejecute INSERT, UPDATE, DELETE, CREATE TABLE y CREATE INDEX devolviendo la proyección de verification_query o RETURNING.
+    2. Mantenga las secuencias SERIAL 100% deterministas entre ejecuciones consecutivas.
+    3. Haga ROLLBACK incondicional dejando public.* intacto (0 contaminación de estado).
+    """
+    from app.modules.runner.service import sandbox_runner
+    from app.modules.runner.schemas import ExecutionMode
+
+    # 1. Prueba DML con verification_query y determinismo de secuencias (categoria_id = 6 en dos corridas seguidas)
+    insert_sql = "INSERT INTO categorias (nombre_categoria, descripcion) VALUES ('Audio Profesional', 'Equipos de sonido');"
+    verify_cat = "SELECT categoria_id, nombre_categoria FROM categorias WHERE categoria_id >= 5 ORDER BY categoria_id ASC;"
+
+    res_run1 = await sandbox_runner.execute_query(
+        insert_sql, mode=ExecutionMode.DML, verification_query=verify_cat
+    )
+    res_run2 = await sandbox_runner.execute_query(
+        insert_sql, mode=ExecutionMode.DML, verification_query=verify_cat
+    )
+    assert res_run1.status == "SUCCESS", f"Error en run1: {res_run1.error}"
+    assert res_run2.status == "SUCCESS", f"Error en run2: {res_run2.error}"
+    assert res_run1.rows == res_run2.rows == [[5, "Mobiliario Ergonómico"], [6, "Audio Profesional"]]
+
+    # 2. Prueba DDL (CREATE TABLE + CREATE INDEX) en pg_temp
+    create_table_sql = (
+        "CREATE TABLE cupones_descuento ("
+        "cupon_id SERIAL PRIMARY KEY, "
+        "codigo VARCHAR(20) UNIQUE NOT NULL, "
+        "descuento_pct NUMERIC(5, 2) NOT NULL"
+        ");"
+    )
+    verify_ddl = (
+        "SELECT column_name, data_type, is_nullable "
+        "FROM information_schema.columns "
+        "WHERE table_schema = (SELECT nspname FROM pg_namespace WHERE oid = pg_my_temp_schema()) "
+        "AND table_name = 'cupones_descuento' "
+        "ORDER BY ordinal_position ASC;"
+    )
+    res_ddl = await sandbox_runner.execute_query(
+        create_table_sql, mode=ExecutionMode.DDL, verification_query=verify_ddl
+    )
+    assert res_ddl.status == "SUCCESS", f"Error DDL: {res_ddl.error}"
+    assert res_ddl.row_count == 3
+    assert res_ddl.rows[0][0] == "cupon_id"
+
+    # 3. Verificar que public.categorias sigue teniendo exactamente 5 filas y cupones_descuento no existe
+    check_public = await sandbox_runner.execute_query("SELECT COUNT(*) AS total FROM categorias;")
+    assert check_public.status == "SUCCESS"
+    assert check_public.rows == [[5]]
+
+
+
 

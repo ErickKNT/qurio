@@ -1,6 +1,78 @@
 import pytest
-from app.modules.runner.security import validate_sql_security, enforce_row_limit
+from app.modules.runner.security import validate_sql_security, enforce_row_limit, ExecutionMode
 from app.modules.curriculum.seed_data import SEED_EXERCISES
+
+
+# ==============================================================================
+# 0. PRUEBAS DE MODOS CONTEXTUALES (READ_ONLY vs DML vs DDL) — RUTA 4
+# ==============================================================================
+
+def test_dml_mode_allows_insert_update_delete_but_blocks_ddl_and_escalation():
+    """En modo DML se permiten INSERT, UPDATE y DELETE individuales, pero se bloquean DDL y comandos de sistema."""
+    allowed_dml = [
+        "INSERT INTO categorias (nombre_categoria, descripcion) VALUES ('Audio Profesional', 'Micrófonos y consolas');",
+        "UPDATE productos SET precio = ROUND(precio * 1.05, 2) WHERE categoria_id = 1 RETURNING producto_id, precio;",
+        "DELETE FROM pagos WHERE estado_pago = 'rechazado';",
+        "INSERT INTO inventario (almacen_id, producto_id, cantidad_disponible) SELECT 2, producto_id, 10 FROM productos WHERE categoria_id = 3;",
+    ]
+    for q in allowed_dml:
+        is_safe, error = validate_sql_security(q, mode=ExecutionMode.DML)
+        assert is_safe is True, f"Se debió permitir en modo DML: {q} ({error})"
+        assert error == ""
+
+    blocked_in_dml = [
+        "DROP TABLE clientes;",
+        "ALTER TABLE productos ADD COLUMN descuento INT;",
+        "CREATE TABLE test (id INT);",
+        "TRUNCATE TABLE clientes;",
+        "COPY clientes TO '/tmp/dump';",
+        "GRANT ALL ON clientes TO public;",
+        "INSERT INTO categorias (nombre_categoria) VALUES ('A'); DROP TABLE clientes;",
+        "UPDATE productos SET precio = 10 WHERE pg_sleep(5) IS NOT NULL;",
+    ]
+    for q in blocked_in_dml:
+        is_safe, error = validate_sql_security(q, mode=ExecutionMode.DML)
+        assert is_safe is False, f"Se debió bloquear en modo DML: {q}"
+
+
+def test_ddl_mode_allows_table_and_index_ddl_but_blocks_functions_roles_and_dml():
+    """En modo DDL se permiten CREATE/ALTER/DROP sobre TABLE e INDEX, pero se bloquean FUNCTION, EXTENSION, ROLE, COPY y multi-sentencia."""
+    allowed_ddl = [
+        "CREATE TABLE cupones_descuento (cupon_id SERIAL PRIMARY KEY, codigo VARCHAR(20) UNIQUE NOT NULL, descuento_pct NUMERIC(5, 2) NOT NULL);",
+        "ALTER TABLE almacenes ADD COLUMN activo BOOLEAN NOT NULL DEFAULT TRUE;",
+        "DROP TABLE IF EXISTS auditoria_temporal CASCADE;",
+        "CREATE INDEX idx_clientes_ciudad ON clientes (ciudad);",
+        "CREATE UNIQUE INDEX idx_pedidos_cliente_fecha ON pedidos (cliente_id, fecha_pedido);",
+        "CREATE INDEX idx_pedidos_pendientes ON pedidos (fecha_pedido) WHERE estado_pedido = 'pendiente';",
+        "DROP INDEX IF EXISTS idx_clientes_pais_antiguo;",
+    ]
+    for q in allowed_ddl:
+        is_safe, error = validate_sql_security(q, mode=ExecutionMode.DDL)
+        assert is_safe is True, f"Se debió permitir en modo DDL: {q} ({error})"
+        assert error == ""
+
+    blocked_in_ddl = [
+        "CREATE FUNCTION hack() RETURNS INT AS $$ SELECT 1; $$ LANGUAGE sql;",
+        "CREATE EXTENSION dblink;",
+        "CREATE ROLE super_hacker WITH SUPERUSER;",
+        "CREATE DATABASE pwned;",
+        "COPY clientes TO '/tmp/out';",
+        "GRANT ALL ON clientes TO public;",
+        "CREATE TABLE t1 (id INT); DROP TABLE clientes;",
+        "INSERT INTO clientes (nombre) VALUES ('x');",
+    ]
+    for q in blocked_in_ddl:
+        is_safe, error = validate_sql_security(q, mode=ExecutionMode.DDL)
+        assert is_safe is False, f"Se debió bloquear en modo DDL: {q}"
+
+
+def test_enforce_row_limit_leaves_dml_and_ddl_unchanged():
+    """enforce_row_limit no debe inyectar LIMIT en sentencias INSERT, UPDATE, DELETE o CREATE TABLE."""
+    dml_sql = "INSERT INTO categorias (nombre_categoria) VALUES ('Audio')"
+    assert "LIMIT" not in enforce_row_limit(dml_sql, max_rows=500).upper()
+
+    ddl_sql = "CREATE TABLE cupones (id SERIAL PRIMARY KEY)"
+    assert "LIMIT" not in enforce_row_limit(ddl_sql, max_rows=500).upper()
 
 
 # ==============================================================================
@@ -8,10 +80,10 @@ from app.modules.curriculum.seed_data import SEED_EXERCISES
 # ==============================================================================
 
 def test_all_curriculum_queries_pass_security():
-    """Valida que todas las consultas oficiales del currículo pasen la validación AST."""
-    assert len(SEED_EXERCISES) >= 18, f"Se esperaban al menos 18 ejercicios en el currículo, encontrados {len(SEED_EXERCISES)}"
+    """Valida que todas las consultas oficiales del currículo pasen la validación AST según su execution_mode."""
+    assert len(SEED_EXERCISES) >= 76, f"Se esperaban al menos 76 ejercicios en el currículo, encontrados {len(SEED_EXERCISES)}"
     for eid, exercise in SEED_EXERCISES.items():
-        is_safe, error = validate_sql_security(exercise.solution_query)
+        is_safe, error = validate_sql_security(exercise.solution_query, mode=exercise.execution_mode)
         assert is_safe is True, f"Fallo en ejercicio '{exercise.title}' ({eid}): {error}"
         assert error == ""
 

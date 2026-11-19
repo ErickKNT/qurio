@@ -73,16 +73,27 @@ const DEFAULT_SKILLS_BY_TRACK: Record<string, { modules: number; skills: string[
       'Ranking & Análisis Temporal (LAG / SUM OVER)',
     ],
   },
-  'global-curriculum': {
-    modules: 12,
+  'data-manipulation-ddl': {
+    modules: 4,
     skills: [
-      'Sintaxis ANSI SQL',
+      'Inserción Transaccional (INSERT & RETURNING)',
+      'Poblamiento Analítico (INSERT INTO ... SELECT)',
+      'Actualización Cruzada (UPDATE ... FROM)',
+      'Depuración Segura (DELETE & Integridad FK)',
+      'Diseño de Esquemas (CREATE/ALTER/DROP & CHECK)',
+      'Indexación B-Tree, Compuesta y Parcial (WHERE)',
+    ],
+  },
+  'global-curriculum': {
+    modules: 16,
+    skills: [
+      'Sintaxis ANSI SQL & DQL',
       'INNER, LEFT & SELF JOINS',
       'Agrupación GROUP BY & HAVING',
-      'Normalización 3NF & Modelado',
-      'Subconsultas & CTEs (WITH)',
+      'Subconsultas, CTEs & Window Functions',
+      'Manipulación DML (INSERT, UPDATE, DELETE, RETURNING)',
+      'Diseño DDL, Restricciones & Índices B-Tree',
       'Evaluación PostgreSQL 16 Sandbox',
-      'Funciones de Ventana (OVER, PARTITION BY)',
     ],
   },
 };

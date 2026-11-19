@@ -79,7 +79,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   history,
   tracks = [],
   completedCount = 0,
-  totalExercises = 60,
+  totalExercises = 76,
   totalAttemptsCount,
   attemptStats,
   achievements = [],
@@ -399,6 +399,11 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     Consultas Avanzadas
                   </span>
                 )}
+                {completedCount >= 60 && (
+                  <span className="px-2.5 py-0.5 rounded-md bg-surface-card border border-border-subtle/60 font-mono text-[11px] text-amber-streak">
+                    DML & DDL / Índices
+                  </span>
+                )}
                 {issuedCertificates.length > 0 && (
                   <span className="px-2.5 py-0.5 rounded-md bg-emerald/10 border border-emerald/30 font-mono text-[11px] text-emerald">
                     {issuedCertificates.length}{' '}
@@ -493,7 +498,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <MetricTile
           label="Retos Completados"
           value={`${completedCount} / ${totalExercises}`}
-          subValue={`${Math.round((completedCount / (totalExercises || 1)) * 100)}% del currículum`}
+          subValue={`${Math.round((completedCount / (totalExercises || 1)) * 100)}% del plan de estudios`}
           icon={<Award className="w-4 h-4" />}
           accent="purple"
         />
@@ -513,7 +518,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         />
         <MetricTile
           label="Rutas Completadas"
-          value={`${completedTracksCount} / ${tracks.length || 3}`}
+          value={`${completedTracksCount} / ${tracks.length || 4}`}
           subValue={
             issuedCertificates.length > 0
               ? `${issuedCertificates.length} certificado(s) emitidos`
@@ -858,7 +863,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <div className="p-3 rounded-xl bg-cyan-accent/10 border border-cyan-accent/30 flex items-start gap-2 text-[11px] text-content-secondary">
                 <ShieldAlert className="w-4 h-4 text-cyan-accent shrink-0 mt-0.5" />
                 <span>
-                  <strong className="font-mono text-cyan-accent">Modo QA Admin:</strong> puedes emitir y probar constancias reales (PDF + QR + LinkedIn + verificación pública) sin completar los 60 retos.
+                  <strong className="font-mono text-cyan-accent">Modo QA Admin:</strong> puedes emitir y probar constancias reales (PDF + QR + LinkedIn + verificación pública) sin completar los {totalExercises} retos.
                 </span>
               </div>
             )}
@@ -985,7 +990,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 );
               })}
 
-              {/* Certificado Global del Currículum */}
+              {/* Certificado Global del Plan de Estudios */}
               <div
                 className={cn(
                   'p-3 rounded-xl border flex items-center justify-between gap-2.5',
@@ -998,10 +1003,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               >
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-content-primary truncate">
-                    Certificado Global SQL Engineering
+                    Constancia Global — Plan de Estudios
                   </span>
                   <span className="text-[10px] font-mono text-content-muted">
-                    {completedCount} / {totalExercises} retos globales
+                    {completedCount} / {totalExercises} retos totales
                   </span>
                 </div>
 
@@ -1014,7 +1019,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     onClick={() =>
                       handleIssueAndOpen({
                         trackId: 'global-curriculum',
-                        trackTitle: 'Currículum Completo SQL Engineering',
+                        trackTitle: 'Plan de Estudios Completo — SQL Engineering',
                         totalCount: totalExercises,
                         qaPreview: !globalUnlocked,
                       })

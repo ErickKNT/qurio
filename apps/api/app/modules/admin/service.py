@@ -766,7 +766,7 @@ class AdminService:
         safe_offset = max(0, offset)
 
         all_exercises = await exercise_repository.list_all()
-        total_catalog_exercises = len(all_exercises) or 60
+        total_catalog_exercises = len(all_exercises) or 76
 
         auth_users_res, profiles_res, attempts_res, progress_res = await asyncio.gather(
             self._fetch_supabase_auth_users(),

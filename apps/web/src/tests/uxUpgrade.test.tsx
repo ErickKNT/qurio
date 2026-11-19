@@ -14,6 +14,7 @@ import { ExerciseSpecPanel } from '@/components/organisms/ExerciseSpecPanel/Exer
 import { UserProfileView } from '@/components/organisms/UserProfileView/UserProfileView';
 import { DashboardHomeView } from '@/components/organisms/DashboardHomeView/DashboardHomeView';
 import { DesignSystemShowcase } from '@/components/organisms/DesignSystemShowcase/DesignSystemShowcase';
+import { TracksView } from '@/components/organisms/TracksView/TracksView';
 import { FALLBACK_EXERCISES, FALLBACK_TRACKS } from '@/lib/fallbackCurriculum';
 import { ACHIEVEMENTS_CATALOG, ECOMMERCE_TABLES_SCHEMA } from '@/lib/api';
 import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
@@ -40,12 +41,12 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     expect(pedidosRelated.has('detalle_pedidos')).toBe(true);
   });
 
-  it('moduleGuides cubre los 12 módulos oficiales con diagramas y ejemplos sin spoilers de Ecommerce DB', () => {
-    expect(MODULE_GUIDES).toHaveLength(12);
+  it('moduleGuides cubre los 16 módulos oficiales con diagramas y ejemplos sin spoilers de Ecommerce DB', () => {
+    expect(MODULE_GUIDES).toHaveLength(16);
     const ecommerceTables = ['detalle_pedidos', 'almacenes', 'inventario', 'proveedores'];
 
-    for (let i = 1; i <= 12; i++) {
-      const prefix = i <= 4 ? 'a' : i <= 8 ? 'b' : 'c';
+    for (let i = 1; i <= 16; i++) {
+      const prefix = i <= 4 ? 'a' : i <= 8 ? 'b' : i <= 12 ? 'c' : 'd';
       const id = `${prefix}0000000-0000-0000-0000-0000000000${String(i).padStart(2, '0')}`;
       const guide = getModuleGuide(id);
       expect(guide).toBeDefined();
@@ -143,6 +144,24 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     );
     expect(selectToken?.className).toContain('text-cyan-accent');
     expect(selectToken?.className).toContain('font-bold');
+
+    cleanup();
+
+    const { container: ddlContainer } = render(
+      <div>
+        <p data-testid="ddl-prose">{formatSqlProse('Usa DELETE, UNIQUE, INDEX, RETURNING y CASCADE en DDL/DML.')}</p>
+        <pre data-testid="ddl-block">{highlightSqlBlock('CREATE UNIQUE INDEX idx_email ON clientes (email); DELETE FROM logs RETURNING *;')}</pre>
+      </div>
+    );
+
+    const ddlProseCodes = Array.from(ddlContainer.querySelectorAll('[data-testid="ddl-prose"] code')).map((el) => el.textContent);
+    expect(ddlProseCodes).toEqual(['DELETE', 'UNIQUE', 'INDEX', 'RETURNING', 'CASCADE']);
+
+    const uniqueIndexSpan = Array.from(ddlContainer.querySelectorAll('[data-testid="ddl-block"] span')).find(
+      (el) => el.textContent === 'CREATE UNIQUE INDEX'
+    );
+    expect(uniqueIndexSpan?.className).toContain('text-cyan-accent');
+    expect(uniqueIndexSpan?.className).toContain('font-bold');
   });
 
   it('ExerciseSpecPanel resalta palabras reservadas SQL en pistas y solución oficial', () => {
@@ -329,5 +348,31 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     const emailInput = screen.getByLabelText(/Correo Electrónico de Registro/i);
     fireEvent.change(emailInput, { target: { value: 'invalido' } });
     expect(screen.getByText(/formato de correo electrónico válido/i)).toBeInTheDocument();
+  });
+
+  it('TracksView y LearningRoadmapMap despliegan las 4 rutas en grid 2x2 y los 16 módulos en el mapa curricular interactivo', () => {
+    const { container } = render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        onSelectExercise={() => {}}
+      />
+    );
+
+    expect(screen.getByText('4 Rutas')).toBeInTheDocument();
+    expect(screen.getByText('16 Módulos • 76 Retos')).toBeInTheDocument();
+    expect(screen.getByText(/Etapa 4 • Ingeniería y Manipulación de Datos/i)).toBeInTheDocument();
+    expect(screen.getByText('M13')).toBeInTheDocument();
+    expect(screen.getByText('M14')).toBeInTheDocument();
+    expect(screen.getByText('M15')).toBeInTheDocument();
+    expect(screen.getByText('M16')).toBeInTheDocument();
+
+    // Verificar grid 2x2 simétrico en las tarjetas de ruta
+    const tracksGrid = container.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.gap-5');
+    expect(tracksGrid).not.toBeNull();
+
+    // Cambiar al modo Camino por Etapas y verificar que renderiza las 4 etapas
+    fireEvent.click(screen.getByRole('button', { name: /Camino por Etapas/i }));
+    expect(screen.getByText(/Etapa 4: Ingeniería y Manipulación de Datos/i)).toBeInTheDocument();
   });
 });

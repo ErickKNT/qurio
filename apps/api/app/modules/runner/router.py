@@ -75,11 +75,25 @@ async def execute_playground_query(
     # 2. Protección de concurrencia sobre el pool
     client_ip = get_client_ip(http_request)
     actor_id = user.id if not user.is_guest else "guest"
+
+    exec_mode = "read_only"
+    verification_query = None
+    setup_sql = None
+    if request.exercise_id:
+        trial_ex = await exercise_repository.get_internal_for_evaluation(request.exercise_id)
+        if trial_ex:
+            exec_mode = trial_ex.execution_mode
+            verification_query = trial_ex.verification_query
+            setup_sql = trial_ex.setup_sql
+
     async with concurrency_semaphore:
         result = await sandbox_runner.execute_query(
             request.query,
             client_ip=client_ip,
             user_id=actor_id,
+            mode=exec_mode,
+            verification_query=verification_query,
+            setup_sql=setup_sql,
         )
 
     return result
@@ -252,11 +266,17 @@ async def submit_exercise_solution(
             request.query,
             client_ip=client_ip,
             user_id=actor_id,
+            mode=exercise.execution_mode,
+            verification_query=exercise.verification_query,
+            setup_sql=exercise.setup_sql,
         )
         expected_result = await sandbox_runner.execute_query(
             exercise.solution_query,
             client_ip="internal",
             user_id="evaluator",
+            mode=exercise.execution_mode,
+            verification_query=exercise.verification_query,
+            setup_sql=exercise.setup_sql,
         )
 
     if expected_result.status != "SUCCESS":

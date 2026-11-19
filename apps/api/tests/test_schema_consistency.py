@@ -79,23 +79,29 @@ def test_spec_panel_exposes_all_10_tables():
 
 def test_curriculum_60_exercises_unique_sort_order_and_sync():
     """
-    Verifica que existan exactamente 60 ejercicios con sort_order contiguo 1..60,
-    sincronizados entre seed_data.py, fallbackCurriculum.ts (sin solution_query)
-    y database/supabase/02_seed_curriculum.sql (180 pistas en 3 niveles),
+    Verifica que existan exactamente 76 ejercicios con sort_order contiguo 1..76,
+    sincronizados entre seed_data.py, fallbackCurriculum.ts (sin solution_query, verification_query ni setup_sql)
+    y database/supabase/02_seed_curriculum.sql (228 pistas en 3 niveles),
     y sin encabezados de rutas/módulos en inglés sin traducir.
     """
     from app.modules.curriculum.seed_data import SEED_EXERCISES
 
     exercises = sorted(SEED_EXERCISES.values(), key=lambda ex: ex.sort_order)
-    assert len(exercises) == 60, f"Se esperaban 60 ejercicios, encontrados: {len(exercises)}"
-    assert [ex.sort_order for ex in exercises] == list(range(1, 61)), (
-        "Los valores de sort_order deben ser contiguos y únicos del 1 al 60"
+    assert len(exercises) == 76, f"Se esperaban 76 ejercicios, encontrados: {len(exercises)}"
+    assert [ex.sort_order for ex in exercises] == list(range(1, 77)), (
+        "Los valores de sort_order deben ser contiguos y únicos del 1 al 76"
     )
 
     fallback_path = ROOT_DIR / "apps" / "web" / "src" / "lib" / "fallbackCurriculum.ts"
     fallback_text = fallback_path.read_text(encoding="utf-8")
     assert "solution_query" not in fallback_text, (
         "BRECHA DE SEGURIDAD: fallbackCurriculum.ts no debe exponer solution_query"
+    )
+    assert "verification_query" not in fallback_text, (
+        "BRECHA DE SEGURIDAD: fallbackCurriculum.ts no debe exponer verification_query"
+    )
+    assert "setup_sql" not in fallback_text, (
+        "BRECHA DE SEGURIDAD: fallbackCurriculum.ts no debe exponer setup_sql"
     )
 
     seed_sql_path = ROOT_DIR / "database" / "supabase" / "02_seed_curriculum.sql"
@@ -105,7 +111,7 @@ def test_curriculum_60_exercises_unique_sort_order_and_sync():
         r"\('(e0000000-[0-9a-f\-]+)',\s*(\d+),\s*'((?:[^']|'')*)',\s*(\d+)\)",
         hints_section,
     )
-    assert len(sql_hints) == 180, f"Se esperaban 180 pistas en 02_seed_curriculum.sql, encontradas: {len(sql_hints)}"
+    assert len(sql_hints) == 228, f"Se esperaban 228 pistas en 02_seed_curriculum.sql, encontradas: {len(sql_hints)}"
     sql_hints_map = {(ex_id, int(order)): content.replace("''", "'") for ex_id, order, content, _ in sql_hints}
 
     for ex in exercises:
@@ -124,6 +130,12 @@ def test_curriculum_60_exercises_unique_sort_order_and_sync():
             assert ex.difficulty == "Intermedio", f"Ruta 2 reto #{ex.sort_order} debe ser Intermedio"
         elif ex.module_id.startswith("c0000000"):
             assert ex.difficulty == "Avanzado", f"Ruta 3 reto #{ex.sort_order} debe ser Avanzado"
+        elif ex.module_id.startswith("d0000000"):
+            if ex.module_id.endswith("0016"):
+                assert ex.difficulty == "Avanzado", f"Ruta 4 Módulo 16 reto #{ex.sort_order} debe ser Avanzado"
+            else:
+                assert ex.difficulty == "Intermedio", f"Ruta 4 Módulos 13-15 reto #{ex.sort_order} debe ser Intermedio"
+            assert ex.execution_mode in ("dml", "ddl"), f"Reto #{ex.sort_order} debe declarar execution_mode dml o ddl"
 
     # Progresión de átomo cognitivo dentro de Módulo 4 y Módulo 5
     mod4 = [ex for ex in exercises if ex.module_id == "a0000000-0000-0000-0000-000000000004"]
@@ -175,10 +187,12 @@ async def test_curriculum_pedagogical_rubric_and_sandbox_determinism():
     from sqlglot import exp
     from app.core.config import settings
     from app.modules.curriculum.seed_data import SEED_EXERCISES
+    from app.modules.runner.service import sandbox_runner
 
     real_tables = {
         "clientes", "categorias", "proveedores", "productos", "pedidos",
         "detalle_pedidos", "facturas", "pagos", "almacenes", "inventario",
+        "cupones_descuento", "resenas_productos", "auditoria_obsoleta",
     }
     real_specific_columns = {
         "cliente_id", "categoria_id", "proveedor_id", "producto_id", "pedido_id",
@@ -187,10 +201,12 @@ async def test_curriculum_pedagogical_rubric_and_sandbox_determinism():
         "fecha_pedido", "estado_pedido", "precio_unitario", "cantidad_disponible",
         "ultima_actualizacion", "fecha_emision", "monto_total", "estado_factura",
         "metodo_pago", "fecha_pago", "estado_pago", "capacidad_m2",
+        "cupon_id", "descuento_pct", "resena_id", "refrigerado",
     }
     unique_keys = {
         "cliente_id", "categoria_id", "proveedor_id", "producto_id", "pedido_id",
         "detalle_id", "factura_id", "pago_id", "almacen_id", "email",
+        "ordinal_position", "c.ordinal_position", "table_name", "tablename", "indexname",
     }
     anglicism_patterns = [
         r"\bAnti-?Join\b",
@@ -200,54 +216,54 @@ async def test_curriculum_pedagogical_rubric_and_sandbox_determinism():
         r"\bTop \d+\b",
     ]
 
-    conn = await asyncpg.connect(
-        host=settings.SANDBOX_DB_HOST,
-        port=settings.SANDBOX_DB_PORT,
-        database=settings.SANDBOX_DB_NAME,
-        user=settings.SANDBOX_DB_USER,
-        password=settings.SANDBOX_DB_PASSWORD,
-        timeout=5.0,
-    )
-    try:
-        for ex in sorted(SEED_EXERCISES.values(), key=lambda item: item.sort_order):
-            async with conn.transaction(readonly=True):
-                rows = await conn.fetch(ex.solution_query)
-            assert 1 <= len(rows) <= 20, (
-                f"Reto #{ex.sort_order} ({ex.title}) devolvió {len(rows)} filas (rango válido: 1..20)"
+    for ex in sorted(SEED_EXERCISES.values(), key=lambda item: item.sort_order):
+        res = await sandbox_runner.execute_query(
+            ex.solution_query,
+            mode=ex.execution_mode,
+            verification_query=ex.verification_query,
+            setup_sql=ex.setup_sql,
+        )
+        assert res.status == "SUCCESS", (
+            f"Reto #{ex.sort_order} ({ex.title}) falló en sandbox: {res.error}"
+        )
+        assert 1 <= res.row_count <= 20, (
+            f"Reto #{ex.sort_order} ({ex.title}) devolvió {res.row_count} filas (rango válido: 1..20)"
+        )
+
+        norm_sol = re.sub(r"\s+", " ", ex.solution_query.strip().lower()).rstrip(";")
+        for idx, hint in enumerate(ex.hints, start=1):
+            low = hint.lower()
+            assert "escribe:" not in low and "solución:" not in low, (
+                f"Reto #{ex.sort_order} pista {idx} contiene prefijo spoiler"
+            )
+            assert norm_sol not in re.sub(r"\s+", " ", low), (
+                f"Reto #{ex.sort_order} pista {idx} filtra la solución completa"
             )
 
-            norm_sol = re.sub(r"\s+", " ", ex.solution_query.strip().lower()).rstrip(";")
-            for idx, hint in enumerate(ex.hints, start=1):
-                low = hint.lower()
-                assert "escribe:" not in low and "solución:" not in low, (
-                    f"Reto #{ex.sort_order} pista {idx} contiene prefijo spoiler"
-                )
-                assert norm_sol not in re.sub(r"\s+", " ", low), (
-                    f"Reto #{ex.sort_order} pista {idx} filtra la solución completa"
-                )
+        assert ex.concept is not None, f"Reto #{ex.sort_order} sin bloque concept"
+        for fname, fval in [
+            ("syntax", ex.concept.syntax or ""),
+            ("summary", ex.concept.summary or ""),
+            ("key_points", " ".join(ex.concept.key_points or [])),
+            ("execution_order_note", ex.concept.execution_order_note or ""),
+        ]:
+            tokens = set(re.findall(r"\b[a-z_][a-z0-9_]*\b", fval.lower()))
+            assert not (tokens & real_tables), (
+                f"Reto #{ex.sort_order} concept.{fname} filtra tablas reales: {tokens & real_tables}"
+            )
+            assert not (tokens & real_specific_columns), (
+                f"Reto #{ex.sort_order} concept.{fname} filtra columnas reales: {tokens & real_specific_columns}"
+            )
 
-            assert ex.concept is not None, f"Reto #{ex.sort_order} sin bloque concept"
-            for fname, fval in [
-                ("syntax", ex.concept.syntax or ""),
-                ("summary", ex.concept.summary or ""),
-                ("key_points", " ".join(ex.concept.key_points or [])),
-                ("execution_order_note", ex.concept.execution_order_note or ""),
-            ]:
-                tokens = set(re.findall(r"\b[a-z_][a-z0-9_]*\b", fval.lower()))
-                assert not (tokens & real_tables), (
-                    f"Reto #{ex.sort_order} concept.{fname} filtra tablas reales: {tokens & real_tables}"
-                )
-                assert not (tokens & real_specific_columns), (
-                    f"Reto #{ex.sort_order} concept.{fname} filtra columnas reales: {tokens & real_specific_columns}"
-                )
+        text_blob = f"{ex.title} || {ex.prompt}"
+        for pat in anglicism_patterns:
+            assert not re.search(pat, text_blob), (
+                f"Reto #{ex.sort_order} contiene anglicismo/jerga '{pat}' en título o consigna"
+            )
 
-            text_blob = f"{ex.title} || {ex.prompt}"
-            for pat in anglicism_patterns:
-                assert not re.search(pat, text_blob), (
-                    f"Reto #{ex.sort_order} contiene anglicismo/jerga '{pat}' en título o consigna"
-                )
-
-            tree = sqlglot.parse_one(ex.solution_query, read="postgres")
+        query_to_check_order = ex.verification_query if ex.verification_query else ex.solution_query
+        tree = sqlglot.parse_one(query_to_check_order, read="postgres")
+        if isinstance(tree, (exp.Query, exp.Subquery)):
             has_limit = tree.args.get("limit") is not None
             order_node = tree.args.get("order")
             if has_limit or ex.check_order:
@@ -274,7 +290,6 @@ async def test_curriculum_pedagogical_rubric_and_sandbox_determinism():
                     if outer_select and outer_select.args.get("group") and len(outer_select.args["group"].expressions) == 1:
                         is_unique_single_col_set = True
                     elif tree.args.get("with_"):
-                        # Si ordena por una clave de agrupación única heredada de una CTE de 1 clave GROUP BY
                         for cte in tree.args["with_"].expressions:
                             cte_sel = cte.this
                             if isinstance(cte_sel, exp.Select) and cte_sel.args.get("group") and len(cte_sel.args["group"].expressions) == 1:
@@ -292,5 +307,3 @@ async def test_curriculum_pedagogical_rubric_and_sandbox_determinism():
                     assert has_unique, f"Reto #{ex.sort_order} usa LIMIT sin columna única de desempate: {ordered_cols}"
                 elif len(ordered_cols) == 1:
                     assert has_unique, f"Reto #{ex.sort_order} usa ORDER BY simple potencialmente empatable: {ordered_cols}"
-    finally:
-        await conn.close()

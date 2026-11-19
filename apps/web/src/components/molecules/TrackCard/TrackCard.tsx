@@ -56,7 +56,15 @@ export const TrackCard: React.FC<TrackCardProps> = ({
               #{track.sort_order}
             </div>
             <Badge
-              variant={track.sort_order === 1 ? 'cyan' : track.sort_order === 3 ? 'amber' : 'default'}
+              variant={
+                track.sort_order === 1
+                  ? 'cyan'
+                  : track.sort_order === 3
+                  ? 'emerald'
+                  : track.sort_order === 4
+                  ? 'amber'
+                  : 'default'
+              }
               size="sm"
             >
               {track.badge_name}
@@ -116,7 +124,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({
         {/* Progress Bar */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-[11px] font-mono">
-            <span className="text-content-muted">Progreso del currículum</span>
+            <span className="text-content-muted">Progreso de la ruta</span>
             {isLoading ? (
               <span className="text-cyan-accent/80 font-medium animate-pulse">Calculando...</span>
             ) : (
@@ -149,7 +157,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({
             </span>
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
-              ~{track.sort_order === 1 ? '6h' : track.sort_order === 2 ? '8h' : '10h'}
+              ~{track.sort_order === 1 ? '7h' : track.sort_order === 2 ? '9h' : track.sort_order === 3 ? '14h' : '12h'}
             </span>
           </div>
 

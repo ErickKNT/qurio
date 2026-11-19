@@ -205,7 +205,7 @@ export const MethodologyModal: React.FC<MethodologyModalProps> = ({ isOpen, onCl
                 </span>
                 <ArrowRight className="w-3.5 h-3.5 text-content-muted" />
                 <span className="px-2.5 py-1 rounded-md bg-emerald/10 border border-emerald/30 text-emerald">
-                  PostgreSQL 16 Sandbox (readonly_student • 2,000 ms)
+                  PostgreSQL 16 Sandbox (readonly_student + pg_temp ROLLBACK • 2,000 ms)
                 </span>
                 <ArrowRight className="w-3.5 h-3.5 text-content-muted" />
                 <span className="px-2.5 py-1 rounded-md bg-cyan-accent/10 border border-cyan-accent/30 text-cyan-accent">
@@ -234,7 +234,7 @@ export const MethodologyModal: React.FC<MethodologyModalProps> = ({ isOpen, onCl
           <section className="flex flex-col gap-3">
             <div className="flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-amber-streak">
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>3. Trampas Semánticas Reales que Entrena el Currículum</span>
+              <span>3. Trampas Semánticas Reales que Entrena el Plan de Estudios</span>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -283,7 +283,7 @@ export const MethodologyModal: React.FC<MethodologyModalProps> = ({ isOpen, onCl
         {/* Footer fijo */}
         <div className="px-6 py-3.5 border-t border-border-subtle/50 bg-surface-card/30 flex items-center justify-between gap-3 shrink-0">
           <span className="text-[11px] font-mono text-content-muted hidden sm:inline">
-            60 retos validados • 10 tablas canónicas • 180 pistas progresivas
+            76 retos validados • 4 rutas (DQL + DML + DDL) • 10 tablas canónicas • 228 pistas progresivas
           </span>
           <Button variant="primary" size="sm" onClick={onClose} className="ml-auto">
             Entendido
