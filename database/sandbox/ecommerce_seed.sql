@@ -136,7 +136,7 @@ INSERT INTO proveedores (proveedor_id, nombre_proveedor, pais, telefono) VALUES
 (2, 'Silicon Logistics', 'Taiwán', '+886-2-876543'),
 (3, 'Apex Ergonomics', 'Suecia', '+46-8-555123'),
 (4, 'StorageCore Inc', 'Estados Unidos', '+1-415-987654'),
-(5, 'Peripheral Craft', 'Japón', '+81-3-333344');
+(5, 'Peripheral Craft', 'Japón', NULL);
 
 ALTER SEQUENCE proveedores_proveedor_id_seq RESTART WITH 6;
 
@@ -253,7 +253,7 @@ INSERT INTO pagos (pago_id, factura_id, metodo_pago, monto, fecha_pago, estado_p
 (7, 208, 'tarjeta_credito', 1700.00, '2024-03-01', 'aprobado'),
 (8, 209, 'paypal', 160.00, '2024-03-10', 'aprobado'),
 (9, 211, 'tarjeta_credito', 690.00, '2024-03-22', 'aprobado'),
-(10, 212, 'tarjeta_credito', 85.00, '2024-04-05', 'aprobado'),
+(10, 212, 'tarjeta_credito', 85.00, '2024-04-05', 'rechazado'),
 (11, 213, 'transferencia', 1100.00, '2024-04-12', 'aprobado');
 
 ALTER SEQUENCE pagos_pago_id_seq RESTART WITH 12;

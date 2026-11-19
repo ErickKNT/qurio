@@ -129,7 +129,7 @@ def main():
         res = api_request("modules", method="POST", data=mod)
         print(f"Módulo verificado: #{mod['module_number']} {mod['title']}")
 
-    print("\n--- PASO 3: Sincronizando los 60 Ejercicios Oficiales ---")
+    print("\n--- PASO 3: Sincronizando los 80 Ejercicios Oficiales ---")
     exercises_to_upsert = []
     for ex in SEED_EXERCISES.values():
         exercises_to_upsert.append({
@@ -186,10 +186,10 @@ def main():
     all_exs = api_request("exercises?select=id,title,sort_order&order=sort_order.asc")
     print(f"Total módulos en Cloud: {len(all_mods)}")
     print(f"Total ejercicios en Cloud: {len(all_exs)}")
-    if len(all_exs) == 76 and len(all_mods) == 16:
-        print("\n>>> ¡SINCRONIZACIÓN EXITOSA! 16 Módulos y 76 Ejercicios en Supabase Cloud <<<")
+    if len(all_exs) == 80 and len(all_mods) == 16:
+        print("\n>>> ¡SINCRONIZACIÓN EXITOSA! 16 Módulos y 80 Ejercicios en Supabase Cloud <<<")
     else:
-        print(f"\nAdvertencia: se esperaban 16 y 76, se obtuvieron {len(all_mods)} y {len(all_exs)}")
+        print(f"\nAdvertencia: se esperaban 16 y 80, se obtuvieron {len(all_mods)} y {len(all_exs)}")
 
 if __name__ == "__main__":
     main()

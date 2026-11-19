@@ -79,17 +79,18 @@ def test_spec_panel_exposes_all_10_tables():
 
 def test_curriculum_60_exercises_unique_sort_order_and_sync():
     """
-    Verifica que existan exactamente 76 ejercicios con sort_order contiguo 1..76,
+    Verifica que existan exactamente 80 ejercicios con sort_order contiguo 1..80,
     sincronizados entre seed_data.py, fallbackCurriculum.ts (sin solution_query, verification_query ni setup_sql)
-    y database/supabase/02_seed_curriculum.sql (228 pistas en 3 niveles),
+    y database/supabase/02_seed_curriculum.sql (240 pistas en 3 niveles),
+    con alineación semántica entre concept.syntax y solution_query,
     y sin encabezados de rutas/módulos en inglés sin traducir.
     """
     from app.modules.curriculum.seed_data import SEED_EXERCISES
 
     exercises = sorted(SEED_EXERCISES.values(), key=lambda ex: ex.sort_order)
-    assert len(exercises) == 76, f"Se esperaban 76 ejercicios, encontrados: {len(exercises)}"
-    assert [ex.sort_order for ex in exercises] == list(range(1, 77)), (
-        "Los valores de sort_order deben ser contiguos y únicos del 1 al 76"
+    assert len(exercises) == 80, f"Se esperaban 80 ejercicios, encontrados: {len(exercises)}"
+    assert [ex.sort_order for ex in exercises] == list(range(1, 81)), (
+        "Los valores de sort_order deben ser contiguos y únicos del 1 al 80"
     )
 
     fallback_path = ROOT_DIR / "apps" / "web" / "src" / "lib" / "fallbackCurriculum.ts"
@@ -111,7 +112,7 @@ def test_curriculum_60_exercises_unique_sort_order_and_sync():
         r"\('(e0000000-[0-9a-f\-]+)',\s*(\d+),\s*'((?:[^']|'')*)',\s*(\d+)\)",
         hints_section,
     )
-    assert len(sql_hints) == 228, f"Se esperaban 228 pistas en 02_seed_curriculum.sql, encontradas: {len(sql_hints)}"
+    assert len(sql_hints) == 240, f"Se esperaban 240 pistas en 02_seed_curriculum.sql, encontradas: {len(sql_hints)}"
     sql_hints_map = {(ex_id, int(order)): content.replace("''", "'") for ex_id, order, content, _ in sql_hints}
 
     for ex in exercises:
@@ -122,6 +123,24 @@ def test_curriculum_60_exercises_unique_sort_order_and_sync():
         for idx, hint_text in enumerate(ex.hints, start=1):
             assert sql_hints_map.get((ex.id, idx)) == hint_text, (
                 f"Pista {idx} desincronizada en 02_seed_curriculum.sql para {ex.id}"
+            )
+
+        # Alineación semántica entre concept.syntax y solution_query
+        assert ex.concept is not None and ex.concept.syntax, f"Reto #{ex.sort_order} debe tener concept.syntax"
+        sol_up = ex.solution_query.upper()
+        syn_up = ex.concept.syntax.upper()
+        for clause in ("WHERE ", "HAVING ", "GROUP BY ", "LEFT JOIN ", "CROSS JOIN ", "ON CONFLICT"):
+            if clause in syn_up:
+                assert clause in sol_up, (
+                    f"Reto #{ex.sort_order} ({ex.title}): concept.syntax incluye '{clause.strip()}' pero solution_query no la usa"
+                )
+            if clause in sol_up:
+                assert clause in syn_up, (
+                    f"Reto #{ex.sort_order} ({ex.title}): solution_query usa '{clause.strip()}' pero concept.syntax la omite"
+                )
+        if sol_up.count("INNER JOIN") == 1:
+            assert syn_up.count("INNER JOIN") == 1, (
+                f"Reto #{ex.sort_order} ({ex.title}): solution_query tiene 1 INNER JOIN pero concept.syntax muestra {syn_up.count('INNER JOIN')}"
             )
 
         if ex.module_id.startswith("a0000000"):

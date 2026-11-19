@@ -1861,6 +1861,33 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **10 archivos / 76 pruebas aprobadas** (incluyendo [`avatar.test.ts`](../apps/web/src/lib/__tests__/avatar.test.ts), [`persistence.test.ts`](../apps/web/src/lib/__tests__/persistence.test.ts) y [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).
   * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,306 módulos**, 0 errores TypeScript).
 
+---
+
+### Entrada 64: Auditoría Curricular Integral, Cierre de Deuda Educativa y Expansión a 80 Retos (PostgreSQL 16)
+
+* **Fecha:** 19 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/curriculum-audit-80-exercises`
+* **Objetivo:** Auditar y corregir todas las desalineaciones entre micro-teoría (`concept`) y consignas en el catálogo de ejercicios, subsanar anomalías del dataset semilla (`ecommerce_seed.sql`) que provocaban falsos positivos o impedían practicar lógica trivalente en tablas simples, cerrar los saltos cognitivos detectados en la progresión e incorporar 4 nuevos ejercicios (`76 → 80 retos`) para cubrir vacíos curriculares reales.
+* **Entregables Implementados:**
+  1. **Informe de Auditoría Curricular y Deuda Educativa ([`AUDITORIA_CURRICULAR_Y_DEUDA_EDUCATIVA.md`](pedagogia/AUDITORIA_CURRICULAR_Y_DEUDA_EDUCATIVA.md)):**
+     * Diagnóstico completo de los 6 bloques `concept` desalineados (`#22/004`, `#27/034`, `#28/035`, `#32/036`, `#36/014`, `#38/040`), los 7 saltos cognitivos en explicaciones previas, las violaciones de anti-spoilers (`#31/013`, `#76/076`), las muestras `SAMPLE_TABLES` y el diseño de los 4 nuevos ejercicios.
+  2. **Calibración del Dataset Semilla del Sandbox ([`ecommerce_seed.sql`](../database/sandbox/ecommerce_seed.sql)):**
+     * Asignación de `telefono = NULL` en `proveedor_id = 5` (`Peripheral Craft`) para introducir un valor `NULL` nativo en el esquema sin afectar retos existentes y habilitar el filtrado `IS NULL` en tabla individual.
+     * Actualización de `pago_id = 10` (`factura_id = 212`) a `estado_pago = 'rechazado'`, garantizando que el filtro `WHERE pg.estado_pago = 'aprobado'` del reto `035` sea verdaderamente discriminante en el evaluador semántico sin romper la unicidad ni el determinismo de `036`, `040` ni `074`.
+  3. **Incorporación de 4 Nuevos Ejercicios (`76 → 80 Retos` y `240 Pistas`) y Cierre de Saltos Cognitivos ([`seed_data.py`](../apps/api/app/modules/curriculum/seed_data.py), [`fallbackCurriculum.ts`](../apps/web/src/lib/fallbackCurriculum.ts), [`02_seed_curriculum.sql`](../database/supabase/02_seed_curriculum.sql), [`06_humanize_curriculum_copy.sql`](../database/supabase/06_humanize_curriculum_copy.sql), [`moduleGuides.ts`](../apps/web/src/lib/moduleGuides.ts)):**
+     * `e0000000-0000-0000-0000-000000000078` (Módulo 2, `sort_order=11`): *Combinación de condiciones con paréntesis (`(OR) + AND`)* — evalúa la precedencia de `AND` sobre `OR`.
+     * `e0000000-0000-0000-0000-000000000077` (Módulo 2, `sort_order=12`): *Proveedores sin teléfono registrado (`IS NULL`)* — introduce la lógica trivalente 3VL en tabla simple antes de `LEFT JOIN`.
+     * `e0000000-0000-0000-0000-000000000079` (Módulo 4, `sort_order=24`): *Pedidos totales vs. compradores únicos (`COUNT DISTINCT`)* — contrasta `COUNT(*)` frente a `COUNT(DISTINCT cliente_id)`.
+     * `e0000000-0000-0000-0000-000000000080` (Módulo 13, `sort_order=68`): *Reposición inteligente de stock (`UPSERT` con `ON CONFLICT`)* — enseña `ON CONFLICT (almacen_id, producto_id) DO UPDATE` con la tabla virtual `EXCLUDED` y `RETURNING`.
+     * Realineación de los bloques `concept` en `004`, `034`, `035`, `036`, `014`, `040`, `027`, `028`, `030`, `005`, `012`, `006`, `049` (usando `CROSS JOIN` explícito en lugar de join implícito con coma), `007`, `057`, `060`, `050`, `064`, `067`, `068`, `074`, `075` y `076`.
+     * Inclusión de `proveedor_id` en `SAMPLE_TABLE_PRODUCTOS` y alineación de datos de muestra con `ecommerce_seed.sql`.
+  4. **Blindaje Anti-Regresión en Suite de Consistencia ([`test_schema_consistency.py`](../apps/api/tests/test_schema_consistency.py)):**
+     * Aserción automatizada que verifica la paridad de cláusulas clave (`WHERE`, `HAVING`, `GROUP BY`, `LEFT JOIN`, `CROSS JOIN`, `ON CONFLICT` y conteo de `INNER JOIN`) entre `concept.syntax` y `solution_query` en los 80 ejercicios.
+* **Verificación:**
+  * **Consistencia Curricular y Sandbox (`pytest apps/api/tests/test_schema_consistency.py -v`):** **5/5 pruebas aprobadas** (80 retos verificados contra PostgreSQL 16 Sandbox).
+  * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **10 archivos / 76 pruebas aprobadas**.
+
+
 
 
 

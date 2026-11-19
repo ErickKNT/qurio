@@ -170,20 +170,20 @@ describe('computeGuestTrialTracksProgress', () => {
 });
 
 describe('Production Fallback Consistency', () => {
-  it('FALLBACK_TRACKS y FALLBACK_EXERCISES suman exactamente 76 ejercicios con conceptos y objetivos pedagógicos', () => {
-    expect(FALLBACK_EXERCISES.length).toBe(76);
+  it('FALLBACK_TRACKS y FALLBACK_EXERCISES suman exactamente 80 ejercicios con conceptos y objetivos pedagógicos', () => {
+    expect(FALLBACK_EXERCISES.length).toBe(80);
     const missingConcept = FALLBACK_EXERCISES.filter((e) => !e.concept);
     const missingObjectives = FALLBACK_EXERCISES.filter((e) => !e.objectives || e.objectives.length === 0);
     expect(missingConcept.map(e => e.id)).toEqual([]);
     expect(missingObjectives.map(e => e.id)).toEqual([]);
 
     const res = computeOfficialTracksProgress(FALLBACK_TRACKS, FALLBACK_EXERCISES, new Set(), false);
-    expect(res[0].total_exercises).toBe(24);
+    expect(res[0].total_exercises).toBe(27);
     expect(res[1].total_exercises).toBe(20);
     expect(res[2].total_exercises).toBe(16);
-    expect(res[3].total_exercises).toBe(16);
+    expect(res[3].total_exercises).toBe(17);
     const totalExercisesInTracks = res.reduce((acc, t) => acc + (t.total_exercises || 0), 0);
-    expect(totalExercisesInTracks).toBe(76);
+    expect(totalExercisesInTracks).toBe(80);
   });
 });
 
@@ -329,10 +329,10 @@ describe('getNextExerciseTransition', () => {
     expect(modTransition.label).toBe('Siguiente Módulo');
     expect(modTransition.targetIndex).toBe(4);
 
-    // Fin de la ruta 1 (índice 23 -> 24)
-    const trackTransition = getNextExerciseTransition(23, FALLBACK_EXERCISES, FALLBACK_TRACKS);
+    // Fin de la ruta 1 (índice 26 -> 27)
+    const trackTransition = getNextExerciseTransition(26, FALLBACK_EXERCISES, FALLBACK_TRACKS);
     expect(trackTransition.label).toBe('Siguiente Ruta');
-    expect(trackTransition.targetIndex).toBe(24);
+    expect(trackTransition.targetIndex).toBe(27);
 
     // Último reto del catálogo (índice 75) navega a rutas en vez de volver al índice 0
     const endTransition = getNextExerciseTransition(

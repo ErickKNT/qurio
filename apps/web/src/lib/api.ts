@@ -665,7 +665,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
     xp_reward: 500,
     unlocked_at: null,
     progress: 0,
-    required_threshold: 76,
+    required_threshold: 80,
     current_value: 0,
     unit: 'ejercicios',
   },
@@ -757,7 +757,9 @@ export function evaluateUserAchievements(
         break;
 
       case 'dml-operator':
-        unlocked = hasCompletedInModuleRange(completedExerciseIds, 61, 68, ['m13', 'm14', 'dml']);
+        unlocked =
+          hasCompletedInModuleRange(completedExerciseIds, 61, 68, ['m13', 'm14', 'dml']) ||
+          hasCompletedInModuleRange(completedExerciseIds, 80, 80, []);
         currentValue = unlocked ? 1 : 0;
         break;
 

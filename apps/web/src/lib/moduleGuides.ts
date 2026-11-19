@@ -182,7 +182,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
     title: 'Agregación y agrupación',
     trackTitle: '1. Fundamentos de SQL',
     summary:
-      'Resumirás conjuntos completos o grupos lógicos con COUNT, SUM, AVG, MIN y MAX, consolidarás filas mediante GROUP BY y aplicarás filtros posteriores sobre métricas agregadas usando HAVING.',
+      'Resumirás conjuntos completos o grupos lógicos con COUNT, COUNT(DISTINCT), SUM, AVG, MIN y MAX, consolidarás filas mediante GROUP BY y aplicarás filtros posteriores sobre métricas agregadas usando HAVING.',
     executionOrder: 'FROM → WHERE (filtra filas) → GROUP BY (forma grupos) → Agregaciones → HAVING (filtra grupos) → SELECT → ORDER BY',
     transformDiagram: {
       title: 'Colapso de filas en grupos y filtro HAVING',
@@ -333,7 +333,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
     title: 'Cadenas Multi-Tabla',
     trackTitle: '2. SQL Relacional',
     summary:
-      'Encadenarás de 3 a 5 tablas siguiendo la ruta de claves foráneas en cascada (por ejemplo, entidad raíz → cabecera → detalle → catálogo) vigilando la número de filas para evitar inflar sumatorias.',
+      'Encadenarás de 3 a 5 tablas siguiendo la ruta de claves foráneas en cascada (por ejemplo, entidad raíz → cabecera → detalle → catálogo) vigilando el número de filas para evitar inflar sumatorias.',
     executionOrder: 'FROM A → JOIN B ON A=B → JOIN C ON B=C → JOIN D ON C=D → GROUP BY → SELECT',
     transformDiagram: {
       title: 'Navegación relacional en cascada (3+ tablas)',
@@ -422,7 +422,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
     title: 'Subconsultas',
     trackTitle: '3. Consultas Avanzadas',
     summary:
-      'Anidarás consultas dentro de WHERE, SELECT o FROM usando subconsultas escalares (comparación contra un promedio o máximo global), listas con IN y pruebas de existencia eficientes con EXISTS / NOT EXISTS.',
+      'Anidarás consultas dentro de WHERE usando subconsultas escalares (comparación contra un promedio o máximo global), listas dinámicas con IN y pruebas de existencia eficientes con EXISTS / NOT EXISTS.',
     executionOrder: 'Subconsulta interna (independiente o correlacionada por fila externa) → Evaluación en consulta externa',
     transformDiagram: {
       title: 'Comparación dinámica contra umbral calculado',
@@ -610,7 +610,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
     title: 'Inserción de registros (INSERT)',
     trackTitle: '4. Ingeniería y Manipulación de Datos',
     summary:
-      'Aprenderás a registrar nuevas filas con INSERT INTO ... VALUES, cargar lotes multi-fila de forma atómica, mostrar inmediatamente claves generadas con RETURNING y poblar tablas a partir de consultas con INSERT INTO ... SELECT.',
+      'Aprenderás a registrar nuevas filas con INSERT INTO ... VALUES, cargar lotes multi-fila de forma atómica, mostrar inmediatamente claves generadas con RETURNING, poblar tablas a partir de consultas con INSERT INTO ... SELECT y resolver colisiones de clave con ON CONFLICT DO UPDATE (UPSERT).',
     executionOrder: 'Evalúa expresiones VALUES / ejecuta SELECT origen → Asigna secuencias SERIAL / DEFAULT → Valida restricciones (NOT NULL, UNIQUE, FK, CHECK) → Inserta filas → Muestra RETURNING',
     transformDiagram: {
       title: 'Inserción atómica con selección RETURNING',
@@ -705,7 +705,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
       'Poner el alias de la tabla destino en la parte izquierda del SET (SET c.limite = 100 es inválido en PostgreSQL; debe ser SET limite = 100).',
     ],
     productionTip:
-      'Antes de ejecutar un UPDATE o DELETE delicado en producción, escribe primero un SELECT con exactamente el mismo WHERE para confirmar cuántas filas serán afectadas.',
+      'Antes de ejecutar un UPDATE o DELETE delicado en producción, envuélvelo en una transacción (BEGIN ... COMMIT / ROLLBACK) o escribe primero un SELECT con exactamente el mismo WHERE para confirmar cuántas filas serán afectadas.',
   },
   {
     moduleId: 'd0000000-0000-0000-0000-000000000015',
