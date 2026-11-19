@@ -42,34 +42,20 @@ function renderInlinePill(code: string, key: string | number): React.ReactNode {
   );
 }
 
-/**
- * Renderiza texto interpretando sintaxis de código (`código`) como badges interactivos
- * con tipografía JetBrains Mono y resplandor sutil, eliminando los caracteres literales de acento/backtick.
- */
-export function formatInlineCode(text?: string | null): React.ReactNode {
-  if (!text) return null;
-  const parts = text.split(/(`[^`]+`)/g);
-  if (parts.length === 1) return text;
-
-  return parts.map((part, i) => {
-    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
-      return renderInlinePill(part.slice(1, -1), i);
-    }
-    return part;
-  });
-}
-
-/**
- * Resalta automáticamente palabras reservadas SQL en mayúsculas y bloques `código`
- * dentro de prosa pedagógica (guías teóricas, errores frecuentes, consejos).
- */
-export function formatSqlProse(text?: string | null): React.ReactNode {
-  if (!text) return null;
+function renderBackticksAndKeywords(
+  text: string,
+  keyPrefix: string,
+  highlightKeywords: boolean
+): React.ReactNode {
   const backtickParts = text.split(/(`[^`]+`)/g);
 
   return backtickParts.map((segment, segIdx) => {
     if (segment.startsWith('`') && segment.endsWith('`') && segment.length > 2) {
-      return renderInlinePill(segment.slice(1, -1), `bt-${segIdx}`);
+      return renderInlinePill(segment.slice(1, -1), `${keyPrefix}-bt-${segIdx}`);
+    }
+
+    if (!highlightKeywords) {
+      return <React.Fragment key={`${keyPrefix}-txt-${segIdx}`}>{segment}</React.Fragment>;
     }
 
     const nodes: React.ReactNode[] = [];
@@ -81,7 +67,7 @@ export function formatSqlProse(text?: string | null): React.ReactNode {
       if (match.index > lastIndex) {
         nodes.push(segment.slice(lastIndex, match.index));
       }
-      nodes.push(renderInlinePill(match[0], `kw-${segIdx}-${match.index}`));
+      nodes.push(renderInlinePill(match[0], `${keyPrefix}-kw-${segIdx}-${match.index}`));
       lastIndex = match.index + match[0].length;
     }
 
@@ -89,8 +75,47 @@ export function formatSqlProse(text?: string | null): React.ReactNode {
       nodes.push(segment.slice(lastIndex));
     }
 
-    return <React.Fragment key={`seg-${segIdx}`}>{nodes}</React.Fragment>;
+    return <React.Fragment key={`${keyPrefix}-seg-${segIdx}`}>{nodes}</React.Fragment>;
   });
+}
+
+function renderFormattedProse(
+  text: string,
+  highlightKeywords: boolean
+): React.ReactNode {
+  const boldParts = text.split(/(\*\*[^*\n]+?\*\*)/g);
+  return boldParts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return (
+        <strong key={`bold-${idx}`} className="font-semibold text-content-primary">
+          {renderBackticksAndKeywords(part.slice(2, -2), `b-${idx}`, highlightKeywords)}
+        </strong>
+      );
+    }
+    return (
+      <React.Fragment key={`plain-${idx}`}>
+        {renderBackticksAndKeywords(part, `p-${idx}`, highlightKeywords)}
+      </React.Fragment>
+    );
+  });
+}
+
+/**
+ * Renderiza texto interpretando sintaxis de código (`código`) y negritas (**texto**)
+ * con tipografía JetBrains Mono y resplandor sutil, eliminando los delimitadores literales.
+ */
+export function formatInlineCode(text?: string | null): React.ReactNode {
+  if (!text) return null;
+  return renderFormattedProse(text, false);
+}
+
+/**
+ * Resalta automáticamente palabras reservadas SQL en mayúsculas, bloques `código`
+ * y negritas **texto** dentro de prosa pedagógica (guías teóricas, errores frecuentes, consejos).
+ */
+export function formatSqlProse(text?: string | null): React.ReactNode {
+  if (!text) return null;
+  return renderFormattedProse(text, true);
 }
 
 /**

@@ -167,6 +167,17 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     );
     expect(uniqueIndexSpan?.className).toContain('text-cyan-accent');
     expect(uniqueIndexSpan?.className).toContain('font-bold');
+
+    cleanup();
+
+    const { container: boldContainer } = render(
+      <p data-testid="bold-prose">
+        {formatSqlProse('El **alias de tabla** va en FROM sin AS y la **Clave Primaria (`PK`)** identifica la fila.')}
+      </p>
+    );
+    const boldNodes = Array.from(boldContainer.querySelectorAll('[data-testid="bold-prose"] strong'));
+    expect(boldNodes.map((n) => n.textContent)).toEqual(['alias de tabla', 'Clave Primaria (PK)']);
+    expect(boldContainer.textContent).not.toContain('**');
   });
 
   it('ExerciseSpecPanel resalta palabras reservadas SQL en pistas y solución oficial', () => {

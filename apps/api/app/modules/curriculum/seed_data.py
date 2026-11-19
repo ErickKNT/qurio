@@ -2494,7 +2494,7 @@ SEED_EXERCISES: Dict[str, ExerciseDetail] = {
             'INSERT INTO inventario (almacen_id, producto_id, cantidad_disponible) VALUES (3, 15, 20) ON CONFLICT (???, ???) DO UPDATE SET cantidad_disponible = inventario.cantidad_disponible + EXCLUDED.??? RETURNING almacen_id, producto_id, cantidad_disponible;',
         ],
         concept=ExerciseConcept(
-            summary='`INSERT ... ON CONFLICT DO UPDATE` (conocido como *UPSERT*) inserta una fila nueva o, si la clave primaria o única ya existe, actualiza atómicamente la fila existente sin lanzar error.',
+            summary='`INSERT ... ON CONFLICT DO UPDATE` (conocido como **UPSERT**) inserta una fila nueva o, si la clave primaria o única ya existe, actualiza atómicamente la fila existente sin lanzar error.',
             syntax='INSERT INTO tabla_stock (centro_id, item_id, unidades)\nVALUES (1, 10, 50)\nON CONFLICT (centro_id, item_id)\nDO UPDATE SET unidades = tabla_stock.unidades + EXCLUDED.unidades\nRETURNING centro_id, item_id, unidades;',
             key_points=[
                 'Entre paréntesis tras `ON CONFLICT (col_a, col_b)` se indica la clave primaria o índice `UNIQUE` que detecta el duplicado.',
