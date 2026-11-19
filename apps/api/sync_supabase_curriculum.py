@@ -1,12 +1,19 @@
 import os
 import json
+from pathlib import Path
 import urllib.request
 import urllib.error
+from dotenv import load_dotenv
+
+API_DIR = Path(__file__).resolve().parent
+ROOT_DIR = API_DIR.parents[1]
+load_dotenv(API_DIR / ".env")
+
 from app.core.config import settings
 from app.modules.curriculum.seed_data import SEED_EXERCISES
 
-SUPABASE_URL = settings.SUPABASE_URL or os.getenv("SUPABASE_URL", "")
-SERVICE_ROLE = settings.SUPABASE_SERVICE_ROLE_KEY or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+SUPABASE_URL = os.getenv("SUPABASE_URL") or settings.SUPABASE_URL
+SERVICE_ROLE = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or settings.SUPABASE_SERVICE_ROLE_KEY
 
 headers = {
     "apikey": SERVICE_ROLE,
@@ -26,103 +33,67 @@ def api_request(path, method="GET", data=None, extra_headers=None):
         return json.loads(content) if content else None
 
 def main():
-    print("--- PASO 1: Comprobando y desacoplando ejercicios legacy de Track 3 ---")
-    track3_ex_ids = [
-        "e0000000-0000-0000-0000-000000000015",
-        "e0000000-0000-0000-0000-000000000016",
-        "e0000000-0000-0000-0000-000000000017",
-        "e0000000-0000-0000-0000-000000000007",
-        "e0000000-0000-0000-0000-000000000018",
-    ]
-    for ex_id in track3_ex_ids:
-        # Eliminar hints asociadas a estos ejercicios legacy
-        try:
-            api_request(f"exercise_hints?exercise_id=eq.{ex_id}", method="DELETE")
-        except Exception as e:
-            print(f"Error borrando hints de {ex_id}:", e)
-        # Eliminar el ejercicio temporalmente para liberar la FK del módulo legacy
-        try:
-            api_request(f"exercises?id=eq.{ex_id}", method="DELETE")
-            print(f"Desacoplado temporalmente ejercicio {ex_id}")
-        except Exception as e:
-            print(f"Nota ejercicio {ex_id}:", e)
-
-    print("\n--- PASO 1.5: Sincronizando las 4 Rutas Formativas (learning_paths) ---")
+    print("\n--- PASO 1: Sincronizando las 4 Rutas Formativas (learning_paths) vía UPSERT ---")
     official_paths = [
         {
             "id": "sql-foundations",
-            "title": "1. Fundamentos de SQL",
-            "description": "Domina las bases de consultas relacionales: proyección, filtrado lógico, ordenamiento y funciones de agregación.",
+            "title": "Fundamentos de SQL",
+            "description": "Aprende a consultar bases de datos desde cero: columnas con SELECT, cálculos, filtros con WHERE y fechas, ordenamiento y agregaciones.",
             "difficulty": "Principiante",
             "sort_order": 1,
             "estimated_hours": 7,
-            "icon_name": "Database",
+            "badge_reward": "Primera consulta",
         },
         {
             "id": "relational-sql",
-            "title": "2. SQL Relacional",
-            "description": "Conecta múltiples tablas mediante claves primarias y foráneas usando INNER JOIN, LEFT JOIN, manejo de NULL y operadores de conjuntos.",
+            "title": "SQL relacional",
+            "description": "Cruza tablas relacionadas usando llaves foráneas, INNER JOIN, LEFT JOIN con COALESCE, consultas de varias tablas y operaciones de conjunto.",
             "difficulty": "Intermedio",
             "sort_order": 2,
             "estimated_hours": 9,
-            "icon_name": "GitMerge",
+            "badge_reward": "Cruce de tablas",
         },
         {
             "id": "advanced-queries",
-            "title": "3. Consultas Avanzadas",
-            "description": "Resuelve problemas analíticos complejos con subconsultas, lógica condicional CASE, expresiones comunes de tabla (CTEs) y funciones de ventana.",
+            "title": "Consultas avanzadas",
+            "description": "Trabaja con subconsultas correlacionadas (EXISTS/NOT EXISTS), condiciones con CASE, consultas temporales con WITH (CTEs) y funciones de ventana.",
             "difficulty": "Avanzado",
             "sort_order": 3,
             "estimated_hours": 14,
-            "icon_name": "Layers",
+            "badge_reward": "Funciones de ventana",
         },
         {
             "id": "data-manipulation-ddl",
-            "title": "4. Ingeniería y Manipulación de Datos",
-            "description": "Domina la inserción, actualización y eliminación transaccional de registros (DML), el diseño estructural de tablas con restricciones y la optimización con índices (DDL).",
+            "title": "Ingeniería y manipulación de datos",
+            "description": "Inserta, actualiza y borra datos en transacciones, crea y modifica tablas, y acelera consultas con INSERT, UPSERT (ON CONFLICT), UPDATE, DELETE, RETURNING, CREATE/ALTER/DROP TABLE e índices B-Tree.",
             "difficulty": "Intermedio",
             "sort_order": 4,
             "estimated_hours": 12,
-            "icon_name": "Wrench",
+            "badge_reward": "Diseño de esquemas",
         },
     ]
     for lp in official_paths:
         api_request("learning_paths", method="POST", data=lp)
         print(f"Ruta verificada: {lp['id']} — {lp['title']}")
 
-    print("\n--- PASO 2: Limpiando y alineando Módulos en Supabase Cloud ---")
-    # Eliminar módulos de track 3 legacy para recrearlos con orden y IDs correctos
-    legacy_mod_ids = [
-        "c0000000-0000-0000-0000-000000000008",
-        "c0000000-0000-0000-0000-000000000009",
-        "c0000000-0000-0000-0000-000000000010",
-        "c0000000-0000-0000-0000-000000000011",
-    ]
-    for m_id in legacy_mod_ids:
-        try:
-            api_request(f"modules?id=eq.{m_id}", method="DELETE")
-            print(f"Módulo legacy eliminado o listo: {m_id}")
-        except Exception as e:
-            print(f"Nota en módulo {m_id}:", e)
-
-    # 12 Módulos oficiales
+    print("\n--- PASO 2: Sincronizando los 16 Módulos en Supabase Cloud vía UPSERT ---")
     official_modules = [
-        {"id": "a0000000-0000-0000-0000-000000000001", "path_id": "sql-foundations", "module_number": 1, "title": "SELECT y Proyecciones de Datos", "description": "Aprende a solicitar columnas específicas y utilizar alias y cálculos aritméticos limpios."},
-        {"id": "a0000000-0000-0000-0000-000000000002", "path_id": "sql-foundations", "module_number": 2, "title": "Filtrado con WHERE y Operadores Lógicos", "description": "Aplica filtros condicionales exactos mediante operadores de comparación, patrones, fechas y rangos con BETWEEN."},
-        {"id": "a0000000-0000-0000-0000-000000000003", "path_id": "sql-foundations", "module_number": 3, "title": "Ordenamiento y Paginación", "description": "Ordena resultados con ORDER BY (ASC/DESC) y limita registros devueltos con LIMIT y OFFSET."},
-        {"id": "a0000000-0000-0000-0000-000000000004", "path_id": "sql-foundations", "module_number": 4, "title": "Agregación y Agrupamiento", "description": "Resume datos de lo global a lo agrupado con COUNT, SUM, AVG, WHERE previo y filtrado de grupos con HAVING."},
-        {"id": "b0000000-0000-0000-0000-000000000005", "path_id": "relational-sql", "module_number": 5, "title": "Uniones Fundamentales (INNER JOIN)", "description": "Cruza tablas relacionales mediante claves foráneas antes de dar el salto a agregaciones cruzadas."},
-        {"id": "b0000000-0000-0000-0000-000000000006", "path_id": "relational-sql", "module_number": 6, "title": "Detección de Ausencias (LEFT JOIN y NULL)", "description": "Identifica registros huérfanos o entidades sin actividad asociada mediante LEFT JOIN, IS NULL y COALESCE."},
-        {"id": "b0000000-0000-0000-0000-000000000007", "path_id": "relational-sql", "module_number": 7, "title": "Consultas Multi-Tabla en Cascada", "description": "Conecta 3 o más tablas para análisis integral del negocio en cascada relacional."},
-        {"id": "b0000000-0000-0000-0000-000000000008", "path_id": "relational-sql", "module_number": 8, "title": "Operaciones de Conjunto y Uniones Especiales", "description": "Combina consultas mediante UNION, INTERSECT, EXCEPT, CROSS JOIN y auto-uniones con SELF JOIN."},
-        {"id": "c0000000-0000-0000-0000-000000000009", "path_id": "advanced-queries", "module_number": 9, "title": "Subconsultas Analíticas", "description": "Integra subconsultas escalares, listas IN y pruebas de existencia (EXISTS / NOT EXISTS) en WHERE."},
-        {"id": "c0000000-0000-0000-0000-000000000010", "path_id": "advanced-queries", "module_number": 10, "title": "Expresiones Condicionales (CASE)", "description": "Transforma, categoriza y pivota métricas y conteos al vuelo con lógica condicional CASE."},
-        {"id": "c0000000-0000-0000-0000-000000000011", "path_id": "advanced-queries", "module_number": 11, "title": "Consultas Temporales con WITH (CTEs)", "description": "Estructura análisis temporales, comparativas entre grupos y flujos por etapas con la cláusula WITH."},
-        {"id": "c0000000-0000-0000-0000-000000000012", "path_id": "advanced-queries", "module_number": 12, "title": "Funciones Analíticas de Ventana", "description": "Aplica clasificaciones, máximos por grupo, acumulados progresivos y análisis temporal (ROW_NUMBER, DENSE_RANK, SUM OVER, LAG)."},
-        {"id": "d0000000-0000-0000-0000-000000000013", "path_id": "data-manipulation-ddl", "module_number": 13, "title": "Inserción de Registros (INSERT)", "description": "Registra tuplas individuales, lotes multi-fila, proyecciones inmediatas con RETURNING y abastecimiento entre tablas con INSERT INTO ... SELECT."},
-        {"id": "d0000000-0000-0000-0000-000000000014", "path_id": "data-manipulation-ddl", "module_number": 14, "title": "Actualización y Eliminación Segura (UPDATE y DELETE)", "description": "Modifica y depura datos con precisión quirúrgica usando UPDATE ... WHERE, recálculos con RETURNING, cruces UPDATE ... FROM y DELETE seguro."},
-        {"id": "d0000000-0000-0000-0000-000000000015", "path_id": "data-manipulation-ddl", "module_number": 15, "title": "Creación y Evolución de Tablas (CREATE, ALTER y DROP)", "description": "Diseña tablas con claves primarias, foráneas y restricciones CHECK, evoluciona columnas con ALTER TABLE y retira estructuras con DROP TABLE CASCADE."},
-        {"id": "d0000000-0000-0000-0000-000000000016", "path_id": "data-manipulation-ddl", "module_number": 16, "title": "Índices y Optimización Estructural (CREATE INDEX)", "description": "Acelera consultas creando índices B-Tree simples, índices únicos compuestos, índices parciales filtrados con WHERE y limpieza con DROP INDEX."},
+        {"id": "a0000000-0000-0000-0000-000000000001", "path_id": "sql-foundations", "module_number": 1, "title": "SELECT y columnas calculadas", "description": "Elige columnas específicas, usa alias claros y haz cálculos aritméticos simples."},
+        {"id": "a0000000-0000-0000-0000-000000000002", "path_id": "sql-foundations", "module_number": 2, "title": "Filtrado con WHERE y operadores lógicos", "description": "Filtra filas con operadores de comparación, patrones de texto, paréntesis, valores nulos (IS NULL), fechas y rangos con BETWEEN."},
+        {"id": "a0000000-0000-0000-0000-000000000003", "path_id": "sql-foundations", "module_number": 3, "title": "Ordenamiento y paginación", "description": "Ordena resultados con ORDER BY (ASC/DESC) y limita las filas devueltas con LIMIT y OFFSET."},
+        {"id": "a0000000-0000-0000-0000-000000000004", "path_id": "sql-foundations", "module_number": 4, "title": "Agregación y agrupamiento", "description": "Resume datos con COUNT, COUNT(DISTINCT), SUM, AVG, filtros previos con WHERE y filtros de grupos con HAVING."},
+        {"id": "b0000000-0000-0000-0000-000000000005", "path_id": "relational-sql", "module_number": 5, "title": "Uniones básicas (INNER JOIN)", "description": "Cruza tablas relacionadas con llaves foráneas antes de pasar a agregaciones entre varias tablas."},
+        {"id": "b0000000-0000-0000-0000-000000000006", "path_id": "relational-sql", "module_number": 6, "title": "Ausencias y ceros (LEFT JOIN y NULL)", "description": "Encuentra filas sin coincidencias o sin actividad usando LEFT JOIN, IS NULL y COALESCE."},
+        {"id": "b0000000-0000-0000-0000-000000000007", "path_id": "relational-sql", "module_number": 7, "title": "Consultas de varias tablas", "description": "Conecta 3 o más tablas para analizar información del negocio en cascada."},
+        {"id": "b0000000-0000-0000-0000-000000000008", "path_id": "relational-sql", "module_number": 8, "title": "Conjuntos y uniones especiales", "description": "Combina consultas con UNION, INTERSECT, EXCEPT, CROSS JOIN y uniones sobre la misma tabla (SELF JOIN)."},
+        {"id": "c0000000-0000-0000-0000-000000000009", "path_id": "advanced-queries", "module_number": 9, "title": "Subconsultas", "description": "Usa subconsultas escalares, listas IN y pruebas de existencia (EXISTS / NOT EXISTS) en WHERE."},
+        {"id": "c0000000-0000-0000-0000-000000000010", "path_id": "advanced-queries", "module_number": 10, "title": "Expresiones condicionales (CASE)", "description": "Clasifica filas y calcula conteos condicionales sobre la marcha con CASE WHEN."},
+        {"id": "c0000000-0000-0000-0000-000000000011", "path_id": "advanced-queries", "module_number": 11, "title": "Consultas temporales con WITH (CTEs)", "description": "Divide consultas largas en pasos claros y legibles con la cláusula WITH."},
+        {"id": "c0000000-0000-0000-0000-000000000012", "path_id": "advanced-queries", "module_number": 12, "title": "Funciones de ventana", "description": "Calcula rankings, máximos por grupo, acumulados y comparaciones entre filas (ROW_NUMBER, DENSE_RANK, SUM OVER, LAG)."},
+        {"id": "d0000000-0000-0000-0000-000000000013", "path_id": "data-manipulation-ddl", "module_number": 13, "title": "Inserción de filas (INSERT)", "description": "Inserta filas individuales o por lotes, devuelve los datos guardados con RETURNING, copia filas con INSERT INTO ... SELECT y resuelve colisiones con ON CONFLICT (UPSERT)."},
+        {"id": "d0000000-0000-0000-0000-000000000014", "path_id": "data-manipulation-ddl", "module_number": 14, "title": "Actualización y borrado (UPDATE y DELETE)", "description": "Modifica y borra filas de forma segura usando UPDATE ... WHERE, RETURNING, cruces UPDATE ... FROM y DELETE."},
+        {"id": "d0000000-0000-0000-0000-000000000015", "path_id": "data-manipulation-ddl", "module_number": 15, "title": "Creación y cambios de tablas (CREATE, ALTER y DROP)", "description": "Crea tablas con llaves primarias, foráneas y reglas CHECK, modifica columnas con ALTER TABLE y borra tablas con DROP TABLE CASCADE."},
+        {"id": "d0000000-0000-0000-0000-000000000016", "path_id": "data-manipulation-ddl", "module_number": 16, "title": "Índices y rendimiento (CREATE INDEX)", "description": "Crea índices B-Tree simples, índices únicos compuestos, índices parciales con WHERE y elimina índices con DROP INDEX."},
     ]
 
     for mod in official_modules:
@@ -154,7 +125,7 @@ def main():
 
     print("\n--- PASO 3.5: Sincronizando Pistas (Hints) desde 02_seed_curriculum.sql ---")
     import re
-    with open("database/supabase/02_seed_curriculum.sql", encoding="utf-8") as f:
+    with open(ROOT_DIR / "database" / "supabase" / "02_seed_curriculum.sql", encoding="utf-8") as f:
         sql_content = f.read()
 
     # Extraer sección de INSERT INTO public.exercise_hints
