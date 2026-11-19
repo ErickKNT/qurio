@@ -31,6 +31,7 @@ export interface DataGridResultsProps {
   message?: string;
   xpAwarded?: number;
   onNextExercise?: () => void;
+  nextExerciseLabel?: string;
   isPlayground?: boolean;
   failedAttemptsCount?: number;
   isSolutionRevealed?: boolean;
@@ -51,6 +52,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
   message,
   xpAwarded,
   onNextExercise,
+  nextExerciseLabel = 'Siguiente Reto',
   isPlayground = false,
   failedAttemptsCount = 0,
   isSolutionRevealed = false,
@@ -208,7 +210,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
               onClick={onNextExercise}
               rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
             >
-              Siguiente Reto
+              {nextExerciseLabel}
             </Button>
           )}
         </div>

@@ -1,4 +1,23 @@
-import { Track, Exercise } from '@/types';
+import { Track, Module, Exercise } from '@/types';
+
+export interface ModuleCompletionSummary {
+  completedModule: Module;
+  track?: Track;
+  moduleTotalExercises: number;
+  moduleTotalXp: number;
+  trackCompletedCount: number;
+  trackTotalCount: number;
+  trackPercent: number;
+  isTrackCompleted: boolean;
+  nextModule?: Module;
+  nextExercise?: Exercise;
+}
+
+export interface NextExerciseTransition {
+  label: string;
+  targetIndex: number | null;
+  shouldNavigateToTracks: boolean;
+}
 
 /**
  * Computa el progreso oficial de las rutas para un usuario autenticado.
@@ -98,4 +117,170 @@ export function computeGuestTrialTracksProgress(
       modules: updatedModules,
     };
   });
+}
+
+function findTrackForModule(tracks: Track[], moduleId: string): Track | undefined {
+  return tracks.find((t) => t.modules?.some((m) => m.id === moduleId));
+}
+
+function findTargetExerciseInModule(
+  exercises: Exercise[],
+  moduleId: string,
+  completedIds: Set<string>
+): Exercise | undefined {
+  const moduleExercises = exercises
+    .filter((ex) => ex.module_id === moduleId)
+    .sort((a, b) => a.sort_order - b.sort_order);
+  return moduleExercises.find((ex) => !completedIds.has(ex.id)) ?? moduleExercises[0];
+}
+
+/**
+ * Evalúa si aprobar `completedExercise` cierra por primera vez el módulo al que pertenece.
+ * Devuelve `null` en modo invitado, si el reto ya estaba completado o si aún faltan retos en el módulo.
+ */
+export function evaluateModuleCompletion(params: {
+  completedExercise: Exercise;
+  exercises: Exercise[];
+  tracks: Track[];
+  previousCompletedIds: Set<string>;
+  isGuest: boolean;
+}): ModuleCompletionSummary | null {
+  const { completedExercise, exercises, tracks, previousCompletedIds, isGuest } = params;
+
+  if (isGuest || previousCompletedIds.has(completedExercise.id)) {
+    return null;
+  }
+
+  const updatedCompletedIds = new Set(previousCompletedIds);
+  updatedCompletedIds.add(completedExercise.id);
+
+  const moduleExercises = exercises.filter((ex) => ex.module_id === completedExercise.module_id);
+  if (moduleExercises.length === 0) {
+    return null;
+  }
+
+  const allModuleDone = moduleExercises.every((ex) => updatedCompletedIds.has(ex.id));
+  if (!allModuleDone) {
+    return null;
+  }
+
+  const track = findTrackForModule(tracks, completedExercise.module_id);
+  const completedModule = track?.modules?.find((m) => m.id === completedExercise.module_id);
+  if (!completedModule) {
+    return null;
+  }
+
+  const moduleTotalXp = moduleExercises.reduce((sum, ex) => sum + (ex.xp_reward || 0), 0);
+
+  const trackModuleIds = new Set((track?.modules || []).map((m) => m.id));
+  const trackExercises = exercises.filter((ex) => trackModuleIds.has(ex.module_id));
+  const trackTotalCount = trackExercises.length || track?.total_exercises || moduleExercises.length;
+  const trackCompletedCount = trackExercises.filter((ex) => updatedCompletedIds.has(ex.id)).length;
+  const trackPercent = Math.min(100, Math.round((trackCompletedCount / trackTotalCount) * 100));
+  const isTrackCompleted = trackExercises.length > 0 && trackCompletedCount >= trackExercises.length;
+
+  let nextModule: Module | undefined;
+  let nextExercise: Exercise | undefined;
+
+  // Buscar primero el siguiente módulo con retos pendientes dentro de la misma ruta
+  if (!isTrackCompleted && track?.modules) {
+    const sortedModules = [...track.modules].sort((a, b) => a.sort_order - b.sort_order);
+    const currentIdx = sortedModules.findIndex((m) => m.id === completedModule.id);
+    const orderedCandidates = [
+      ...sortedModules.slice(currentIdx + 1),
+      ...sortedModules.slice(0, currentIdx),
+    ];
+
+    nextModule = orderedCandidates.find((m) =>
+      exercises.some((ex) => ex.module_id === m.id && !updatedCompletedIds.has(ex.id))
+    );
+    if (nextModule) {
+      nextExercise = findTargetExerciseInModule(exercises, nextModule.id, updatedCompletedIds);
+    }
+  }
+
+  // Si la ruta actual quedó completa, buscar la siguiente ruta con módulos pendientes
+  if (!nextModule) {
+    const sortedTracks = [...tracks].sort((a, b) => a.sort_order - b.sort_order);
+    const currentTrackIdx = track ? sortedTracks.findIndex((t) => t.id === track.id) : -1;
+    const candidateTracks =
+      currentTrackIdx >= 0
+        ? [...sortedTracks.slice(currentTrackIdx + 1), ...sortedTracks.slice(0, currentTrackIdx)]
+        : sortedTracks;
+
+    for (const candidateTrack of candidateTracks) {
+      const sortedMods = [...(candidateTrack.modules || [])].sort(
+        (a, b) => a.sort_order - b.sort_order
+      );
+      const pendingMod = sortedMods.find((m) =>
+        exercises.some((ex) => ex.module_id === m.id && !updatedCompletedIds.has(ex.id))
+      );
+      if (pendingMod) {
+        nextModule = pendingMod;
+        nextExercise = findTargetExerciseInModule(exercises, pendingMod.id, updatedCompletedIds);
+        break;
+      }
+    }
+  }
+
+  return {
+    completedModule,
+    track,
+    moduleTotalExercises: moduleExercises.length,
+    moduleTotalXp,
+    trackCompletedCount,
+    trackTotalCount,
+    trackPercent,
+    isTrackCompleted,
+    nextModule,
+    nextExercise,
+  };
+}
+
+/**
+ * Calcula la etiqueta y el destino del botón de avance en el banner de resultados
+ * para evitar saltos silenciosos entre módulos o reinicios al principio del temario.
+ */
+export function getNextExerciseTransition(
+  currentExerciseIndex: number,
+  exercises: Exercise[],
+  tracks: Track[]
+): NextExerciseTransition {
+  if (exercises.length === 0 || currentExerciseIndex < 0) {
+    return {
+      label: 'Siguiente Reto',
+      targetIndex: exercises.length > 0 ? 0 : null,
+      shouldNavigateToTracks: false,
+    };
+  }
+
+  if (currentExerciseIndex >= exercises.length - 1) {
+    return {
+      label: 'Ver rutas',
+      targetIndex: null,
+      shouldNavigateToTracks: true,
+    };
+  }
+
+  const nextIndex = currentExerciseIndex + 1;
+  const currentExercise = exercises[currentExerciseIndex];
+  const nextExercise = exercises[nextIndex];
+
+  if (!currentExercise || !nextExercise || currentExercise.module_id === nextExercise.module_id) {
+    return {
+      label: 'Siguiente Reto',
+      targetIndex: nextIndex,
+      shouldNavigateToTracks: false,
+    };
+  }
+
+  const currentTrack = findTrackForModule(tracks, currentExercise.module_id);
+  const nextTrack = findTrackForModule(tracks, nextExercise.module_id);
+  const isDifferentTrack = currentTrack && nextTrack && currentTrack.id !== nextTrack.id;
+
+  return {
+    label: isDifferentTrack ? 'Siguiente Ruta' : 'Siguiente Módulo',
+    targetIndex: nextIndex,
+    shouldNavigateToTracks: false,
+  };
 }

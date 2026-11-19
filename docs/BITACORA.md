@@ -1816,6 +1816,26 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **9 archivos / 58 pruebas aprobadas** en `3.47s`.
   * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,303 módulos**, 0 errores TypeScript).
 
+---
+
+### Entrada 62: Celebración de Cierre de Módulo y Transiciones Explícitas en el Workspace
+
+* **Fecha:** 19 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/module-completion-celebration` (bifurcada desde `main` tras fusionar `fix/humanize-platform-copy`)
+* **Objetivo:** Dar cierre cognitivo al terminar todos los retos de un módulo (o una ruta completa) dentro del workspace sin sacar al usuario a páginas intermedias y evitar saltos silenciosos entre módulos o reinicios al inicio del temario.
+* **Entregables Implementados:**
+  1. **Detección Pura de Cierre de Módulo y Transiciones ([`progress.ts`](../apps/web/src/lib/progress.ts)):**
+     * `evaluateModuleCompletion`: verifica que todos los retos del `module_id` queden resueltos por primera vez (soporta resolución no lineal), omite re-ejecuciones y modo invitado, calcula XP del módulo/avance de ruta, detecta cierre completo de ruta (`isTrackCompleted`) y resuelve el siguiente módulo pendiente.
+     * `getNextExerciseTransition`: calcula etiquetas contextuales (`Siguiente Reto`, `Siguiente Módulo`, `Siguiente Ruta`, `Ver rutas`) evitando el bucle silencioso al índice `0` al finalizar el último ejercicio del catálogo.
+  2. **Molécula `ModuleCompletedModal` ([`ModuleCompletedModal.tsx`](../apps/web/src/components/molecules/ModuleCompletedModal/ModuleCompletedModal.tsx)):**
+     * Modal accesible (`Escape`, clic en backdrop, tokens *Terminal Glow Minimal*) que reemplaza al antiguo `SuccessModal` sin usar, mostrando progreso del módulo, porcentaje de ruta, XP acumulado y vista previa del siguiente módulo o acceso a constancias al cerrar una ruta.
+  3. **Integración en Workspace y Banner de Resultados ([`useExerciseWorkspace.ts`](../apps/web/src/hooks/useExerciseWorkspace.ts), [`DataGridResults.tsx`](../apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx), [`App.tsx`](../apps/web/src/App.tsx)):**
+     * Captura del estado previo de completados antes de registrar la entrega aprobada y etiqueta dinámica en el botón del banner inline.
+* **Verificación:**
+  * **Frontend (`npm.cmd --prefix apps/web test`):** **9 archivos / 66 pruebas aprobadas** en `4.26s` (incluyendo pruebas unitarias en [`progress.test.ts`](../apps/web/src/lib/__tests__/progress.test.ts) y pruebas UI en [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).
+  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,303 módulos**, 0 errores TypeScript) en `6.23s`.
+
+
 
 
 
