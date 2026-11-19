@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { AVATAR_BUCKET_NAME } from '@/lib/avatar';
 import { UserProfile, EvaluationStatus, QueryHistoryItem, AttemptStats } from '@/types';
 
 export const GUEST_PROGRESS_STORAGE_KEY = 'qurio_guest_progress_v1';
@@ -318,6 +319,77 @@ export const persistence = {
   },
 
   /**
+   * Sube una imagen procesada de avatar al bucket 'avatars' de Supabase Storage
+   * bajo la ruta determinista `${userId}/avatar.{webp|png}` para evitar huérfanos.
+   */
+  async uploadUserAvatar(
+    userId: string,
+    blob: Blob
+  ): Promise<{ publicUrl?: string; error?: string }> {
+    if (!isSupabaseConfigured || !userId || userId.startsWith('demo-')) {
+      return {
+        error: 'Inicia sesión en la nube para subir una foto de perfil personalizada.',
+      };
+    }
+
+    try {
+      const ext = blob.type === 'image/png' ? 'png' : 'webp';
+      const storagePath = `${userId}/avatar.${ext}`;
+      const contentType = blob.type || `image/${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from(AVATAR_BUCKET_NAME)
+        .upload(storagePath, blob, {
+          upsert: true,
+          contentType,
+          cacheControl: '3600',
+        });
+
+      if (uploadError) {
+        console.warn('Error al subir avatar a Supabase Storage:', uploadError.message);
+        return { error: uploadError.message || 'No se pudo subir la imagen de perfil.' };
+      }
+
+      const { data } = supabase.storage.from(AVATAR_BUCKET_NAME).getPublicUrl(storagePath);
+      const basePublicUrl = data?.publicUrl;
+      if (!basePublicUrl) {
+        return { error: 'No se pudo obtener la URL pública del avatar.' };
+      }
+
+      const separator = basePublicUrl.includes('?') ? '&' : '?';
+      return { publicUrl: `${basePublicUrl}${separator}v=${Date.now()}` };
+    } catch (err: any) {
+      console.warn('Error inesperado al subir avatar:', err);
+      return { error: err?.message || 'Error de conexión al subir el avatar.' };
+    }
+  },
+
+  /**
+   * Elimina el archivo de avatar personalizado del usuario en Supabase Storage.
+   */
+  async removeUserAvatar(userId: string): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured || !userId || userId.startsWith('demo-')) {
+      return { success: true };
+    }
+
+    try {
+      const { error } = await supabase.storage
+        .from(AVATAR_BUCKET_NAME)
+        .remove([`${userId}/avatar.webp`, `${userId}/avatar.png`]);
+
+      if (error) {
+        console.warn('Error al eliminar avatar de Supabase Storage:', error.message);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.warn('Error inesperado al eliminar avatar:', err);
+      return { success: false, error: err?.message || 'Error de conexión al eliminar el avatar.' };
+    }
+  },
+
+  /**
    * Sincroniza y actualiza los datos del perfil en Supabase y localmente.
    *
    * SEGURIDAD (C-02 + CLS 03_security_hardening.sql):
@@ -329,14 +401,6 @@ export const persistence = {
     updates: Partial<UserProfile>,
     syncCloud = true
   ): Promise<{ success: boolean; error?: string }> {
-    try {
-      const current = this.getLocalProfile();
-      const updated = { ...current, ...updates };
-      localStorage.setItem(LOCAL_PROFILE_STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.warn('Error al guardar perfil localmente:', e);
-    }
-
     if (syncCloud && isSupabaseConfigured && userId && !userId.startsWith('demo-')) {
       try {
         const dbUpdates: Record<string, any> = {};
@@ -357,6 +421,15 @@ export const persistence = {
         return { success: false, error: err?.message || 'Error de conexión con Supabase.' };
       }
     }
+
+    try {
+      const current = this.getLocalProfile();
+      const updated = { ...current, ...updates };
+      localStorage.setItem(LOCAL_PROFILE_STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Error al guardar perfil localmente:', e);
+    }
+
     return { success: true };
   },
 

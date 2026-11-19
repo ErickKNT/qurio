@@ -116,7 +116,7 @@ export interface UserProfile {
   id: string;
   username: string;
   full_name?: string;
-  avatar_url?: string;
+  avatar_url?: string | null;
   bio?: string;
   total_xp: number;
   current_level: number;

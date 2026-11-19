@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { resolveFallbackAvatarUrl, buildDicebearAvatarUrl } from '@/lib/avatar';
 import { UserProfile } from '@/types';
 import { persistence } from '@/lib/persistence';
 import { api } from '@/lib/api';
@@ -17,6 +18,7 @@ export interface AuthContextType {
   isDemoMode: boolean;
   isPasswordRecovery: boolean;
   guestSyncCount: number;
+  providerAvatarUrl: string | null;
   clearPasswordRecovery: () => void;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signInWithOAuth: (provider: 'github' | 'google') => Promise<{ success: boolean; error?: string }>;
@@ -64,16 +66,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           `user_${userId.substring(0, 6)}`;
         const oauthDisplayName =
           userMetadata?.display_name || userMetadata?.full_name || userMetadata?.name || data.username;
-        const oauthAvatar =
-          userMetadata?.avatar_url ||
-          userMetadata?.picture ||
-          `https://api.dicebear.com/7.x/bottts/svg?seed=${data.username || userId}`;
+        const fallbackAvatar = resolveFallbackAvatarUrl(data.username || oauthUsername, userMetadata);
 
         const loadedProfile: UserProfile = {
           id: data.id,
           username: data.username || oauthUsername,
           full_name: data.display_name || oauthDisplayName,
-          avatar_url: data.avatar_url || oauthAvatar,
+          avatar_url: data.avatar_url || fallbackAvatar,
           bio: data.bio || '',
           total_xp: data.xp ?? 0,
           current_level: data.level ?? 1,
@@ -99,16 +98,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           `dev_${userId.substring(0, 6)}`;
         const displayName =
           userMetadata?.display_name || userMetadata?.full_name || userMetadata?.name || username;
-        const avatarUrl =
-          userMetadata?.avatar_url ||
-          userMetadata?.picture ||
-          `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`;
+        const fallbackAvatar = resolveFallbackAvatarUrl(username, userMetadata);
 
         const newProfileData = {
           id: userId,
           username,
           display_name: displayName,
-          avatar_url: avatarUrl,
+          avatar_url: null,
           xp: 0,
           level: 1,
           current_streak_days: 1,
@@ -125,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: userId,
           username: created?.username || username,
           full_name: created?.display_name || displayName,
-          avatar_url: created?.avatar_url || avatarUrl,
+          avatar_url: created?.avatar_url || fallbackAvatar,
           bio: created?.bio || '',
           total_xp: created?.xp ?? 0,
           current_level: created?.level ?? 1,
@@ -255,7 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: 'local-user',
         username: email.split('@')[0],
         full_name: email.split('@')[0],
-        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${email.split('@')[0]}`,
+        avatar_url: buildDicebearAvatarUrl(email.split('@')[0]),
         total_xp: 50,
         current_level: 1,
         current_streak_days: 1,
@@ -344,7 +340,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: 'local-user',
         username: username.trim() || email.split('@')[0],
         full_name: username.trim(),
-        avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${username.trim()}`,
+        avatar_url: buildDicebearAvatarUrl(username.trim()),
         total_xp: 0,
         current_level: 1,
         current_streak_days: 1,
@@ -492,16 +488,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const providerAvatarUrl = useMemo(() => {
+    const meta = user?.user_metadata;
+    const raw =
+      (typeof meta?.avatar_url === 'string' && meta.avatar_url.trim()) ||
+      (typeof meta?.picture === 'string' && meta.picture.trim()) ||
+      '';
+    return raw || null;
+  }, [user]);
+
   const updateProfileState = useCallback(async (updates: Partial<UserProfile>) => {
     if (!profile) return { success: false, error: 'Sesión no inicializada' };
     const result = await persistence.updateProfile(profile.id, updates, true);
     if (!result.success) {
       return result;
     }
-    const updated = { ...profile, ...updates };
+
+    const resolvedAvatar =
+      updates.avatar_url === null
+        ? resolveFallbackAvatarUrl(profile.username, user?.user_metadata)
+        : updates.avatar_url !== undefined
+        ? updates.avatar_url
+        : profile.avatar_url;
+
+    const updated: UserProfile = {
+      ...profile,
+      ...updates,
+      avatar_url: resolvedAvatar,
+    };
     setProfile(updated);
     return { success: true };
-  }, [profile]);
+  }, [profile, user]);
 
   const isAdmin = useMemo(
     () => Boolean(user?.app_metadata?.role === 'admin'),
@@ -521,6 +538,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isDemoMode: !isSupabaseConfigured,
       isPasswordRecovery,
       guestSyncCount,
+      providerAvatarUrl,
       clearPasswordRecovery,
       signIn,
       signInWithOAuth,
@@ -533,7 +551,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (user) fetchProfile(user.id, user.user_metadata);
       },
     }),
-    [session, user, profile, loading, error, isAdmin, isPasswordRecovery, guestSyncCount, clearPasswordRecovery, fetchProfile, updateProfileState]
+    [session, user, profile, loading, error, isAdmin, isPasswordRecovery, guestSyncCount, providerAvatarUrl, clearPasswordRecovery, fetchProfile, updateProfileState]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -554,6 +572,7 @@ export function useAuth(): AuthContextType {
       isDemoMode: true,
       isPasswordRecovery: false,
       guestSyncCount: 0,
+      providerAvatarUrl: null,
       clearPasswordRecovery: () => {},
       signIn: async () => ({ success: false, error: 'AuthProvider no inicializado' }),
       signInWithOAuth: async () => ({ success: false, error: 'AuthProvider no inicializado' }),
