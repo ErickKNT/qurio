@@ -1,6 +1,6 @@
-# Guía de Ejecución Local — Qurio
+# Guía de ejecución local (Qurio)
 
-Esta guía explica paso a paso cómo levantar, verificar y apagar **Qurio** manualmente en entorno local (**Windows / PowerShell**).
+Pasos para levantar, comprobar y detener **Qurio** en local (**Windows / PowerShell**).
 
 ---
 
@@ -18,9 +18,9 @@ copy apps\web\.env.example apps\web\.env
 
 ---
 
-## Opción 1: Modo Recomendado (Sandbox + API en Docker + Frontend Vite)
+## Opción 1: modo recomendado (Sandbox + API en Docker + Frontend Vite)
 
-Esta opción levanta PostgreSQL 16 Sandbox (`5433`) y el backend FastAPI (`8000`) en contenedores Docker, y deja únicamente el frontend en Vite (`5173`).
+Levanta PostgreSQL 16 Sandbox (`5433`) y el backend FastAPI (`8000`) en Docker, y corre solo el frontend con Vite (`5173`).
 
 ### 1. Ubícate en la raíz del repositorio y selecciona la rama deseada
 

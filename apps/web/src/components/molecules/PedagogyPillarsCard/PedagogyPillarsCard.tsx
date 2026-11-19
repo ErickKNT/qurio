@@ -13,28 +13,28 @@ export interface PedagogyPillarsCardProps {
 const PILLARS = [
   {
     id: 'cognitive-load',
-    title: 'Carga Cognitiva Gradual',
+    title: 'Carga cognitiva gradual',
     subtitle: 'Sweller • Taipalus (2020)',
     description:
-      'Un solo concepto relacional nuevo por reto, avanzando de proyecciones simples a analítica avanzada sin sobrecarga mental.',
+      'Cada reto introduce un solo concepto nuevo, avanzando de consultas simples a analítica avanzada sin saturar.',
     icon: BrainCircuit,
     accentClass: 'text-cyan-accent border-cyan-accent/25 bg-cyan-accent/10',
   },
   {
     id: 'scaffolding',
-    title: 'Andamiaje en 3 Capas',
+    title: 'Pistas en 3 capas',
     subtitle: 'Renkl (2014) • Wilson (2019)',
     description:
-      'Teoría abstracta sin spoilers y pistas graduadas (lógica → estructura → plantilla) que entrenan tu criterio antes de revelar código.',
+      'Teoría sin spoilers y pistas graduadas (idea general → cláusulas → plantilla) para resolver por tu cuenta antes de ver código.',
     icon: Layers,
     accentClass: 'text-amber-streak border-amber-streak/25 bg-amber-streak/10',
   },
   {
     id: 'semantic-engine',
-    title: 'Motor Real PostgreSQL 16',
+    title: 'PostgreSQL 16 real',
     subtitle: 'Mitrovic • Brass & Goldberg',
     description:
-      'Evaluación semántica de conjuntos, nulidad, mutaciones DML y catálogos DDL en esquemas efímeros pg_temp con ROLLBACK (máx. 2,000 ms).',
+      'Evalúa resultados, nulos, mutaciones DML y cambios DDL en esquemas temporales pg_temp con ROLLBACK (máx. 2,000 ms).',
     icon: ShieldCheck,
     accentClass: 'text-emerald border-emerald/25 bg-emerald/10',
   },
@@ -58,7 +58,7 @@ export const PedagogyPillarsCard: React.FC<PedagogyPillarsCardProps> = ({
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <Badge variant="cyan" size="sm">
-              Método Basado en Evidencia
+              Método de enseñanza
             </Badge>
             <span className="text-[11px] font-mono text-content-muted">
               CER + Psicología Cognitiva + PostgreSQL 16
@@ -66,7 +66,7 @@ export const PedagogyPillarsCard: React.FC<PedagogyPillarsCardProps> = ({
           </div>
           <h2 className="text-sm sm:text-base font-bold text-content-primary tracking-tight flex items-center gap-2">
             <BookOpenCheck className="w-4 h-4 text-primary shrink-0" />
-            <span>Cómo garantiza Qurio que aprendas SQL real</span>
+            <span>Cómo se estructuran los retos en Qurio</span>
           </h2>
         </div>
 
@@ -78,7 +78,7 @@ export const PedagogyPillarsCard: React.FC<PedagogyPillarsCardProps> = ({
             rightIcon={<ArrowUpRight className="w-3.5 h-3.5" />}
             className="text-xs shrink-0 whitespace-nowrap border-primary/30 hover:border-cyan-accent/50"
           >
-            Ver Metodología y Respaldo
+            Ver metodología
           </Button>
         )}
       </div>

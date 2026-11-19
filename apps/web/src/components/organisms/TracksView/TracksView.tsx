@@ -65,13 +65,13 @@ export const TracksView: React.FC<TracksViewProps> = ({
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-surface-card border border-border-subtle/50 text-[11px] font-mono text-cyan-accent mb-2">
             <GitBranch className="w-3 h-3" />
-            <span>Plan de Estudios de Qurio</span>
+            <span>Plan de estudios</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-content-primary">
-            Rutas de Aprendizaje y Temario
+            Rutas de aprendizaje y temario
           </h1>
           <p className="text-xs text-content-secondary mt-1">
-            Avanza paso a paso desde consultas base hasta ingeniería de tablas, mutación transaccional y optimización con índices.
+            Avanza paso a paso desde consultas básicas hasta diseño de tablas, cambios transaccionales e índices.
           </p>
         </div>
 
@@ -82,10 +82,10 @@ export const TracksView: React.FC<TracksViewProps> = ({
             </Badge>
           )}
           <Badge variant="mono">
-            {tracks.length} Rutas
+            {tracks.length} rutas
           </Badge>
           <Badge variant="emerald" dot>
-            Entorno PostgreSQL Activo
+            PostgreSQL activo
           </Badge>
           {onOpenMethodology && (
             <Button
@@ -125,7 +125,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
                   style={{ backgroundColor: selectedTrack.color_accent }}
                 />
                 <h2 className="text-lg font-bold text-content-primary">
-                  Temario Detallado — {selectedTrack.title}
+                  Temario: {selectedTrack.title}
                 </h2>
                 <Badge variant="mono" size="sm">
                   {selectedTrack.badge_name}
@@ -151,7 +151,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
                       leftIcon={<Award className="w-3.5 h-3.5 shrink-0" />}
                       className="text-xs whitespace-nowrap shrink-0"
                     >
-                      {isTrackComplete ? 'Ver Constancia' : 'Probar Constancia (QA)'}
+                      {isTrackComplete ? 'Ver constancia' : 'Probar constancia (QA)'}
                     </Button>
                   );
                 })()}

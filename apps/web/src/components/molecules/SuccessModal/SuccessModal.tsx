@@ -36,21 +36,21 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         </div>
 
         <Badge variant="emerald" dot size="md" className="mb-2">
-          SOLUCIÓN SEMÁNTICAMENTE VÁLIDA
+          SOLUCIÓN APROBADA
         </Badge>
 
         <h2 className="text-xl font-extrabold text-content-primary tracking-tight">
-          ¡Reto Superado!
+          Reto superado
         </h2>
 
         <p className="text-xs text-content-secondary mt-1 max-w-sm">
-          Tu consulta sobre <span className="text-content-primary font-medium font-mono">"{exerciseTitle}"</span> devolvió la proyección, tipos y cardinalidad exactos.
+          Tu consulta para <span className="text-content-primary font-medium font-mono">"{exerciseTitle}"</span> devolvió exactamente el resultado esperado.
         </p>
 
         {/* Panel de Recompensa XP & Métricas */}
         <div className="grid grid-cols-2 gap-3 w-full my-5 p-4 rounded-xl bg-surface-card border border-border-subtle">
           <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-surface-dim border border-border-subtle/50">
-            <span className="text-[10px] font-mono text-content-muted uppercase">Experiencia Ganada</span>
+            <span className="text-[10px] font-mono text-content-muted uppercase">Experiencia ganada</span>
             <div className="flex items-center gap-1.5 mt-0.5 text-amber-streak">
               <Zap className="w-4 h-4 fill-amber-streak" />
               <span className="text-xl font-mono font-extrabold">+{xpAwarded} XP</span>
@@ -63,7 +63,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           </div>
 
           <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-surface-dim border border-border-subtle/50">
-            <span className="text-[10px] font-mono text-content-muted uppercase">Tiempo en Sandbox</span>
+            <span className="text-[10px] font-mono text-content-muted uppercase">Tiempo en sandbox</span>
             <span className="text-xl font-mono font-extrabold text-cyan-accent mt-0.5">
               {executionTimeMs.toFixed(1)}ms
             </span>
@@ -74,7 +74,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         {/* Botones de Acción Inmediata (Anti-AI Slop) */}
         <div className="flex items-center gap-3 w-full">
           <Button variant="secondary" size="md" className="flex-1" onClick={onClose} leftIcon={<RotateCcw className="w-3.5 h-3.5" />}>
-            Revisar Query
+            Revisar query
           </Button>
 
           {onNextExercise && (
@@ -85,7 +85,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
               onClick={onNextExercise}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Siguiente Reto
+              Siguiente reto
             </Button>
           )}
         </div>

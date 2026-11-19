@@ -105,24 +105,24 @@ export function useAppRouter({
       case 'dashboard':
         return 'Inicio';
       case 'tracks':
-        return 'Rutas de Aprendizaje';
+        return 'Rutas de aprendizaje';
       case 'playground':
         return 'Laboratorio SQL';
       case 'reference':
         return 'Referencia SQL';
       case 'verify':
-        return 'Verificación de Constancia';
+        return 'Verificación de constancia';
       case 'achievements':
-        return 'Logros & Rangos';
+        return 'Logros y rangos';
       case 'profile':
-        return 'Mi Perfil';
+        return 'Mi perfil';
       case 'not-found':
       case 'admin':
         return '404 Relation Not Found';
       case 'auth-confirm':
-        return 'Verificación de Cuenta';
+        return 'Verificación de cuenta';
       case 'reset-password':
-        return 'Restablecer Contraseña';
+        return 'Restablecer contraseña';
       default:
         return 'Inicio';
     }
@@ -159,15 +159,15 @@ export function useDocumentTitle(options: {
     } else {
       const titles: Record<string, string> = {
         dashboard: 'Inicio | Qurio',
-        tracks: 'Rutas de Aprendizaje | Qurio',
+        tracks: 'Rutas de aprendizaje | Qurio',
         playground: 'Laboratorio SQL | Qurio',
         reference: 'Referencia SQL | Qurio',
-        verify: 'Verificar Constancia | Qurio',
-        achievements: 'Logros & Rangos | Qurio',
-        profile: 'Mi Perfil | Qurio',
+        verify: 'Verificar constancia | Qurio',
+        achievements: 'Logros y rangos | Qurio',
+        profile: 'Mi perfil | Qurio',
         'not-found': 'ERROR 404: Relation Not Found | Qurio',
-        'auth-confirm': 'Verificación de Cuenta | Qurio',
-        'reset-password': 'Restablecer Contraseña | Qurio',
+        'auth-confirm': 'Verificación de cuenta | Qurio',
+        'reset-password': 'Restablecer contraseña | Qurio',
       };
       document.title = titles[currentPath] || 'Qurio | Aprende SQL escribiendo consultas reales.';
     }

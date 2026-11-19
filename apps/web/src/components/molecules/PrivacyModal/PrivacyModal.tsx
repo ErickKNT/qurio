@@ -27,10 +27,10 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
             </div>
             <div>
               <h3 className="text-base font-bold text-content-primary">
-                Privacidad & Términos Transparentes
+                Privacidad y términos
               </h3>
               <p className="text-xs text-content-secondary">
-                Directrices claras, humanas y sin letra pequeña.
+                Qué datos se guardan y cómo corren tus consultas.
               </p>
             </div>
           </div>
@@ -49,9 +49,9 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
             <CheckCircle2 className="w-4 h-4 text-emerald shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold text-content-primary block mb-0.5">
-                Cero Cookies de Rastreo Publicitario
+                Sin cookies de rastreo
               </span>
-              Qurio no utiliza cookies de terceros ni herramientas de tracking invasivo. Solo se emplean tokens de sesión JWT estrictamente necesarios para tu autenticación.
+              Qurio no usa cookies publicitarias ni rastreadores de terceros. Solo guarda los tokens de sesión necesarios para mantener tu cuenta abierta.
             </div>
           </div>
 
@@ -59,9 +59,9 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
             <Lock className="w-4 h-4 text-cyan-accent shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold text-content-primary block mb-0.5">
-                Aislamiento Seguro en Sandbox
+                Consultas aisladas en sandbox
               </span>
-              Todas las consultas SQL que escribes se ejecutan exclusivamente en un contenedor PostgreSQL aislado bajo el rol restringido <code className="font-mono text-[11px] text-cyan-accent">readonly_student</code>. Tus datos jamás tocan bases de datos de producción.
+              Todo el SQL que escribes corre en un contenedor PostgreSQL aparte bajo el rol <code className="font-mono text-[11px] text-cyan-accent">readonly_student</code>, sin acceso a la base de usuarios.
             </div>
           </div>
 
@@ -69,9 +69,9 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
             <GithubIcon className="w-4 h-4 text-content-primary shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold text-content-primary block mb-0.5">
-                Código Abierto y Contacto Real
+                Código abierto y contacto directo
               </span>
-              Este proyecto es desarrollado por Erick KNT. El código fuente es público y verificable en GitHub. No hay domicilios postales falsos ni empresas fantasma.
+              Proyecto desarrollado por Erick KNT. El código fuente es público en GitHub.
             </div>
           </div>
         </div>

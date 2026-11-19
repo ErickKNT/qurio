@@ -151,10 +151,10 @@ def generate_certificate_pdf(cert: CertificateDTO) -> bytes:
 
     c.setFillColor(on_surface)
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(left_x + 44, top_y + 13, "Qurio Learning Platform")
+    c.drawString(left_x + 44, top_y + 13, "Qurio")
     c.setFillColor(secondary)
     c.setFont("Courier-Bold", 8)
-    c.drawString(left_x + 44, top_y + 1, "DATABASE ENGINEERING & QUERY ARCHITECTURE")
+    c.drawString(left_x + 44, top_y + 1, "PRÁCTICA SQL EN POSTGRESQL 16")
 
     # Pills de estado en esquina superior derecha
     right_x = width - m - 34
@@ -186,7 +186,7 @@ def generate_certificate_pdf(cert: CertificateDTO) -> bytes:
     c.roundRect(center_x - badge_w / 2, y - 4, badge_w, 20, 10, stroke=1, fill=1)
     c.setFillColor(primary)
     c.setFont("Courier-Bold", 8.5)
-    c.drawCentredString(center_x, y + 3, "ACREDITACIÓN DE COMPETENCIA TÉCNICA")
+    c.drawCentredString(center_x, y + 3, "CONSTANCIA DE FINALIZACIÓN")
 
     y -= 24
     c.setFillColor(on_surface_variant)
@@ -194,13 +194,13 @@ def generate_certificate_pdf(cert: CertificateDTO) -> bytes:
     c.drawCentredString(
         center_x,
         y,
-        "Por cuanto ha demostrado maestría práctica y teórica en el diseño de consultas relacionales",
+        "Por haber completado los retos prácticos de SQL sobre PostgreSQL 16,",
     )
     y -= 13
     c.drawCentredString(
         center_x,
         y,
-        "y optimización sobre PostgreSQL 16, se confiere el presente certificado a:",
+        "se otorga esta constancia a:",
     )
 
     # Nombre del titular con línea gradiente simulada
@@ -233,10 +233,10 @@ def generate_certificate_pdf(cert: CertificateDTO) -> bytes:
 
     pct = round((cert.completed_exercises / max(1, cert.total_exercises)) * 100)
     metrics = [
-        ("CURRÍCULO", f"{cert.modules_count} Módulos", f"{pct}% Aprobado", tertiary),
-        ("POSTGRES 16", f"{cert.completed_exercises} / {cert.total_exercises} Queries", "Evaluación Semántica", tertiary),
-        ("AUDITORÍA AST", "SQLGlot + Sandbox", "Cero Falsos Positivos", primary),
-        ("ENTORNO", "PostgreSQL 16", "Docker Aislado", on_surface_variant),
+        ("TEMARIO", f"{cert.modules_count} módulos", f"{pct}% completado", tertiary),
+        ("POSTGRES 16", f"{cert.completed_exercises} / {cert.total_exercises} retos", "Evaluación en sandbox", tertiary),
+        ("VALIDACIÓN", "SQLGlot + Sandbox", "Resultados reales", primary),
+        ("ENTORNO", "PostgreSQL 16", "Contenedor aislado", on_surface_variant),
     ]
 
     for idx, (lbl, val, sub, sub_color) in enumerate(metrics):
@@ -341,10 +341,10 @@ def generate_certificate_pdf(cert: CertificateDTO) -> bytes:
     c.line(sig2_cx - 56, sig_y + 42, sig2_cx + 56, sig_y + 42)
     c.setFillColor(on_surface)
     c.setFont("Helvetica-Bold", 9.5)
-    c.drawCentredString(sig2_cx, sig_y + 28, "Comité Técnico Qurio")
+    c.drawCentredString(sig2_cx, sig_y + 28, "Equipo Qurio")
     c.setFillColor(outline_muted)
     c.setFont("Courier", 7.5)
-    c.drawCentredString(sig2_cx, sig_y + 16, "AST Audit & SQL Engineering QA")
+    c.drawCentredString(sig2_cx, sig_y + 16, "Validación SQL en Sandbox")
 
     # Ledger Footer (SHA-256 + Emisión + Registro)
     footer_line_y = m + 38

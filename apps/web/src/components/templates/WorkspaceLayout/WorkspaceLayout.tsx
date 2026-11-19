@@ -54,7 +54,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
       {/* Mobile Tab Switcher (Visible only on < lg screens per Anti-AI Slop rule 1.1) */}
       <div className="lg:hidden flex items-center justify-around border-b border-border-subtle bg-surface-dim p-1.5 shrink-0">
         <RadioTab
-          label="Consigna"
+          label="Instrucciones"
           icon={<BookOpen className="w-3.5 h-3.5" />}
           active={mobileTab === 'consigna'}
           onClick={() => setMobileTab('consigna')}

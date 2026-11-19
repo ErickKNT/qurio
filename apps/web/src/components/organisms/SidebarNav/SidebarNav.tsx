@@ -49,11 +49,11 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
   const navItems = [
     { id: 'dashboard', label: 'Inicio', icon: LayoutDashboard },
-    { id: 'tracks', label: 'Rutas de Aprendizaje', icon: GitBranch },
+    { id: 'tracks', label: 'Rutas de aprendizaje', icon: GitBranch },
     { id: 'playground', label: 'Laboratorio SQL', icon: Terminal },
     { id: 'reference', label: 'Referencia SQL', icon: BookMarked },
-    { id: 'achievements', label: 'Logros & Rangos', icon: Award },
-    { id: 'profile', label: 'Mi Perfil', icon: User },
+    { id: 'achievements', label: 'Logros y rangos', icon: Award },
+    { id: 'profile', label: 'Mi perfil', icon: User },
     ...(isAdmin ? [{ id: 'admin', label: 'Administración', icon: ShieldAlert }] : []),
   ];
 

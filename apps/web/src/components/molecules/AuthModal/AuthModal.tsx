@@ -256,7 +256,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </Badge>
 
               <h3 className="text-xl font-extrabold text-content-primary tracking-tight">
-                {signupSuccess.isDemo ? '¡Cuenta Local Creada!' : '¡Revisa tu Bandeja de Entrada!'}
+                {signupSuccess.isDemo ? 'Cuenta local creada' : 'Revisa tu correo'}
               </h3>
 
               <p className="text-xs text-content-secondary max-w-sm leading-relaxed">
@@ -329,7 +329,7 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key`}
               </Badge>
 
               <h3 className="text-xl font-extrabold text-content-primary tracking-tight">
-                {forgotSuccess.isDemo ? 'Modo Local (Simulación)' : '¡Revisa tu Correo!'}
+                {forgotSuccess.isDemo ? 'Modo local (sin envío real)' : 'Revisa tu correo'}
               </h3>
 
               <p className="text-xs text-content-secondary max-w-sm leading-relaxed">
@@ -353,7 +353,7 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key`}
               onClick={() => handleModeSwitch('signin')}
               className="w-full mt-2"
             >
-              Volver a Iniciar Sesión
+              Volver a iniciar sesión
             </Button>
           </div>
         ) : (
@@ -374,17 +374,17 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key`}
 
               <h2 className="text-lg font-bold text-content-primary tracking-tight">
                 {mode === 'signin'
-                  ? 'Accede a tu Estación de Trabajo SQL'
+                  ? 'Entrar a Qurio'
                   : mode === 'signup'
-                  ? 'Crea tu Cuenta de Ingeniero'
-                  : 'Recuperar Contraseña'}
+                  ? 'Crear cuenta'
+                  : 'Recuperar contraseña'}
               </h2>
               <p className="text-xs text-content-secondary max-w-xs leading-relaxed">
                 {mode === 'signin'
-                  ? 'Conecta tu cuenta para sincronizar tus avances, XP y medallas en Supabase Cloud.'
+                  ? 'Inicia sesión para guardar tu avance, XP y medallas en tu cuenta.'
                   : mode === 'signup'
-                  ? 'Empieza a resolver retos relacionales y construye tu historial de práctica auditado.'
-                  : 'Introduce tu correo electrónico registrado y te enviaremos un enlace de recuperación seguro.'}
+                  ? 'Crea tu cuenta para guardar tu progreso y tu historial de consultas.'
+                  : 'Escribe tu correo y te enviaremos un enlace para restablecer tu contraseña.'}
               </p>
             </div>
 
@@ -414,7 +414,7 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key`}
                       : 'text-content-muted hover:text-content-primary'
                   )}
                 >
-                  Iniciar Sesión
+                  Iniciar sesión
                 </button>
                 <button
                   type="button"
@@ -437,7 +437,7 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key`}
                   className="flex items-center gap-1.5 text-content-muted hover:text-content-primary transition-colors text-xs"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Volver a Iniciar Sesión</span>
+                  <span>Volver a iniciar sesión</span>
                 </button>
                 <span className="text-[11px] text-cyan-accent flex items-center gap-1">
                   <KeyRound className="w-3.5 h-3.5" />

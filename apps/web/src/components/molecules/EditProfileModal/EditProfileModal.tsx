@@ -137,7 +137,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="profile-full-name" className="text-xs font-mono uppercase tracking-wider text-content-secondary">
-              Nombre Completo / Titular en Constancias
+              Nombre completo (para constancias)
             </label>
             <input
               id="profile-full-name"
@@ -157,7 +157,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 className="text-xs font-mono uppercase tracking-wider text-content-secondary flex items-center gap-1.5"
               >
                 <FileText className="w-3.5 h-3.5 text-cyan-accent" />
-                <span>Bio Profesional</span>
+                <span>Biografía</span>
               </label>
               <span className="text-[11px] font-mono text-content-muted">{bio.length}/220</span>
             </div>

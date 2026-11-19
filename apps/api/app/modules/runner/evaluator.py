@@ -291,5 +291,5 @@ def evaluate_solution(
         xp_awarded=calculated_xp,
         columns=[c.name for c in student_result.columns],
         rows=student_result.rows,
-        message="¡Excelente trabajo! Tu consulta resolvió el problema correctamente con equivalencia semántica total.",
+        message="Consulta correcta. El resultado coincide con la salida esperada.",
     )

@@ -187,7 +187,7 @@ export const DataGridResults: React.FC<DataGridResultsProps> = ({
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-xs font-bold font-mono text-content-primary">
-                ¡Reto Superado con Éxito!
+                Reto superado
               </span>
               {xpAwarded !== undefined && xpAwarded > 0 && (
                 <span className="text-xs font-mono font-bold text-amber-streak flex items-center gap-1">

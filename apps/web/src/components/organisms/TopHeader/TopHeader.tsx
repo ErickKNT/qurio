@@ -138,7 +138,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           type="button"
           onClick={toggleTheme}
           className="p-1.5 rounded-lg text-content-muted hover:text-content-primary hover:bg-surface-card/60 transition-colors"
-          title={isDark ? 'Cambiar a Tema Claro' : 'Cambiar a Tema Oscuro'}
+          title={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
           aria-label="Alternar tema claro y oscuro"
         >
           {isDark ? (
@@ -167,7 +167,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               leftIcon={<LogIn className="w-3.5 h-3.5" />}
               className="text-xs py-1 px-3 shadow-glow-primary"
             >
-              Iniciar Sesión
+              Iniciar sesión
             </Button>
           </div>
         ) : (
@@ -192,7 +192,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                   {profile?.username || user?.email?.split('@')[0]}
                 </span>
                 <span className="text-[10px] text-content-muted leading-none">
-                  {user?.email || 'Sesión Activa'}
+                  {user?.email || 'Sesión activa'}
                 </span>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-content-muted ml-0.5" />
@@ -222,7 +222,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                 <div className="flex items-center justify-between px-2 py-1.5 text-[11px] font-mono text-content-secondary border-b border-border-subtle/40 mb-2">
                   <span className="flex items-center gap-1.5 text-emerald">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>{isCloudAuth ? 'Supabase Cloud' : 'Sesión Local'}</span>
+                    <span>{isCloudAuth ? 'Supabase Cloud' : 'Sesión local'}</span>
                   </span>
                   <div className="flex items-center gap-1 text-amber-streak">
                     <Zap className="w-3 h-3 fill-amber-streak" />
@@ -238,7 +238,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
                     className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-mono text-error hover:bg-error/10 transition-colors text-left"
                   >
                     <LogOut className="w-3.5 h-3.5 shrink-0" />
-                    <span>Cerrar Sesión</span>
+                    <span>Cerrar sesión</span>
                   </button>
                 </div>
               </div>

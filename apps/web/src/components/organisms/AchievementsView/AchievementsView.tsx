@@ -15,7 +15,7 @@ const CATEGORIES: { id: AchievementCategory; label: string }[] = [
   { id: 'todos', label: 'Todos' },
   { id: 'progreso', label: 'Progreso' },
   { id: 'habilidad', label: 'Habilidad SQL' },
-  { id: 'constancia', label: 'Constancia & Racha' },
+  { id: 'constancia', label: 'Constancia y racha' },
 ];
 
 export const AchievementsView: React.FC<AchievementsViewProps> = ({
@@ -41,15 +41,15 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({
         <div className="flex flex-col gap-2 max-w-xl">
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-surface-card/60 border border-border-subtle/50 w-fit text-[11px] font-mono text-cyan-accent">
             <Award className="w-3 h-3" />
-            <span>Sistema de Reconocimiento Técnico</span>
+            <span>Medallas y rangos</span>
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight text-content-primary">
-            Logros & Rangos de Ingeniería
+            Logros y rangos
           </h1>
 
           <p className="text-xs text-content-secondary leading-relaxed">
-            Desbloquea insignias especializadas resolviendo retos relacionales, optimizando consultas y manteniendo tu cadencia diaria.
+            Desbloquea insignias al resolver retos relacionales, escribir consultas rápidas y mantener tu racha diaria.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({
         <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-dim/70 border border-border-subtle/40 shrink-0 font-mono">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-wider text-content-muted">
-              Medallas Obtenidas
+              Medallas obtenidas
             </span>
             <span className="text-xl font-bold text-content-primary">
               {unlockedCount} / {totalCount}
@@ -71,14 +71,14 @@ export const AchievementsView: React.FC<AchievementsViewProps> = ({
 
           <div className="flex flex-col">
             <span className="text-[10px] uppercase tracking-wider text-content-muted">
-              XP Acumulado
+              XP acumulado
             </span>
             <span className="text-xl font-bold text-amber-accent flex items-center gap-1">
               <Zap className="w-4 h-4 fill-amber-accent/30" />
               +{totalXp}
             </span>
             <span className="text-[11px] text-content-secondary">
-              Nivel {level} Activo
+              Nivel {level} activo
             </span>
           </div>
         </div>

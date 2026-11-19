@@ -98,7 +98,7 @@ def _normalize_track_title(track_id: str, raw_title: str) -> str:
     if track_id == "global-curriculum":
         lowered = (raw_title or "").lower()
         if not raw_title or "currículum" in lowered or "curriculum" in lowered:
-            return "Plan de Estudios Completo — SQL Engineering"
+            return "Plan de estudios completo (SQL)"
     return raw_title
 
 

@@ -114,7 +114,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000001',
     module_id: 'a0000000-0000-0000-0000-000000000001',
-    title: "Catálogo Básico de Productos",
+    title: "Catálogo básico de productos",
     prompt: "Imagina que necesitas armar un catálogo sencillo para la tienda. Muestra únicamente el nombre de cada producto (`nombre_producto`) y su precio (`precio`) desde la tabla `productos`.",
     initial_code: "-- Escribe tu consulta aquí\nSELECT ",
     xp_reward: 30,
@@ -146,9 +146,9 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000008',
     module_id: 'a0000000-0000-0000-0000-000000000001',
-    title: "Cálculo de Precios con IVA",
+    title: "Cálculo de precios con IVA",
     prompt: "Calcula el precio final con impuestos para cada producto. Muestra el `nombre_producto`, el `precio` original y calcula el precio con el 21% de IVA (`precio * 1.21`) redondeado a 2 decimales, llamando a esa nueva columna `precio_con_iva`.",
-    initial_code: "-- Proyecta columnas y calcula el precio con IVA\nSELECT ",
+    initial_code: "-- Muestra columnas y calcula el precio con IVA\nSELECT ",
     xp_reward: 35,
     difficulty: 'Principiante',
     check_order: false,
@@ -178,7 +178,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000019',
     module_id: 'a0000000-0000-0000-0000-000000000001',
-    title: "Concatenación de Nombre Completo",
+    title: "Concatenación de nombre completo",
     prompt: "Prepara un directorio para el equipo de atención al cliente. Une el `nombre` y el `apellido` de cada cliente separados por un espacio, nómbralo `cliente_completo`, y muestra también su `email` desde la tabla `clientes`.",
     initial_code: "-- Concatena nombre y apellido con un espacio\nSELECT ",
     xp_reward: 35,
@@ -210,7 +210,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000020',
     module_id: 'a0000000-0000-0000-0000-000000000001',
-    title: "Catálogo de Ciudades Únicas (DISTINCT)",
+    title: "Catálogo de ciudades únicas (DISTINCT)",
     prompt: "Logística necesita saber en qué ciudades tenemos clientes sin que los nombres se repitan. Obtén la lista de ciudades únicas (`ciudad`) de la tabla `clientes`.",
     initial_code: "-- Obtén valores únicos de ciudad\nSELECT ",
     xp_reward: 35,
@@ -228,7 +228,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "`DISTINCT` se escribe inmediatamente después de la palabra clave `SELECT`.",
         "Si un valor se repite en cientos de registros, `DISTINCT` colapsa los duplicados en una única aparición.",
-        "Se aplica sobre el conjunto de columnas proyectadas; si proyectas una columna, garantiza valores únicos de esa columna."
+        "Se aplica sobre el conjunto de columnas mostradas; si proyectas una columna, devuelve valores únicos de esa columna."
       ],
       execution_order_note: "💡 El motor primero reúne las filas y luego ejecuta una ordenación interna para descartar duplicados.",
     },
@@ -242,7 +242,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000002',
     module_id: 'a0000000-0000-0000-0000-000000000002',
-    title: "Productos Premium (> 500€)",
+    title: "Productos premium (> 500€)",
     prompt: "El equipo de marketing prepara una campaña especial de productos exclusivos. Muestra el `nombre_producto`, el `precio` y el `stock` de aquellos productos cuyo precio sea mayor a 500€.",
     initial_code: "-- Filtra los productos de alto valor\nSELECT ",
     xp_reward: 35,
@@ -250,7 +250,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     check_order: false,
     sort_order: 5,
     hints: [
-      "Debes proyectar tres columnas del catálogo y conservar solo los artículos cuyo precio supera el umbral.",
+      "Debes mostrar tres columnas del catálogo y conservar solo los artículos cuyo precio supera el umbral.",
       "Añade la cláusula WHERE después de FROM y compara la columna numérica con el operador >.",
       "SELECT ???, ???, ??? FROM productos WHERE ??? > 500;"
     ],
@@ -274,7 +274,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000009',
     module_id: 'a0000000-0000-0000-0000-000000000002',
-    title: "Productos en Rango Medio (BETWEEN)",
+    title: "Productos en rango medio (BETWEEN)",
     prompt: "Encuentra los productos de gama media para una promoción especial. Muestra el `nombre_producto` y el `precio` de todos los artículos cuyo precio esté entre 100€ y 800€ (ambos inclusive).",
     initial_code: "-- Filtra productos en el rango de 100 a 800\nSELECT ",
     xp_reward: 35,
@@ -283,7 +283,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     sort_order: 6,
     hints: [
       "Necesitas filtrar artículos que caigan dentro de un rango numérico incluyendo ambos extremos.",
-      "Usa WHERE con el operador BETWEEN conectando el límite inferior y superior mediante AND.",
+      "Usa WHERE con el operador BETWEEN conectando el límite inferior y superior con AND.",
       "SELECT ???, ??? FROM productos WHERE ??? BETWEEN 100 AND 800;"
     ],
     concept: {
@@ -292,13 +292,13 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "`BETWEEN min AND max` es inclusivo: incluye tanto el límite inferior como el superior.",
         "Escribir `col BETWEEN a AND b` equivale lógicamente a `col >= a AND col <= b`.",
-        "Funciona de manera óptima tanto con números como con fechas y cadenas alfanuméricas."
+        "Funciona con números, fechas y texto."
       ],
       execution_order_note: "💡 El motor evalúa el rango directamente sobre los datos de la columna de forma optimizada.",
     },
     objectives: [
       "1. Consultar el catálogo de artículos de gama media.",
-      "2. Delimitar los resultados mediante un operador de rango continuo.",
+      "2. Delimitar los resultados con un operador de rango continuo.",
       "3. Comprobar que los límites superior e inferior queden incluidos."
     ],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
@@ -306,7 +306,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000021',
     module_id: 'a0000000-0000-0000-0000-000000000002',
-    title: "Búsqueda por Patrón de Correo (LIKE)",
+    title: "Búsqueda por patrón de correo (LIKE)",
     prompt: "Marketing quiere enviar un aviso a los usuarios registrados con correos corporativos estándar `@email.com`. Muestra el `nombre`, `apellido` y `email` de aquellos clientes cuyo correo termine exactamente en `@email.com`.",
     initial_code: "-- Filtra clientes con comodín LIKE\nSELECT ",
     xp_reward: 40,
@@ -319,7 +319,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "SELECT ???, ???, ??? FROM clientes WHERE ??? LIKE '%@email.com';"
     ],
     concept: {
-      summary: "`LIKE` busca coincidencias en cadenas de texto mediante caracteres comodín como `%` (cualquier secuencia de caracteres).",
+      summary: "`LIKE` busca coincidencias en cadenas de texto con comodines como `%` (cualquier secuencia de caracteres).",
       syntax: "SELECT columna_1, columna_2\nFROM nombre_tabla\nWHERE columna_texto LIKE '%terminacion';",
       key_points: [
         "El comodín `%` representa cero, uno o múltiples caracteres arbitrarios.",
@@ -338,9 +338,9 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000022',
     module_id: 'a0000000-0000-0000-0000-000000000002',
-    title: "Filtro de Ciudades Específicas (IN)",
+    title: "Filtro de ciudades específicas (IN)",
     prompt: "Operaciones lanzó envíos express para tres ciudades clave: Madrid, Barcelona y Valencia. Muestra el `cliente_id`, `nombre`, `apellido` y `ciudad` de los clientes que vivan en cualquiera de estas tres ciudades.",
-    initial_code: "-- Filtra mediante el operador IN\nSELECT ",
+    initial_code: "-- Filtra con el operador IN\nSELECT ",
     xp_reward: 40,
     difficulty: 'Principiante',
     check_order: false,
@@ -370,7 +370,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000023',
     module_id: 'a0000000-0000-0000-0000-000000000002',
-    title: "Productos en Riesgo de Stock (OR)",
+    title: "Productos en riesgo de stock (OR)",
     prompt: "El almacén necesita ubicar productos en situación crítica de inventario: artículos con muy poco stock (15 o menos unidades) o artículos con sobrestock (75 o más unidades). Muestra el `producto_id`, `nombre_producto` y `stock` que cumplan cualquiera de estas dos condiciones.",
     initial_code: "-- Combina condiciones con OR\nSELECT ",
     xp_reward: 40,
@@ -388,7 +388,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "`cond1 OR cond2` devolverá la fila si la condición 1 es verdadera, si la condición 2 es verdadera, o si ambas lo son.",
         "Para operadores compuestos de teclado: menor o igual se escribe `<=` y mayor o igual se escribe `>=` (sin espacios entre los dos símbolos).",
-        "Puedes combinar rangos extremos uniendo dos predicados con `OR` en la cláusula `WHERE`."
+        "Puedes combinar rangos extremos uniendo dos condiciones con `OR` en la cláusula `WHERE`."
       ],
       execution_order_note: "💡 En lógica booleana de SQL, `AND` tiene mayor precedencia que `OR`; si mezclas ambos operadores, usa paréntesis `()`.",
     },
@@ -402,7 +402,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000024',
     module_id: 'a0000000-0000-0000-0000-000000000002',
-    title: "Facturas de Alto Valor No Pagadas (AND + NOT)",
+    title: "Facturas de alto valor no pagadas (AND + NOT)",
     prompt: "Contabilidad necesita revisar facturas importantes pendientes de cobro. Muestra el `factura_id`, `monto_total` y `estado_factura` de aquellas facturas con un monto de 400€ o más y cuyo estado sea distinto de `'pagada'`.",
     initial_code: "-- Combina AND con el operador de desigualdad\nSELECT ",
     xp_reward: 45,
@@ -434,7 +434,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000051',
     module_id: 'a0000000-0000-0000-0000-000000000002',
-    title: "Pedidos de Febrero de 2024 (Fechas con BETWEEN)",
+    title: "Pedidos de febrero de 2024 (fechas con BETWEEN)",
     prompt: "Auditoría quiere revisar todas las compras registradas durante febrero de 2024. Muestra el `pedido_id`, `cliente_id`, `fecha_pedido` y `total` de los pedidos realizados entre `'2024-02-01'` y `'2024-02-29'` (ambos inclusive), ordenados cronológicamente por `fecha_pedido ASC` y, en caso de empate, por `pedido_id ASC`.",
     initial_code: "-- Filtra por rango de fechas en WHERE\nSELECT ",
     xp_reward: 40,
@@ -457,7 +457,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       execution_order_note: "💡 Nunca omitas las comillas simples en literales de fecha; sin comillas el motor los interpretaría como una resta numérica.",
     },
     objectives: [
-      "1. Filtrar registros temporales mediante un rango cerrado de fechas.",
+      "1. Filtrar registros temporales con un rango cerrado de fechas.",
       "2. Aplicar el formato ISO de fecha entre comillas simples.",
       "3. Ordenar cronológicamente con criterio único de desempate."
     ],
@@ -466,7 +466,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000003',
     module_id: 'a0000000-0000-0000-0000-000000000003',
-    title: "Clientes Españoles Ordenados por Apellido",
+    title: "Clientes españoles ordenados por apellido",
     prompt: "Organiza la lista de clientes que viven en España por orden alfabético. Muestra su `nombre`, `apellido` y `ciudad` de la tabla `clientes`, ordenando los resultados alfabéticamente por su `apellido` (de la A a la Z) y, en caso de empate, por `cliente_id` ascendente.",
     initial_code: "-- Filtra y ordena los clientes\nSELECT ",
     xp_reward: 40,
@@ -498,7 +498,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000010',
     module_id: 'a0000000-0000-0000-0000-000000000003',
-    title: "Los 5 Productos con Menor Stock",
+    title: "Los 5 productos con menor stock",
     prompt: "El almacén necesita reponer con urgencia los artículos que están por agotarse. Muestra el `nombre_producto` y el `stock` de los 5 productos con menor cantidad disponible, ordenando por `stock` ascendente y desempatando por `producto_id` ascendente.",
     initial_code: "-- Ordena y limita a los 5 productos con menos stock\nSELECT ",
     xp_reward: 40,
@@ -548,7 +548,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "El motor ordena primero por la columna inicial; si existen valores idénticos (empates), recurre a la segunda columna para desempatar.",
         "Cada columna en la lista puede tener su propia dirección independiente (`ASC` o `DESC`).",
-        "Separa cada criterio de ordenación mediante una coma `,`."
+        "Separa cada criterio de ordenación con una coma `,`."
       ],
       execution_order_note: "💡 Los índices compuestos en la base de datos aceleran drásticamente los ordenamientos multi-columna.",
     },
@@ -562,7 +562,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000026',
     module_id: 'a0000000-0000-0000-0000-000000000003',
-    title: "Paginación de Clientes (OFFSET)",
+    title: "Paginación de clientes (OFFSET)",
     prompt: "Simula la paginación de un panel web que muestra 5 clientes por página. Obtén los clientes de la segunda página mostrando `cliente_id`, `nombre` y `email`, ordenados por `cliente_id ASC`, saltando los primeros 5 registros y mostrando los siguientes 5.",
     initial_code: "-- Usa LIMIT y OFFSET para paginar\nSELECT ",
     xp_reward: 45,
@@ -594,7 +594,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000011',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Métricas Globales de Ventas",
+    title: "Métricas globales de ventas",
     prompt: "Genera un resumen ejecutivo de las ventas completadas. Calcula el número de pedidos bajo el nombre `total_pedidos`, la suma total de dinero bajo `ingresos_totales` y el promedio de compra redondeado a 2 decimales bajo `ticket_promedio`, tomando solo los pedidos con estado `'completado'`.",
     initial_code: "-- Agrega las métricas globales para pedidos completados\nSELECT ",
     xp_reward: 45,
@@ -612,7 +612,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "`COUNT(*)` cuenta el total de registros, `SUM(col)` acumula el total numérico y `AVG(col)` calcula la media aritmética.",
         "Al aplicar filtros con `WHERE`, las funciones de agregación operan únicamente sobre las filas que cumplan la condición.",
-        "`ROUND(expresion, 2)` evita decimales flotantes interminables y garantiza precisión comercial."
+        "`ROUND(expresion, 2)` evita decimales largos y mantiene dos decimales."
       ],
       execution_order_note: "💡 Si no usas `GROUP BY`, las funciones de agregación reducen toda la tabla a una sola fila de resultados globales.",
     },
@@ -626,7 +626,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000027',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Rango de Precios por Categoría (MAX/MIN)",
+    title: "Rango de precios por categoría (MAX/MIN)",
     prompt: "Analiza la diferencia de precios en cada departamento. Muestra el `categoria_id`, el precio más bajo bajo el nombre `precio_minimo` y el precio más alto bajo `precio_maximo` para cada categoría de productos.",
     initial_code: "-- Calcula precios extremos por categoría\nSELECT ",
     xp_reward: 45,
@@ -658,7 +658,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000028',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Distribución de Clientes por País",
+    title: "Distribución de clientes por país",
     prompt: "¿De qué países son nuestros clientes? Muestra la columna `pais` y el número total de clientes en cada país bajo el nombre `total_clientes`, ordenando la lista de mayor a menor número de clientes y, en caso de empate, alfabéticamente por `pais`.",
     initial_code: "-- Agrupa clientes por país\nSELECT ",
     xp_reward: 45,
@@ -676,7 +676,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "El `GROUP BY` agrupa por el criterio demográfico o de categorización deseado.",
         "Para ver los grupos más numerosos arriba de todo, ordena por el alias de la función de conteo con `DESC`.",
-        "El orden de ejecución del motor procesa primero `GROUP BY`, luego la proyección del `SELECT` y finalmente `ORDER BY`."
+        "El orden de ejecución del motor procesa primero `GROUP BY`, luego la selección del `SELECT` y finalmente `ORDER BY`."
       ],
       execution_order_note: "💡 Puedes referenciar el alias de la columna agregada directamente en el `ORDER BY` final.",
     },
@@ -690,7 +690,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000029',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Stock Total por Proveedor",
+    title: "Stock total por proveedor",
     prompt: "Calcula el volumen total de productos que nos suministra cada fabricante. Muestra el `proveedor_id` y la suma de unidades disponibles en stock bajo el nombre `stock_total` desde la tabla `productos`.",
     initial_code: "-- Suma el stock por proveedor\nSELECT ",
     xp_reward: 45,
@@ -722,7 +722,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000052',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Compras Completadas por Cliente (WHERE + GROUP BY)",
+    title: "Compras completadas por cliente (WHERE + GROUP BY)",
     prompt: "Analiza únicamente las compras efectivas por cliente sin mezclar pedidos cancelados ni pendientes. Filtra los pedidos con `estado_pedido = 'completado'`, agrupa por `cliente_id` y muestra el `cliente_id`, el número de compras como `compras_completadas` y su suma como `gasto_completado`. Ordena de mayor a menor `gasto_completado` y desempata por `cliente_id` ascendente.",
     initial_code: "-- Filtra filas individuales antes de agrupar\nSELECT ",
     xp_reward: 45,
@@ -731,7 +731,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     sort_order: 20,
     hints: [
       "Primero descarta con WHERE las filas que no están completadas y después agrupa por cliente para contar y sumar.",
-      "Coloca WHERE estado_pedido = 'completado' antes de GROUP BY cliente_id, proyectando COUNT(*) y SUM(total).",
+      "Coloca WHERE estado_pedido = 'completado' antes de GROUP BY cliente_id, mostrando COUNT(*) y SUM(total).",
       "SELECT ???, COUNT(*) AS compras_completadas, SUM(???) AS gasto_completado FROM pedidos WHERE ??? = 'completado' GROUP BY ??? ORDER BY gasto_completado DESC, ??? ASC;"
     ],
     concept: {
@@ -754,7 +754,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000032',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Resumen de Pedidos por Estado",
+    title: "Resumen de pedidos por estado",
     prompt: "Construye un resumen de pedidos por estado. Muestra el `estado_pedido`, la cantidad de pedidos bajo el nombre `total_pedidos` y la suma acumulada de dinero bajo `monto_acumulado`, agrupando por estado y ordenando del estado con mayor dinero al de menor dinero (desempatando por `estado_pedido` ascendente).",
     initial_code: "-- Resumen consolidado por estado de pedido\nSELECT ",
     xp_reward: 50,
@@ -786,7 +786,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000004',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Conteo de Productos por Categoría",
+    title: "Conteo de productos por categoría",
     prompt: "¿Cuántos productos tenemos en cada categoría? Muestra el `categoria_id` y el número total de productos bajo el nombre `total_productos`, mostrando únicamente aquellas categorías que tengan más de 2 productos.",
     initial_code: "-- Utiliza GROUP BY y HAVING\nSELECT ",
     xp_reward: 45,
@@ -818,7 +818,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000030',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Proveedores de Alto Volumen (HAVING SUM)",
+    title: "Proveedores de alto volumen (HAVING SUM)",
     prompt: "Identifica a nuestros proveedores más importantes en volumen. Muestra el `proveedor_id` y su stock total bajo el nombre `stock_total`, mostrando únicamente a aquellos proveedores cuyo stock total acumulado supere las 100 unidades.",
     initial_code: "-- Filtra grupos con HAVING\nSELECT ",
     xp_reward: 50,
@@ -827,7 +827,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     sort_order: 23,
     hints: [
       "Primero agrupa y suma el stock por proveedor; después filtra los grupos ya agregados que superen las 100 unidades.",
-      "Recuerda que las funciones agregadas como SUM(...) se filtran en HAVING, no en WHERE.",
+      "Las funciones agregadas como SUM(...) se filtran en HAVING, no en WHERE.",
       "SELECT ???, SUM(???) AS stock_total FROM productos GROUP BY ??? HAVING SUM(???) > 100;"
     ],
     concept: {
@@ -850,7 +850,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000031',
     module_id: 'a0000000-0000-0000-0000-000000000004',
-    title: "Clientes con Compra Promedio Alta (HAVING AVG)",
+    title: "Clientes con compra promedio alta (HAVING AVG)",
     prompt: "Encuentra a los clientes que hacen compras de alto valor promedio. Muestra el `cliente_id` y su importe promedio de compra redondeado a 2 decimales bajo el nombre `ticket_promedio`, mostrando solo a aquellos clientes cuyo promedio de compras supere los 500€.",
     initial_code: "-- Filtra clientes por compra promedio\nSELECT ",
     xp_reward: 50,
@@ -882,15 +882,15 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000005',
     module_id: 'b0000000-0000-0000-0000-000000000005',
-    title: "Pedidos con Identidad del Cliente",
-    prompt: "Descubre qué cliente realizó cada pedido. Cruza las tablas `pedidos` y `clientes` mediante su identificador común y muestra el `pedido_id`, el `nombre` del cliente, su `apellido` y el `total` del pedido.",
+    title: "Pedidos con identidad del cliente",
+    prompt: "Descubre qué cliente realizó cada pedido. Cruza las tablas `pedidos` y `clientes` por su identificador común y muestra el `pedido_id`, el `nombre` del cliente, su `apellido` y el `total` del pedido.",
     initial_code: "-- Cruza clientes con sus respectivos pedidos\nSELECT ",
     xp_reward: 45,
     difficulty: 'Intermedio',
     check_order: false,
     sort_order: 25,
     hints: [
-      "Conecta ambas tablas mediante la clave que identifica al cliente en la tabla de pedidos y en el catálogo de clientes.",
+      "Conecta ambas tablas por la clave que identifica al cliente en la tabla de pedidos y en el catálogo de clientes.",
       "Usa INNER JOIN combinando pedidos y clientes con ON sobre cliente_id, asignando alias cortos para evitar ambigüedad.",
       "SELECT p.pedido_id, c.nombre, c.apellido, p.total FROM pedidos p INNER JOIN clientes c ON p.??? = c.???;"
     ],
@@ -905,7 +905,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       execution_order_note: "💡 Los optimizadores eligen algoritmos como Hash Join o Nested Loop según el tamaño de las tablas unidas.",
     },
     objectives: [
-      "1. Conectar las transacciones con el directorio de usuarios mediante su clave compartida.",
+      "1. Conectar las transacciones con el directorio de usuarios por su clave compartida.",
       "2. Extraer los datos personales del comprador y el total de la orden.",
       "3. Verificar que solo aparezcan órdenes con compradores válidos."
     ],
@@ -914,7 +914,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000033',
     module_id: 'b0000000-0000-0000-0000-000000000005',
-    title: "Catálogo con Nombre de Categoría",
+    title: "Catálogo con nombre de categoría",
     prompt: "Haz que el catálogo de productos sea legible mostrando el nombre de la categoría en lugar de su código numérico. Cruza `productos` con `categorias` y muestra `producto_id`, `nombre_producto`, `nombre_categoria` y `precio`. Ordena primero por categoría (A-Z) y luego por producto (A-Z).",
     initial_code: "-- Cruza productos con categorias\nSELECT ",
     xp_reward: 45,
@@ -946,7 +946,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000034',
     module_id: 'b0000000-0000-0000-0000-000000000005',
-    title: "Productos y sus Proveedores Directos",
+    title: "Productos y sus proveedores directos",
     prompt: "Compras necesita saber de qué país proviene cada producto. Cruza `productos` con `proveedores` y muestra `producto_id`, `nombre_producto`, `nombre_proveedor` y el país del proveedor bajo el nombre `pais_proveedor`. Ordena los productos alfabéticamente y, en caso de empate, por `producto_id` ascendente.",
     initial_code: "-- Relaciona productos con sus proveedores\nSELECT ",
     xp_reward: 45,
@@ -954,7 +954,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     check_order: true,
     sort_order: 27,
     hints: [
-      "Relaciona el catálogo de artículos con la tabla de fabricantes mediante la clave de proveedor.",
+      "Relaciona el catálogo de artículos con la tabla de fabricantes por la clave de proveedor.",
       "Usa INNER JOIN proveedores pv sobre proveedor_id, renombra el país con AS pais_proveedor y ordena con desempate único.",
       "SELECT pr.producto_id, pr.nombre_producto, pv.nombre_proveedor, pv.pais AS pais_proveedor FROM productos pr INNER JOIN proveedores pv ON pr.??? = pv.??? ORDER BY pr.nombre_producto ASC, pr.producto_id ASC;"
     ],
@@ -964,9 +964,9 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "El `WHERE` se evalúa después de que el motor ha resuelto el `JOIN`, filtrando las filas ya combinadas.",
         "Puedes filtrar por columnas de la tabla principal, de la tabla unida o de ambas a la vez.",
-        "Recuerda que los valores alfanuméricos en el `WHERE` van entre comillas simples: `'criterio'`."
+        "Los valores de texto en `WHERE` van entre comillas simples: `'criterio'`."
       ],
-      execution_order_note: "💡 El optimizador suele aplicar 'pushdown de predicados', filtrando las tablas antes del JOIN para reducir filas.",
+      execution_order_note: "💡 El optimizador suele aplicar 'pushdown de condiciones', filtrando las tablas antes del JOIN para reducir filas.",
     },
     objectives: [
       "1. Vincular los artículos del catálogo con su empresa suministradora.",
@@ -978,8 +978,8 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000035',
     module_id: 'b0000000-0000-0000-0000-000000000005',
-    title: "Facturación Detallada con Pagos Aprobados",
-    prompt: "Concilia las facturas emitidas con sus pagos aprobados. Cruza `facturas` con `pagos` mediante `factura_id`, mostrando `factura_id`, el monto de la factura (`monto_total`), el `metodo_pago` y la `fecha_pago`, tomando únicamente los registros con `estado_pago = 'aprobado'`. Ordena por `factura_id` ascendente.",
+    title: "Facturación detallada con pagos aprobados",
+    prompt: "Concilia las facturas emitidas con sus pagos aprobados. Cruza `facturas` con `pagos` por `factura_id`, mostrando `factura_id`, el monto de la factura (`monto_total`), el `metodo_pago` y la `fecha_pago`, tomando únicamente los registros con `estado_pago = 'aprobado'`. Ordena por `factura_id` ascendente.",
     initial_code: "-- Concilia facturas con pagos aprobados\nSELECT ",
     xp_reward: 50,
     difficulty: 'Intermedio',
@@ -1003,14 +1003,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     objectives: [
       "1. Cruzar los comprobantes fiscales con sus comprobantes de pago bancarios.",
       "2. Restringir la consulta a las transacciones con estado liquidado y aprobado.",
-      "3. Proyectar los identificadores, fechas y montos en orden secuencial."
+      "3. Mostrar los identificadores, fechas y montos en orden secuencial."
     ],
     sample_tables: [SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_PAGOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000012',
     module_id: 'b0000000-0000-0000-0000-000000000005',
-    title: "Gasto Acumulado por Cliente",
+    title: "Gasto acumulado por cliente",
     prompt: "Calcula cuánto dinero ha gastado en total cada uno de nuestros clientes. Cruza `clientes` y `pedidos`, y muestra el `cliente_id`, `nombre`, `apellido` y la suma de todas sus compras bajo el nombre `total_gastado`, ordenando de mayor a menor gasto y, en caso de empate, por `cliente_id` ascendente.",
     initial_code: "-- Cruza clientes y pedidos y agrupa para sumar el gasto\nSELECT ",
     xp_reward: 50,
@@ -1026,7 +1026,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       summary: "Combinar `INNER JOIN` con `GROUP BY` permite cruzar datos de transacciones con entidades maestras y agregar totales por entidad.",
       syntax: "SELECT t1.id, t1.nombre_entidad,\n       SUM(t2.columna_monto) AS total_agregado\nFROM tabla_entidades t1\nINNER JOIN tabla_transacciones t2 ON t1.id = t2.entidad_id\nGROUP BY t1.id, t1.nombre_entidad\nORDER BY total_agregado DESC;",
       key_points: [
-        "Primero se establece la unión relacional mediante `INNER JOIN ... ON ...`.",
+        "Primero se establece la unión relacional con `INNER JOIN ... ON ...`.",
         "En el `GROUP BY` deben incluirse todas las columnas de la entidad maestra seleccionadas en el `SELECT` que no sean funciones agregadas.",
         "`ORDER BY total_agregado DESC` clasifica de mayor a menor según el acumulado obtenido."
       ],
@@ -1042,7 +1042,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000006',
     module_id: 'b0000000-0000-0000-0000-000000000006',
-    title: "Clientes sin Compras Registradas (LEFT JOIN & IS NULL)",
+    title: "Clientes sin compras registradas (LEFT JOIN & IS NULL)",
     prompt: "¿Qué clientes se han registrado pero nunca han realizado una compra? Haz un `LEFT JOIN` entre `clientes` y `pedidos` para mostrar el `cliente_id`, `nombre` y `apellido` de todos los usuarios sin pedidos registrados.",
     initial_code: "-- Identifica clientes inactivos sin pedidos asociados\nSELECT ",
     xp_reward: 50,
@@ -1074,7 +1074,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000013',
     module_id: 'b0000000-0000-0000-0000-000000000006',
-    title: "Productos sin Movimiento de Venta",
+    title: "Productos sin movimiento de venta",
     prompt: "Detecta qué artículos del catálogo nunca han tenido ventas. Muestra el `producto_id` y `nombre_producto` de aquellos artículos que no tengan ninguna línea registrada en la tabla `detalle_pedidos`.",
     initial_code: "-- Localiza productos sin ventas cruzando con detalle_pedidos\nSELECT ",
     xp_reward: 50,
@@ -1087,7 +1087,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "SELECT p.producto_id, p.nombre_producto FROM productos p LEFT JOIN detalle_pedidos dp ON p.??? = dp.??? WHERE dp.detalle_id IS NULL;"
     ],
     concept: {
-      summary: "El patrón de exclusión por ausencia (`LEFT JOIN ... WHERE ... IS NULL`) es fundamental para detectar catálogo sin movimiento o elementos sin transacciones.",
+      summary: "El patrón `LEFT JOIN ... WHERE ... IS NULL` sirve para encontrar productos sin movimiento o filas sin registros asociados.",
       syntax: "SELECT t1.id, t1.nombre\nFROM tabla_catalogo t1\nLEFT JOIN tabla_movimientos t2 ON t1.id = t2.item_id\nWHERE t2.item_id IS NULL\nORDER BY t1.id ASC;",
       key_points: [
         "La tabla del catálogo va a la izquierda (`FROM`) y la tabla transaccional va a la derecha (`LEFT JOIN`).",
@@ -1099,14 +1099,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     objectives: [
       "1. Cruzar el catálogo con las líneas de compra conservando todos los artículos.",
       "2. Aislar los productos que no registran ningún movimiento de salida.",
-      "3. Proyectar el identificador y nombre de los artículos desatendidos."
+      "3. Mostrar el identificador y nombre de los artículos desatendidos."
     ],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_DETALLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000036',
     module_id: 'b0000000-0000-0000-0000-000000000006',
-    title: "Facturas Pendientes de Cobro (LEFT JOIN)",
+    title: "Facturas pendientes de cobro (LEFT JOIN)",
     prompt: "Tesorería necesita una lista de facturas emitidas que todavía no tienen ningún pago registrado. Haz un `LEFT JOIN` entre `facturas` y `pagos` para obtener `factura_id`, `pedido_id`, `fecha_emision` y `monto_total` de aquellas facturas sin ningún abono. Ordena por `factura_id` ascendente.",
     initial_code: "-- Identifica facturas sin pagos registrados\nSELECT ",
     xp_reward: 50,
@@ -1114,7 +1114,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     check_order: true,
     sort_order: 32,
     hints: [
-      "Une todas las facturas emitidas con sus posibles abonos mediante LEFT JOIN para no perder las que no tienen cobro.",
+      "Une todas las facturas emitidas con sus posibles abonos con LEFT JOIN para no perder las que no tienen cobro.",
       "Filtra en WHERE las facturas cuya clave de pago derecha sea IS NULL y ordena de forma ascendente por factura_id.",
       "SELECT f.factura_id, f.pedido_id, f.fecha_emision, f.monto_total FROM facturas f LEFT JOIN pagos p ON f.??? = p.??? WHERE p.pago_id IS NULL ORDER BY f.factura_id ASC;"
     ],
@@ -1122,7 +1122,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       summary: "Localiza documentos o comprobantes maestros que no registran ningún abono asociado en la tabla de cobros.",
       syntax: "SELECT t1.documento_id, t1.monto\nFROM tabla_documentos t1\nLEFT JOIN tabla_abonos t2 ON t1.documento_id = t2.documento_id\nWHERE t2.abono_id IS NULL;",
       key_points: [
-        "Conecta el encabezado con el detalle mediante `LEFT JOIN ... ON t1.id = t2.fk_id`.",
+        "Conecta el encabezado con el detalle con `LEFT JOIN ... ON t1.id = t2.fk_id`.",
         "Aplica `IS NULL` sobre la clave primaria de la tabla derecha para identificar comprobantes sin abonos.",
         "El operador de desigualdad para exclusiones explícitas de estado es `<>` o `!=`."
       ],
@@ -1138,8 +1138,8 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000037',
     module_id: 'b0000000-0000-0000-0000-000000000006',
-    title: "Productos Fuera del Almacén Central (LEFT JOIN Condicional)",
-    prompt: "El responsable del almacén central de Madrid (`almacen_id = 1`) quiere saber qué productos del catálogo NO disponen de existencias en ese almacén en particular. Conecta `productos` con `inventario` mediante un `LEFT JOIN` acotado al almacén 1 y muestra el `producto_id` y `nombre_producto` de los artículos ausentes en ese almacén, ordenados por `producto_id` ascendente.",
+    title: "Productos fuera del almacén central (LEFT JOIN condicional)",
+    prompt: "El responsable del almacén central de Madrid (`almacen_id = 1`) quiere saber qué productos del catálogo NO disponen de existencias en ese almacén en particular. Conecta `productos` con `inventario` con un `LEFT JOIN` acotado al almacén 1 y muestra el `producto_id` y `nombre_producto` de los artículos ausentes en ese almacén, ordenados por `producto_id` ascendente.",
     initial_code: "-- Detecta productos no inventariados en el almacén 1\nSELECT ",
     xp_reward: 50,
     difficulty: 'Intermedio',
@@ -1163,14 +1163,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     objectives: [
       "1. Vincular los productos con el inventario acotando la búsqueda a la instalación central.",
       "2. Aislar los artículos que no cuentan con existencias en dicha instalación.",
-      "3. Proyectar el catálogo de productos ausentes en dicho centro."
+      "3. Mostrar el catálogo de productos ausentes en dicho centro."
     ],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS, SAMPLE_TABLE_INVENTARIO],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000038',
     module_id: 'b0000000-0000-0000-0000-000000000006',
-    title: "Censo Completo de Pedidos por Cliente (Preservando Ceros)",
+    title: "Censo completo de pedidos por cliente (preservando ceros)",
     prompt: "Queremos una lista completa de todos los clientes y saber cuántos pedidos ha hecho cada uno, incluyendo con 0 a los que nunca han comprado. Muestra `cliente_id`, `nombre`, `apellido` y el total de compras bajo el nombre `total_pedidos` (usando `COUNT(p.pedido_id)`). Ordena por número de pedidos de mayor a menor y, en caso de empate, por `cliente_id` ascendente.",
     initial_code: "-- Agrupa preservando clientes sin compras con COUNT(columna)\nSELECT ",
     xp_reward: 50,
@@ -1187,14 +1187,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       syntax: "SELECT t1.id, t1.nombre,\n       COUNT(t2.transaccion_id) AS total_ocurrencias\nFROM tabla_maestra t1\nLEFT JOIN tabla_movimientos t2 ON t1.id = t2.entidad_id\nGROUP BY t1.id, t1.nombre\nORDER BY total_ocurrencias DESC;",
       key_points: [
         "Cuidado con `COUNT`: `COUNT(*)` contaría 1 para los registros con nulos; debes usar `COUNT(t2.id)` para que los nulos sumen 0.",
-        "`LEFT JOIN` asegura que ninguna entidad de la tabla izquierda sea omitida, aunque tenga cero movimientos.",
+        "`LEFT JOIN` conserva todas las filas de la tabla izquierda aunque tengan cero movimientos.",
         "Agrupa por los campos de la tabla maestra incluidos en el `SELECT`."
       ],
-      execution_order_note: "💡 `COUNT(columna)` ignora nulos automáticamente, garantizando que entidades o registros sin eventos tengan conteo 0.",
+      execution_order_note: "💡 `COUNT(columna)` ignora los nulos, así que las filas sin eventos quedan con conteo 0.",
     },
     objectives: [
-      "1. Conectar usuarios y pedidos garantizando que nadie quede fuera de la lista.",
-      "2. Contabilizar los pedidos garantizando que los usuarios sin compras muestren 0.",
+      "1. Conectar usuarios y pedidos sin dejar fuera a nadie de la lista.",
+      "2. Contar los pedidos para que los usuarios sin compras muestren 0.",
       "3. Ordenar el censo de mayor a menor número de compras y desempatar por ID."
     ],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
@@ -1202,8 +1202,8 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000053',
     module_id: 'b0000000-0000-0000-0000-000000000006',
-    title: "Gasto Total de Clientes Incluyendo 0€ (COALESCE)",
-    prompt: "Genera un reporte financiero con TODOS los clientes registrados y su gasto total acumulado, asegurando que quienes nunca han comprado muestren `0` en lugar de `NULL`. Haz un `LEFT JOIN` entre `clientes` y `pedidos`, proyecta `cliente_id`, `nombre`, `apellido` y `COALESCE(SUM(p.total), 0)` como `gasto_total`. Ordena de mayor a menor `gasto_total` y desempata por `cliente_id` ascendente.",
+    title: "Gasto total de clientes incluyendo 0€ (COALESCE)",
+    prompt: "Genera un reporte financiero con TODOS los clientes registrados y su gasto total acumulado, de modo que quienes nunca han comprado muestren `0` en lugar de `NULL`. Haz un `LEFT JOIN` entre `clientes` y `pedidos`, muestra `cliente_id`, `nombre`, `apellido` y `COALESCE(SUM(p.total), 0)` como `gasto_total`. Ordena de mayor a menor `gasto_total` y desempata por `cliente_id` ascendente.",
     initial_code: "-- Reemplaza valores NULL de la suma con COALESCE\nSELECT ",
     xp_reward: 55,
     difficulty: 'Intermedio',
@@ -1225,7 +1225,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       execution_order_note: "💡 En reportes financieros es obligatorio normalizar `NULL` a `0` antes de calcular promedios o ordenar rankings descendentes.",
     },
     objectives: [
-      "1. Conservar la lista completa de entidades mediante LEFT JOIN.",
+      "1. Conservar la lista completa de entidades con LEFT JOIN.",
       "2. Evitar valores NULL al sumar importes de entidades sin actividad.",
       "3. Ordenar de mayor a menor gasto con desempate único."
     ],
@@ -1234,7 +1234,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000014',
     module_id: 'b0000000-0000-0000-0000-000000000007',
-    title: "Desglose Completo de Líneas de Pedido",
+    title: "Desglose completo de líneas de pedido",
     prompt: "Audita las compras mostrando toda la información conectada: pedido, cliente, producto y categoría. Conecta `pedidos`, `clientes`, `detalle_pedidos`, `productos` y `categorias`, y muestra `pedido_id`, el nombre del cliente como `cliente_nombre`, `nombre_producto`, `nombre_categoria`, `cantidad` y `precio_unitario`. Ordena por `pedido_id ASC` y `nombre_producto ASC`, limitando a los primeros 10 registros.",
     initial_code: "-- Conecta en cascada pedidos, clientes, detalle, productos y categorias\nSELECT ",
     xp_reward: 55,
@@ -1266,7 +1266,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000039',
     module_id: 'b0000000-0000-0000-0000-000000000007',
-    title: "Historial de Ventas por Ciudad y Categoría",
+    title: "Historial de ventas por ciudad y categoría",
     prompt: "Descubre cuánto dinero se ha vendido en cada ciudad por cada tipo de producto. Conecta las tablas necesarias para calcular la suma de ventas (`SUM(dp.cantidad * dp.precio_unitario)`) bajo el nombre `monto_vendido`, agrupando por la `ciudad` del cliente y el `nombre_categoria`. Ordena alfabéticamente por ciudad y luego de mayor a menor venta.",
     initial_code: "-- Conecta 5 tablas y calcula ventas por ciudad y categoria\nSELECT ",
     xp_reward: 55,
@@ -1298,7 +1298,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000040',
     module_id: 'b0000000-0000-0000-0000-000000000007',
-    title: "Conciliación de Pedidos, Facturación y Pagos",
+    title: "Conciliación de pedidos, facturación y pagos",
     prompt: "Verifica el flujo completo de una compra: el pedido, su factura y su cobro. Conecta `pedidos` con `facturas` y `pagos`, mostrando `pedido_id`, `cliente_id`, el monto de la factura bajo el nombre `monto_factura`, el monto del pago bajo `monto_pago` y el `metodo_pago`. Ordena por `pedido_id` ascendente.",
     initial_code: "-- Cruza pedidos con facturas y pagos\nSELECT ",
     xp_reward: 55,
@@ -1316,7 +1316,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "Encadena cada relación con su llave natural: la orden vincula al comprobante, y el comprobante vincula al cobro.",
         "Filtra en el `WHERE` para restringir el análisis a transacciones con estado validado.",
-        "La proyección debe incluir los identificadores necesarios de cada etapa para garantizar trazabilidad."
+        "La selección debe incluir los identificadores necesarios de cada etapa para mantener la trazabilidad."
       ],
       execution_order_note: "💡 `INNER JOIN` descarta órdenes que no tengan comprobante emitido o comprobantes sin cobro registrado.",
     },
@@ -1330,7 +1330,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000041',
     module_id: 'b0000000-0000-0000-0000-000000000007',
-    title: "Trazabilidad Física de Inventario por Almacén",
+    title: "Trazabilidad física de inventario por almacén",
     prompt: "Consulta la disponibilidad física de inventario por almacén. Conecta `productos`, `inventario` y `almacenes`, mostrando `nombre_producto`, `nombre_almacen`, la `ciudad` del almacén y la `cantidad_disponible`, filtrando únicamente aquellos registros con más de 10 unidades. Ordena por nombre de producto y luego por almacén.",
     initial_code: "-- Conecta productos, inventario y almacenes\nSELECT ",
     xp_reward: 55,
@@ -1350,7 +1350,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
         "Operadores numéricos de teclado: mayor que `>`, menor que `<`, mayor o igual `>=` y menor o igual `<=`.",
         "El ordenamiento múltiple permite agrupar visualmente por instalación y jerarquizar por volumen de existencias."
       ],
-      execution_order_note: "💡 Las claves foráneas compuestas garantizan que no existan registros duplicados para un mismo par artículo-centro.",
+      execution_order_note: "💡 Las claves foráneas compuestas impiden que existan registros duplicados para un mismo par artículo-centro.",
     },
     objectives: [
       "1. Conectar el catálogo con las instalaciones a través de la tabla de existencias.",
@@ -1362,7 +1362,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000042',
     module_id: 'b0000000-0000-0000-0000-000000000008',
-    title: "Directorio Operativo Unificado (UNION)",
+    title: "Directorio operativo unificado (UNION)",
     prompt: "Crea una lista unificada de todas las ciudades donde tenemos presencia, indicando si la presencia es de clientes o de almacenes. Combina con `UNION` la ciudad y la etiqueta `'cliente'` como `tipo_entidad` de la tabla `clientes`, con la ciudad y la etiqueta `'almacen'` como `tipo_entidad` de la tabla `almacenes`. Ordena por ciudad y por tipo de entidad.",
     initial_code: "-- Combina ciudades de clientes y almacenes con UNION\nSELECT ",
     xp_reward: 50,
@@ -1394,7 +1394,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000054',
     module_id: 'b0000000-0000-0000-0000-000000000008',
-    title: "Ciudades con Clientes y Almacenes (INTERSECT)",
+    title: "Ciudades con clientes y almacenes (INTERSECT)",
     prompt: "Logística quiere identificar en qué ciudades coincidimos teniendo tanto clientes registrados como al menos un almacén físico. Usa el operador de conjuntos `INTERSECT` entre las ciudades de `clientes` y las ciudades de `almacenes`, ordenando el resultado alfabéticamente por `ciudad` ascendente.",
     initial_code: "-- Intersección de conjuntos con INTERSECT\nSELECT ",
     xp_reward: 50,
@@ -1403,7 +1403,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     sort_order: 41,
     hints: [
       "Para hallar elementos presentes en ambos conjuntos a la vez, separa dos consultas SELECT simples con INTERSECT.",
-      "Proyecta ciudad desde la primera tabla, escribe INTERSECT, proyecta ciudad desde la segunda y coloca ORDER BY ciudad ASC al final.",
+      "Muestra ciudad desde la primera tabla, escribe INTERSECT, muestra ciudad desde la segunda y coloca ORDER BY ciudad ASC al final.",
       "SELECT ??? FROM clientes INTERSECT SELECT ??? FROM almacenes ORDER BY ciudad ASC;"
     ],
     concept: {
@@ -1426,7 +1426,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000043',
     module_id: 'b0000000-0000-0000-0000-000000000008',
-    title: "Ciudades sin Presencia de Almacenes (EXCEPT)",
+    title: "Ciudades sin presencia de almacenes (EXCEPT)",
     prompt: "Encuentra ciudades donde tengamos clientes pero todavía NO tengamos ningún almacén logístico. Usa el operador de diferencia `EXCEPT` para restar a las ciudades de `clientes` las ciudades de `almacenes`, ordenando la lista alfabéticamente.",
     initial_code: "-- Diferencia de conjuntos con EXCEPT\nSELECT ",
     xp_reward: 50,
@@ -1443,7 +1443,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       syntax: "SELECT columna_a FROM tabla_origen\nEXCEPT\nSELECT columna_b FROM tabla_exclusion\nORDER BY columna_a ASC;",
       key_points: [
         "Resta el segundo conjunto al primero, eliminando cualquier valor presente en la segunda consulta.",
-        "Ambas consultas deben proyectar el mismo número de columnas y de tipos compatibles.",
+        "Ambas consultas deben mostrar el mismo número de columnas y de tipos compatibles.",
         "Es una alternativa limpia y matemática a las exclusiones basadas en `NOT IN` o `IS NULL`."
       ],
       execution_order_note: "💡 `EXCEPT` elimina duplicados en el conjunto resultante por definición del estándar relacional.",
@@ -1458,7 +1458,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000044',
     module_id: 'b0000000-0000-0000-0000-000000000008',
-    title: "Matriz de Cobertura Almacén-Categoría (CROSS JOIN)",
+    title: "Matriz de cobertura Almacén-Categoría (CROSS JOIN)",
     prompt: "Genera todas las combinaciones posibles entre cada almacén y cada categoría de productos. Usa un `CROSS JOIN` entre `almacenes` y `categorias`, mostrando `nombre_almacen` y `nombre_categoria`, ordenando por almacén y por categoría.",
     initial_code: "-- Genera el producto cartesiano con CROSS JOIN\nSELECT ",
     xp_reward: 50,
@@ -1467,7 +1467,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     sort_order: 43,
     hints: [
       "Para obtener todas las combinaciones posibles entre dos catálogos independientes, CROSS JOIN no lleva condición ON.",
-      "Conecta almacenes y categorias mediante CROSS JOIN y ordena por nombre_almacen ASC y nombre_categoria ASC.",
+      "Conecta almacenes y categorias con CROSS JOIN y ordena por nombre_almacen ASC y nombre_categoria ASC.",
       "SELECT a.nombre_almacen, c.nombre_categoria FROM almacenes a CROSS JOIN categorias c ORDER BY ??? ASC, ??? ASC;"
     ],
     concept: {
@@ -1490,8 +1490,8 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000045',
     module_id: 'b0000000-0000-0000-0000-000000000008',
-    title: "Pares de Productos de la Misma Categoría (SELF JOIN)",
-    prompt: "Genera sugerencias de productos emparejados dentro de la misma categoría. Cruza la tabla `productos` consigo misma (`p1` y `p2`) para emparejar artículos con la misma `categoria_id`, asegurando que `p1.producto_id < p2.producto_id` para no emparejar un producto consigo mismo ni repetir la pareja al revés. Muestra `categoria_id`, los nombres como `producto_a` y `producto_b`, y los precios como `precio_a` y `precio_b`. Ordena por categoría y nombres.",
+    title: "Pares de productos de la misma categoría (SELF JOIN)",
+    prompt: "Genera sugerencias de productos emparejados dentro de la misma categoría. Cruza la tabla `productos` consigo misma (`p1` y `p2`) para emparejar artículos con la misma `categoria_id`, pidiendo que `p1.producto_id < p2.producto_id` para no emparejar un producto consigo mismo ni repetir la pareja al revés. Muestra `categoria_id`, los nombres como `producto_a` y `producto_b`, y los precios como `precio_a` y `precio_b`. Ordena por categoría y nombres.",
     initial_code: "-- Auto-cruce de productos con condición de desigualdad\nSELECT ",
     xp_reward: 55,
     difficulty: 'Intermedio',
@@ -1508,7 +1508,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "Es obligatorio asignar alias distintos (ej. `a` y `b`) a cada instancia de la misma tabla.",
         "La condición `a.id < b.id` es un patrón clave para evitar que un elemento se empareje consigo mismo (`a.id = b.id`) y descartar pares duplicados invertidos.",
-        "La igualdad en la clave de clasificación (`a.cat_id = b.cat_id`) garantiza que pertenezcan al mismo grupo."
+        "La igualdad en la clave de clasificación (`a.cat_id = b.cat_id`) hace que pertenezcan al mismo grupo."
       ],
       execution_order_note: "💡 `a.id < b.id` reduce el espacio de búsqueda a la mitad de combinaciones respecto a `a.id <> b.id`.",
     },
@@ -1522,7 +1522,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000015',
     module_id: 'c0000000-0000-0000-0000-000000000009',
-    title: "Productos sobre el Promedio de Precio",
+    title: "Productos sobre el promedio de precio",
     prompt: "¿Qué productos se venden por encima del precio promedio de toda la tienda? Muestra el `nombre_producto` y su `precio` para aquellos artículos cuyo precio sea mayor al promedio general de precios de la tabla `productos`. Ordena de mayor a menor precio y, en caso de empate, alfabéticamente por `nombre_producto`.",
     initial_code: "-- Usa una subconsulta para comparar con el promedio global\nSELECT ",
     xp_reward: 55,
@@ -1547,14 +1547,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     objectives: [
       "1. Calcular dinámicamente el precio de referencia promedio del catálogo completo.",
       "2. Comparar el precio de cada artículo contra dicho valor medio en el filtro.",
-      "3. Proyectar los artículos de precio superior ordenados del más caro al más barato."
+      "3. Mostrar los artículos de precio superior ordenados del más caro al más barato."
     ],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000046',
     module_id: 'c0000000-0000-0000-0000-000000000009',
-    title: "Clientes con Pedidos de Alto Monto (Subconsulta con IN)",
+    title: "Clientes con pedidos de alto monto (subconsulta con IN)",
     prompt: "Identifica a nuestros clientes VIP: aquellos que han hecho al menos un pedido importante (de 1000€ o más). Consulta la tabla `clientes` y muestra `cliente_id`, `nombre`, `apellido` y `email`, filtrando con una subconsulta usando el operador `IN` sobre la tabla `pedidos`. Ordena por `cliente_id` ascendente.",
     initial_code: "-- Filtra clientes con una subconsulta en IN\nSELECT ",
     xp_reward: 55,
@@ -1570,23 +1570,23 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       summary: "Una subconsulta en la cláusula `IN` retorna una lista dinámica de IDs sobre la cual la consulta principal aplica el filtrado.",
       syntax: "SELECT id, nombre, email\nFROM tabla_maestra\nWHERE id IN (\n    SELECT clave_foranea\n    FROM tabla_transaccional\n    WHERE monto > umbral_valor\n);",
       key_points: [
-        "La subconsulta interna debe proyectar exactamente una sola columna, coincidente con la columna evaluada en el `IN`.",
+        "La subconsulta interna debe mostrar exactamente una sola columna, coincidente con la columna evaluada en el `IN`.",
         "Filtra en la consulta interna para generar únicamente el subconjunto de IDs de interés.",
-        "Es una alternativa declarativa a los joins cuando no necesitas proyectar columnas de la tabla transaccional."
+        "Es una alternativa declarativa a los joins cuando no necesitas mostrar columnas de la tabla transaccional."
       ],
       execution_order_note: "💡 PostgreSQL optimiza consultas `IN (SELECT ...)` convirtiéndolas internamente en un Semi-Join indexado.",
     },
     objectives: [
-      "1. Obtener el conjunto de compradores con compras de gran volumen mediante una consulta interna.",
+      "1. Obtener el conjunto de compradores con compras de gran volumen con una subconsulta.",
       "2. Utilizar dicho conjunto como criterio de pertenencia para filtrar la tabla de clientes.",
-      "3. Proyectar los datos de contacto de los clientes clasificados en orden."
+      "3. Mostrar los datos de contacto de los clientes clasificados en orden."
     ],
     sample_tables: [SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000047',
     module_id: 'c0000000-0000-0000-0000-000000000009',
-    title: "Comprobación de Existencia Eficiente (EXISTS)",
+    title: "Comprobación de existencia eficiente (EXISTS)",
     prompt: "Premia a los clientes activos que tengan al menos una compra completada. Muestra el `cliente_id`, `nombre` y `apellido` de aquellos clientes para los que exista al menos un pedido con `estado_pedido = 'completado'`, usando una subconsulta con `EXISTS`. Ordena por `cliente_id` ascendente.",
     initial_code: "-- Subconsulta correlacionada con EXISTS\nSELECT ",
     xp_reward: 55,
@@ -1618,7 +1618,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000055',
     module_id: 'c0000000-0000-0000-0000-000000000009',
-    title: "Clientes sin Pedidos Completados (NOT EXISTS)",
+    title: "Clientes sin pedidos completados (NOT EXISTS)",
     prompt: "Fidelización busca contactar a los clientes que aún no cuentan con ninguna compra completada (ya sea porque nunca compraron o porque sus órdenes fueron canceladas o están pendientes). Muestra `cliente_id`, `nombre` y `apellido` de `clientes` usando una subconsulta correlacionada con `NOT EXISTS` sobre `pedidos` filtrando por `estado_pedido = 'completado'`. Ordena por `cliente_id` ascendente.",
     initial_code: "-- Subconsulta correlacionada negativa con NOT EXISTS\nSELECT ",
     xp_reward: 60,
@@ -1641,7 +1641,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       execution_order_note: "💡 En PostgreSQL, `NOT EXISTS` detiene el escaneo interno en cuanto encuentra la primera coincidencia para descartar la fila.",
     },
     objectives: [
-      "1. Identificar entidades sin actividad válida mediante lógica booleana segura.",
+      "1. Identificar entidades sin actividad válida con lógica booleana segura.",
       "2. Correlacionar consulta externa e interna evitando fallos por valores NULL.",
       "3. Ordenar el listado resultante de forma determinista."
     ],
@@ -1650,7 +1650,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000016',
     module_id: 'c0000000-0000-0000-0000-000000000010',
-    title: "Segmentación de Pedidos por Monto",
+    title: "Segmentación de pedidos por monto",
     prompt: "Clasifica los pedidos según su valor para organizar la entrega. Muestra el `pedido_id`, el `total` y una nueva columna llamada `segmento` que diga: si el total es de 1000€ o más asigna `'Alto Valor'`, si es de 300€ o más asigna `'Medio Valor'`, y para el resto `'Bajo Valor'`. Ordena de mayor a menor total y, en caso de empate, por `pedido_id` ascendente.",
     initial_code: "-- Clasifica los pedidos en tres segmentos según su monto\nSELECT ",
     xp_reward: 55,
@@ -1682,7 +1682,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000048',
     module_id: 'c0000000-0000-0000-0000-000000000010',
-    title: "Resumen de Ventas por Estado (Agregación Condicional)",
+    title: "Resumen de ventas por estado (agregación condicional)",
     prompt: "Crea una tabla resumen que muestre cuánto dinero tiene cada cliente en compras completadas y cuánto en compras pendientes. Muestra el `cliente_id`, la suma de compras completadas bajo el nombre `ventas_completadas` (sumando el total cuando el estado sea `'completado'` y 0 si no) y la suma de compras pendientes bajo `ventas_pendientes` (sumando el total cuando sea `'pendiente'` y 0 si no). Agrupa y ordena por `cliente_id` ascendente.",
     initial_code: "-- Agregación condicional con CASE dentro de SUM\nSELECT ",
     xp_reward: 60,
@@ -1714,7 +1714,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000056',
     module_id: 'c0000000-0000-0000-0000-000000000010',
-    title: "Conteo de Productos por Nivel de Precio (COUNT + CASE)",
+    title: "Conteo de productos por nivel de precio (COUNT + CASE)",
     prompt: "Clasifica la composición del catálogo por categoría contando cuántos artículos de cada una pertenecen al rango premium (`precio >= 500`) y cuántos al rango estándar (`precio < 500`). Une `categorias` y `productos` con `LEFT JOIN`, muestra `nombre_categoria`, `productos_premium` y `productos_estandar` usando `COUNT(CASE WHEN ... THEN 1 END)`. Agrupa por categoría y ordena por `categoria_id` ascendente.",
     initial_code: "-- Conteo condicional combinando COUNT y CASE\nSELECT ",
     xp_reward: 60,
@@ -1746,7 +1746,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000017',
     module_id: 'c0000000-0000-0000-0000-000000000011',
-    title: "Facturación por Categoría mediante CTE",
+    title: "Facturación por categoría con CTE",
     prompt: "Prepara un reporte ordenado de facturación por categoría usando una expresión `WITH` (CTE). Crea una tabla temporal llamada `ventas_por_categoria` que sume las ventas (`SUM(dp.cantidad * dp.precio_unitario)`) como `facturacion` agrupando por `nombre_categoria`. Luego, consulta esa tabla temporal para mostrar `nombre_categoria` y `facturacion` ordenados de mayor a menor facturación y, en caso de empate, alfabéticamente por `nombre_categoria`.",
     initial_code: "-- Estructura la consulta analítica usando WITH ... AS\nWITH ",
     xp_reward: 60,
@@ -1778,7 +1778,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000049',
     module_id: 'c0000000-0000-0000-0000-000000000011',
-    title: "CTEs Múltiples Encadenadas (Análisis por Etapas)",
+    title: "CTEs múltiples encadenadas (análisis por etapas)",
     prompt: "Construye un análisis por pasos usando dos CTEs encadenadas para encontrar a los clientes que gastan más que el promedio de todos los clientes. Primero crea `gasto_clientes` con el `cliente_id` y su gasto total (`SUM(total) AS total_gastado`). Luego crea `promedio_general` que calcule el promedio (`AVG(total_gastado) AS gasto_medio`) a partir de la primera. Finalmente, muestra `cliente_id` y `total_gastado` de aquellos clientes cuyo gasto supere el promedio general, ordenados de mayor a menor gasto y, en caso de empate, por `cliente_id` ascendente.",
     initial_code: "-- Encadena dos CTEs separadas por coma\nWITH ",
     xp_reward: 60,
@@ -1796,7 +1796,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "Las CTEs subsiguientes se separan por comas `,` sin repetir la palabra clave `WITH`.",
         "Cada CTE puede hacer referencia a cualquiera de las CTEs definidas previamente en la secuencia.",
-        "La consulta final combina o filtra los resultados de las etapas anteriores mediante condiciones lógicas."
+        "La consulta final combina o filtra los resultados de las etapas anteriores con condiciones lógicas."
       ],
       execution_order_note: "💡 Estructurar consultas en pasos CTE permite depurar cada etapa de forma aislada antes de ensamblar la consulta final.",
     },
@@ -1810,7 +1810,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000057',
     module_id: 'c0000000-0000-0000-0000-000000000011',
-    title: "Evolución Mensual de Ventas mediante CTE (TO_CHAR)",
+    title: "Evolución mensual de ventas con CTE (TO_CHAR)",
     prompt: "Dirección necesita una serie mensual de ingresos de pedidos completados. Define una CTE llamada `pedidos_mensuales` que transforme la fecha al formato año-mes con `TO_CHAR(fecha_pedido, 'YYYY-MM') AS mes`, cuente los pedidos como `total_pedidos` y sume el total como `ingresos_mensuales` filtrando `estado_pedido = 'completado'`. Luego consulta esa CTE mostrando `mes`, `total_pedidos` e `ingresos_mensuales`, ordenados cronológicamente por `mes ASC`.",
     initial_code: "-- Agrupación temporal por mes estructurada en una CTE\nWITH ",
     xp_reward: 65,
@@ -1842,7 +1842,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000058',
     module_id: 'c0000000-0000-0000-0000-000000000011',
-    title: "Categorías sobre el Promedio de Facturación (CTE + Subconsulta)",
+    title: "Categorías sobre el promedio de facturación (CTE + subconsulta)",
     prompt: "Identifica qué categorías facturan por encima del promedio de todas las categorías. Crea una CTE llamada `facturacion_categoria` que sume las líneas de venta (`SUM(dp.cantidad * dp.precio_unitario) AS facturacion`) agrupando por `c.categoria_id` y `c.nombre_categoria`. En la consulta final, muestra `nombre_categoria` y `facturacion` filtrando aquellas cuyo valor supere `(SELECT AVG(facturacion) FROM facturacion_categoria)`. Ordena de mayor a menor `facturacion` y desempata por `nombre_categoria` ascendente.",
     initial_code: "-- Reutiliza la misma CTE en una subconsulta escalar\nWITH ",
     xp_reward: 65,
@@ -1874,7 +1874,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000007',
     module_id: 'c0000000-0000-0000-0000-000000000012',
-    title: "Ranking de Productos por Precio (ROW_NUMBER)",
+    title: "Ranking de productos por precio (ROW_NUMBER)",
     prompt: "Crea una lista clasificada de productos del más caro al más económico. Muestra `producto_id`, `nombre_producto`, `precio` y una columna llamada `ranking` con la posición consecutiva (1, 2, 3...) de cada producto usando `ROW_NUMBER()` ordenado por precio descendente (desempatando por `producto_id` ascendente), y ordena el resultado final por `ranking` ascendente.",
     initial_code: "-- Emplea ROW_NUMBER() OVER (...)\nSELECT ",
     xp_reward: 55,
@@ -1890,7 +1890,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       summary: "`ROW_NUMBER()` numera correlativamente cada fila (1, 2, 3...) según el orden estricto indicado en su cláusula `OVER`.",
       syntax: "SELECT columna_id, columna_nombre, columna_criterio,\n       ROW_NUMBER() OVER (ORDER BY columna_criterio DESC) AS posicion\nFROM nombre_tabla;",
       key_points: [
-        "`ROW_NUMBER()` garantiza una numeración secuencial estricta y única sin duplicar posiciones, incluso ante valores idénticos.",
+        "`ROW_NUMBER()` asigna una numeración secuencial única sin repetir posiciones, incluso si hay empates.",
         "`OVER (ORDER BY columna DESC)` define la dirección y prioridad con la que se asignan los números de posición.",
         "No reduce ni colapsa filas; conserva la totalidad de los registros de la tabla original."
       ],
@@ -1906,7 +1906,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000018',
     module_id: 'c0000000-0000-0000-0000-000000000012',
-    title: "Ranking Relativo por Categoría (DENSE_RANK)",
+    title: "Ranking relativo por categoría (DENSE_RANK)",
     prompt: "Clasifica los productos dentro de cada categoría del más caro al más barato. Muestra `categoria_id`, `nombre_producto`, `precio` y una columna con el puesto que ocupa llamada `ranking_categoria` usando `DENSE_RANK()`, dividiendo por categoría y ordenando de mayor a menor precio. Ordena por `categoria_id ASC`, `ranking_categoria ASC` y `nombre_producto ASC`.",
     initial_code: "-- Usa DENSE_RANK() particionado por categoria_id\nSELECT ",
     xp_reward: 65,
@@ -1938,7 +1938,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000059',
     module_id: 'c0000000-0000-0000-0000-000000000012',
-    title: "Producto Más Caro por Categoría (CTE + ROW_NUMBER)",
+    title: "Producto más caro por categoría (CTE + ROW_NUMBER)",
     prompt: "Encuentra el artículo líder en precio dentro de cada categoría. Crea una CTE `ranking_productos` que proyecte `categoria_id`, `nombre_producto`, `precio` y `ROW_NUMBER() OVER (PARTITION BY categoria_id ORDER BY precio DESC, producto_id ASC) AS posicion` desde `productos`. Luego selecciona `categoria_id`, `nombre_producto` y `precio` filtrando únicamente `WHERE posicion = 1` y ordenando por `categoria_id ASC`.",
     initial_code: "-- Patrón de artículo líder por categoría combinando CTE y ROW_NUMBER()\nWITH ",
     xp_reward: 70,
@@ -1956,7 +1956,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "SQL no permite escribir `WHERE ROW_NUMBER() OVER (...) = 1` directamente porque `WHERE` se ejecuta antes que las funciones de ventana.",
         "Envolver el cálculo de ventana dentro de una CTE permite filtrar por la columna `pos` en la consulta exterior.",
-        "Incluir un desempate único dentro de `OVER (ORDER BY ...)` garantiza que siempre exista exactamente un ganador por grupo."
+        "Incluir un desempate único dentro de `OVER (ORDER BY ...)` asegura que siempre haya un único ganador por grupo."
       ],
       execution_order_note: "💡 Este patrón Top-N por grupo evita subconsultas correlacionadas costosas y escala de forma lineal en PostgreSQL.",
     },
@@ -1970,7 +1970,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000060',
     module_id: 'c0000000-0000-0000-0000-000000000012',
-    title: "Ingresos Acumulados Progresivos (SUM OVER)",
+    title: "Ingresos acumulados progresivos (SUM OVER)",
     prompt: "Calcula la curva acumulada de facturación pedido a pedido. Para los pedidos con `estado_pedido = 'completado'`, muestra `pedido_id`, `fecha_pedido`, `total` y una columna llamada `ingresos_acumulados` usando `SUM(total) OVER (ORDER BY fecha_pedido ASC, pedido_id ASC)`. Ordena la salida por `fecha_pedido ASC` y `pedido_id ASC`.",
     initial_code: "-- Total acumulado progresivo con SUM() OVER\nSELECT ",
     xp_reward: 70,
@@ -2002,7 +2002,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000050',
     module_id: 'c0000000-0000-0000-0000-000000000012',
-    title: "Análisis de Intervalo Temporal entre Pedidos (LAG)",
+    title: "Análisis de intervalo temporal entre pedidos (LAG)",
     prompt: "Analiza cuánto tiempo pasa entre una compra y otra para cada cliente. Muestra el `pedido_id`, `cliente_id`, la `fecha_pedido` y el valor de la fecha del pedido inmediatamente anterior bajo el nombre `fecha_pedido_anterior`, usando la función de ventana `LAG(fecha_pedido)` dividiendo por cliente y ordenando cronológicamente (`fecha_pedido ASC, pedido_id ASC`). Ordena los resultados finales por `cliente_id ASC`, `fecha_pedido ASC` y `pedido_id ASC`.",
     initial_code: "-- Emplea LAG() OVER (PARTITION BY ... ORDER BY ...)\nSELECT ",
     xp_reward: 60,
@@ -2027,14 +2027,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     objectives: [
       "1. Dividir las transacciones por cliente ordenándolas en secuencia temporal.",
       "2. Recuperar el valor cronológico de la compra inmediatamente anterior.",
-      "3. Proyectar la fecha previa y ordenar adecuadamente."
+      "3. Mostrar la fecha previa y ordenar adecuadamente."
     ],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000061',
     module_id: 'd0000000-0000-0000-0000-000000000013',
-    title: "Alta de Nueva Categoría en Catálogo (INSERT VALUES)",
+    title: "Alta de nueva categoría en catálogo (INSERT VALUES)",
     prompt: "La tienda abrirá una línea especializada en sonido. Inserta una nueva fila en la tabla `categorias` especificando únicamente las columnas `nombre_categoria` con el valor `'Audio Profesional'` y `descripcion` con el valor `'Micrófonos de estudio, interfaces y monitores de audio'`, dejando que la clave primaria `categoria_id` se asigne automáticamente.",
     initial_code: "-- Inserta la nueva categoría especificando sus dos columnas de texto\nINSERT INTO ",
     xp_reward: 50,
@@ -2055,7 +2055,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
         "Cada literal de texto en `VALUES` debe ir entre comillas simples `'...'`.",
         "Las columnas omitidas toman su valor `DEFAULT` o el siguiente valor de su secuencia."
       ],
-      execution_order_note: "💡 PostgreSQL evalúa los tipos y restricciones (`NOT NULL`, `UNIQUE`, `CHECK`) antes de confirmar la nueva tupla en la tabla temporal de trabajo.",
+      execution_order_note: "💡 PostgreSQL evalúa los tipos y restricciones (`NOT NULL`, `UNIQUE`, `CHECK`) antes de confirmar la nueva fila en la tabla temporal de trabajo.",
     },
     objectives: [
       "1. Declarar la tabla destino y la lista explícita de columnas a poblar.",
@@ -2067,7 +2067,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000062',
     module_id: 'd0000000-0000-0000-0000-000000000013',
-    title: "Registro Múltiple de Almacenes Regionales (INSERT Multi-Fila)",
+    title: "Registro múltiple de almacenes regionales (INSERT Multi-Fila)",
     prompt: "Expande la red logística registrando dos centros en una sola sentencia sobre la tabla `almacenes` (columnas `nombre_almacen`, `ciudad`, `capacidad_m2`): el primero con `'Centro Logístico Sur'`, `'Sevilla'` y `3200`; y el segundo con `'Hub Atlántico'`, `'Vigo'` y `2400`.",
     initial_code: "-- Inserta ambos almacenes en una única instrucción INSERT\nINSERT INTO ",
     xp_reward: 55,
@@ -2077,22 +2077,22 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     execution_mode: 'dml',
     hints: [
       "PostgreSQL permite insertar múltiples filas en un solo comando separando cada grupo de paréntesis con una coma dentro de la cláusula VALUES.",
-      "Declara INSERT INTO almacenes con las columnas (nombre_almacen, ciudad, capacidad_m2) y encadena las dos tuplas separadas por coma después de VALUES.",
+      "Declara INSERT INTO almacenes con las columnas (nombre_almacen, ciudad, capacidad_m2) y encadena las dos filas separadas por coma después de VALUES.",
       "INSERT INTO almacenes (nombre_almacen, ciudad, capacidad_m2) VALUES ('Centro Logístico Sur', '???', ???), ('???', 'Vigo', 2400);"
     ],
     concept: {
-      summary: "La inserción multi-fila permite registrar varios registros atómicamente en una sola sentencia separando cada tupla `(valor_1, valor_2)` mediante comas tras `VALUES`.",
+      summary: "La inserción multi-fila permite registrar varios registros atómicamente en una sola sentencia separando cada fila `(valor_1, valor_2)` con comas después de `VALUES`.",
       syntax: "INSERT INTO tabla_destino (col_a, col_b, col_num)\nVALUES\n    ('Fila 1A', 'Fila 1B', 100),\n    ('Fila 2A', 'Fila 2B', 200);",
       key_points: [
-        "Insertar múltiples tuplas en una sola instrucción reduce viajes de red y es atómico: o se insertan todas o ninguna.",
-        "Todas las tuplas dentro de `VALUES` deben tener exactamente la misma cantidad y tipos de columnas.",
+        "Insertar múltiples filas en una sola instrucción reduce viajes de red y es atómico: o se insertan todas o ninguna.",
+        "Todas las filas dentro de `VALUES` deben tener exactamente la misma cantidad y tipos de columnas.",
         "La secuencia primaria avanza de forma continua para cada fila insertada."
       ],
-      execution_order_note: "💡 El motor valida todas las tuplas del bloque `VALUES` dentro de la misma operación atómica.",
+      execution_order_note: "💡 El motor valida todas las filas del bloque `VALUES` dentro de la misma operación atómica.",
     },
     objectives: [
       "1. Especificar las tres columnas de negocio de la tabla de almacenes.",
-      "2. Encadenar las dos tuplas separadas por coma en una única cláusula VALUES.",
+      "2. Encadenar las dos filas separadas por coma en una única cláusula VALUES.",
       "3. Comprobar que la tabla resultante cuenta ahora con los 5 centros logísticos."
     ],
     sample_tables: [SAMPLE_TABLE_ALMACENES],
@@ -2100,7 +2100,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000063',
     module_id: 'd0000000-0000-0000-0000-000000000013',
-    title: "Alta de Producto con Confirmación Inmediata (INSERT RETURNING)",
+    title: "Alta de producto con confirmación inmediata (INSERT RETURNING)",
     prompt: "Registra un nuevo artículo en `productos` con `categoria_id = 3`, `proveedor_id = 5`, `nombre_producto = 'Webcam 4K Studio'`, `precio = 125.00` y `stock = 30`. En la misma sentencia, utiliza la cláusula `RETURNING` para devolver únicamente `producto_id`, `nombre_producto`, `precio` y `stock`.",
     initial_code: "-- Inserta el producto y devuelve las 4 columnas solicitadas con RETURNING\nINSERT INTO ",
     xp_reward: 60,
@@ -2109,7 +2109,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     sort_order: 63,
     execution_mode: 'dml',
     hints: [
-      "En PostgreSQL no necesitas hacer un SELECT posterior para conocer el ID asignado: añade RETURNING al final del INSERT con las columnas que deseas proyectar.",
+      "En PostgreSQL no necesitas hacer un SELECT posterior para conocer el ID asignado: añade RETURNING al final del INSERT con las columnas que deseas mostrar.",
       "Después de VALUES (3, 5, 'Webcam 4K Studio', 125.00, 30), agrega RETURNING producto_id, nombre_producto, precio, stock.",
       "INSERT INTO productos (categoria_id, proveedor_id, nombre_producto, precio, stock) VALUES (3, 5, 'Webcam 4K Studio', 125.00, 30) RETURNING ???, nombre_producto, ???, stock;"
     ],
@@ -2121,19 +2121,19 @@ export const FALLBACK_EXERCISES: Exercise[] = [
         "Puedes listar columnas específicas o expresiones calculadas con alias después de `RETURNING`.",
         "El conjunto devuelto por `RETURNING` es recibido directamente por la aplicación cliente."
       ],
-      execution_order_note: "💡 PostgreSQL inserta primero la fila, calcula sus valores por defecto/secuencias y finalmente proyecta la lista de columnas indicada en `RETURNING`.",
+      execution_order_note: "💡 PostgreSQL inserta primero la fila, calcula sus valores por defecto/secuencias y finalmente muestra la lista de columnas indicada en `RETURNING`.",
     },
     objectives: [
       "1. Insertar el nuevo artículo con sus claves foráneas, precio y existencias.",
       "2. Añadir la cláusula RETURNING al cierre de la sentencia.",
-      "3. Proyectar exactamente las cuatro columnas del registro recién creado."
+      "3. Mostrar exactamente las cuatro columnas del registro recién creado."
     ],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000064',
     module_id: 'd0000000-0000-0000-0000-000000000013',
-    title: "Abastecimiento de Inventario desde Catálogo (INSERT INTO ... SELECT)",
+    title: "Abastecimiento de inventario desde catálogo (INSERT INTO ... SELECT)",
     prompt: "El almacén con `almacen_id = 3` va a incorporar un lote inicial de `12` unidades para todos los productos de la categoría `5` (`Mobiliario Ergonómico`) que aún no están registrados en ningún lote de ese almacén. Inserta en `inventario` las columnas `(almacen_id, producto_id, cantidad_disponible)` usando una consulta `SELECT 3, producto_id, 12 FROM productos WHERE categoria_id = 5 AND producto_id <> 15`.",
     initial_code: "-- Usa INSERT INTO ... SELECT para poblar inventario a partir de productos\nINSERT INTO ",
     xp_reward: 65,
@@ -2151,8 +2151,8 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       syntax: "INSERT INTO tabla_destino (col_fija, entidad_id, cantidad_inicial)\nSELECT 1, entidad_id, 25\nFROM tabla_origen\nWHERE condicion_filtro;",
       key_points: [
         "En `INSERT INTO ... SELECT` **no** se escribe la palabra clave `VALUES`.",
-        "La cantidad y tipos de datos de las columnas proyectadas en el `SELECT` deben corresponder 1 a 1 con las columnas declaradas en `INSERT INTO`.",
-        "Puedes combinar columnas reales de la tabla origen con constantes literales en la proyección del `SELECT`."
+        "La cantidad y tipos de datos de las columnas mostradas en el `SELECT` deben corresponder 1 a 1 con las columnas declaradas en `INSERT INTO`.",
+        "Puedes combinar columnas reales de la tabla origen con constantes literales en la selección del `SELECT`."
       ],
       execution_order_note: "💡 PostgreSQL ejecuta primero el `SELECT ... FROM ... WHERE` y canaliza todas las filas resultantes hacia la operación `INSERT`.",
     },
@@ -2166,9 +2166,9 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000065',
     module_id: 'd0000000-0000-0000-0000-000000000014',
-    title: "Actualización de Contacto de Proveedor (UPDATE WHERE)",
+    title: "Actualización de contacto de proveedor (UPDATE WHERE)",
     prompt: "El proveedor con `proveedor_id = 2` (`Silicon Logistics`) actualizó su línea telefónica internacional. Modifica la tabla `proveedores` asignando `telefono = '+886-2-999888'` exclusivamente para el registro con `proveedor_id = 2`.",
-    initial_code: "-- Actualiza el teléfono asegurándote de filtrar por clave primaria\nUPDATE ",
+    initial_code: "-- Actualiza el teléfono filtrando por clave primaria\nUPDATE ",
     xp_reward: 50,
     difficulty: 'Intermedio',
     check_order: true,
@@ -2185,13 +2185,13 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "`SET` define las asignaciones `columna = expresion` separadas por comas.",
         "**Regla crítica de producción:** Omitir `WHERE` en un `UPDATE` actualiza absolutamente todas las filas de la tabla.",
-        "Filtrar por la clave primaria garantiza que la modificación afecte a una única entidad."
+        "Filtrar por la clave primaria limita el cambio a una sola fila."
       ],
-      execution_order_note: "💡 PostgreSQL localiza primero las filas que cumplen `WHERE`, calcula las nuevas expresiones de `SET` y escribe las nuevas versiones de tupla (MVCC).",
+      execution_order_note: "💡 PostgreSQL localiza primero las filas que cumplen `WHERE`, calcula las nuevas expresiones de `SET` y escribe las nuevas versiones de fila (MVCC).",
     },
     objectives: [
       "1. Apuntar a la tabla de proveedores con la instrucción UPDATE.",
-      "2. Asignar el nuevo número telefónico mediante la cláusula SET.",
+      "2. Asignar el nuevo número telefónico con la cláusula SET.",
       "3. Restringir el cambio al proveedor número 2 con WHERE."
     ],
     sample_tables: [SAMPLE_TABLE_PROVEEDORES],
@@ -2199,9 +2199,9 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000066',
     module_id: 'd0000000-0000-0000-0000-000000000014',
-    title: "Ajuste de Precios por Categoría con Confirmación (UPDATE RETURNING)",
-    prompt: "Aplica un incremento del 10% al precio de todos los productos de la categoría `4` (`Almacenamiento`). Actualiza la tabla `productos` asignando `precio = ROUND(precio * 1.10, 2)` donde `categoria_id = 4`, y utiliza `RETURNING` para proyectar `producto_id`, `nombre_producto` y el nuevo `precio`.",
-    initial_code: "-- Incrementa el precio un 10% con ROUND y proyecta los cambios con RETURNING\nUPDATE ",
+    title: "Ajuste de precios por categoría con confirmación (UPDATE RETURNING)",
+    prompt: "Aplica un incremento del 10% al precio de todos los productos de la categoría `4` (`Almacenamiento`). Actualiza la tabla `productos` asignando `precio = ROUND(precio * 1.10, 2)` donde `categoria_id = 4`, y utiliza `RETURNING` para mostrar `producto_id`, `nombre_producto` y el nuevo `precio`.",
+    initial_code: "-- Incrementa el precio un 10% con ROUND y muestra los cambios con RETURNING\nUPDATE ",
     xp_reward: 60,
     difficulty: 'Intermedio',
     check_order: false,
@@ -2220,19 +2220,19 @@ export const FALLBACK_EXERCISES: Exercise[] = [
         "Envolver cálculos monetarios en `ROUND(expresion, 2)` preserva la exactitud decimal.",
         "`RETURNING` devuelve los valores **posteriores** a la actualización para cada fila modificada."
       ],
-      execution_order_note: "💡 El motor filtra por `WHERE`, aplica la fórmula redondeada en `SET` y proyecta los valores ya actualizados en `RETURNING`.",
+      execution_order_note: "💡 El motor filtra por `WHERE`, aplica la fórmula redondeada en `SET` y muestra los valores ya actualizados en `RETURNING`.",
     },
     objectives: [
       "1. Recalcular el precio con un aumento del 10% redondeado a 2 decimales.",
       "2. Acotar la actualización exclusivamente a la categoría 4.",
-      "3. Devolver el identificador, nombre y nuevo precio mediante RETURNING."
+      "3. Devolver el identificador, nombre y nuevo precio con RETURNING."
     ],
     sample_tables: [SAMPLE_TABLE_PRODUCTOS],
   },
   {
     id: 'e0000000-0000-0000-0000-000000000067',
     module_id: 'd0000000-0000-0000-0000-000000000014',
-    title: "Actualización Cruzada de Inventario por Ciudad (UPDATE ... FROM)",
+    title: "Actualización cruzada de inventario por ciudad (UPDATE ... FROM)",
     prompt: "Suma `5` unidades de reserva (`cantidad_disponible = cantidad_disponible + 5`) en la tabla `inventario` únicamente para los registros pertenecientes a almacenes ubicados en la ciudad de `'Bilbao'`. Utiliza la sintaxis `UPDATE inventario i SET ... FROM almacenes a WHERE i.almacen_id = a.almacen_id AND a.ciudad = 'Bilbao'`.",
     initial_code: "-- Usa UPDATE ... FROM para actualizar inventario filtrando por una columna de almacenes\nUPDATE ",
     xp_reward: 70,
@@ -2253,11 +2253,11 @@ export const FALLBACK_EXERCISES: Exercise[] = [
         "La cláusula `FROM` introduce las tablas secundarias que aportan el filtro o los datos de cruce.",
         "La condición de unión (`p.ref_id = r.ref_id`) se declara explícitamente dentro del `WHERE`."
       ],
-      execution_order_note: "💡 PostgreSQL realiza el cruce entre la tabla objetivo y la tabla de `FROM` según el predicado `WHERE`, y actualiza las filas coincidentes.",
+      execution_order_note: "💡 PostgreSQL realiza el cruce entre la tabla objetivo y la tabla de `FROM` según el condición `WHERE`, y actualiza las filas coincidentes.",
     },
     objectives: [
       "1. Incrementar en 5 unidades la columna cantidad_disponible.",
-      "2. Vincular la tabla de almacenes mediante la cláusula FROM.",
+      "2. Vincular la tabla de almacenes con la cláusula FROM.",
       "3. Filtrar en WHERE tanto la igualdad de claves como la ciudad de Bilbao."
     ],
     sample_tables: [SAMPLE_TABLE_INVENTARIO, SAMPLE_TABLE_ALMACENES],
@@ -2265,7 +2265,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000068',
     module_id: 'd0000000-0000-0000-0000-000000000014',
-    title: "Depuración Segura de Líneas de Pedido Cancelado (DELETE WHERE)",
+    title: "Depuración segura de líneas de pedido cancelado (DELETE WHERE)",
     prompt: "El pedido con `pedido_id = 105` fue cancelado definitivamente y Finanzas solicita limpiar sus líneas de detalle antes de archivar. Elimina de la tabla `detalle_pedidos` únicamente el registro que pertenece a `pedido_id = 105`.",
     initial_code: "-- Elimina exclusivamente las líneas del pedido 105 en detalle_pedidos\nDELETE FROM ",
     xp_reward: 60,
@@ -2279,14 +2279,14 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       "DELETE FROM ??? WHERE ??? = 105;"
     ],
     concept: {
-      summary: "`DELETE FROM tabla WHERE condicion` remueve permanentemente las filas que satisfacen el predicado, respetando las restricciones de integridad referencial.",
+      summary: "`DELETE FROM tabla WHERE condicion` remueve permanentemente las filas que satisfacen el condición, respetando las restricciones de integridad referencial.",
       syntax: "DELETE FROM nombre_tabla\nWHERE referencia_id = 42;",
       key_points: [
         "`DELETE` opera sobre filas enteras, nunca sobre columnas individuales (para vaciar una columna se usa `UPDATE ... SET col = NULL`).",
         "Ejecutar `DELETE FROM tabla;` sin cláusula `WHERE` vacía toda la tabla.",
-        "Si otra tabla apunta al registro eliminado mediante una `FOREIGN KEY` sin `ON DELETE CASCADE`, PostgreSQL bloqueará el borrado para proteger la integridad."
+        "Si otra tabla apunta al registro eliminado con una `FOREIGN KEY` sin `ON DELETE CASCADE`, PostgreSQL bloqueará el borrado para proteger la integridad."
       ],
-      execution_order_note: "💡 El motor evalúa `WHERE`, verifica que ninguna clave foránea hija quede huérfana y marca las tuplas como eliminadas.",
+      execution_order_note: "💡 El motor evalúa `WHERE`, verifica que ninguna clave foránea hija quede huérfana y marca las filas como eliminadas.",
     },
     objectives: [
       "1. Indicar la tabla detalle_pedidos como objetivo de DELETE FROM.",
@@ -2298,7 +2298,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000069',
     module_id: 'd0000000-0000-0000-0000-000000000015',
-    title: "Diseño de Tabla de Cupones Promocionales (CREATE TABLE)",
+    title: "Diseño de tabla de cupones promocionales (CREATE TABLE)",
     prompt: "Diseña una nueva tabla llamada `cupones_descuento` para gestionar campañas promocionales con exactamente estas 4 columnas en orden:\n1. `cupon_id` de tipo `SERIAL PRIMARY KEY`\n2. `codigo` de tipo `VARCHAR(25) NOT NULL`\n3. `descuento_pct` de tipo `NUMERIC(5, 2) NOT NULL`\n4. `fecha_expiracion` de tipo `DATE NOT NULL`",
     initial_code: "-- Define la tabla cupones_descuento con sus 4 columnas y tipos exactos\nCREATE TABLE ",
     xp_reward: 60,
@@ -2331,7 +2331,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000070',
     module_id: 'd0000000-0000-0000-0000-000000000015',
-    title: "Tabla de Reseñas con Reglas de Integridad (CHECK & FOREIGN KEY)",
+    title: "Tabla de reseñas con reglas de integridad (CHECK & FOREIGN KEY)",
     prompt: "Crea la tabla `resenas_productos` para almacenar valoraciones verificadas con estas 5 columnas en orden:\n1. `resena_id` de tipo `SERIAL PRIMARY KEY`\n2. `producto_id` de tipo `INT NOT NULL REFERENCES productos(producto_id)`\n3. `cliente_id` de tipo `INT NOT NULL REFERENCES clientes(cliente_id)`\n4. `calificacion` de tipo `INT NOT NULL CHECK (calificacion BETWEEN 1 AND 5)`\n5. `comentario` de tipo `TEXT`",
     initial_code: "-- Crea la tabla resenas_productos con claves foráneas y restricción CHECK\nCREATE TABLE ",
     xp_reward: 70,
@@ -2355,7 +2355,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       execution_order_note: "💡 PostgreSQL registra la tabla junto con sus restricciones `'p'` (Primary Key), `'f'` (Foreign Key) y `'c'` (Check) en `pg_constraint`.",
     },
     objectives: [
-      "1. Vincular producto_id y cliente_id con sus tablas maestras mediante REFERENCES.",
+      "1. Vincular producto_id y cliente_id con sus tablas maestras con REFERENCES.",
       "2. Blindar el dominio de calificacion entre 1 y 5 con una restricción CHECK.",
       "3. Verificar que la tabla quede creada con sus 5 columnas y sus 4 restricciones activas."
     ],
@@ -2364,7 +2364,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000071',
     module_id: 'd0000000-0000-0000-0000-000000000015',
-    title: "Evolución de Esquema en Almacenes (ALTER TABLE ADD COLUMN)",
+    title: "Evolución de esquema en almacenes (ALTER TABLE ADD COLUMN)",
     prompt: "Operaciones necesita identificar qué centros logísticos cuentan con cámara refrigerada. Modifica la tabla `almacenes` con `ALTER TABLE` para agregar una nueva columna llamada `refrigerado` de tipo `BOOLEAN NOT NULL DEFAULT FALSE`.",
     initial_code: "-- Agrega la columna refrigerado con su valor por defecto a la tabla almacenes\nALTER TABLE ",
     xp_reward: 65,
@@ -2385,10 +2385,10 @@ export const FALLBACK_EXERCISES: Exercise[] = [
         "En PostgreSQL 11+, añadir una columna con un `DEFAULT` constante es una operación instantánea en catálogo que no reescribe toda la tabla en disco.",
         "Todas las filas existentes adoptan inmediatamente el valor por defecto."
       ],
-      execution_order_note: "💡 El catálogo registra el nuevo atributo y proyecta el valor `DEFAULT` para todas las tuplas existentes.",
+      execution_order_note: "💡 El catálogo registra el nuevo atributo y muestra el valor `DEFAULT` para todas las filas existentes.",
     },
     objectives: [
-      "1. Seleccionar la tabla almacenes mediante ALTER TABLE.",
+      "1. Seleccionar la tabla almacenes con ALTER TABLE.",
       "2. Añadir la columna booleana refrigerado con ADD COLUMN.",
       "3. Garantizar que no acepte nulos y tome FALSE por defecto en los almacenes actuales."
     ],
@@ -2397,7 +2397,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000072',
     module_id: 'd0000000-0000-0000-0000-000000000015',
-    title: "Retiro Controlado de Tabla Obsoleta (DROP TABLE IF EXISTS CASCADE)",
+    title: "Retiro controlado de tabla obsoleta (DROP TABLE IF EXISTS CASCADE)",
     prompt: "En el esquema de trabajo existe una tabla heredada llamada `auditoria_obsoleta` (junto con una vista dependiente) que debe retirarse limpiamente. Ejecuta la instrucción para eliminar la tabla `auditoria_obsoleta` utilizando `IF EXISTS` y `CASCADE` para remover también sus objetos dependientes.",
     initial_code: "-- Elimina la tabla auditoria_obsoleta de forma segura con IF EXISTS y CASCADE\nDROP TABLE ",
     xp_reward: 60,
@@ -2430,7 +2430,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000073',
     module_id: 'd0000000-0000-0000-0000-000000000016',
-    title: "Índice B-Tree para Búsqueda por Ciudad (CREATE INDEX)",
+    title: "Índice B-Tree para búsqueda por ciudad (CREATE INDEX)",
     prompt: "Las consultas de marketing filtran constantemente la tabla `clientes` por la columna `ciudad`, provocando escaneos secuenciales (`Seq Scan`). Crea un índice B-Tree estándar llamado `idx_clientes_ciudad` sobre la tabla `clientes` indexando la columna `(ciudad)`.",
     initial_code: "-- Crea el índice idx_clientes_ciudad sobre la tabla clientes\nCREATE INDEX ",
     xp_reward: 70,
@@ -2455,7 +2455,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
     },
     objectives: [
       "1. Nombrar el nuevo índice como idx_clientes_ciudad.",
-      "2. Asociarlo a la tabla clientes mediante la palabra clave ON.",
+      "2. Asociarlo a la tabla clientes con la palabra clave ON.",
       "3. Indexar la columna ciudad y verificar su registro en el catálogo."
     ],
     sample_tables: [SAMPLE_TABLE_CLIENTES],
@@ -2463,8 +2463,8 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000074',
     module_id: 'd0000000-0000-0000-0000-000000000016',
-    title: "Índice Único Compuesto de Facturación (CREATE UNIQUE INDEX)",
-    prompt: "Para garantizar que jamás se duplique un pago con el mismo método en la misma fecha para la misma factura y acelerar las conciliaciones, crea un índice **único** y **compuesto** llamado `idx_pagos_factura_metodo_unico` sobre la tabla `pagos` con las columnas `(factura_id, metodo_pago)` en ese orden.",
+    title: "Índice único compuesto de facturación (CREATE UNIQUE INDEX)",
+    prompt: "Para evitar que se duplique un pago con el mismo método en la misma fecha para la misma factura y acelerar las conciliaciones, crea un índice **único** y **compuesto** llamado `idx_pagos_factura_metodo_unico` sobre la tabla `pagos` con las columnas `(factura_id, metodo_pago)` en ese orden.",
     initial_code: "-- Crea un índice único compuesto sobre factura_id y metodo_pago\nCREATE UNIQUE INDEX ",
     xp_reward: 75,
     difficulty: 'Avanzado',
@@ -2482,7 +2482,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
       key_points: [
         "El orden de las columnas en un índice compuesto es crucial: un índice sobre `(A, B)` acelera búsquedas por `A` y por `(A, B)`, pero no búsquedas solo por `B`.",
         "`UNIQUE` rechaza cualquier intento futuro de insertar dos filas con la misma combinación de valores.",
-        "En PostgreSQL, toda restricción `UNIQUE` se respalda físicamente mediante un índice B-Tree único."
+        "En PostgreSQL, toda restricción `UNIQUE` se respalda con un índice B-Tree único."
       ],
       execution_order_note: "💡 El motor verifica primero que no existan duplicados actuales en la tabla antes de publicar el índice único en el catálogo.",
     },
@@ -2496,7 +2496,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000075',
     module_id: 'd0000000-0000-0000-0000-000000000016',
-    title: "Índice Parcial de Pedidos Pendientes (Partial Index WHERE)",
+    title: "Índice parcial de pedidos pendientes (partial index WHERE)",
     prompt: "En producción el 95% de los pedidos históricos están `'completado'`, pero el panel operativo consulta miles de veces por minuto solo los pedidos con `estado_pedido = 'pendiente'` ordenados por `fecha_pedido`. Crea un **índice parcial** llamado `idx_pedidos_pendientes_fecha` sobre `pedidos (fecha_pedido)` que indexe únicamente las filas `WHERE estado_pedido = 'pendiente'`.",
     initial_code: "-- Crea un índice parcial filtrando con WHERE al final de CREATE INDEX\nCREATE INDEX ",
     xp_reward: 85,
@@ -2517,11 +2517,11 @@ export const FALLBACK_EXERCISES: Exercise[] = [
         "El optimizador de PostgreSQL utiliza automáticamente el índice parcial cuando la consulta incluye `WHERE estatus = 'activo'`.",
         "Es una de las técnicas de mayor impacto en tablas transaccionales con estados de cola o trabajo pendiente."
       ],
-      execution_order_note: "💡 PostgreSQL evalúa el predicado `WHERE` durante la creación y mantenimiento del índice, guardando en el B-Tree solo los punteros (TIDs) que cumplen la condición.",
+      execution_order_note: "💡 PostgreSQL evalúa el condición `WHERE` durante la creación y mantenimiento del índice, guardando en el B-Tree solo los punteros (TIDs) que cumplen la condición.",
     },
     objectives: [
       "1. Crear el índice idx_pedidos_pendientes_fecha sobre la columna fecha_pedido de pedidos.",
-      "2. Incorporar el predicado parcial WHERE estado_pedido = 'pendiente'.",
+      "2. Incorporar el condición parcial WHERE estado_pedido = 'pendiente'.",
       "3. Comprobar la definición del índice parcial en pg_indexes."
     ],
     sample_tables: [SAMPLE_TABLE_PEDIDOS],
@@ -2529,7 +2529,7 @@ export const FALLBACK_EXERCISES: Exercise[] = [
   {
     id: 'e0000000-0000-0000-0000-000000000076',
     module_id: 'd0000000-0000-0000-0000-000000000016',
-    title: "Eliminación de Índice Redundante (DROP INDEX IF EXISTS)",
+    title: "Eliminación de índice redundante (DROP INDEX IF EXISTS)",
     prompt: "Durante una auditoría de rendimiento en la tabla `clientes` se detectó un índice duplicado y sin uso llamado `idx_clientes_pais_antiguo` que ralentiza las inserciones. Elimina dicho índice del catálogo de forma segura utilizando `DROP INDEX IF EXISTS`.",
     initial_code: "-- Elimina el índice idx_clientes_pais_antiguo con IF EXISTS\nDROP INDEX ",
     xp_reward: 70,
@@ -2567,8 +2567,8 @@ export const FALLBACK_TRACKS: Track[] = [
     title: "Fundamentos de SQL",
     slug: 'sql-foundations',
     description:
-      "Aprende a consultar bases de datos desde cero. Proyecciones con SELECT, cálculos derivados, filtrado con WHERE y fechas, ordenamiento y agregaciones globales.",
-    badge_name: "Primera Consulta",
+      "Aprende a consultar bases de datos desde cero: columnas con SELECT, cálculos, filtros con WHERE y fechas, ordenamiento y agregaciones.",
+    badge_name: "Primera consulta",
     color_accent: '#38BDF8',
     sort_order: 1,
     total_exercises: 24,
@@ -2577,9 +2577,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'a0000000-0000-0000-0000-000000000001',
         track_id: 'sql-foundations',
-        title: "SELECT y Proyecciones de Datos",
-        slug: 'select-proyecciones',
-        description: "Aprende a solicitar columnas específicas y utilizar alias y cálculos aritméticos limpios.",
+        title: "SELECT y columnas calculadas",
+        slug: 'select-columnas',
+        description: "Elige columnas específicas, usa alias claros y haz cálculos aritméticos simples.",
         sort_order: 1,
         exercises_count: 4,
         completed_count: 0,
@@ -2587,9 +2587,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'a0000000-0000-0000-0000-000000000002',
         track_id: 'sql-foundations',
-        title: "Filtrado con WHERE y Operadores Lógicos",
+        title: "Filtrado con WHERE y operadores lógicos",
         slug: 'filtrado-where',
-        description: "Aplica filtros condicionales exactos mediante operadores de comparación, patrones, fechas y rangos con BETWEEN.",
+        description: "Filtra filas con operadores de comparación, patrones de texto, fechas y rangos con BETWEEN.",
         sort_order: 2,
         exercises_count: 7,
         completed_count: 0,
@@ -2597,9 +2597,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'a0000000-0000-0000-0000-000000000003',
         track_id: 'sql-foundations',
-        title: "Ordenamiento y Paginación",
+        title: "Ordenamiento y paginación",
         slug: 'ordenamiento-paginacion',
-        description: "Ordena resultados con ORDER BY (ASC/DESC) y limita registros devueltos con LIMIT y OFFSET.",
+        description: "Ordena resultados con ORDER BY (ASC/DESC) y limita las filas devueltas con LIMIT y OFFSET.",
         sort_order: 3,
         exercises_count: 4,
         completed_count: 0,
@@ -2607,9 +2607,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'a0000000-0000-0000-0000-000000000004',
         track_id: 'sql-foundations',
-        title: "Agregación y Agrupamiento",
+        title: "Agregación y agrupamiento",
         slug: 'agregacion-agrupamiento',
-        description: "Resume datos de lo global a lo agrupado con COUNT, SUM, AVG, WHERE previo y filtrado de grupos con HAVING.",
+        description: "Resume datos con COUNT, SUM, AVG, filtros previos con WHERE y filtros de grupos con HAVING.",
         sort_order: 4,
         exercises_count: 9,
         completed_count: 0,
@@ -2618,11 +2618,11 @@ export const FALLBACK_TRACKS: Track[] = [
   },
   {
     id: 'relational-sql',
-    title: "SQL Relacional",
+    title: "SQL relacional",
     slug: 'relational-sql',
     description:
-      "Domina el cruce de tablas relacionales. Claves foráneas, uniones con INNER JOIN, detección de ausencias con LEFT JOIN y COALESCE, consultas multi-tabla y operaciones de conjunto.",
-    badge_name: "Maestro de Relaciones",
+      "Cruza tablas relacionadas usando llaves foráneas, INNER JOIN, LEFT JOIN con COALESCE, consultas de varias tablas y operaciones de conjunto.",
+    badge_name: "Cruce de tablas",
     color_accent: '#818CF8',
     sort_order: 2,
     total_exercises: 20,
@@ -2631,9 +2631,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'b0000000-0000-0000-0000-000000000005',
         track_id: 'relational-sql',
-        title: "Uniones Fundamentales (INNER JOIN)",
+        title: "Uniones básicas (INNER JOIN)",
         slug: 'inner-join',
-        description: "Cruza tablas relacionales mediante claves foráneas antes de dar el salto a agregaciones cruzadas.",
+        description: "Cruza tablas relacionadas con llaves foráneas antes de pasar a agregaciones entre varias tablas.",
         sort_order: 5,
         exercises_count: 5,
         completed_count: 0,
@@ -2641,9 +2641,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'b0000000-0000-0000-0000-000000000006',
         track_id: 'relational-sql',
-        title: "Detección de Ausencias (LEFT JOIN y NULL)",
+        title: "Ausencias y ceros (LEFT JOIN y NULL)",
         slug: 'left-join-null',
-        description: "Identifica registros huérfanos o entidades sin actividad asociada mediante LEFT JOIN, IS NULL y COALESCE.",
+        description: "Encuentra filas sin coincidencias o sin actividad usando LEFT JOIN, IS NULL y COALESCE.",
         sort_order: 6,
         exercises_count: 6,
         completed_count: 0,
@@ -2651,9 +2651,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'b0000000-0000-0000-0000-000000000007',
         track_id: 'relational-sql',
-        title: "Consultas Multi-Tabla en Cascada",
+        title: "Consultas de varias tablas",
         slug: 'multi-tabla',
-        description: "Conecta 3 o más tablas para análisis integral del negocio en cascada relacional.",
+        description: "Conecta 3 o más tablas para analizar información del negocio en cascada.",
         sort_order: 7,
         exercises_count: 4,
         completed_count: 0,
@@ -2661,9 +2661,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'b0000000-0000-0000-0000-000000000008',
         track_id: 'relational-sql',
-        title: "Operaciones de Conjunto y Uniones Especiales",
+        title: "Conjuntos y uniones especiales",
         slug: 'conjuntos-joins-especiales',
-        description: "Combina consultas mediante UNION, INTERSECT, EXCEPT, CROSS JOIN y auto-uniones con SELF JOIN.",
+        description: "Combina consultas con UNION, INTERSECT, EXCEPT, CROSS JOIN y uniones sobre la misma tabla (SELF JOIN).",
         sort_order: 8,
         exercises_count: 5,
         completed_count: 0,
@@ -2672,11 +2672,11 @@ export const FALLBACK_TRACKS: Track[] = [
   },
   {
     id: 'advanced-queries',
-    title: "Consultas Avanzadas",
+    title: "Consultas avanzadas",
     slug: 'advanced-queries',
     description:
-      "Eleva tu nivel con subconsultas correlacionadas (EXISTS/NOT EXISTS), expresiones condicionales CASE, consultas temporales con WITH (CTEs) y funciones analíticas de ventana.",
-    badge_name: "Maestro de Ventanas",
+      "Trabaja con subconsultas correlacionadas (EXISTS/NOT EXISTS), condiciones con CASE, consultas temporales con WITH (CTEs) y funciones de ventana.",
+    badge_name: "Funciones de ventana",
     color_accent: '#34D399',
     sort_order: 3,
     total_exercises: 16,
@@ -2685,9 +2685,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'c0000000-0000-0000-0000-000000000009',
         track_id: 'advanced-queries',
-        title: "Subconsultas Analíticas",
+        title: "Subconsultas",
         slug: 'subconsultas',
-        description: "Integra subconsultas escalares, listas IN y pruebas de existencia (EXISTS / NOT EXISTS) en WHERE.",
+        description: "Usa subconsultas escalares, listas IN y pruebas de existencia (EXISTS / NOT EXISTS) en WHERE.",
         sort_order: 9,
         exercises_count: 4,
         completed_count: 0,
@@ -2695,9 +2695,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'c0000000-0000-0000-0000-000000000010',
         track_id: 'advanced-queries',
-        title: "Expresiones Condicionales (CASE)",
+        title: "Expresiones condicionales (CASE)",
         slug: 'case-when',
-        description: "Transforma, categoriza y pivota métricas y conteos al vuelo con lógica condicional CASE.",
+        description: "Clasifica filas y calcula conteos condicionales sobre la marcha con CASE WHEN.",
         sort_order: 10,
         exercises_count: 3,
         completed_count: 0,
@@ -2705,9 +2705,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'c0000000-0000-0000-0000-000000000011',
         track_id: 'advanced-queries',
-        title: "Consultas Temporales con WITH (CTEs)",
+        title: "Consultas temporales con WITH (CTEs)",
         slug: 'ctes-with',
-        description: "Estructura análisis temporales, comparativas entre grupos y flujos por etapas con la cláusula WITH.",
+        description: "Divide consultas largas en pasos claros y legibles con la cláusula WITH.",
         sort_order: 11,
         exercises_count: 4,
         completed_count: 0,
@@ -2715,9 +2715,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'c0000000-0000-0000-0000-000000000012',
         track_id: 'advanced-queries',
-        title: "Funciones Analíticas de Ventana",
+        title: "Funciones de ventana",
         slug: 'window-functions',
-        description: "Aplica clasificaciones, máximos por grupo, acumulados progresivos y análisis temporal (ROW_NUMBER, DENSE_RANK, SUM OVER, LAG).",
+        description: "Calcula rankings, máximos por grupo, acumulados y comparaciones entre filas (ROW_NUMBER, DENSE_RANK, SUM OVER, LAG).",
         sort_order: 12,
         exercises_count: 5,
         completed_count: 0,
@@ -2726,11 +2726,11 @@ export const FALLBACK_TRACKS: Track[] = [
   },
   {
     id: 'data-manipulation-ddl',
-    title: "Ingeniería y Manipulación de Datos",
+    title: "Ingeniería y manipulación de datos",
     slug: 'data-manipulation-ddl',
     description:
-      "Domina la escritura transaccional, el diseño de esquemas relacionales y la optimización física con INSERT, UPDATE, DELETE, RETURNING, CREATE/ALTER/DROP TABLE e índices B-Tree compuestos y parciales.",
-    badge_name: "Arquitecto Relacional",
+      "Inserta, actualiza y borra datos en transacciones, crea y modifica tablas, y acelera consultas con INSERT, UPDATE, DELETE, RETURNING, CREATE/ALTER/DROP TABLE e índices B-Tree.",
+    badge_name: "Diseño de esquemas",
     color_accent: '#F59E0B',
     sort_order: 4,
     total_exercises: 16,
@@ -2739,9 +2739,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'd0000000-0000-0000-0000-000000000013',
         track_id: 'data-manipulation-ddl',
-        title: "Inserción de Registros (INSERT)",
+        title: "Inserción de filas (INSERT)",
         slug: 'insercion-insert',
-        description: "Registra tuplas individuales, lotes multi-fila, proyecciones inmediatas con RETURNING y abastecimiento entre tablas con INSERT INTO ... SELECT.",
+        description: "Inserta filas individuales o por lotes, devuelve los datos guardados con RETURNING y copia filas entre tablas con INSERT INTO ... SELECT.",
         sort_order: 13,
         exercises_count: 4,
         completed_count: 0,
@@ -2749,9 +2749,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'd0000000-0000-0000-0000-000000000014',
         track_id: 'data-manipulation-ddl',
-        title: "Actualización y Eliminación Segura (UPDATE y DELETE)",
+        title: "Actualización y borrado (UPDATE y DELETE)",
         slug: 'actualizacion-eliminacion',
-        description: "Modifica y depura datos con precisión quirúrgica usando UPDATE ... WHERE, recálculos con RETURNING, cruces UPDATE ... FROM y DELETE seguro.",
+        description: "Modifica y borra filas de forma segura usando UPDATE ... WHERE, RETURNING, cruces UPDATE ... FROM y DELETE.",
         sort_order: 14,
         exercises_count: 4,
         completed_count: 0,
@@ -2759,9 +2759,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'd0000000-0000-0000-0000-000000000015',
         track_id: 'data-manipulation-ddl',
-        title: "Creación y Evolución de Tablas (CREATE, ALTER y DROP)",
+        title: "Creación y cambios de tablas (CREATE, ALTER y DROP)",
         slug: 'creacion-evolucion-tablas',
-        description: "Diseña tablas con claves primarias, foráneas y restricciones CHECK, evoluciona columnas con ALTER TABLE y retira estructuras con DROP TABLE CASCADE.",
+        description: "Crea tablas con llaves primarias, foráneas y reglas CHECK, modifica columnas con ALTER TABLE y borra tablas con DROP TABLE CASCADE.",
         sort_order: 15,
         exercises_count: 4,
         completed_count: 0,
@@ -2769,9 +2769,9 @@ export const FALLBACK_TRACKS: Track[] = [
       {
         id: 'd0000000-0000-0000-0000-000000000016',
         track_id: 'data-manipulation-ddl',
-        title: "Índices y Optimización Estructural (CREATE INDEX)",
+        title: "Índices y rendimiento (CREATE INDEX)",
         slug: 'indices-optimizacion',
-        description: "Acelera consultas creando índices B-Tree simples, índices únicos compuestos, índices parciales filtrados con WHERE y limpieza con DROP INDEX.",
+        description: "Crea índices B-Tree simples, índices únicos compuestos, índices parciales con WHERE y elimina índices con DROP INDEX.",
         sort_order: 16,
         exercises_count: 4,
         completed_count: 0,
