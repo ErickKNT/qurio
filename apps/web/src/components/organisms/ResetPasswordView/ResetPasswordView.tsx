@@ -86,11 +86,11 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
           </Badge>
 
           <h1 className="text-xl sm:text-2xl font-bold text-content-primary tracking-tight">
-            Restablecer Contraseña
+            Restablecer contraseña
           </h1>
 
           <p className="text-xs text-content-secondary leading-relaxed font-sans">
-            Introduce y confirma tu nueva clave de acceso para actualizar tus credenciales en Supabase Cloud.
+            Escribe y confirma tu nueva contraseña para actualizar tu cuenta.
           </p>
         </div>
 
@@ -103,10 +103,10 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
 
             <div className="flex flex-col gap-1">
               <h3 className="text-sm font-bold text-content-primary">
-                ¡Contraseña Actualizada con Éxito!
+                Contraseña actualizada
               </h3>
               <p className="text-xs text-content-secondary">
-                Tu clave ha sido reconfigurada. Ahora puedes acceder con tus nuevas credenciales.
+                Ya puedes iniciar sesión con tu nueva contraseña.
               </p>
             </div>
 
@@ -117,7 +117,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
               rightIcon={<ArrowRight className="w-4 h-4" />}
               className="w-full mt-2 shadow-glow-primary"
             >
-              Continuar al Dashboard
+              Continuar al inicio
             </Button>
           </div>
         ) : isSupabaseConfigured && loading ? (
@@ -147,7 +147,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
                   leftIcon={<RefreshCw className="w-4 h-4" />}
                   className="w-full shadow-glow-primary"
                 >
-                  Solicitar Nuevo Enlace
+                  Solicitar nuevo enlace
                 </Button>
               )}
 
@@ -159,7 +159,7 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({
                 rightIcon={<ArrowRight className="w-4 h-4" />}
                 className="w-full"
               >
-                Volver al Dashboard
+                Volver al inicio
               </Button>
             </div>
           </div>

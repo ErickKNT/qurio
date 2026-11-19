@@ -34,13 +34,13 @@ export const AuthConfirmView: React.FC<AuthConfirmViewProps> = ({
           </Badge>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold text-content-primary tracking-tight">
-            ¡Correo Verificado con Éxito!
+            Correo verificado
           </h1>
 
           <p className="text-xs sm:text-sm text-content-secondary max-w-md leading-relaxed font-sans">
-            Tu dirección de correo{' '}
+            Tu dirección{' '}
             {userEmail && <span className="font-mono text-cyan-accent font-semibold">{userEmail} </span>}
-            ha sido autenticada criptográficamente. Tu perfil en Qurio ha sido activado y vinculado a tu Sandbox de PostgreSQL.
+            quedó confirmada y tu cuenta ya está lista para guardar progreso.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export const AuthConfirmView: React.FC<AuthConfirmViewProps> = ({
             rightIcon={<ArrowRight className="w-4 h-4" />}
             className="w-full sm:flex-1 shadow-glow-primary"
           >
-            Entrar al Dashboard
+            Entrar al inicio
           </Button>
 
           <Button
@@ -92,7 +92,7 @@ export const AuthConfirmView: React.FC<AuthConfirmViewProps> = ({
             onClick={() => onNavigate('exercise')}
             className="w-full sm:flex-1 text-xs"
           >
-            Ir Directo a Resolver SQL
+            Ir directo a los retos
           </Button>
         </div>
       </div>

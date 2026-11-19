@@ -813,7 +813,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               {visibleHistory.length === 0 ? (
                 <div className="p-4 rounded-xl bg-surface-dim/50 border border-border-subtle/40 text-center text-content-muted">
                   {history.length === 0
-                    ? 'Aún no has ejecutado consultas. ¡Abre el Laboratorio SQL o resuelve un reto para ver tu historial!'
+                    ? 'Aún no has ejecutado consultas. Abre el Laboratorio SQL o resuelve un reto para ver tu historial.'
                     : 'No hay consultas exitosas recientes en la vista rápida.'}
                 </div>
               ) : (
@@ -1003,7 +1003,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               >
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs font-semibold text-content-primary truncate">
-                    Constancia Global — Plan de Estudios
+                    Constancia global del plan de estudios
                   </span>
                   <span className="text-[10px] font-mono text-content-muted">
                     {completedCount} / {totalExercises} retos totales
@@ -1019,7 +1019,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     onClick={() =>
                       handleIssueAndOpen({
                         trackId: 'global-curriculum',
-                        trackTitle: 'Plan de Estudios Completo — SQL Engineering',
+                        trackTitle: 'Plan de estudios completo (SQL)',
                         totalCount: totalExercises,
                         qaPreview: !globalUnlocked,
                       })

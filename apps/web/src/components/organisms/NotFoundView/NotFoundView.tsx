@@ -32,7 +32,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({
               <span className="w-3 h-3 rounded-full bg-amber-accent/60 border border-amber-accent/80 inline-block" />
               <span className="w-3 h-3 rounded-full bg-emerald/60 border border-emerald/80 inline-block" />
               <span className="text-xs font-mono text-content-muted ml-2">
-                bash: postgresql-client — 404 Not Found
+                bash: postgresql-client (404 Not Found)
               </span>
             </div>
 
@@ -72,7 +72,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({
 
             <div className="text-content-muted pt-1">
               <span className="text-cyan-accent font-semibold">HINT:</span>{' '}
-              La tabla o ruta relacional solicitada no fue compilada. Quizá quisiste hacer consulta en alguna de las rutas oficiales de Qurio:
+              Esa ruta no existe. Puedes volver a una de las secciones principales:
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({
             onClick={() => onNavigate('dashboard')}
             leftIcon={<LayoutDashboard className="w-4 h-4" />}
           >
-            Volver al Inicio
+            Volver al inicio
           </Button>
 
           <Button
@@ -92,7 +92,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({
             onClick={() => onNavigate('tracks')}
             leftIcon={<GitBranch className="w-4 h-4" />}
           >
-            Explorar Rutas
+            Explorar rutas
           </Button>
 
           <Button

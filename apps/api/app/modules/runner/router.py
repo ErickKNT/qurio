@@ -301,7 +301,7 @@ async def submit_exercise_solution(
         if request.solution_viewed:
             evaluation.xp_awarded = 0
             evaluation.message = (
-                "¡Reto resuelto con la solución de apoyo! (0 XP acreditados por haber consultado la solución oficial)."
+                "Reto resuelto después de ver la solución oficial (0 XP)."
             )
             if not user.is_guest:
                 await record_verified_progress(
@@ -317,7 +317,7 @@ async def submit_exercise_solution(
             # Modo invitado: no persiste en Supabase ni otorga XP oficial (D-05)
             evaluation.xp_awarded = 0
             evaluation.message = (
-                "¡Reto Superado con Éxito en modo invitado! Inicia sesión para guardar tu progreso y ganar XP."
+                "Reto superado en modo invitado. Inicia sesión para guardar tu progreso y ganar XP."
             )
         else:
             # Usuario autenticado: certificar intento mediante RPC segura
@@ -334,20 +334,19 @@ async def submit_exercise_solution(
                 # Certificación exitosa en Supabase Cloud vía RPC
                 evaluation.xp_awarded = rpc_res.get("xp_awarded", 0)
                 if evaluation.xp_awarded > 0:
-                    evaluation.message = f"¡Reto Superado con Éxito! +{evaluation.xp_awarded} XP acreditados."
+                    evaluation.message = f"Reto superado. +{evaluation.xp_awarded} XP sumados."
                 elif rpc_res.get("already_awarded") or rpc_res.get("already_passed"):
                     evaluation.message = (
-                        "¡Reto resuelto correctamente! (Ya habías completado este reto previamente, ¡gran práctica!)"
+                        "Consulta correcta (este reto ya estaba completado)."
                     )
                 else:
-                    evaluation.message = "¡Reto Superado con Éxito!"
+                    evaluation.message = "Reto superado."
             else:
                 # Alternativa B: Modo de contingencia técnica (RPC inexistente tras rollback, falla de red o service_role ausente)
                 # Regla de oro: No adjudicar XP no certificado ni engañar al cliente con falso progreso oficial
                 evaluation.xp_awarded = 0
                 evaluation.message = (
-                    "¡Reto resuelto correctamente! Modo de contingencia: tu consulta es válida, "
-                    "pero la certificación oficial de XP no está disponible temporalmente."
+                    "Consulta correcta, pero el registro de XP no está disponible en este momento."
                 )
     elif evaluation.status == EvaluationStatus.FAILED and not user.is_guest:
         # Registrar intento fallido para analítica sin otorgar XP

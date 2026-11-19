@@ -51,17 +51,17 @@ export const GuestTrialCompleteModal: React.FC<GuestTrialCompleteModalProps> = (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Badge variant="emerald" dot size="sm">
-                Prueba Superada
+                Prueba superada
               </Badge>
               <Badge variant="mono" size="sm">
-                Modo Invitado
+                Modo invitado
               </Badge>
             </div>
             <h2
               id="trial-complete-title"
               className="text-xl font-bold tracking-tight text-content-primary flex items-center gap-2"
             >
-              <span>¡Completaste tu prueba inicial!</span>
+              <span>Completaste la prueba inicial</span>
               <Sparkles className="w-5 h-5 text-amber-streak shrink-0" />
             </h2>
           </div>
@@ -91,10 +91,10 @@ export const GuestTrialCompleteModal: React.FC<GuestTrialCompleteModalProps> = (
           <div className="p-3 rounded-xl bg-surface/70 border border-border-subtle/80 flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-amber-streak text-xs font-mono font-semibold">
               <Zap className="w-4 h-4 fill-current shrink-0" />
-              <span>+{earnedXp} XP Ganados</span>
+              <span>+{earnedXp} XP ganados</span>
             </div>
             <span className="text-[11px] text-content-muted font-mono">
-              Resguardados en sesión
+              Guardados en sesión
             </span>
           </div>
         </div>
@@ -103,13 +103,13 @@ export const GuestTrialCompleteModal: React.FC<GuestTrialCompleteModalProps> = (
         <div className="p-3.5 rounded-xl bg-gradient-to-br from-surface to-emerald/[0.04] border border-border-subtle/80 text-xs text-content-secondary leading-relaxed flex flex-col gap-2 relative z-10">
           <div className="flex items-center gap-1.5 text-content-primary font-semibold text-[11px] uppercase tracking-wider font-mono">
             <ShieldCheck className="w-4 h-4 text-emerald" />
-            <span>Progreso Listo para Sincronizar</span>
+            <span>Progreso listo para guardar</span>
           </div>
           <p>
-            Has dominado las proyecciones básicas, alias y cálculos con IVA. Tus <strong className="text-content-primary font-mono">+{earnedXp} XP</strong> están guardados temporalmente en tu navegador.
+            Ya resolviste los primeros retos con proyecciones, alias y cálculos. Tus <strong className="text-content-primary font-mono">+{earnedXp} XP</strong> están guardados en este navegador.
           </p>
           <p className="text-content-muted text-[11px]">
-            Crea tu cuenta gratuita para certificar tu XP en la nube, registrar tu racha diaria y desbloquear los <strong className="text-cyan-accent">{remainingCount} retos restantes</strong> del plan de estudios.
+            Crea una cuenta gratis para guardar tu XP en la nube, llevar tu racha diaria y abrir los <strong className="text-cyan-accent">{remainingCount} retos restantes</strong> del temario.
           </p>
         </div>
 
@@ -121,17 +121,17 @@ export const GuestTrialCompleteModal: React.FC<GuestTrialCompleteModalProps> = (
             className="w-full justify-center text-xs sm:text-sm font-semibold shadow-glow-emerald"
             rightIcon={<ArrowRight className="w-4 h-4" />}
           >
-            Crear Cuenta Gratuita
+            Crear cuenta gratis
           </Button>
 
           <div className="flex items-center justify-between text-xs font-mono text-content-muted px-1">
-            <span>¿Ya tienes una cuenta?</span>
+            <span>¿Ya tienes cuenta?</span>
             <button
               type="button"
               onClick={onOpenSignIn}
               className="text-cyan-accent hover:underline font-semibold transition-colors"
             >
-              Iniciar Sesión
+              Iniciar sesión
             </button>
           </div>
         </div>

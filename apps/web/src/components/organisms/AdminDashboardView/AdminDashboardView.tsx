@@ -568,7 +568,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <section className="flex flex-col gap-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-sm font-mono uppercase tracking-wider text-content-secondary">
-                Telemetría en Tiempo Real — Docker PostgreSQL 16
+                Telemetría en tiempo real: Docker PostgreSQL 16
               </h2>
               <div className="flex items-center gap-2">
                 <Button
@@ -631,7 +631,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <div className="rounded-xl border border-border-subtle/80 bg-surface overflow-hidden">
               <div className="px-4 py-3 bg-surface-dim/80 border-b border-border-subtle/70 flex items-center justify-between">
                 <span className="text-xs font-mono font-semibold text-content-primary">
-                  pg_stat_activity — Consultas Activas en ecommerce_sandbox
+                  pg_stat_activity: consultas activas en ecommerce_sandbox
                 </span>
                 <span className="text-[11px] font-mono text-content-muted tabular-nums">
                   {liveOps?.active_queries.length ?? 0} activas

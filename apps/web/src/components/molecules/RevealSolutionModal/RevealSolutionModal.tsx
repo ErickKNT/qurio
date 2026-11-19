@@ -49,7 +49,7 @@ export const RevealSolutionModal: React.FC<RevealSolutionModalProps> = ({
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Badge variant="amber" dot size="sm">
-                Apoyo Pedagógico
+                Ayuda opcional
               </Badge>
               <Badge variant="mono" size="sm">
                 {failedAttempts} {failedAttempts === 1 ? 'intento fallido' : 'intentos fallidos'}
@@ -59,7 +59,7 @@ export const RevealSolutionModal: React.FC<RevealSolutionModalProps> = ({
               id="reveal-solution-title"
               className="text-lg sm:text-xl font-bold tracking-tight text-content-primary flex items-center gap-2"
             >
-              <span>Desbloquear Solución Oficial</span>
+              <span>Ver solución oficial</span>
               <Unlock className="w-5 h-5 text-amber-streak shrink-0" />
             </h2>
           </div>
@@ -93,20 +93,20 @@ export const RevealSolutionModal: React.FC<RevealSolutionModalProps> = ({
               </span>
               <ul className="list-disc list-inside space-y-1 text-[11px] text-content-secondary">
                 <li>
-                  Este reto otorgará <strong className="text-amber-streak font-mono">0 XP</strong> oficiales en tu perfil.
+                  Este reto otorgará <strong className="text-amber-streak font-mono">0 XP</strong> en tu perfil.
                 </li>
                 <li>
-                  La acción se registrará en la telemetría docente de Qurio para analizar qué retos presentan mayor dificultad y mejorarlos.
+                  El desbloqueo queda registrado para saber qué retos presentan más dificultad y ajustarlos.
                 </li>
                 <li>
-                  Podrás examinar la consulta SQL completa y cargarla directamente en el editor para comprender su lógica.
+                  Podrás revisar la consulta SQL completa y cargarla en el editor para entender cómo funciona.
                 </li>
               </ul>
             </div>
           </div>
 
           <p className="text-[11px] text-content-muted">
-            Nuestro objetivo no es frustrarte, sino ayudarte a comprender cómo se estructura la consulta cuando te atascas.
+            Úsala si te quedaste atascado para ver la estructura de la consulta.
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export const RevealSolutionModal: React.FC<RevealSolutionModalProps> = ({
             disabled={isLoading}
             className="w-full sm:w-auto text-xs"
           >
-            Seguir intentando solo
+            Seguir intentando
           </Button>
 
           <Button
@@ -132,7 +132,7 @@ export const RevealSolutionModal: React.FC<RevealSolutionModalProps> = ({
             leftIcon={<Unlock className="w-3.5 h-3.5" />}
             className="w-full sm:w-auto text-xs bg-amber-streak text-canvas font-bold hover:bg-amber-streak/90 shadow-glow-amber border-transparent"
           >
-            Revelar Solución Oficial
+            Ver solución oficial
           </Button>
         </div>
       </div>

@@ -278,7 +278,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 <div className="flex items-center justify-between text-[11px] font-mono font-semibold uppercase tracking-wider text-primary gap-2">
                   <span className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    Concepto Clave & Sintaxis
+                    Concepto clave y sintaxis
                   </span>
                   {activeModuleGuide ? (
                     <button
@@ -291,7 +291,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                       <span>Guía del módulo</span>
                     </button>
                   ) : (
-                    <span className="text-[10px] text-content-muted font-normal">Guía Paso a Paso</span>
+                    <span className="text-[10px] text-content-muted font-normal">Guía paso a paso</span>
                   )}
                 </div>
 
@@ -336,25 +336,25 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
               </div>
             )}
 
-            {/* Consigna del Reto */}
+            {/* Instrucciones del Reto */}
             <div className="flex flex-col gap-2">
               <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-cyan-accent flex items-center gap-1.5">
                 <BookOpen className="w-3.5 h-3.5" />
-                Consigna del Negocio
+                Instrucciones
               </span>
               <div className="text-xs text-content-secondary leading-relaxed bg-surface/50 p-3 rounded-xl border border-border-subtle/60 shadow-sm">
                 <p>{formatSqlProse(exercise.prompt)}</p>
 
                 {/* Botón rápido para inspeccionar la tabla en la pestaña muestra */}
                 <div className="mt-3 pt-2.5 border-t border-border-subtle/40 flex items-center justify-between text-[11px] font-mono text-content-muted">
-                  <span>¿Deseas ver los valores reales?</span>
+                  <span>¿Quieres ver los datos reales?</span>
                   <button
                     type="button"
                     onClick={() => setActiveTab('sample')}
                     className="text-cyan-accent hover:underline flex items-center gap-1 font-semibold"
                   >
                     <Table2 className="w-3 h-3 text-cyan-accent" />
-                    <span>Ver Muestra de Datos</span>
+                    <span>Ver datos de muestra</span>
                   </button>
                 </div>
               </div>
@@ -619,9 +619,9 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
             <div className="flex flex-col gap-2">
               {exercise.hints?.slice(0, unlockedHintsCount).map((hint, index) => {
                 const levelLabels = [
-                  'Nivel 1 • Enfoque Conceptual',
+                  'Nivel 1 • Idea general',
                   'Nivel 2 • Estructura SQL',
-                  'Nivel 3 • Plantilla Guiada',
+                  'Nivel 3 • Plantilla guiada',
                 ];
                 return (
                   <div
@@ -630,7 +630,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-mono text-[10px] text-amber-streak font-semibold">
-                        Pista #{index + 1} — {levelLabels[index] || 'Apoyo Progresivo'}
+                        Pista #{index + 1} ({levelLabels[index] || 'Ayuda progresiva'})
                       </span>
                     </div>
                     <p className="leading-relaxed">{formatSqlProse(hint)}</p>
@@ -642,7 +642,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                 <div className="p-4 rounded-xl bg-surface-card/40 border border-border-subtle/50 text-center flex flex-col items-center gap-2">
                   <Lightbulb className="w-6 h-6 text-amber-streak opacity-80" />
                   <p className="text-xs text-content-muted">
-                    ¿Te trabaste? Las pistas avanzan por capas (Conceptual → Estructura → Plantilla con huecos) para entrenar tu criterio antes de reducir XP.
+                    ¿Te trabaste? Las pistas van de menor a mayor detalle (idea general → estructura → plantilla con huecos).
                   </p>
                   <Button
                     variant="ghost"
@@ -675,7 +675,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                       onClick={() => setActiveTab('solution')}
                       className="text-xs border-emerald/40 text-emerald hover:bg-emerald/10 mt-1"
                     >
-                      Ver Solución Oficial en Detalle
+                      Ver solución oficial
                     </Button>
                   </div>
                 ) : failedAttemptsCount < 2 ? (
@@ -683,12 +683,12 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                     <div className="flex items-center justify-between text-xs font-mono text-content-muted">
                       <span className="flex items-center gap-1.5">
                         <Lock className="w-3.5 h-3.5 text-content-muted" />
-                        Solución Oficial de Apoyo
+                        Solución oficial
                       </span>
                       <span className="text-[10px] font-mono">{failedAttemptsCount}/2 intentos fallidos</span>
                     </div>
                     <p className="text-[11px] text-content-muted leading-relaxed">
-                      Para afianzar tu razonamiento, la solución oficial se desbloquea tras acumular al menos 2 intentos fallidos en este ejercicio.
+                      La solución oficial se desbloquea después de 2 intentos fallidos en este ejercicio.
                     </p>
                     <Button
                       variant="ghost"
@@ -696,7 +696,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                       disabled
                       className="text-xs opacity-50 cursor-not-allowed justify-start px-0 text-content-muted"
                     >
-                      🔒 Ver Solución (Bloqueado • {failedAttemptsCount}/2 intentos)
+                      Ver solución (bloqueado • {failedAttemptsCount}/2 intentos)
                     </Button>
                   </div>
                 ) : (
@@ -709,7 +709,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                       <Badge variant="amber" size="sm">{failedAttemptsCount} intentos</Badge>
                     </div>
                     <p className="text-[11px] text-content-secondary leading-relaxed">
-                      Has alcanzado los 2 intentos fallidos requeridos. Si necesitas desbloquear la solución oficial, puedes hacerlo ahora (otorgará 0 XP).
+                      Ya acumulaste 2 intentos fallidos. Puedes ver la solución oficial ahora (otorgará 0 XP).
                     </p>
                     <Button
                       variant="primary"
@@ -718,7 +718,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                       leftIcon={<Unlock className="w-3.5 h-3.5" />}
                       className="text-xs bg-amber-streak text-canvas font-bold hover:bg-amber-streak/90 border-transparent shadow-glow-amber mt-1"
                     >
-                      Desbloquear Solución Oficial
+                      Ver solución oficial
                     </Button>
                   </div>
                 )}
@@ -735,26 +735,26 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-streak flex items-center gap-1.5">
                 <Unlock className="w-3.5 h-3.5 text-amber-streak" />
-                Solución Oficial de Referencia
+                Solución oficial
               </span>
               <Badge variant="amber" size="sm">
-                0 XP Acreditados
+                0 XP
               </Badge>
             </div>
 
             <div className="p-3 rounded-lg bg-surface-card border border-amber-streak/30 text-xs text-content-secondary leading-relaxed">
-              <span className="font-semibold text-content-primary">💡 Explicación de la solución:</span>
+              <span className="font-semibold text-content-primary">Explicación de la solución:</span>
               <p className="mt-1 font-sans">
                 {formatSqlProse(
                   exercise.concept?.summary ||
-                    'Esta consulta resuelve los requerimientos del reto aplicando las cláusulas estándar en PostgreSQL.'
+                    'Esta consulta resuelve el reto con cláusulas estándar de PostgreSQL.'
                 )}
               </p>
             </div>
 
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between text-[11px] text-content-muted">
-                <span>Sentencia SQL Certificada:</span>
+                <span>Consulta SQL:</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -767,7 +767,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                   {copiedSolution ? (
                     <>
                       <Check className="w-3.5 h-3.5 text-emerald" />
-                      <span className="text-emerald">¡Copiado!</span>
+                      <span className="text-emerald">Copiado</span>
                     </>
                   ) : (
                     <>
@@ -790,7 +790,7 @@ export const ExerciseSpecPanel: React.FC<ExerciseSpecPanelProps> = ({
                   leftIcon={<Code2 className="w-3.5 h-3.5 text-cyan-accent" />}
                   className="mt-2 text-xs border-cyan-accent/30 text-content-primary hover:border-cyan-accent hover:bg-cyan-accent/10"
                 >
-                  Cargar Consulta en el Editor y Ejecutar
+                  Cargar en el editor y ejecutar
                 </Button>
               )}
             </div>

@@ -38,7 +38,7 @@ const PLAYGROUND_SPLIT_STORAGE_KEY = 'qurio_playground_results_pct';
 const TABS_STORAGE_KEY = 'qurio_playground_tabs_v1';
 const MAX_TABS = 6;
 const DEFAULT_SQL =
-  '-- Laboratorio SQL — Qurio\n-- Escribe cualquier consulta libre contra la base de datos de práctica\nSELECT cliente_id, nombre, apellido, email, ciudad\nFROM clientes\nLIMIT 10;';
+  '-- Laboratorio SQL (Qurio)\n-- Escribe cualquier consulta libre contra la base de datos de práctica\nSELECT cliente_id, nombre, apellido, email, ciudad\nFROM clientes\nLIMIT 10;';
 
 function loadInitialTabs(initialQuery?: string): { tabs: PlaygroundTab[]; activeId: string } {
   const defaultTab: PlaygroundTab = {
@@ -70,22 +70,22 @@ function loadInitialTabs(initialQuery?: string): { tabs: PlaygroundTab[]; active
 
 const STARTER_QUERIES = [
   {
-    name: 'Top 5 Clientes Recientes',
+    name: 'Top 5 clientes recientes',
     description: 'Proyección ordenada por fecha de registro',
     query: 'SELECT cliente_id, nombre, apellido, ciudad, fecha_registro\nFROM clientes\nORDER BY fecha_registro DESC\nLIMIT 5;',
   },
   {
-    name: 'Stock y Valor de Inventario',
+    name: 'Stock y valor de inventario',
     description: 'Cálculo de precio * stock por producto',
     query: 'SELECT nombre_producto, precio, stock, (precio * stock) AS valor_inventario\nFROM productos\nORDER BY valor_inventario DESC\nLIMIT 10;',
   },
   {
-    name: 'Pedidos por Estado',
+    name: 'Pedidos por estado',
     description: 'Agrupación y sumatoria de totales de venta',
     query: 'SELECT estado_pedido, COUNT(*) AS total_pedidos, SUM(total) AS monto_total\nFROM pedidos\nGROUP BY estado_pedido;',
   },
   {
-    name: 'Clientes sin Compras (LEFT JOIN)',
+    name: 'Clientes sin compras (LEFT JOIN)',
     description: 'Detección de registros huérfanos con IS NULL',
     query: 'SELECT c.cliente_id, c.nombre, c.apellido, c.email\nFROM clientes c\nLEFT JOIN pedidos p ON c.cliente_id = p.cliente_id\nWHERE p.pedido_id IS NULL;',
   },

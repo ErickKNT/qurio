@@ -23,13 +23,13 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'a0000000-0000-0000-0000-000000000001',
     moduleNumber: 1,
-    title: 'Proyecciones y Expresiones',
+    title: 'Columnas y expresiones',
     trackTitle: '1. Fundamentos de SQL',
     summary:
       'Aprenderás a elegir exactamente qué columnas mostrar con SELECT, renombrar encabezados con AS, calcular expresiones al vuelo (aritmética, ROUND, concatenación ||) y eliminar valores duplicados con DISTINCT.',
-    executionOrder: 'FROM (ubica la tabla) → SELECT (calcula expresiones y proyecta columnas) → DISTINCT (descarta filas repetidas)',
+    executionOrder: 'FROM (ubica la tabla) → SELECT (calcula expresiones y muestra columnas) → DISTINCT (descarta filas repetidas)',
     transformDiagram: {
-      title: 'Proyección selectiva y cálculo al vuelo',
+      title: 'Selección selectiva y cálculo al vuelo',
       clauseBadge: 'SELECT · AS · DISTINCT',
       inputs: [
         {
@@ -44,7 +44,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
       ],
       operationLabel: 'SELECT titulo, ROUND(precio * 1.21, 2) AS total',
       output: {
-        title: 'Resultado proyectado',
+        title: 'Resultado mostrado',
         accent: 'emerald',
         columns: ['titulo', 'total'],
         rows: [
@@ -71,12 +71,12 @@ export const MODULE_GUIDES: ModuleGuide[] = [
       'Olvidar que concatenar un valor NULL con || convierte toda la cadena resultante en NULL.',
     ],
     productionTip:
-      'Evita SELECT * en consultas de producción: proyectar solo las columnas necesarias reduce tráfico de red, memoria y permite aprovechar índices de cobertura.',
+      'Evita SELECT * en consultas de producción: mostrar solo las columnas necesarias reduce tráfico de red, memoria y permite aprovechar índices de cobertura.',
   },
   {
     moduleId: 'a0000000-0000-0000-0000-000000000002',
     moduleNumber: 2,
-    title: 'Filtrado Lógico',
+    title: 'Filtrado lógico',
     trackTitle: '1. Fundamentos de SQL',
     summary:
       'Filtrarás registros específicos mediante WHERE combinando operadores de comparación (=, <>, >, <, >=, <=), lógica booleana (AND, OR, NOT), rangos con BETWEEN, listas con IN, patrones con LIKE/ILIKE y detección de nulos con IS NULL.',
@@ -112,7 +112,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
       {
         title: 'Precedencia de AND sobre OR con paréntesis',
         sql: "SELECT nombre, departamento, salario\nFROM empleados\nWHERE (departamento = 'Datos' OR departamento = 'Backend')\n  AND salario >= 3000;",
-        explanation: 'AND tiene mayor precedencia que OR; usar paréntesis garantiza que el filtro de salario aplique a ambos departamentos.',
+        explanation: 'AND tiene mayor precedencia que OR; usa paréntesis para que el filtro de salario aplique a ambos departamentos.',
       },
       {
         title: 'Rangos inclusivos y patrones de texto',
@@ -130,7 +130,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'a0000000-0000-0000-0000-000000000003',
     moduleNumber: 3,
-    title: 'Ordenamiento y Paginación',
+    title: 'Ordenamiento y paginación',
     trackTitle: '1. Fundamentos de SQL',
     summary:
       'Controlarás el orden determinista de salida con ORDER BY (ASC/DESC), aprenderás a desempatar empates mediante múltiples criterios y paginarás resultados con LIMIT y OFFSET.',
@@ -164,13 +164,13 @@ export const MODULE_GUIDES: ModuleGuide[] = [
     },
     workedExamples: [
       {
-        title: 'Paginación por bloques (Página 2 de 5 registros)',
+        title: 'Paginación por bloques (página 2 de 5 registros)',
         sql: "SELECT ticket_id, prioridad, creado_en\nFROM soporte\nORDER BY prioridad DESC, ticket_id ASC\nLIMIT 5 OFFSET 5;",
         explanation: 'OFFSET 5 salta los primeros 5 resultados ya ordenados y LIMIT 5 devuelve los siguientes 5.',
       },
     ],
     commonMistakes: [
-      'Usar LIMIT sin ORDER BY: las tablas relacionales son conjuntos sin orden garantizado.',
+      'Usar LIMIT sin ORDER BY: las tablas no tienen un orden fijo.',
       'Ordenar por una columna con empates sin añadir una clave primaria como desempate secundario.',
     ],
     productionTip:
@@ -179,7 +179,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'a0000000-0000-0000-0000-000000000004',
     moduleNumber: 4,
-    title: 'Agregación y Agrupación',
+    title: 'Agregación y agrupación',
     trackTitle: '1. Fundamentos de SQL',
     summary:
       'Resumirás conjuntos completos o grupos lógicos con COUNT, SUM, AVG, MIN y MAX, consolidarás filas mediante GROUP BY y aplicarás filtros posteriores sobre métricas agregadas usando HAVING.',
@@ -225,7 +225,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'b0000000-0000-0000-0000-000000000005',
     moduleNumber: 5,
-    title: 'Uniones Base (INNER JOIN)',
+    title: 'Uniones base (INNER JOIN)',
     trackTitle: '2. SQL Relacional',
     summary:
       'Cruzarás información normalizada entre dos tablas relacionadas mediante claves primarias y foráneas usando INNER JOIN ... ON y alias de tabla para mantener consultas limpias.',
@@ -276,7 +276,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'b0000000-0000-0000-0000-000000000006',
     moduleNumber: 6,
-    title: 'Ausencias y Ceros (LEFT JOIN & COALESCE)',
+    title: 'Ausencias y ceros (LEFT JOIN & COALESCE)',
     trackTitle: '2. SQL Relacional',
     summary:
       'Conservarás todas las entidades de la tabla principal aunque no tengan registros relacionados usando LEFT JOIN, detectarás registros huérfanos con IS NULL y sustituirás nulos por ceros o textos legibles con COALESCE.',
@@ -333,7 +333,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
     title: 'Cadenas Multi-Tabla',
     trackTitle: '2. SQL Relacional',
     summary:
-      'Encadenarás de 3 a 5 tablas siguiendo la ruta de claves foráneas en cascada (por ejemplo, entidad raíz → cabecera → detalle → catálogo) vigilando la cardinalidad para evitar inflar sumatorias.',
+      'Encadenarás de 3 a 5 tablas siguiendo la ruta de claves foráneas en cascada (por ejemplo, entidad raíz → cabecera → detalle → catálogo) vigilando la número de filas para evitar inflar sumatorias.',
     executionOrder: 'FROM A → JOIN B ON A=B → JOIN C ON B=C → JOIN D ON C=D → GROUP BY → SELECT',
     transformDiagram: {
       title: 'Navegación relacional en cascada (3+ tablas)',
@@ -371,7 +371,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'b0000000-0000-0000-0000-000000000008',
     moduleNumber: 8,
-    title: 'Operadores de Conjuntos',
+    title: 'Operadores de conjuntos',
     trackTitle: '2. SQL Relacional',
     summary:
       'Combinarás verticalmente resultados de múltiples consultas con estructura compatible usando UNION (sin duplicados), UNION ALL (conservando todo), INTERSECT (elementos comunes) y EXCEPT (diferencia entre conjuntos).',
@@ -465,7 +465,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'c0000000-0000-0000-0000-000000000010',
     moduleNumber: 10,
-    title: 'Lógica Condicional (CASE WHEN)',
+    title: 'Lógica condicional (CASE WHEN)',
     trackTitle: '3. Consultas Avanzadas',
     summary:
       'Clasificarás registros dinámicamente con expresiones CASE WHEN ... THEN ... ELSE ... END y construirás tablas resumen (pivoteo condicional) combinando SUM(CASE WHEN ... THEN 1 ELSE 0 END) o FILTER en PostgreSQL.',
@@ -513,7 +513,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'c0000000-0000-0000-0000-000000000011',
     moduleNumber: 11,
-    title: 'CTEs Modulares (WITH)',
+    title: 'CTEs modulares (WITH)',
     trackTitle: '3. Consultas Avanzadas',
     summary:
       'Dividirás consultas analíticas complejas en pasos legibles y reutilizables usando Common Table Expressions (WITH nombre AS (...)), encadenando agregaciones previas antes de unir o comparar contra promedios.',
@@ -557,7 +557,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'c0000000-0000-0000-0000-000000000012',
     moduleNumber: 12,
-    title: 'Funciones de Ventana',
+    title: 'Funciones de ventana',
     trackTitle: '3. Consultas Avanzadas',
     summary:
       'Calcularás rankings (ROW_NUMBER, RANK, DENSE_RANK), acumulados (SUM() OVER) y comparaciones con filas anteriores o siguientes (LAG, LEAD) sin colapsar las filas originales de la tabla.',
@@ -607,13 +607,13 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'd0000000-0000-0000-0000-000000000013',
     moduleNumber: 13,
-    title: 'Inserción de Registros (INSERT)',
+    title: 'Inserción de registros (INSERT)',
     trackTitle: '4. Ingeniería y Manipulación de Datos',
     summary:
-      'Aprenderás a registrar nuevas tuplas con INSERT INTO ... VALUES, cargar lotes multi-fila de forma atómica, proyectar inmediatamente claves generadas con RETURNING y poblar tablas a partir de consultas con INSERT INTO ... SELECT.',
-    executionOrder: 'Evalúa expresiones VALUES / ejecuta SELECT origen → Asigna secuencias SERIAL / DEFAULT → Valida restricciones (NOT NULL, UNIQUE, FK, CHECK) → Inserta tuplas → Proyecta RETURNING',
+      'Aprenderás a registrar nuevas filas con INSERT INTO ... VALUES, cargar lotes multi-fila de forma atómica, mostrar inmediatamente claves generadas con RETURNING y poblar tablas a partir de consultas con INSERT INTO ... SELECT.',
+    executionOrder: 'Evalúa expresiones VALUES / ejecuta SELECT origen → Asigna secuencias SERIAL / DEFAULT → Valida restricciones (NOT NULL, UNIQUE, FK, CHECK) → Inserta filas → Muestra RETURNING',
     transformDiagram: {
-      title: 'Inserción atómica con proyección RETURNING',
+      title: 'Inserción atómica con selección RETURNING',
       clauseBadge: 'INSERT INTO · VALUES · RETURNING',
       inputs: [
         {
@@ -657,11 +657,11 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'd0000000-0000-0000-0000-000000000014',
     moduleNumber: 14,
-    title: 'Actualización y Eliminación Segura (UPDATE y DELETE)',
+    title: 'Actualización y eliminación segura (UPDATE y DELETE)',
     trackTitle: '4. Ingeniería y Manipulación de Datos',
     summary:
       'Modificarás registros existentes con UPDATE ... SET ... WHERE, auditarás cambios al vuelo con RETURNING, cruzarás tablas en actualizaciones mediante UPDATE ... FROM y depurarás registros obsoletos de forma segura con DELETE FROM ... WHERE.',
-    executionOrder: 'FROM (tablas auxiliares si existen) → WHERE (localiza tuplas objetivo) → SET / DELETE (valida FK/CHECK y genera nueva versión de tupla MVCC) → RETURNING',
+    executionOrder: 'FROM (tablas auxiliares si existen) → WHERE (localiza filas objetivo) → SET / DELETE (valida FK/CHECK y genera nueva versión de fila MVCC) → RETURNING',
     transformDiagram: {
       title: 'Actualización selectiva acotada por WHERE',
       clauseBadge: 'UPDATE · SET · FROM · DELETE',
@@ -686,7 +686,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
           [2, 'Pro', 220],
         ],
       },
-      caption: 'El predicado WHERE garantiza que únicamente la fila con plan_id = 2 sea modificada.',
+      caption: 'El filtro WHERE hace que solo se modifique la fila con plan_id = 2.',
     },
     workedExamples: [
       {
@@ -710,10 +710,10 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'd0000000-0000-0000-0000-000000000015',
     moduleNumber: 15,
-    title: 'Creación y Evolución de Tablas (CREATE, ALTER y DROP)',
+    title: 'Creación y evolución de tablas (CREATE, ALTER y DROP)',
     trackTitle: '4. Ingeniería y Manipulación de Datos',
     summary:
-      'Diseñarás esquemas relacionales robustos con CREATE TABLE, tipos de datos exactos, claves primarias y foráneas (REFERENCES), reglas de negocio con CHECK, evolución sin pérdida de datos mediante ALTER TABLE y retiro limpio con DROP TABLE IF EXISTS ... CASCADE.',
+      'Diseñarás esquemas relacionales con CREATE TABLE, tipos de datos exactos, claves primarias y foráneas (REFERENCES), reglas con CHECK, cambios sin pérdida de datos con ALTER TABLE y borrado limpio con DROP TABLE IF EXISTS ... CASCADE.',
     executionOrder: 'Verifica existencia en catálogo → Registra estructura y tipos en pg_class/pg_attribute → Crea índices implícitos (PK/UNIQUE) y enlaces en pg_constraint',
     transformDiagram: {
       title: 'Evolución estructural con ALTER TABLE',
@@ -752,17 +752,17 @@ export const MODULE_GUIDES: ModuleGuide[] = [
   {
     moduleId: 'd0000000-0000-0000-0000-000000000016',
     moduleNumber: 16,
-    title: 'Índices y Optimización Estructural (CREATE INDEX)',
+    title: 'Índices y optimización estructural (CREATE INDEX)',
     trackTitle: '4. Ingeniería y Manipulación de Datos',
     summary:
       'Optimizarás el acceso físico a los datos creando índices B-Tree simples, índices únicos compuestos (CREATE UNIQUE INDEX), índices parciales filtrados con WHERE para colas operativas y limpieza de índices redundantes con DROP INDEX IF EXISTS.',
-    executionOrder: 'Escanea tuplas de la tabla → Filtra predicado WHERE (si es índice parcial) → Ordena claves y verifica unicidad → Construye páginas del árbol B-Tree → Publica en pg_indexes',
+    executionOrder: 'Escanea filas de la tabla → Filtra condición WHERE (si es índice parcial) → Ordena claves y verifica unicidad → Construye páginas del árbol B-Tree → Publica en pg_indexes',
     transformDiagram: {
       title: 'De escaneo secuencial O(N) a búsqueda B-Tree O(log N)',
       clauseBadge: 'CREATE INDEX · UNIQUE · PARTIAL WHERE · DROP INDEX',
       inputs: [
         {
-          title: 'Sin índice (Seq Scan)',
+          title: 'Sin índice (seq scan)',
           accent: 'amber',
           columns: ['Operación', 'Filas leídas'],
           rows: [['WHERE estado = pendiente', '100% de la tabla']],
@@ -770,7 +770,7 @@ export const MODULE_GUIDES: ModuleGuide[] = [
       ],
       operationLabel: "CREATE INDEX idx_pendientes ON ordenes (fecha) WHERE estado = 'pendiente'",
       output: {
-        title: 'Con índice parcial (Index Scan)',
+        title: 'Con índice parcial (index scan)',
         accent: 'emerald',
         columns: ['Operación', 'Filas leídas'],
         rows: [['WHERE estado = pendiente', 'Solo punteros activos']],

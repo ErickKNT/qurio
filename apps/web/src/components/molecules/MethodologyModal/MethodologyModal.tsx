@@ -21,24 +21,24 @@ export interface MethodologyModalProps {
 const SCAFFOLDING_LAYERS = [
   {
     step: 'Capa 1',
-    title: 'Concepto Abstracto',
-    badge: 'Sin spoilers',
+    title: 'Concepto sin spoilers',
+    badge: 'Teoría',
     detail:
-      'Explicación del modelo relacional con metavariables genéricas (tabla_origen, columna_1) y el orden real de ejecución en PostgreSQL.',
+      'Explicación con nombres genéricos (tabla_origen, columna_1) y el orden real de ejecución en PostgreSQL.',
   },
   {
     step: 'Capa 2',
-    title: '3 Pistas Progresivas',
-    badge: 'Andamiaje',
+    title: '3 pistas progresivas',
+    badge: 'Guía',
     detail:
-      'Nivel 1 (lógica conceptual) → Nivel 2 (cláusulas y operadores) → Nivel 3 (plantilla estructural con huecos ???).',
+      'Nivel 1 (idea general) → Nivel 2 (cláusulas y operadores) → Nivel 3 (plantilla con huecos ???).',
   },
   {
     step: 'Capa 3',
-    title: 'Validación Semántica Real',
-    badge: 'PostgreSQL 16',
+    title: 'Validación en PostgreSQL 16',
+    badge: 'Sandbox',
     detail:
-      'Tu consulta corre en el Sandbox Docker aislado y se contrastan filas, columnas, nulos y escala numérica frente a la salida canónica.',
+      'Tu consulta corre en el sandbox Docker aislado y compara filas, columnas, nulos y valores numéricos contra el resultado esperado.',
   },
 ] as const;
 
@@ -137,10 +137,10 @@ export const MethodologyModal: React.FC<MethodologyModalProps> = ({ isOpen, onCl
                 id="methodology-modal-title"
                 className="text-base sm:text-lg font-bold text-content-primary tracking-tight"
               >
-                Metodología Pedagógica y Rigor Técnico
+                Metodología y diseño de retos
               </h2>
               <p className="text-xs text-content-secondary truncate">
-                Por qué cada reto, pista y evaluación en Qurio sigue evidencia empírica y ejecución real.
+                Cómo se diseñan los retos, las pistas y la evaluación en PostgreSQL.
               </p>
             </div>
           </div>

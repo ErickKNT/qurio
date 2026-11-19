@@ -96,7 +96,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   onClick={() => setPrivacyModalOpen(true)}
                   className="hover:text-content-primary transition-colors hover:underline"
                 >
-                  Privacidad & Términos
+                  Privacidad y términos
                 </button>
                 <a
                   href="https://github.com/ErickKNT/qurio"

@@ -21,11 +21,11 @@ describe('Visualización Pedagógica, Psicológica y Técnica en Qurio', () => {
     const handleOpen = vi.fn();
     render(React.createElement(PedagogyPillarsCard, { onOpenMethodology: handleOpen }));
 
-    expect(screen.getByText('Carga Cognitiva Gradual')).toBeInTheDocument();
-    expect(screen.getByText('Andamiaje en 3 Capas')).toBeInTheDocument();
-    expect(screen.getByText('Motor Real PostgreSQL 16')).toBeInTheDocument();
+    expect(screen.getByText('Carga cognitiva gradual')).toBeInTheDocument();
+    expect(screen.getByText('Pistas en 3 capas')).toBeInTheDocument();
+    expect(screen.getByText('PostgreSQL 16 real')).toBeInTheDocument();
 
-    const trigger = screen.getByRole('button', { name: /Ver Metodología y Respaldo/i });
+    const trigger = screen.getByRole('button', { name: /Ver metodología/i });
     fireEvent.click(trigger);
     expect(handleOpen).toHaveBeenCalledTimes(1);
   });
@@ -35,7 +35,7 @@ describe('Visualización Pedagógica, Psicológica y Técnica en Qurio', () => {
     render(React.createElement(MethodologyModal, { isOpen: true, onClose: handleClose }));
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('Metodología Pedagógica y Rigor Técnico')).toBeInTheDocument();
+    expect(screen.getByText('Metodología y diseño de retos')).toBeInTheDocument();
     expect(screen.getByText(/PostgreSQL 16 Sandbox/i)).toBeInTheDocument();
     expect(screen.getByText(/Inspección AST \(SQLGlot\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Brass, S\. & Goldberg, C\. \(2006\)/i)).toBeInTheDocument();
@@ -76,9 +76,9 @@ describe('Visualización Pedagógica, Psicológica y Técnica en Qurio', () => {
     expect(screen.getByText('Evaluación Semántica de Conjuntos')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Pistas \(3\/3\)/i }));
-    expect(screen.getByText(/Nivel 1 • Enfoque Conceptual/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nivel 1 • Idea general/i)).toBeInTheDocument();
     expect(screen.getByText(/Nivel 2 • Estructura SQL/i)).toBeInTheDocument();
-    expect(screen.getByText(/Nivel 3 • Plantilla Guiada/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nivel 3 • Plantilla guiada/i)).toBeInTheDocument();
   });
 
   it('LearningRoadmapMap inicia en Árbol de Habilidades, alterna a Camino por Etapas y navega al reto', () => {
@@ -96,15 +96,15 @@ describe('Visualización Pedagógica, Psicológica y Técnica en Qurio', () => {
     );
 
     expect(screen.getByText('Recorrido Visual y Dependencias SQL')).toBeInTheDocument();
-    expect(screen.getByText('CTEs Modulares')).toBeInTheDocument();
+    expect(screen.getByText('CTEs con WITH')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByTitle(/Uniones Fundamentales \(INNER JOIN\)/i));
+    fireEvent.click(screen.getByTitle(/Uniones básicas \(INNER JOIN\)/i));
     expect(onSelectTrack).toHaveBeenCalledWith('relational-sql');
 
     fireEvent.click(screen.getByRole('button', { name: /Camino por Etapas/i }));
     expect(screen.getByText(/Etapa 1: Fundamentos de SQL/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: /Catálogo Básico de Productos/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Catálogo básico de productos/i }));
     expect(onSelectExercise).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'e0000000-0000-0000-0000-000000000001' })
     );

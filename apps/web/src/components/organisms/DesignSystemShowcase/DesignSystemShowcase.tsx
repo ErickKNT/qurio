@@ -36,7 +36,7 @@ export const DesignSystemShowcase: React.FC<DesignSystemShowcaseProps> = ({ onNa
       {/* Átomos: Botones */}
       <div className="flex flex-col gap-3">
         <span className="text-xs font-mono font-semibold text-cyan-accent uppercase tracking-wider">
-          1. Átomos — Variantes de Button
+          1. Átomos: variantes de Button
         </span>
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="primary" kbdShortcut="⌘↵">Primario (Ejecutar)</Button>
@@ -52,7 +52,7 @@ export const DesignSystemShowcase: React.FC<DesignSystemShowcaseProps> = ({ onNa
       {/* Átomos: Badges */}
       <div className="flex flex-col gap-3">
         <span className="text-xs font-mono font-semibold text-cyan-accent uppercase tracking-wider">
-          2. Átomos — Badges con Opacidad 10% y Borde
+          2. Átomos: Badges con opacidad 10% y borde
         </span>
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="default">DEFAULT</Badge>
@@ -67,7 +67,7 @@ export const DesignSystemShowcase: React.FC<DesignSystemShowcaseProps> = ({ onNa
       {/* Molécula: Manejo Riguroso de Errores Inline (Anti-AI Slop) */}
       <div className="flex flex-col gap-3 max-w-md">
         <span className="text-xs font-mono font-semibold text-cyan-accent uppercase tracking-wider">
-          3. Molécula — FormField con Error Inline Riguroso (Anti-AI Slop)
+          3. Molécula: FormField con error inline
         </span>
         <FormField
           label="Correo Electrónico de Registro"
@@ -83,7 +83,7 @@ export const DesignSystemShowcase: React.FC<DesignSystemShowcaseProps> = ({ onNa
       {/* Organismo: Error 404 Tematizado SQL (Anti-AI Slop Regla 1.1) */}
       <div className="flex flex-col gap-3 max-w-md pt-2 border-t border-border-subtle/40">
         <span className="text-xs font-mono font-semibold text-cyan-accent uppercase tracking-wider">
-          4. Organismo — 404 Temática SQL (Anti-AI Slop Regla 1.1)
+          4. Organismo: 404 temática SQL
         </span>
         <p className="text-xs text-content-secondary">
           Metáfora técnica relacional: captura rutas inexistentes con mensaje de error SQLSTATE 42P01.

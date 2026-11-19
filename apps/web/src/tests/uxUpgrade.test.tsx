@@ -335,7 +335,7 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
       />
     );
 
-    expect(screen.getByText(/MODO INVITADO • PRUEBA ACTIVA/i)).toBeInTheDocument();
+    expect(screen.getByText(/MODO INVITADO • 3 RETOS GRATIS/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Ver Rutas/i }));
     expect(navigatedPaths).toContain('tracks');
 
@@ -359,7 +359,7 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
       />
     );
 
-    expect(screen.getByText('4 Rutas')).toBeInTheDocument();
+    expect(screen.getByText('4 rutas')).toBeInTheDocument();
     expect(screen.getByText('16 Módulos • 76 Retos')).toBeInTheDocument();
     expect(screen.getByText(/Etapa 4 • Ingeniería y Manipulación de Datos/i)).toBeInTheDocument();
     expect(screen.getByText('M13')).toBeInTheDocument();

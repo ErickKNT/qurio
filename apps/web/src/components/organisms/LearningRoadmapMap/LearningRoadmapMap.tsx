@@ -34,22 +34,22 @@ interface SkillNodeMeta {
 }
 
 const SKILL_META: Record<number, SkillNodeMeta> = {
-  1: { moduleNumber: 1, title: 'Proyecciones', sqlTags: 'SELECT • AS • DISTINCT', prereqs: [] },
-  2: { moduleNumber: 2, title: 'Filtrado Lógico', sqlTags: 'WHERE • BETWEEN • LIKE', prereqs: [1] },
-  3: { moduleNumber: 3, title: 'Orden y Límite', sqlTags: 'ORDER BY • LIMIT • OFFSET', prereqs: [1] },
-  4: { moduleNumber: 4, title: 'Agregación y Grupos', sqlTags: 'COUNT • SUM • GROUP BY • HAVING', prereqs: [2, 3] },
-  5: { moduleNumber: 5, title: 'Uniones Base', sqlTags: 'INNER JOIN • ON', prereqs: [4] },
-  6: { moduleNumber: 6, title: 'Ausencias y Ceros', sqlTags: 'LEFT JOIN • IS NULL • COALESCE', prereqs: [5] },
-  7: { moduleNumber: 7, title: 'Cadenas Multi-Tabla', sqlTags: '3–5 Tablas • Cascada', prereqs: [5] },
-  8: { moduleNumber: 8, title: 'Conjuntos y Cruces', sqlTags: 'UNION • INTERSECT • EXCEPT', prereqs: [5] },
+  1: { moduleNumber: 1, title: 'SELECT y alias', sqlTags: 'SELECT • AS • DISTINCT', prereqs: [] },
+  2: { moduleNumber: 2, title: 'Filtrado lógico', sqlTags: 'WHERE • BETWEEN • LIKE', prereqs: [1] },
+  3: { moduleNumber: 3, title: 'Orden y límite', sqlTags: 'ORDER BY • LIMIT • OFFSET', prereqs: [1] },
+  4: { moduleNumber: 4, title: 'Agregación y grupos', sqlTags: 'COUNT • SUM • GROUP BY • HAVING', prereqs: [2, 3] },
+  5: { moduleNumber: 5, title: 'Uniones base', sqlTags: 'INNER JOIN • ON', prereqs: [4] },
+  6: { moduleNumber: 6, title: 'Ausencias y ceros', sqlTags: 'LEFT JOIN • IS NULL • COALESCE', prereqs: [5] },
+  7: { moduleNumber: 7, title: 'Cadenas multi-tabla', sqlTags: '3–5 tablas • Cascada', prereqs: [5] },
+  8: { moduleNumber: 8, title: 'Conjuntos y cruces', sqlTags: 'UNION • INTERSECT • EXCEPT', prereqs: [5] },
   9: { moduleNumber: 9, title: 'Subconsultas', sqlTags: 'Escalar • IN • EXISTS', prereqs: [6, 7] },
-  10: { moduleNumber: 10, title: 'Lógica Condicional', sqlTags: 'CASE WHEN • Pivoteo', prereqs: [7, 8] },
-  11: { moduleNumber: 11, title: 'CTEs Modulares', sqlTags: 'WITH • Encadenadas', prereqs: [9, 10] },
-  12: { moduleNumber: 12, title: 'Funciones de Ventana', sqlTags: 'ROW_NUMBER • DENSE_RANK • LAG', prereqs: [11] },
-  13: { moduleNumber: 13, title: 'Inserción DML', sqlTags: 'INSERT • VALUES • RETURNING', prereqs: [12] },
-  14: { moduleNumber: 14, title: 'Mutación Segura', sqlTags: 'UPDATE • FROM • DELETE • WHERE', prereqs: [13] },
-  15: { moduleNumber: 15, title: 'Diseño de Tablas', sqlTags: 'CREATE • ALTER • DROP • CHECK', prereqs: [13] },
-  16: { moduleNumber: 16, title: 'Índices y Tuning', sqlTags: 'CREATE INDEX • UNIQUE • PARTIAL', prereqs: [14, 15] },
+  10: { moduleNumber: 10, title: 'Lógica condicional', sqlTags: 'CASE WHEN • Pivoteo', prereqs: [7, 8] },
+  11: { moduleNumber: 11, title: 'CTEs con WITH', sqlTags: 'WITH • Encadenadas', prereqs: [9, 10] },
+  12: { moduleNumber: 12, title: 'Funciones de ventana', sqlTags: 'ROW_NUMBER • DENSE_RANK • LAG', prereqs: [11] },
+  13: { moduleNumber: 13, title: 'Inserción (INSERT)', sqlTags: 'INSERT • VALUES • RETURNING', prereqs: [12] },
+  14: { moduleNumber: 14, title: 'Cambios (UPDATE y DELETE)', sqlTags: 'UPDATE • FROM • DELETE • WHERE', prereqs: [13] },
+  15: { moduleNumber: 15, title: 'Diseño de tablas', sqlTags: 'CREATE • ALTER • DROP • CHECK', prereqs: [13] },
+  16: { moduleNumber: 16, title: 'Índices', sqlTags: 'CREATE INDEX • UNIQUE • PARTIAL', prereqs: [14, 15] },
 };
 
 // Bandas verticales (arriba → abajo) con alineación natural por etapa formativa
@@ -71,7 +71,7 @@ const SKILL_ZONES: {
   },
   {
     trackId: 'relational-sql',
-    zoneLabel: 'Etapa 2 • SQL Relacional',
+    zoneLabel: 'Etapa 2 • SQL relacional',
     levelLabel: 'Intermedio',
     accentColor: '#818CF8',
     borderTint: 'border-indigo-400/25 bg-indigo-400/[0.03]',
@@ -79,7 +79,7 @@ const SKILL_ZONES: {
   },
   {
     trackId: 'advanced-queries',
-    zoneLabel: 'Etapa 3 • Consultas Avanzadas',
+    zoneLabel: 'Etapa 3 • Consultas avanzadas',
     levelLabel: 'Avanzado',
     accentColor: '#34D399',
     borderTint: 'border-emerald/25 bg-emerald/[0.03]',
@@ -87,7 +87,7 @@ const SKILL_ZONES: {
   },
   {
     trackId: 'data-manipulation-ddl',
-    zoneLabel: 'Etapa 4 • Ingeniería y Manipulación de Datos',
+    zoneLabel: 'Etapa 4 • Ingeniería y manipulación de datos',
     levelLabel: 'Intermedio → Avanzado',
     accentColor: '#F59E0B',
     borderTint: 'border-amber-streak/25 bg-amber-streak/[0.03]',

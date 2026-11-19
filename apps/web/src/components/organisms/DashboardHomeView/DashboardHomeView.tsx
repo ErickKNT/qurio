@@ -83,7 +83,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald/10 border border-emerald/25 text-[11px] font-mono text-emerald font-semibold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                <span>Ruta Activa • {activeLearningData.activeTrack?.title || 'Fundamentos de SQL'}</span>
+                <span>Ruta activa • {activeLearningData.activeTrack?.title || 'Fundamentos de SQL'}</span>
                 {activeLearningData.activeModule && (
                   <>
                     <span className="text-content-muted">•</span>
@@ -96,15 +96,15 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
 
               <div className="flex items-center gap-2 font-mono text-xs text-content-muted">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
-                <span>PostgreSQL 16 • Entorno Activo</span>
+                <span>PostgreSQL 16 • Listo</span>
               </div>
             </div>
 
             {/* Saludo y Reto Pendiente */}
             <div className="flex flex-col gap-2">
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
-                ¡Hola de nuevo, {profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Estudiante'}!{' '}
-                <span className="text-content-secondary font-normal">Tu siguiente reto te espera:</span>
+                Hola, {profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'estudiante'}.{' '}
+                <span className="text-content-secondary font-normal">Siguiente reto:</span>
               </h1>
 
               <div className="flex flex-wrap items-center gap-2.5 pt-1">
@@ -154,10 +154,10 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
               <div className="flex items-center justify-between text-[11px] font-mono text-content-muted">
                 <span>
                   {activeLearningData.isAllCompleted
-                    ? '🎉 ¡Has completado todos los ejercicios del currículum oficial!'
+                    ? 'Completaste todos los retos del temario.'
                     : activeLearningData.moduleRemaining === 1
-                    ? '🔥 ¡Último reto para culminar este módulo!'
-                    : `Faltan ${activeLearningData.moduleRemaining} retos para culminar este módulo.`}
+                    ? 'Último reto de este módulo.'
+                    : `Faltan ${activeLearningData.moduleRemaining} retos para terminar este módulo.`}
                 </span>
                 <span>
                   Global: {completedCount} / {exercisesCount} ({Math.round((completedCount / (exercisesCount || 1)) * 100)}%)
@@ -179,7 +179,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
                 }}
                 className="shadow-glow-primary hover:shadow-primary px-5 shrink-0 whitespace-nowrap text-xs sm:text-sm font-semibold"
               >
-                Continuar Reto #{activeLearningData.exerciseNumberInTrack}
+                Continuar reto #{activeLearningData.exerciseNumberInTrack}
               </Button>
 
               <Button
@@ -188,7 +188,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
                 onClick={() => onNavigate('tracks')}
                 className="px-4 shrink-0 whitespace-nowrap text-xs hover:border-cyan-accent/50"
               >
-                Ver Temario Completo
+                Ver temario completo
               </Button>
             </div>
           </div>
@@ -198,23 +198,23 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
             <div className="flex flex-col gap-2.5 max-w-xl xl:max-w-2xl">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald/10 border border-emerald/25 w-fit text-[11px] font-mono text-emerald font-medium">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
-                <span>MODO INVITADO • PRUEBA ACTIVA (3 RETOS GRATUITOS)</span>
+                <span>MODO INVITADO • 3 RETOS GRATIS</span>
               </div>
 
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-content-primary">
-                ¡Bienvenido a Qurio! <span className="text-content-secondary font-normal">Aprende SQL escribiendo consultas reales.</span>
+                Aprende SQL escribiendo consultas reales.
               </h1>
 
               <p className="text-xs text-content-secondary leading-relaxed">
-                Practicas directamente contra una base de datos PostgreSQL 16 real. Resuelve hasta 3 retos iniciales gratis y verifica tus resultados al instante, sin necesidad de crear cuenta.
+                Practica directo contra PostgreSQL 16 real. Puedes resolver los primeros 3 retos gratis y comprobar el resultado al momento, sin crear cuenta.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 sm:gap-6 shrink-0">
               <div className="flex flex-col items-start sm:items-end pr-2 font-mono shrink-0 whitespace-nowrap">
-                <span className="text-[10px] text-content-muted uppercase tracking-wider">Motor de Práctica</span>
+                <span className="text-[10px] text-content-muted uppercase tracking-wider">Motor</span>
                 <span className="text-xs text-content-secondary font-semibold flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> PostgreSQL 16 Listo
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald shrink-0" /> PostgreSQL 16 activo
                 </span>
               </div>
 
@@ -231,7 +231,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
                   }}
                   className="shadow-glow-primary hover:shadow-primary px-5 shrink-0 whitespace-nowrap"
                 >
-                  Comenzar Reto 1
+                  Comenzar reto 1
                 </Button>
 
                 <Button
@@ -240,7 +240,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
                   onClick={onOpenAuth}
                   className="px-4 shrink-0 whitespace-nowrap"
                 >
-                  Iniciar Sesión
+                  Iniciar sesión
                 </Button>
               </div>
             </div>
@@ -251,41 +251,41 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
       {/* Bento Grid de Métricas */}
       <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         <MetricTile
-          label="Rango Actual"
+          label="Rango actual"
           value={isAuthenticated ? `Nivel ${profile?.current_level || 1}` : 'Invitado'}
-          subValue={isAuthenticated ? 'Estudiante Oficial' : 'Modo Explorador'}
+          subValue={isAuthenticated ? 'Cuenta activa' : 'Modo prueba'}
           icon={<Award className="w-4 h-4" />}
           accent="purple"
         />
         <MetricTile
-          label="XP Acumulado"
+          label="XP acumulado"
           value={isAuthenticated ? `${profile?.total_xp ?? 0} XP` : '0 XP'}
-          subValue={isAuthenticated ? 'Progreso certificado' : 'Crea tu cuenta para acumular'}
+          subValue={isAuthenticated ? 'Guardado en tu cuenta' : 'Crea tu cuenta para acumular'}
           icon={<Zap className="w-4 h-4" />}
           accent="indigo"
         />
         <MetricTile
-          label="Racha Activa"
+          label="Racha actual"
           value={isAuthenticated ? `${profile?.current_streak_days ?? 0} días` : '0 días'}
           subValue={isAuthenticated ? `Récord: ${profile?.max_streak_days ?? 0} días` : 'Disponible con cuenta'}
           icon={<Flame className="w-4 h-4" />}
           accent="amber"
         />
         <MetricTile
-          label="Consultas Evaluadas"
+          label="Consultas evaluadas"
           value={`${isAuthenticated ? totalAttemptsCount : queryHistoryCount}`}
-          subValue={isAuthenticated ? 'Total histórico evaluado' : 'En sesión local'}
+          subValue={isAuthenticated ? 'Historial total' : 'En sesión local'}
           icon={<Terminal className="w-4 h-4" />}
           accent="cyan"
         />
         <MetricTile
-          label={isAuthenticated ? 'Retos Superados' : 'Retos de Prueba'}
+          label={isAuthenticated ? 'Retos superados' : 'Retos de prueba'}
           value={
             isAuthenticated
               ? `${completedCount} / ${exercisesCount}`
               : `${Math.min(completedCount, 3)} / 3`
           }
-          subValue={isAuthenticated ? 'Progreso oficial verificado' : 'Prueba libre sin registro'}
+          subValue={isAuthenticated ? 'Avance verificado' : 'Sin registro'}
           icon={<CheckCircle2 className="w-4 h-4" />}
           accent="emerald"
           className="col-span-2 sm:col-span-1"
@@ -296,13 +296,13 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
       {isAdmin && (
         <div className="flex items-center gap-2 border-b border-border-subtle pb-3">
           <RadioTab
-            label="Visión General"
+            label="Resumen"
             active={activeTab === 'overview'}
             onClick={() => setActiveTab('overview')}
             icon={<Terminal className="w-3.5 h-3.5" />}
           />
           <RadioTab
-            label="Sistema de Diseño & Átomos"
+            label="Sistema de diseño"
             active={activeTab === 'components'}
             onClick={() => setActiveTab('components')}
             icon={<Sparkles className="w-3.5 h-3.5" />}
@@ -319,7 +319,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
             <div className="lg:col-span-2 flex flex-col justify-between p-6 rounded-2xl bg-surface/70 border border-border-subtle/60 shadow-lg">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <Badge variant="cyan" size="sm">Reto Recomendado</Badge>
+                  <Badge variant="cyan" size="sm">Reto recomendado</Badge>
                   <span className="text-xs font-mono text-content-muted">
                     {recommendedExercise?.difficulty || 'Principiante'}
                   </span>
@@ -352,7 +352,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
                     onClick={() => onNavigate('tracks')}
                     className="text-xs"
                   >
-                    Ver Rutas
+                    Ver rutas
                   </Button>
                   <Button
                     variant="primary"
@@ -364,7 +364,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
                     }}
                     className="shadow-sm hover:shadow-primary"
                   >
-                    Resolver Reto
+                    Resolver reto
                   </Button>
                 </div>
               </div>
@@ -375,7 +375,7 @@ export const DashboardHomeView: React.FC<DashboardHomeViewProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono font-semibold uppercase tracking-wider text-content-primary flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-accent" />
-                  <span>Esquema Activo</span>
+                  <span>Esquema activo</span>
                 </span>
                 <span className="text-[10px] font-mono text-primary font-medium px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
                   Tienda Online

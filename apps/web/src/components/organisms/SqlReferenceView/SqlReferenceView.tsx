@@ -39,10 +39,10 @@ export const SqlReferenceView: React.FC<SqlReferenceViewProps> = ({ onOpenPlaygr
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-surface-card border border-border-subtle/50 text-[11px] font-mono text-cyan-accent mb-2">
             <BookMarked className="w-3 h-3" />
-            <span>Referencia Rápida • PostgreSQL 16</span>
+            <span>Referencia rápida • PostgreSQL 16</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-content-primary">
-            Glosario & Sintaxis SQL
+            Glosario y sintaxis SQL
           </h1>
           <p className="text-xs text-content-secondary mt-1 max-w-2xl">
             Consulta rápida de cláusulas, funciones y patrones en PostgreSQL 16. Puedes probar cualquier ejemplo directamente en el Laboratorio SQL.
@@ -147,7 +147,7 @@ export const SqlReferenceView: React.FC<SqlReferenceViewProps> = ({ onOpenPlaygr
                     leftIcon={<Play className="w-3 h-3 text-cyan-accent fill-cyan-accent" />}
                     className="text-xs"
                   >
-                    Probar en Laboratorio
+                    Probar en laboratorio
                   </Button>
                 )}
               </div>
