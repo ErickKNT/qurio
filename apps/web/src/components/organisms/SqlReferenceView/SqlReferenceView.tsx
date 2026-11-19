@@ -93,7 +93,7 @@ export const SqlReferenceView: React.FC<SqlReferenceViewProps> = ({ onOpenPlaygr
                   </p>
                 </div>
                 <Badge variant={isModelado ? 'amber' : 'mono'} size="sm" className="shrink-0">
-                  {isModelado ? 'Solo lectura' : item.category}
+                  {isModelado ? 'DDL & DML' : item.category}
                 </Badge>
               </div>
 

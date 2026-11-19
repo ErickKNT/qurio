@@ -464,12 +464,25 @@ INSERT INTO public.exercise_hints (exercise_id, hint_order, content, xp_penalty_
 ('e0000000-0000-0000-0000-000000000076', 2, 'Combina la instrucción DROP INDEX con la cláusula IF EXISTS seguida del nombre del índice redundante.', 20),
 ('e0000000-0000-0000-0000-000000000076', 3, 'DROP INDEX IF EXISTS ???;', 25);
 
--- 5. Catálogo de Logros
+-- 5. Catálogo de Logros (14 Medallas Uniformes)
 INSERT INTO public.achievements (id, name, description, icon, category, xp_reward) VALUES
-('first-query', 'Primera Consulta', 'Ejecutaste con éxito tu primera consulta SQL en Qurio.', 'bolt', 'progreso', 50),
-('join-apprentice', 'Aprendiz de Relaciones', 'Completaste tu primer reto cruzando tablas con INNER JOIN.', 'account_tree', 'habilidad', 75),
-('window-wizard', 'Maestro de Ventanas', 'Dominaste cálculos particionados con funciones de ventana.', 'auto_awesome', 'maestria', 100),
-('streak-3', 'Constancia Relacional', 'Completaste ejercicios 3 días consecutivos.', 'local_fire_department', 'racha', 60)
+('first-query', 'Primera consulta', 'Ejecuta tu primera consulta en PostgreSQL 16.', 'Terminal', 'progreso', 50),
+('join-apprentice', 'Primer cruce con JOIN', 'Completaste tu primer reto cruzando tablas con INNER JOIN.', 'GitBranch', 'habilidad', 75),
+('null-detective', 'Detector de NULL', 'Detecta valores ausentes con IS NULL o filas sin coincidencias mediante LEFT JOIN.', 'Search', 'habilidad', 100),
+('streak-3', 'Racha de 3 días', 'Mantén una racha de práctica durante 3 días seguidos.', 'Flame', 'constancia', 100),
+('streak-7', 'Semana completa', 'Mantén una racha de práctica durante 7 días seguidos.', 'Award', 'constancia', 250),
+('speed-runner', 'Baja latencia', 'Ejecuta una consulta evaluada en menos de 5 ms en PostgreSQL.', 'Zap', 'habilidad', 120),
+('window-wizard', 'Funciones de ventana', 'Resuelve un ejercicio usando funciones de ventana (ROW_NUMBER, DENSE_RANK, SUM OVER, LAG).', 'Layers', 'habilidad', 150),
+('cte-architect', 'Consultas con CTE', 'Divide una consulta compleja en pasos claros usando WITH.', 'GitBranch', 'habilidad', 125),
+('dml-operator', 'Cambios con DML', 'Ejecuta tu primer cambio de datos (INSERT, ON CONFLICT, UPDATE, DELETE o RETURNING) en pg_temp.', 'Wrench', 'habilidad', 150),
+('ddl-designer', 'Diseño de esquemas', 'Crea o modifica tablas y restricciones CHECK/FK con DDL.', 'Database', 'habilidad', 175),
+('index-tuner', 'Índices en PostgreSQL', 'Crea o elimina índices B-Tree, UNIQUE o parciales.', 'Gauge', 'habilidad', 200),
+('quarter-master', '20 retos resueltos', 'Completa 20 retos del plan de estudios (25% del catálogo).', 'ShieldCheck', 'progreso', 120),
+('halfway-engineer', 'Mitad del camino', 'Supera los 40 retos resueltos en PostgreSQL 16 (50% del plan de estudios).', 'Trophy', 'progreso', 250),
+('master-sql', 'Plan de estudios completo', 'Completa los 80 retos de las 4 rutas del plan de estudios (DQL, DML y DDL).', 'Sparkles', 'progreso', 500)
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
-  description = EXCLUDED.description;
+  description = EXCLUDED.description,
+  icon = EXCLUDED.icon,
+  category = EXCLUDED.category,
+  xp_reward = EXCLUDED.xp_reward;

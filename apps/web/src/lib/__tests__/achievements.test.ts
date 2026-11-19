@@ -107,17 +107,28 @@ describe('evaluateUserAchievements', () => {
     expect(masterAt80?.unlocked_at).not.toBeNull();
   });
 
-  it('desbloquea logros con UUIDs canónicos reales de Ruta 2, 3 y 4 (JOIN, CTE, DML, DDL, INDEX)', () => {
+  it('desbloquea logros con UUIDs canónicos reales de Ruta 1, 2, 3 y 4 sin falsos positivos por sort_order', () => {
+    // 0025 pertenece a M03 (ORDER BY), NO debe desbloquear join-apprentice (M05)
+    const orderByOnly = evaluateUserAchievements(
+      ACHIEVEMENTS_CATALOG,
+      baseProfile,
+      new Set(['e0000000-0000-0000-0000-000000000025']),
+      1
+    );
+    expect(orderByOnly.find((a) => a.id === 'join-apprentice')?.unlocked_at).toBeNull();
+
     const completed = new Set<string>([
-      'e0000000-0000-0000-0000-000000000025', // M05 INNER JOIN
-      'e0000000-0000-0000-0000-000000000052', // M11 CTE WITH
-      'e0000000-0000-0000-0000-000000000065', // M14 UPDATE/DELETE
+      'e0000000-0000-0000-0000-000000000077', // M02 IS NULL
+      'e0000000-0000-0000-0000-000000000005', // M05 INNER JOIN
+      'e0000000-0000-0000-0000-000000000017', // M11 CTE WITH
+      'e0000000-0000-0000-0000-000000000007', // M12 Window Functions
+      'e0000000-0000-0000-0000-000000000080', // M13 UPSERT ON CONFLICT
       'e0000000-0000-0000-0000-000000000069', // M15 CREATE TABLE
       'e0000000-0000-0000-0000-000000000073', // M16 CREATE INDEX
     ]);
 
-    const evaluated = evaluateUserAchievements(ACHIEVEMENTS_CATALOG, baseProfile, completed, 5);
-    for (const id of ['join-apprentice', 'cte-architect', 'dml-operator', 'ddl-designer', 'index-tuner']) {
+    const evaluated = evaluateUserAchievements(ACHIEVEMENTS_CATALOG, baseProfile, completed, 7);
+    for (const id of ['null-detective', 'join-apprentice', 'cte-architect', 'window-wizard', 'dml-operator', 'ddl-designer', 'index-tuner']) {
       const ach = evaluated.find((a) => a.id === id);
       expect(ach?.progress).toBe(100);
       expect(ach?.unlocked_at).not.toBeNull();

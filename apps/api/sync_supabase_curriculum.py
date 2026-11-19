@@ -152,6 +152,27 @@ def main():
             print(f"Error en lote de hints {i}:", e)
     print(f"Total pistas procesadas: {len(hints_to_upsert)}")
 
+    print("\n--- PASO 3.8: Sincronizando los 14 Logros desde 02_seed_curriculum.sql ---")
+    ach_section = sql_content[sql_content.find("INSERT INTO public.achievements"):]
+    ach_matches = re.findall(
+        r"\('([a-z0-9\-]+)',\s*'((?:[^']|'')*)',\s*'((?:[^']|'')*)',\s*'([^']+)',\s*'([^']+)',\s*(\d+)\)",
+        ach_section,
+    )
+    if ach_matches:
+        ach_to_upsert = [
+            {
+                "id": a_id,
+                "name": name.replace("''", "'"),
+                "description": desc.replace("''", "'"),
+                "icon": icon,
+                "category": cat,
+                "xp_reward": int(xp),
+            }
+            for a_id, name, desc, icon, cat, xp in ach_matches
+        ]
+        api_request("achievements", method="POST", data=ach_to_upsert)
+        print(f"Total logros sincronizados: {len(ach_to_upsert)}")
+
     print("\n--- PASO 4: Verificación Final en Supabase Cloud ---")
     all_mods = api_request("modules?select=id,module_number,title")
     all_exs = api_request("exercises?select=id,title,sort_order&order=sort_order.asc")

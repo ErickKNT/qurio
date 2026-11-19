@@ -1887,6 +1887,27 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Consistencia Curricular y Sandbox (`pytest apps/api/tests/test_schema_consistency.py -v`):** **5/5 pruebas aprobadas** (80 retos verificados contra PostgreSQL 16 Sandbox).
   * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **10 archivos / 76 pruebas aprobadas**.
 
+---
+
+### Entrada 65: Glosario SQL Completo, Uniformidad de Logros y Sincronización Global del Contexto (80 Retos)
+
+* **Fecha:** 19 de Noviembre de 2026
+* **Rama de Trabajo:** `main`
+* **Objetivo:** Alinear el glosario de referencia PostgreSQL 16, corregir el mapeo de desbloqueo de medallas por módulo, actualizar autocompletado y vistas de contexto global a **80 retos / 240 pistas**, sincronizar el catálogo de 14 logros en SQL y actualizar el `README.md` en GitHub.
+* **Entregables Implementados:**
+  1. **Expansión del Glosario SQL ([`sqlReference.ts`](../apps/web/src/lib/sqlReference.ts), [`SqlReferenceView.tsx`](../apps/web/src/components/organisms/SqlReferenceView/SqlReferenceView.tsx)):**
+     * Incorporación de 4 fichas nuevas (`AND / OR / Paréntesis ()`, `COUNT(DISTINCT ...)`, `CROSS JOIN / SELF JOIN`, `ON CONFLICT DO UPDATE (UPSERT)`), actualización de `is-null` hacia el Módulo 2 con ejemplo en tabla única `proveedores`, detalle de `RANK` y `SUM() OVER` en funciones de ventana y etiqueta `DDL & DML` en lugar de `Solo lectura` para la categoría `modelado`.
+  2. **Corrección y Uniformidad del Sistema de Logros ([`api.ts`](../apps/web/src/lib/api.ts), [`achievements.test.ts`](../apps/web/src/lib/__tests__/achievements.test.ts), [`02_seed_curriculum.sql`](../database/supabase/02_seed_curriculum.sql)):**
+     * **Bug corregido en `evaluateUserAchievements`:** `hasCompletedInModuleRange` evaluaba rangos de `sort_order` (`25..29`, `30..35`, `52..55`, `56..60`) contra el sufijo numérico del UUID (que no coincide con `sort_order`), produciendo falsos positivos/negativos. Se reemplazó por `ACHIEVEMENT_EXERCISE_SETS` con los conjuntos exactos de UUIDs canónicos por módulo (incluyendo `0077` en `null-detective` y `0080` en `dml-operator`).
+     * Uniformidad de descripciones en los 14 logros (`20` = 25%, `40` = 50%, `80` = 100%) y sincronización completa de las 14 filas en `public.achievements` dentro de `02_seed_curriculum.sql`.
+  3. **Actualización Global de Contexto y Documentación ([`sqlCompleter.ts`](../apps/web/src/components/organisms/MonacoEditorPanel/sqlCompleter.ts), [`LearningRoadmapMap.tsx`](../apps/web/src/components/organisms/LearningRoadmapMap/LearningRoadmapMap.tsx), [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx), [`README.md`](../README.md)):**
+     * Snippets y palabras reservadas en Monaco para `CROSS JOIN`, `COUNT(DISTINCT)`, `RANK`, `LAG`, `LEAD`, `ON CONFLICT DO UPDATE`, `ON CONFLICT DO NOTHING` y `EXCLUDED`.
+     * Actualización de `SKILL_META` en el mapa curricular, `totalExercises = 80` en perfil y actualización integral de badges, estructura, dataset, glosario y métricas de pruebas en `README.md`.
+* **Verificación:**
+  * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **10 archivos / 76 pruebas aprobadas**.
+  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,306 módulos**, 0 errores).
+  * **Consistencia Curricular (`pytest apps/api/tests/test_schema_consistency.py -v`):** **5/5 pruebas aprobadas** contra PostgreSQL 16 Sandbox.
+
 
 
 

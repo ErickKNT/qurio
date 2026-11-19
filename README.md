@@ -17,9 +17,9 @@
   <img src="https://img.shields.io/badge/TypeScript-5.7+-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38BDF8?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS 3.4" />
   <img src="https://img.shields.io/badge/Docker-Sandbox-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Sandbox" />
-  <img src="https://img.shields.io/badge/Backend_Pytest-111%2F111%20Passing-22C55E?style=for-the-badge" alt="Backend Pytest 111/111 Passing" />
-  <img src="https://img.shields.io/badge/Frontend_Vitest-58%2F58%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 58/58 Passing" />
-  <img src="https://img.shields.io/badge/Plan_de_Estudios-76%20Retos%20%2F%20228%20Pistas-6366F1?style=for-the-badge" alt="76 Retos SQL" />
+  <img src="https://img.shields.io/badge/Backend_Pytest-111%20Tests-3B82F6?style=for-the-badge" alt="Backend Pytest 111 Tests" />
+  <img src="https://img.shields.io/badge/Frontend_Vitest-76%2F76%20Passing-22C55E?style=for-the-badge" alt="Frontend Vitest 76/76 Passing" />
+  <img src="https://img.shields.io/badge/Plan_de_Estudios-80%20Retos%20%2F%20240%20Pistas-6366F1?style=for-the-badge" alt="80 Retos SQL" />
   <img src="https://img.shields.io/badge/Security-Hardened%20(RLS%20%2B%20CLS%20%2B%20RPC)-059669?style=for-the-badge" alt="Security Hardened" />
   <img src="https://img.shields.io/badge/License-MIT-amber?style=for-the-badge" alt="MIT License" />
 </p>
@@ -77,24 +77,24 @@ En las consignas, pistas, solución oficial y guías teóricas, las cláusulas y
 
 El Playground soporta hasta 6 pestañas simultáneas guardadas en `localStorage`, previsualización de tablas en un clic (`SELECT * FROM ... LIMIT 50;`), plantillas rápidas e historial de ejecución. También incluye un diagrama entidad-relación interactivo (`ErDiagramModal`) con las 10 tablas y 9 llaves foráneas, conectores SVG curvos, zoom y salto directo al editor.
 
-La referencia rápida de PostgreSQL 16 (`/reference`) cubre sintaxis buscable (incluida referencia informativa de DDL/DML) y la paleta `⌘K` / `Ctrl+K` permite saltar entre retos, guías, tablas y sintaxis sin soltar el teclado. En móvil, la barra lateral pasa a un drawer deslizable y el Playground divide la pantalla en pestañas (`Tablas`, `Editor SQL`, `Resultados`).
+La referencia rápida de PostgreSQL 16 (`/reference`) cubre 30 términos buscables (incluidos `AND/OR` con paréntesis, `IS NULL`, `COUNT(DISTINCT ...)`, `CROSS/SELF JOIN`, `ON CONFLICT` y DDL/DML) y la paleta `⌘K` / `Ctrl+K` permite saltar entre retos, guías, tablas y sintaxis sin soltar el teclado. En móvil, la barra lateral pasa a un drawer deslizable y el Playground divide la pantalla en pestañas (`Tablas`, `Editor SQL`, `Resultados`).
 
 ### Visor tabular DataGrid redimensionable
 
 La tabla de resultados numera las filas, muestra tipos inferidos (`VARCHAR`, `INT4`, `DECIMAL`, `TIMESTAMPTZ`, `BOOL`) y marca los valores `NULL` con chips propios. El divisor horizontal entre el editor y los resultados se arrastra entre `28%` y `78%` (guardado en `localStorage`) con un botón para expandir o restaurar al `76%`. Cuando hay diferencias con la salida esperada o un bloqueo de seguridad, `DiffResult` y la consola inferior muestran el detalle exacto.
 
-### Mapa curricular, guías y 76 retos
+### Mapa curricular, guías y 80 retos
 
-El catálogo tiene 4 rutas, 16 módulos, 76 retos y 228 pistas progresivas siguiendo las reglas de [`docs/pedagogia/`](./docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md) y [`.agents/rules/sql-pedagogy.md`](./.agents/rules/sql-pedagogy.md):
+El catálogo tiene 4 rutas, 16 módulos, 80 retos y 240 pistas progresivas siguiendo las reglas de [`docs/pedagogia/`](./docs/pedagogia/qurio_pedagogical_specification_ai_agent_framework.md) y [`.agents/rules/sql-pedagogy.md`](./.agents/rules/sql-pedagogy.md):
 
-1. **Fundamentos de SQL (`24` retos):** `SELECT`, `WHERE`, operadores lógicos, `ORDER BY`, agregaciones (`COUNT`, `SUM`, `AVG`), `GROUP BY` y `HAVING`.
-2. **SQL relacional (`20` retos):** llaves foráneas, `INNER JOIN`, `LEFT JOIN`, `FULL OUTER JOIN`, `CROSS JOIN`, `SELF JOIN`, operaciones de conjunto (`UNION`, `INTERSECT`, `EXCEPT`) y `COALESCE`.
+1. **Fundamentos de SQL (`27` retos):** `SELECT`, `WHERE`, operadores lógicos con precedencia `(OR) + AND`, `IS NULL`, `ORDER BY`, agregaciones (`COUNT`, `COUNT(DISTINCT ...)`, `SUM`, `AVG`), `GROUP BY` y `HAVING`.
+2. **SQL relacional (`20` retos):** llaves foráneas, `INNER JOIN`, `LEFT JOIN`, `CROSS JOIN`, `SELF JOIN`, operaciones de conjunto (`UNION`, `INTERSECT`, `EXCEPT`) y `COALESCE`.
 3. **Consultas avanzadas (`16` retos):** subconsultas correlacionadas (`EXISTS` / `NOT EXISTS`), `CASE WHEN`, CTEs con `WITH` y funciones de ventana (`ROW_NUMBER`, `DENSE_RANK`, `SUM OVER`, `LAG`).
-4. **Ingeniería y manipulación de datos (`16` retos, DML y DDL):** `INSERT`, `INSERT INTO ... SELECT`, `UPDATE ... FROM`, `DELETE`, `RETURNING`, definición y alteración de tablas (`CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`, `CHECK`, `PK`/`FK`) e índices B-Tree, compuestos y parciales (`CREATE/DROP INDEX`), ejecutados en esquemas temporales `pg_temp` con `ROLLBACK` automático.
+4. **Ingeniería y manipulación de datos (`17` retos, DML y DDL):** `INSERT`, `INSERT INTO ... SELECT`, `UPSERT` (`ON CONFLICT DO UPDATE`), `UPDATE ... FROM`, `DELETE`, `RETURNING`, definición y alteración de tablas (`CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`, `CHECK`, `PK`/`FK`) e índices B-Tree, compuestos y parciales (`CREATE/DROP INDEX`), ejecutados en esquemas temporales `pg_temp` con `ROLLBACK` automático.
 
-Cada módulo cuenta con su guía (`ModuleGuideModal`) sobre el orden lógico de ejecución en PostgreSQL 16, diagramas `Entrada → Cláusula → Salida`, ejemplos sin spoilers y errores comunes. El progreso se navega desde un grid Bento 2×2 o desde `LearningRoadmapMap`, que alterna entre un árbol DAG de 16 nodos (`M13 → [M14, M15] → M16`) y un camino en 4 columnas conectado a las estaciones `#01..#76`.
+Cada módulo cuenta con su guía (`ModuleGuideModal`) sobre el orden lógico de ejecución en PostgreSQL 16, diagramas `Entrada → Cláusula → Salida`, ejemplos sin spoilers y errores comunes. El progreso se navega desde un grid Bento 2×2 o desde `LearningRoadmapMap`, que alterna entre un árbol DAG de 16 nodos (`M13 → [M14, M15] → M16`) y un camino en 4 columnas conectado a las estaciones `#01..#80`.
 
-El sistema otorga 14 medallas por hitos (`20`, `40`, `76` retos), racha (`3`, `7` días), latencia (`<5 ms`) y dominio por tema (`JOIN`, `NULL`, `CTEs`, `Window Functions`, `DML`, `DDL`, `Índices`). Tras 2 intentos fallidos se habilita la revelación de la solución oficial (`/api/v1/exercises/{id}/reveal-solution`), acreditando `0 XP` si se resuelve después de verla. Los visitantes sin cuenta pueden resolver los primeros 3 retos y fusionar su avance al iniciar sesión.
+El sistema otorga 14 medallas por hitos (`20`, `40`, `80` retos), racha (`3`, `7` días), latencia (`<5 ms`) y dominio por tema (`JOIN`, `NULL`, `CTEs`, `Window Functions`, `DML`, `DDL`, `Índices`). Tras 2 intentos fallidos se habilita la revelación de la solución oficial (`/api/v1/exercises/{id}/reveal-solution`), acreditando `0 XP` si se resuelve después de verla. Los visitantes sin cuenta pueden resolver los primeros 3 retos y fusionar su avance al iniciar sesión.
 
 ### Constancias en PDF, QR y verificación pública
 
@@ -217,7 +217,7 @@ Qurio/
 │   │   │   ├── modules/
 │   │   │   │   ├── admin/      # API /admin/* (Live Ops, Usuarios, Analítica, Forense, Killswitches)
 │   │   │   │   ├── certificates/ # Constancias PDF/QR ReportLab, SHA-256, LinkedIn y /verify
-│   │   │   │   ├── curriculum/ # Catálogo de 76 ejercicios, 228 pistas y fallback
+│   │   │   │   ├── curriculum/ # Catálogo de 80 ejercicios, 240 pistas y fallback
 │   │   │   │   └── runner/     # Pool asyncpg, Sandbox pg_temp, Evaluador semántico + AST y Seguridad contextual
 │   │   │   └── main.py         # Punto de entrada FastAPI y cabeceras HTTP
 │   │   ├── tests/              # Suite de 111 pruebas automáticas (Pytest + Asyncio)
@@ -248,7 +248,7 @@ Qurio/
 │       │   │   └── templates/  # DashboardLayout, WorkspaceLayout
 │       │   ├── hooks/          # useAuth, useTheme, useAppRouter, useCurriculumState, useExerciseWorkspace
 │       │   ├── lib/            # api, adminApi, schemaGraph, moduleGuides, sqlReference, format, routing
-│       │   ├── tests/          # 9 suites Vitest / 58 pruebas (incl. uxUpgrade.test.tsx y admin.test.ts)
+│       │   ├── tests/          # 10 suites Vitest / 76 pruebas (incl. uxUpgrade.test.tsx, avatar.test.ts y admin.test.ts)
 │       │   ├── types/          # Definiciones estrictas TypeScript
 │       │   ├── App.tsx         # Orquestador modular de plantillas, rutas y modales globales
 │       │   └── index.css
@@ -293,12 +293,12 @@ El sandbox PostgreSQL contiene una base de datos de comercio electrónico con 10
 | :--- | :---: | :--- |
 | **`clientes`** | 15 | Identificadores, nombres, emails, ciudades, países y fechas de registro. |
 | **`categorias`** | 5 | Categorías de catálogo (Laptops, Monitores, Periféricos, Almacenamiento, Mobiliario). |
-| **`proveedores`** | 5 | Proveedores internacionales, países de origen y teléfonos de contacto. |
+| **`proveedores`** | 5 | Proveedores internacionales, países de origen y teléfonos de contacto (incluye 1 registro `NULL` para práctica de nulidad). |
 | **`productos`** | 15 | Catálogo con precios unitarios, IDs de categoría y proveedor, y existencias. |
 | **`pedidos`** | 15 | Órdenes de compra con estados (`completado`, `pendiente`, `cancelado`, `procesando`), montos y fechas. |
 | **`detalle_pedidos`** | 24 | Líneas de pedido que vinculan pedidos y productos con cantidades y precios históricos. |
 | **`facturas`** | 13 | Comprobantes fiscales con montos totales, estados (`pagada`, `pendiente`, `anulada`) y fechas de emisión. |
-| **`pagos`** | 11 | Transacciones vinculadas a facturas, con método (`tarjeta_credito`, `transferencia`, `paypal`), montos, fechas y estados. |
+| **`pagos`** | 11 | Transacciones vinculadas a facturas, con método (`tarjeta_credito`, `transferencia`, `paypal`), montos, fechas y estados (`aprobado`, `rechazado`). |
 | **`almacenes`** | 3 | Ubicaciones físicas de distribución (Madrid, Bilbao, Valencia) con capacidad en m². |
 | **`inventario`** | 19 | Existencias físicas por producto y almacén con control de stock y fecha de actualización. |
 
@@ -421,12 +421,12 @@ tests/test_certificates.py ......... Emisión QA Admin, PDF %PDF-, QR SVG, Linke
 tests/test_evaluator.py ............ Comparador semántico, multiconjuntos, NULLs y orden
 tests/test_integration.py .......... Endpoints REST, Sandbox Docker y reveal-solution (0 XP)
 tests/test_rate_limit.py ........... Límites por Token Bucket (invitado vs autenticado)
-tests/test_schema_consistency.py ... 76 retos, SQL en sandbox, determinismo y verificación anti-spoilers
+tests/test_schema_consistency.py ... 80 retos, 240 pistas, paridad concept/solution, SQL en sandbox y anti-spoilers
 tests/test_security.py ............. Sanitización AST contextual (SQLGlot) para read_only, dml y ddl
 tests/test_supabase_migration.py ... Privilegios, CLS, concurrencia y RPC autoritativa
 ```
 
-**Frontend (Vitest, 58 pruebas en 9 archivos) y build de producción:**
+**Frontend (Vitest, 76 pruebas en 10 archivos) y build de producción:**
 ```bash
 cd apps/web
 npm test
@@ -434,17 +434,18 @@ npm run build
 ```
 
 ```text
+ ✓ src/lib/__tests__/avatar.test.ts (5 tests)
  ✓ src/lib/__tests__/routing.test.ts (5 tests)
- ✓ src/lib/__tests__/progress.test.ts (6 tests)
+ ✓ src/lib/__tests__/progress.test.ts (12 tests)
  ✓ src/lib/__tests__/supabase.test.ts (4 tests)
+ ✓ src/lib/__tests__/persistence.test.ts (10 tests)
  ✓ src/lib/__tests__/achievements.test.ts (6 tests)
  ✓ src/tests/sqlCompleter.test.ts (6 tests)
- ✓ src/lib/__tests__/persistence.test.ts (7 tests)
  ✓ src/tests/pedagogy.test.ts (6 tests)
  ✓ src/tests/admin.test.ts (5 tests)
- ✓ src/tests/uxUpgrade.test.tsx (13 tests)
+ ✓ src/tests/uxUpgrade.test.tsx (17 tests)
 
- Test Files  9 passed (9) | Tests  58 passed (58)
+ Test Files  10 passed (10) | Tests  76 passed (76)
 ```
 
 ---

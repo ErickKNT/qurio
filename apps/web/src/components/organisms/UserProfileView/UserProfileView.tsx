@@ -81,7 +81,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   history,
   tracks = [],
   completedCount = 0,
-  totalExercises = 76,
+  totalExercises = 80,
   totalAttemptsCount,
   attemptStats,
   achievements = [],

@@ -516,7 +516,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'null-detective',
     title: 'Detector de NULL',
-    description: 'Encontraste filas sin coincidencias usando LEFT JOIN e IS NULL.',
+    description: 'Detecta valores ausentes con IS NULL o filas sin coincidencias mediante LEFT JOIN.',
     icon: 'Search',
     category: 'habilidad',
     xp_reward: 100,
@@ -568,7 +568,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'window-wizard',
     title: 'Funciones de ventana',
-    description: 'Resuelve un ejercicio usando funciones de ventana (ROW_NUMBER, RANK, LAG).',
+    description: 'Resuelve un ejercicio usando funciones de ventana (ROW_NUMBER, DENSE_RANK, SUM OVER, LAG).',
     icon: 'Layers',
     category: 'habilidad',
     xp_reward: 150,
@@ -594,7 +594,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'dml-operator',
     title: 'Cambios con DML',
-    description: 'Ejecuta tu primer cambio de datos (INSERT, UPDATE, DELETE o RETURNING) en pg_temp.',
+    description: 'Ejecuta tu primer cambio de datos (INSERT, ON CONFLICT, UPDATE, DELETE o RETURNING) en pg_temp.',
     icon: 'Wrench',
     category: 'habilidad',
     xp_reward: 150,
@@ -633,7 +633,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'quarter-master',
     title: '20 retos resueltos',
-    description: 'Completa 20 retos del plan de estudios.',
+    description: 'Completa 20 retos del plan de estudios (25% del catálogo).',
     icon: 'ShieldCheck',
     category: 'progreso',
     xp_reward: 120,
@@ -646,7 +646,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'halfway-engineer',
     title: 'Mitad del camino',
-    description: 'Supera los 40 retos resueltos en PostgreSQL 16.',
+    description: 'Supera los 40 retos resueltos en PostgreSQL 16 (50% del plan de estudios).',
     icon: 'Trophy',
     category: 'progreso',
     xp_reward: 250,
@@ -659,7 +659,7 @@ export const ACHIEVEMENTS_CATALOG: Achievement[] = [
   {
     id: 'master-sql',
     title: 'Plan de estudios completo',
-    description: 'Completa al 100% las 4 rutas del plan de estudios (DQL, DML y DDL).',
+    description: 'Completa los 80 retos de las 4 rutas del plan de estudios (DQL, DML y DDL).',
     icon: 'Sparkles',
     category: 'progreso',
     xp_reward: 500,
@@ -676,15 +676,24 @@ function parseCanonicalExerciseNumber(id: string): number | null {
   return match ? Number(match[1]) : null;
 }
 
-function hasCompletedInModuleRange(
+const ACHIEVEMENT_EXERCISE_SETS = {
+  joinApprentice: new Set([5, 33, 34, 35, 12]),
+  nullDetective: new Set([77, 6, 13, 36, 37, 38, 53]),
+  cteArchitect: new Set([17, 49, 57, 58]),
+  windowWizard: new Set([7, 18, 59, 60, 50]),
+  dmlOperator: new Set([61, 62, 63, 64, 80, 65, 66, 67, 68]),
+  ddlDesigner: new Set([69, 70, 71, 72]),
+  indexTuner: new Set([73, 74, 75, 76]),
+};
+
+function hasCompletedInExerciseSet(
   completedExerciseIds: Set<string>,
-  minSortOrder: number,
-  maxSortOrder: number,
+  canonicalNumbers: Set<number>,
   legacyTokens: string[] = []
 ): boolean {
   for (const id of completedExerciseIds) {
     const num = parseCanonicalExerciseNumber(id);
-    if (num !== null && num >= minSortOrder && num <= maxSortOrder) {
+    if (num !== null && canonicalNumbers.has(num)) {
       return true;
     }
     if (legacyTokens.some((token) => id.includes(token))) {
@@ -718,12 +727,12 @@ export function evaluateUserAchievements(
         break;
 
       case 'join-apprentice':
-        unlocked = hasCompletedInModuleRange(completedExerciseIds, 25, 29, ['m05', 'join']);
+        unlocked = hasCompletedInExerciseSet(completedExerciseIds, ACHIEVEMENT_EXERCISE_SETS.joinApprentice, ['m05', 'join']);
         currentValue = unlocked ? 1 : 0;
         break;
 
       case 'null-detective':
-        unlocked = hasCompletedInModuleRange(completedExerciseIds, 30, 35, ['m06', 'null']);
+        unlocked = hasCompletedInExerciseSet(completedExerciseIds, ACHIEVEMENT_EXERCISE_SETS.nullDetective, ['m06', 'null']);
         currentValue = unlocked ? 1 : 0;
         break;
 
@@ -747,29 +756,27 @@ export function evaluateUserAchievements(
         break;
 
       case 'window-wizard':
-        unlocked = hasCompletedInModuleRange(completedExerciseIds, 56, 60, ['m09', 'm10', 'm12', 'window']);
+        unlocked = hasCompletedInExerciseSet(completedExerciseIds, ACHIEVEMENT_EXERCISE_SETS.windowWizard, ['m09', 'm10', 'm12', 'window']);
         currentValue = unlocked ? 1 : 0;
         break;
 
       case 'cte-architect':
-        unlocked = hasCompletedInModuleRange(completedExerciseIds, 52, 55, ['m11', 'cte']);
+        unlocked = hasCompletedInExerciseSet(completedExerciseIds, ACHIEVEMENT_EXERCISE_SETS.cteArchitect, ['m11', 'cte']);
         currentValue = unlocked ? 1 : 0;
         break;
 
       case 'dml-operator':
-        unlocked =
-          hasCompletedInModuleRange(completedExerciseIds, 61, 68, ['m13', 'm14', 'dml']) ||
-          hasCompletedInModuleRange(completedExerciseIds, 80, 80, []);
+        unlocked = hasCompletedInExerciseSet(completedExerciseIds, ACHIEVEMENT_EXERCISE_SETS.dmlOperator, ['m13', 'm14', 'dml']);
         currentValue = unlocked ? 1 : 0;
         break;
 
       case 'ddl-designer':
-        unlocked = hasCompletedInModuleRange(completedExerciseIds, 69, 72, ['m15', 'ddl']);
+        unlocked = hasCompletedInExerciseSet(completedExerciseIds, ACHIEVEMENT_EXERCISE_SETS.ddlDesigner, ['m15', 'ddl']);
         currentValue = unlocked ? 1 : 0;
         break;
 
       case 'index-tuner':
-        unlocked = hasCompletedInModuleRange(completedExerciseIds, 73, 76, ['m16', 'index']);
+        unlocked = hasCompletedInExerciseSet(completedExerciseIds, ACHIEVEMENT_EXERCISE_SETS.indexTuner, ['m16', 'index']);
         currentValue = unlocked ? 1 : 0;
         break;
 

@@ -35,9 +35,9 @@ interface SkillNodeMeta {
 
 const SKILL_META: Record<number, SkillNodeMeta> = {
   1: { moduleNumber: 1, title: 'SELECT y alias', sqlTags: 'SELECT • AS • DISTINCT', prereqs: [] },
-  2: { moduleNumber: 2, title: 'Filtrado lógico', sqlTags: 'WHERE • BETWEEN • LIKE', prereqs: [1] },
+  2: { moduleNumber: 2, title: 'Filtrado lógico', sqlTags: 'WHERE • IS NULL • BETWEEN • LIKE', prereqs: [1] },
   3: { moduleNumber: 3, title: 'Orden y límite', sqlTags: 'ORDER BY • LIMIT • OFFSET', prereqs: [1] },
-  4: { moduleNumber: 4, title: 'Agregación y grupos', sqlTags: 'COUNT • SUM • GROUP BY • HAVING', prereqs: [2, 3] },
+  4: { moduleNumber: 4, title: 'Agregación y grupos', sqlTags: 'COUNT • DISTINCT • GROUP BY • HAVING', prereqs: [2, 3] },
   5: { moduleNumber: 5, title: 'Uniones base', sqlTags: 'INNER JOIN • ON', prereqs: [4] },
   6: { moduleNumber: 6, title: 'Ausencias y ceros', sqlTags: 'LEFT JOIN • IS NULL • COALESCE', prereqs: [5] },
   7: { moduleNumber: 7, title: 'Cadenas multi-tabla', sqlTags: '3–5 tablas • Cascada', prereqs: [5] },
@@ -46,7 +46,7 @@ const SKILL_META: Record<number, SkillNodeMeta> = {
   10: { moduleNumber: 10, title: 'Lógica condicional', sqlTags: 'CASE WHEN • Pivoteo', prereqs: [7, 8] },
   11: { moduleNumber: 11, title: 'CTEs con WITH', sqlTags: 'WITH • Encadenadas', prereqs: [9, 10] },
   12: { moduleNumber: 12, title: 'Funciones de ventana', sqlTags: 'ROW_NUMBER • DENSE_RANK • LAG', prereqs: [11] },
-  13: { moduleNumber: 13, title: 'Inserción (INSERT)', sqlTags: 'INSERT • VALUES • RETURNING', prereqs: [12] },
+  13: { moduleNumber: 13, title: 'Inserción (INSERT)', sqlTags: 'INSERT • SELECT • ON CONFLICT', prereqs: [12] },
   14: { moduleNumber: 14, title: 'Cambios (UPDATE y DELETE)', sqlTags: 'UPDATE • FROM • DELETE • WHERE', prereqs: [13] },
   15: { moduleNumber: 15, title: 'Diseño de tablas', sqlTags: 'CREATE • ALTER • DROP • CHECK', prereqs: [13] },
   16: { moduleNumber: 16, title: 'Índices', sqlTags: 'CREATE INDEX • UNIQUE • PARTIAL', prereqs: [14, 15] },
