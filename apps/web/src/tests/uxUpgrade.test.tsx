@@ -105,10 +105,10 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     );
     expect(screen.getByText('erick_sql')).toBeInTheDocument();
     expect(screen.getAllByText('1. Fundamentos de SQL').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('Acreditación de Competencia Técnica').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('Constancia de finalización').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('QURIO VERIFIED')).toBeInTheDocument();
-    expect(screen.getByText('Habilidades Técnicas Validadas')).toBeInTheDocument();
-    expect(screen.getByText('Validación Pública')).toBeInTheDocument();
+    expect(screen.getByText('Temas incluidos')).toBeInTheDocument();
+    expect(screen.getByText('Verificación pública')).toBeInTheDocument();
     expect(screen.getByText(/^ID: QURIO-SQL-FO-123456$/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Añadir a LinkedIn/i })).toHaveAttribute(
       'href',
@@ -236,7 +236,7 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     expect(screen.getByText('Erick Bonilla')).toBeInTheDocument();
     expect(screen.getByText('@erick_sql')).toBeInTheDocument();
     expect(screen.getByText(/Ingeniero de Datos enfocado en PostgreSQL 16/i)).toBeInTheDocument();
-    expect(screen.getByText('Mapa de Calor de Actividad (Último Año)')).toBeInTheDocument();
+    expect(screen.getByText('Actividad del último año')).toBeInTheDocument();
 
     const heatmap = container.querySelector('[aria-label="Mapa anual de actividad"]');
     expect(heatmap).not.toBeNull();

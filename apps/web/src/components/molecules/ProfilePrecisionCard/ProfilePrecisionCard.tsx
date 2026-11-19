@@ -25,21 +25,21 @@ export const ProfilePrecisionCard: React.FC<ProfilePrecisionCardProps> = ({ stat
 
   const bars = [
     {
-      label: 'Consultas Exitosas (PASSED)',
+      label: 'Consultas aprobadas',
       value: passRate,
       dotClass: 'bg-emerald',
       textClass: 'text-emerald',
       barClass: 'bg-emerald',
     },
     {
-      label: 'Ejecuciones Óptimas (<50ms)',
+      label: 'Consultas rápidas (<50 ms)',
       value: speedRate,
       dotClass: 'bg-cyan-accent',
       textClass: 'text-cyan-accent',
       barClass: 'bg-cyan-accent',
     },
     {
-      label: 'Resolución Autónoma (0 pistas)',
+      label: 'Resueltos sin pistas',
       value: autonomyRate,
       dotClass: 'bg-primary',
       textClass: 'text-primary-light',

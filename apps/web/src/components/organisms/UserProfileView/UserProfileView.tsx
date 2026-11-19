@@ -167,7 +167,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     const primaryCert = issuedCertificates[0];
     const shareText = primaryCert
       ? primaryCert.verify_url
-      : `${profile?.full_name || profile?.username || 'Estudiante Qurio'} — Nivel ${currentLevel} (${currentXp} XP) • ${completedCount}/${totalExercises} retos SQL completados en Qurio (${typeof window !== 'undefined' ? window.location.origin : ''})`;
+      : `${profile?.full_name || profile?.username || 'Estudiante Qurio'} · Nivel ${currentLevel} (${currentXp} XP) • ${completedCount}/${totalExercises} retos SQL completados en Qurio (${typeof window !== 'undefined' ? window.location.origin : ''})`;
     navigator.clipboard?.writeText(shareText);
     setCopiedProfileSummary(true);
     setTimeout(() => setCopiedProfileSummary(false), 2200);
@@ -181,10 +181,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
   const levelTitles: Record<number, string> = {
     1: 'Novato SQL',
-    2: 'Constructor de Consultas',
-    3: 'Especialista Relacional',
-    4: 'Arquitecto de Consultas',
-    5: 'Maestro de Datos',
+    2: 'Constructor de consultas',
+    3: 'Especialista relacional',
+    4: 'Arquitecto de consultas',
+    5: 'Maestro de datos',
   };
   const currentTitle = levelTitles[currentLevel] || `Ingeniero Nivel ${currentLevel}`;
   const nextTitle = levelTitles[currentLevel + 1] || `Nivel ${currentLevel + 1}`;
@@ -539,7 +539,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-emerald" />
                 <h2 className="text-base font-semibold text-content-primary">
-                  Mapa de Calor de Actividad (Último Año)
+                  Actividad del último año
                 </h2>
               </div>
               <span className="font-mono text-xs text-content-secondary">
@@ -600,8 +600,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <div className="flex items-center justify-between pt-3 mt-3 border-t border-border-subtle/40 text-content-muted font-mono text-[10px] min-w-[660px]">
                 <span>
                   {isCloudAuth
-                    ? 'Registro sincronizado diariamente en Supabase (user_daily_activity).'
-                    : 'Inicia sesión para persistir tu calendario anual en la nube.'}
+                    ? 'Registro diario guardado en Supabase (user_daily_activity).'
+                    : 'Inicia sesión para guardar tu historial anual.'}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span>Menos</span>
@@ -621,7 +621,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <div className="flex items-center gap-2">
                 <RouteIcon className="w-4 h-4 text-cyan-accent" />
                 <h2 className="text-base font-semibold text-content-primary">
-                  Rutas de Aprendizaje en Progreso
+                  Rutas en progreso
                 </h2>
               </div>
               {onSelectTrack && (
