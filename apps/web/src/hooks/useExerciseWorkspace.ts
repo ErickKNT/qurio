@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Exercise,
+  Track,
   EvaluationResponse,
   DiffResult,
   ColumnInfo,
@@ -9,12 +10,19 @@ import {
 } from '@/types';
 import { api, INITIAL_EXERCISE_STUB } from '@/lib/api';
 import { persistence } from '@/lib/persistence';
+import {
+  evaluateModuleCompletion,
+  getNextExerciseTransition,
+  ModuleCompletionSummary,
+} from '@/lib/progress';
 import { RouteParams } from '@/lib/routing';
 import { GUEST_TRIAL_EXERCISE_IDS } from './useCurriculumState';
 
 export interface UseExerciseWorkspaceOptions {
   exercises: Exercise[];
   setExercises: React.Dispatch<React.SetStateAction<Exercise[]>>;
+  tracks: Track[];
+  authoritativeCompletedIds: Set<string>;
   profile: UserProfile | null;
   isAdmin: boolean;
   navigate: (newPath: AppPath, params?: RouteParams, replace?: boolean) => void;
@@ -32,6 +40,8 @@ export interface UseExerciseWorkspaceOptions {
 export function useExerciseWorkspace({
   exercises,
   setExercises,
+  tracks,
+  authoritativeCompletedIds,
   profile,
   isAdmin,
   navigate,
@@ -70,6 +80,8 @@ export function useExerciseWorkspace({
   const [isRevealModalOpen, setIsRevealModalOpen] = useState(false);
   const [isRevealingSolution, setIsRevealingSolution] = useState(false);
   const [isTrialResult, setIsTrialResult] = useState(false);
+  const [moduleCompletionSummary, setModuleCompletionSummary] =
+    useState<ModuleCompletionSummary | null>(null);
 
   const activeExercise = exercises[currentExerciseIndex] || INITIAL_EXERCISE_STUB;
 
@@ -86,6 +98,12 @@ export function useExerciseWorkspace({
   const exercisesRef = useRef(exercises);
   exercisesRef.current = exercises;
 
+  const tracksRef = useRef(tracks);
+  tracksRef.current = tracks;
+
+  const authoritativeCompletedIdsRef = useRef(authoritativeCompletedIds);
+  authoritativeCompletedIdsRef.current = authoritativeCompletedIds;
+
   // Función centralizada para limpiar y cargar el estado de un reto (H04)
   const applyExerciseState = useCallback((ex: Exercise, index: number) => {
     setCurrentExerciseIndex(index);
@@ -93,6 +111,7 @@ export function useExerciseWorkspace({
     setSqlCode(draft !== null ? draft : ex.initial_code);
     setHintsUnlocked(0);
     setIsTrialResult(false);
+    setModuleCompletionSummary(null);
     setExecutionStatus('IDLE');
     setRowCount(0);
     setResultColumns([]);
@@ -308,6 +327,17 @@ export function useExerciseWorkspace({
       setExecutionTime(evalResponse.execution_time_ms);
 
       if (evalResponse.status === 'PASSED') {
+        const previousCompletedIds = new Set(authoritativeCompletedIdsRef.current);
+        const solvedExercise =
+          exercisesRef.current.find((e) => e.id === activeExercise.id) ?? activeExercise;
+        const completionSummary = evaluateModuleCompletion({
+          completedExercise: solvedExercise,
+          exercises: exercisesRef.current,
+          tracks: tracksRef.current,
+          previousCompletedIds,
+          isGuest: !isAuth,
+        });
+
         setExecutionStatus('SUCCESS');
         setRowCount(evalResponse.rows.length);
         setResultColumns(evalResponse.columns.map((name) => ({ name, type: 'column' })));
@@ -334,6 +364,10 @@ export function useExerciseWorkspace({
           isAuth,
           onGuestTrialCompleted: onOpenGuestTrialModal,
         });
+
+        if (completionSummary) {
+          setModuleCompletionSummary(completionSummary);
+        }
       } else if (evalResponse.status === 'FAILED') {
         setExecutionStatus('FAILED');
         setRowCount(evalResponse.rows ? evalResponse.rows.length : 0);
@@ -404,16 +438,57 @@ export function useExerciseWorkspace({
     recordPassedSubmission,
   ]);
 
+  const nextExerciseTransition = getNextExerciseTransition(
+    currentExerciseIndex,
+    exercises,
+    tracks
+  );
+
   const handleNextExercise = useCallback(() => {
-    const nextIndex = (currentExerciseIndex + 1) % exercises.length;
+    const transition = getNextExerciseTransition(currentExerciseIndex, exercises, tracks);
+    if (transition.shouldNavigateToTracks || transition.targetIndex === null) {
+      navigate('tracks');
+      return;
+    }
     const isAuth = Boolean(profile?.id && !profile.id.startsWith('demo-'));
-    const nextExercise = exercises[nextIndex];
+    const nextExercise = exercises[transition.targetIndex];
     if (!isAuth && nextExercise && !GUEST_TRIAL_EXERCISE_IDS.has(nextExercise.id)) {
       onOpenGuestTrialModal();
       return;
     }
-    handleSelectExercise(nextIndex, false);
-  }, [currentExerciseIndex, exercises, profile?.id, onOpenGuestTrialModal, handleSelectExercise]);
+    handleSelectExercise(transition.targetIndex, false);
+  }, [
+    currentExerciseIndex,
+    exercises,
+    tracks,
+    profile?.id,
+    navigate,
+    onOpenGuestTrialModal,
+    handleSelectExercise,
+  ]);
+
+  const dismissModuleCompletion = useCallback(() => {
+    setModuleCompletionSummary(null);
+  }, []);
+
+  const continueAfterModuleCompletion = useCallback(() => {
+    const nextEx = moduleCompletionSummary?.nextExercise;
+    setModuleCompletionSummary(null);
+    if (nextEx) {
+      const idx = exercises.findIndex((e) => e.id === nextEx.id);
+      if (idx !== -1) {
+        handleSelectExercise(idx, false);
+        return;
+      }
+    }
+    navigate('tracks');
+  }, [moduleCompletionSummary, exercises, handleSelectExercise, navigate]);
+
+  const viewTracksFromModuleCompletion = useCallback(() => {
+    const trackSlug = moduleCompletionSummary?.track?.slug;
+    setModuleCompletionSummary(null);
+    navigate('tracks', trackSlug ? { trackSlug } : undefined);
+  }, [moduleCompletionSummary, navigate]);
 
   const handleSqlCodeChange = useCallback(
     (newCode: string) => {
@@ -460,6 +535,11 @@ export function useExerciseWorkspace({
     setIsRevealModalOpen,
     isRevealingSolution,
     isTrialResult,
+    moduleCompletionSummary,
+    nextExerciseLabel: nextExerciseTransition.label,
+    dismissModuleCompletion,
+    continueAfterModuleCompletion,
+    viewTracksFromModuleCompletion,
     handleLocationExerciseId,
     handleSelectExercise,
     handleOpenExerciseFromCatalog,

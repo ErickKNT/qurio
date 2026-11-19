@@ -15,6 +15,8 @@ import { UserProfileView } from '@/components/organisms/UserProfileView/UserProf
 import { DashboardHomeView } from '@/components/organisms/DashboardHomeView/DashboardHomeView';
 import { DesignSystemShowcase } from '@/components/organisms/DesignSystemShowcase/DesignSystemShowcase';
 import { TracksView } from '@/components/organisms/TracksView/TracksView';
+import { DataGridResults } from '@/components/organisms/DataGridResults/DataGridResults';
+import { ModuleCompletedModal } from '@/components/molecules/ModuleCompletedModal/ModuleCompletedModal';
 import { FALLBACK_EXERCISES, FALLBACK_TRACKS } from '@/lib/fallbackCurriculum';
 import { ACHIEVEMENTS_CATALOG, ECOMMERCE_TABLES_SCHEMA } from '@/lib/api';
 import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
@@ -374,5 +376,131 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     // Cambiar al modo Camino por Etapas y verificar que renderiza las 4 etapas
     fireEvent.click(screen.getByRole('button', { name: /Camino por Etapas/i }));
     expect(screen.getByText(/Etapa 4: Ingeniería y Manipulación de Datos/i)).toBeInTheDocument();
+  });
+
+  it('ModuleCompletedModal felicita el cierre del módulo y permite continuar al siguiente o revisar consulta', () => {
+    const track = FALLBACK_TRACKS[0];
+    const mod1 = track.modules![0];
+    const mod2 = track.modules![1];
+    let closed = 0;
+    let continued = 0;
+    let viewedTracks = 0;
+
+    render(
+      <ModuleCompletedModal
+        isOpen={true}
+        lastXpAwarded={35}
+        summary={{
+          completedModule: mod1,
+          track,
+          moduleTotalExercises: 4,
+          moduleTotalXp: 130,
+          trackCompletedCount: 4,
+          trackTotalCount: 24,
+          trackPercent: 17,
+          isTrackCompleted: false,
+          nextModule: mod2,
+          nextExercise: FALLBACK_EXERCISES[4],
+        }}
+        onClose={() => {
+          closed += 1;
+        }}
+        onContinueNextModule={() => {
+          continued += 1;
+        }}
+        onViewTracks={() => {
+          viewedTracks += 1;
+        }}
+      />
+    );
+
+    expect(screen.getByText('Módulo completado')).toBeInTheDocument();
+    expect(screen.getByText(`Cerraste ${mod1.title}`)).toBeInTheDocument();
+    expect(screen.getByText('4 / 4 retos')).toBeInTheDocument();
+    expect(screen.getByText('130 XP del módulo')).toBeInTheDocument();
+    expect(screen.getByText(mod2.title)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Continuar al siguiente módulo/i }));
+    expect(continued).toBe(1);
+
+    fireEvent.click(screen.getByRole('button', { name: /Revisar consulta/i }));
+    expect(closed).toBe(1);
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(closed).toBe(2);
+
+    cleanup();
+
+    render(
+      <ModuleCompletedModal
+        isOpen={true}
+        lastXpAwarded={50}
+        summary={{
+          completedModule: track.modules![3],
+          track,
+          moduleTotalExercises: 5,
+          moduleTotalXp: 210,
+          trackCompletedCount: 24,
+          trackTotalCount: 24,
+          trackPercent: 100,
+          isTrackCompleted: true,
+        }}
+        onClose={() => {}}
+        onContinueNextModule={() => {}}
+        onViewTracks={() => {
+          viewedTracks += 1;
+        }}
+      />
+    );
+
+    expect(screen.getByText('Ruta completada')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Ver rutas y constancia/i }));
+    expect(viewedTracks).toBe(1);
+  });
+
+  it('DataGridResults muestra la etiqueta personalizada de transición entre módulos', () => {
+    render(
+      <DataGridResults
+        status="SUCCESS"
+        executionTimeMs={4.2}
+        rowCount={1}
+        columns={[{ name: 'id', type: 'int4' }]}
+        rows={[[1]]}
+        xpAwarded={35}
+        onNextExercise={() => {}}
+        nextExerciseLabel="Siguiente Módulo"
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /Siguiente Módulo/i })).toBeInTheDocument();
+  });
+
+  it('TracksView muestra el botón Probar modal (QA) solo para administradores y abre ModuleCompletedModal', () => {
+    render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        onSelectExercise={() => {}}
+        isAdmin={false}
+      />
+    );
+    expect(screen.queryAllByRole('button', { name: /Probar modal \(QA\)/i })).toHaveLength(0);
+
+    cleanup();
+
+    render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        onSelectExercise={() => {}}
+        isAdmin={true}
+      />
+    );
+    const qaButtons = screen.getAllByRole('button', { name: /Probar modal \(QA\)/i });
+    expect(qaButtons).toHaveLength(FALLBACK_TRACKS.length);
+
+    fireEvent.click(qaButtons[0]);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Módulo completado')).toBeInTheDocument();
   });
 });

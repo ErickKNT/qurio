@@ -3,6 +3,7 @@ import { DashboardLayout, WorkspaceLayout } from '@/components/templates';
 import { KbdShortcut } from '@/components/atoms';
 import {
   GuestTrialCompleteModal,
+  ModuleCompletedModal,
   RevealSolutionModal,
   MethodologyModal,
 } from '@/components/molecules';
@@ -222,6 +223,11 @@ export const App: React.FC = () => {
     setIsRevealModalOpen,
     isRevealingSolution,
     isTrialResult,
+    moduleCompletionSummary,
+    nextExerciseLabel,
+    dismissModuleCompletion,
+    continueAfterModuleCompletion,
+    viewTracksFromModuleCompletion,
     handleLocationExerciseId,
     handleSelectExercise,
     handleOpenExerciseFromCatalog,
@@ -238,6 +244,8 @@ export const App: React.FC = () => {
   } = useExerciseWorkspace({
     exercises,
     setExercises,
+    tracks,
+    authoritativeCompletedIds,
     profile,
     isAdmin,
     navigate,
@@ -354,6 +362,7 @@ export const App: React.FC = () => {
               message={resultMessage}
               xpAwarded={isTrialResult ? undefined : awardedXp}
               onNextExercise={handleNextExercise}
+              nextExerciseLabel={nextExerciseLabel}
               isPlayground={isTrialResult}
               failedAttemptsCount={failedAttemptsByExercise[activeExercise.id] || 0}
               isSolutionRevealed={Boolean(revealedSolutions[activeExercise.id])}
@@ -544,6 +553,15 @@ export const App: React.FC = () => {
         exerciseTitle={activeExercise.title}
         failedAttempts={failedAttemptsByExercise[activeExercise.id] || 0}
         isLoading={isRevealingSolution}
+      />
+
+      <ModuleCompletedModal
+        isOpen={Boolean(moduleCompletionSummary)}
+        summary={moduleCompletionSummary}
+        lastXpAwarded={awardedXp}
+        onClose={dismissModuleCompletion}
+        onContinueNextModule={continueAfterModuleCompletion}
+        onViewTracks={viewTracksFromModuleCompletion}
       />
 
       <GuestTrialCompleteModal
