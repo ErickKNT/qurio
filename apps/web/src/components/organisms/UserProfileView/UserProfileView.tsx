@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   Sparkles,
   Edit3,
+  Camera,
   Share2,
   ShieldCheck,
   Route as RouteIcon,
@@ -29,7 +30,7 @@ import {
   AttemptStats,
   CertificateRecord,
 } from '@/types';
-import { Badge, Button } from '@/components/atoms';
+import { Badge, Button, UserAvatar } from '@/components/atoms';
 import { MetricTile } from '@/components/molecules/MetricTile/MetricTile';
 import { EditProfileModal } from '@/components/molecules/EditProfileModal/EditProfileModal';
 import { ProfileBadgesShowcase } from '@/components/molecules/ProfileBadgesShowcase/ProfileBadgesShowcase';
@@ -63,6 +64,7 @@ export interface UserProfileViewProps {
   onNavigateAchievements?: () => void;
   onUpdateProfile?: (updates: Partial<UserProfile>) => Promise<{ success?: boolean; error?: string } | void>;
   isCloudAuth?: boolean;
+  providerAvatarUrl?: string | null;
   isAdmin?: boolean;
   className?: string;
 }
@@ -91,6 +93,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onNavigateAchievements,
   onUpdateProfile,
   isCloudAuth = false,
+  providerAvatarUrl = null,
   isAdmin = false,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -327,14 +330,23 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             <div className="relative shrink-0 group">
               <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-primary to-cyan-accent opacity-60 blur-sm group-hover:opacity-90 transition-opacity" />
               <div className="relative w-24 h-24 rounded-full overflow-hidden bg-surface-card ring-4 ring-surface shadow-lg">
-                <img
-                  src={
-                    profile?.avatar_url ||
-                    `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'guest'}`
-                  }
+                <UserAvatar
+                  src={profile?.avatar_url}
+                  fallbackSeed={profile?.username || 'guest'}
                   alt={`Avatar de ${profile?.full_name || profile?.username || 'Usuario'}`}
-                  className="w-full h-full object-cover"
+                  size="xl"
                 />
+                {onUpdateProfile && profile && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditOpen(true)}
+                    aria-label="Cambiar imagen de perfil"
+                    title="Cambiar imagen de perfil"
+                    className="absolute inset-0 flex items-center justify-center bg-canvas/65 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-content-primary"
+                  >
+                    <Camera className="w-5 h-5 text-cyan-accent" />
+                  </button>
+                )}
               </div>
               <span
                 title={isCloudAuth ? 'Sesión sincronizada en la nube' : 'Modo Local'}
@@ -1052,6 +1064,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         <EditProfileModal
           profile={profile}
           isOpen={isEditOpen}
+          isCloudAuth={isCloudAuth}
+          providerAvatarUrl={providerAvatarUrl}
           onClose={() => setIsEditOpen(false)}
           onSave={onUpdateProfile}
         />

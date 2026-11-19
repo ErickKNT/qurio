@@ -7,7 +7,7 @@ import {
   LogIn,
   LogOut,
 } from 'lucide-react';
-import { Button, Select } from '@/components/atoms';
+import { Button, Select, UserAvatar } from '@/components/atoms';
 import { StreakPill } from '@/components/molecules';
 import { Exercise, Track, UserProfile } from '@/types';
 
@@ -121,10 +121,12 @@ export const ExerciseHeaderBar: React.FC<ExerciseHeaderBarProps> = ({
               title="Mi Cuenta Supabase"
             >
               <div className="relative">
-                <img
-                  src={profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'user'}`}
+                <UserAvatar
+                  src={profile?.avatar_url}
+                  fallbackSeed={profile?.username || 'user'}
                   alt={`Avatar de ${profile?.username || 'Usuario'}`}
-                  className="w-6 h-6 rounded-full object-cover border border-emerald/50"
+                  size="xs"
+                  className="border border-emerald/50"
                 />
                 <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald" />
               </div>

@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { X, Save, User, FileText, Image as ImageIcon } from 'lucide-react';
+import { X, Save, User, FileText } from 'lucide-react';
 import { UserProfile } from '@/types';
 import { Button } from '@/components/atoms';
+import { AvatarUploader } from '@/components/molecules/AvatarUploader/AvatarUploader';
+import { processAvatarImage, resolveFallbackAvatarUrl } from '@/lib/avatar';
+import { persistence } from '@/lib/persistence';
 
 export interface EditProfileModalProps {
   profile: UserProfile | null;
   isOpen: boolean;
+  isCloudAuth?: boolean;
+  providerAvatarUrl?: string | null;
   onClose: () => void;
   onSave: (updates: Partial<UserProfile>) => Promise<{ success?: boolean; error?: string } | void>;
 }
@@ -13,12 +18,15 @@ export interface EditProfileModalProps {
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   profile,
   isOpen,
+  isCloudAuth = false,
+  providerAvatarUrl = null,
   onClose,
   onSave,
 }) => {
   const [fullName, setFullName] = useState('');
   const [bio, setBio] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [markedForRemoval, setMarkedForRemoval] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -26,7 +34,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     if (isOpen && profile) {
       setFullName(profile.full_name || profile.username || '');
       setBio(profile.bio || '');
-      setAvatarUrl(profile.avatar_url || '');
+      setSelectedFile(null);
+      setMarkedForRemoval(false);
       setErrorMsg(null);
     }
   }, [isOpen, profile]);
@@ -42,11 +51,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   if (!isOpen || !profile) return null;
 
+  const fallbackAvatarUrl =
+    providerAvatarUrl || resolveFallbackAvatarUrl(profile.username, null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanName = fullName.trim();
     const cleanBio = bio.trim();
-    const cleanAvatar = avatarUrl.trim();
 
     if (cleanName.length < 2) {
       setErrorMsg('El nombre visible debe tener al menos 2 caracteres.');
@@ -60,19 +71,36 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       setErrorMsg('La bio profesional no puede exceder 220 caracteres.');
       return;
     }
-    if (cleanAvatar && !/^https?:\/\//i.test(cleanAvatar)) {
-      setErrorMsg('La URL del avatar debe comenzar con http:// o https://.');
-      return;
-    }
 
     setErrorMsg(null);
     setSaving(true);
     try {
-      const result = await onSave({
+      let avatarUpdate: string | null | undefined = undefined;
+
+      if (selectedFile) {
+        const processedBlob = await processAvatarImage(selectedFile);
+        const uploadResult = await persistence.uploadUserAvatar(profile.id, processedBlob);
+        if (uploadResult.error || !uploadResult.publicUrl) {
+          setErrorMsg(uploadResult.error || 'No se pudo subir la imagen de perfil.');
+          return;
+        }
+        avatarUpdate = uploadResult.publicUrl;
+      } else if (markedForRemoval) {
+        const removeResult = await persistence.removeUserAvatar(profile.id);
+        if (!removeResult.success) {
+          setErrorMsg(removeResult.error || 'No se pudo eliminar la imagen anterior.');
+          return;
+        }
+        avatarUpdate = null;
+      }
+
+      const payload: Partial<UserProfile> = {
         full_name: cleanName,
         bio: cleanBio,
-        avatar_url: cleanAvatar || profile.avatar_url,
-      });
+        ...(avatarUpdate !== undefined ? { avatar_url: avatarUpdate } : {}),
+      };
+
+      const result = await onSave(payload);
       if (result && result.success === false) {
         setErrorMsg(result.error || 'No se pudo actualizar el perfil.');
         return;
@@ -123,6 +151,20 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             </div>
           )}
 
+          <AvatarUploader
+            currentAvatarUrl={profile.avatar_url}
+            fallbackAvatarUrl={fallbackAvatarUrl}
+            hasProviderAvatar={Boolean(providerAvatarUrl)}
+            username={profile.username}
+            isCloudAuth={isCloudAuth}
+            disabled={saving}
+            selectedFile={selectedFile}
+            markedForRemoval={markedForRemoval}
+            onSelectFile={setSelectedFile}
+            onMarkRemove={setMarkedForRemoval}
+            onValidationError={setErrorMsg}
+          />
+
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-mono uppercase tracking-wider text-content-muted">
               Identificador (@username)
@@ -169,24 +211,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               maxLength={220}
               placeholder="Ej. Backend & Data Engineer enfocado en PostgreSQL 16 y modelado relacional."
               className="px-3.5 py-2.5 rounded-xl bg-surface-dim border border-border-subtle focus:border-primary focus:outline-none text-sm text-content-primary resize-none transition-colors"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="profile-avatar-url"
-              className="text-xs font-mono uppercase tracking-wider text-content-secondary flex items-center gap-1.5"
-            >
-              <ImageIcon className="w-3.5 h-3.5 text-primary-light" />
-              <span>URL de Avatar (Opcional)</span>
-            </label>
-            <input
-              id="profile-avatar-url"
-              type="url"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://avatars.githubusercontent.com/..."
-              className="px-3.5 py-2 rounded-xl bg-surface-dim border border-border-subtle focus:border-primary focus:outline-none text-xs font-mono text-content-primary transition-colors"
             />
           </div>
 

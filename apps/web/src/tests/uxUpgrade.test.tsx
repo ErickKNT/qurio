@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 
 afterEach(() => cleanup());
@@ -17,6 +17,9 @@ import { DesignSystemShowcase } from '@/components/organisms/DesignSystemShowcas
 import { TracksView } from '@/components/organisms/TracksView/TracksView';
 import { DataGridResults } from '@/components/organisms/DataGridResults/DataGridResults';
 import { ModuleCompletedModal } from '@/components/molecules/ModuleCompletedModal/ModuleCompletedModal';
+import { EditProfileModal } from '@/components/molecules/EditProfileModal/EditProfileModal';
+import * as avatarLib from '@/lib/avatar';
+import { persistence } from '@/lib/persistence';
 import { FALLBACK_EXERCISES, FALLBACK_TRACKS } from '@/lib/fallbackCurriculum';
 import { ACHIEVEMENTS_CATALOG, ECOMMERCE_TABLES_SCHEMA } from '@/lib/api';
 import { formatSqlProse, highlightSqlBlock } from '@/lib/format';
@@ -250,13 +253,114 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     expect(screen.getByText('Insignias')).toBeInTheDocument();
     expect(screen.getByText('Probar Global (QA)')).toBeInTheDocument();
 
-    // Abrir EditProfileModal y comprobar validación inline
+    // Abrir EditProfileModal y comprobar validación inline y ausencia de campo URL externa
     fireEvent.click(screen.getByRole('button', { name: /Editar Perfil/i }));
     expect(screen.getByText('Editar Perfil Técnico')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/URL de Avatar/i)).toBeNull();
     const nameInput = screen.getByLabelText(/Nombre Completo/i);
     fireEvent.change(nameInput, { target: { value: 'A' } });
     fireEvent.click(screen.getByRole('button', { name: /Guardar Cambios/i }));
     expect(screen.getByRole('alert')).toHaveTextContent(/al menos 2 caracteres/i);
+  });
+
+  it('EditProfileModal valida archivo de avatar, procesa subida a Storage y restaura avatar del proveedor al quitar foto', async () => {
+    const createObjectUrlMock = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-preview');
+    const revokeObjectUrlMock = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+    const onSave = vi.fn().mockResolvedValue({ success: true });
+    const onClose = vi.fn();
+
+    const { rerender } = render(
+      <EditProfileModal
+        profile={{
+          id: 'usr-cloud-1',
+          username: 'erick_sql',
+          full_name: 'Erick Bonilla',
+          avatar_url: 'https://lh3.googleusercontent.com/provider-avatar.jpg',
+          bio: 'Data Engineer',
+          total_xp: 500,
+          current_level: 2,
+          current_streak_days: 3,
+          max_streak_days: 5,
+          preferred_theme: 'dark',
+          created_at: '2026-11-01T00:00:00Z',
+        }}
+        isOpen={true}
+        isCloudAuth={true}
+        providerAvatarUrl="https://lh3.googleusercontent.com/provider-avatar.jpg"
+        onClose={onClose}
+        onSave={onSave}
+      />
+    );
+
+    const fileInput = screen.getByLabelText(/Imagen de Perfil/i) as HTMLInputElement;
+
+    // 1. Rechazar SVG con error inline
+    const svgFile = new File(['<svg />'], 'bad.svg', { type: 'image/svg+xml' });
+    fireEvent.change(fileInput, { target: { files: [svgFile] } });
+    expect(screen.getByRole('alert')).toHaveTextContent(/JPG, PNG o WebP/i);
+
+    // 2. Subir PNG válido -> procesa en canvas y sube a Storage
+    const processedBlob = new Blob([new Uint8Array(32)], { type: 'image/webp' });
+    vi.spyOn(avatarLib, 'processAvatarImage').mockResolvedValue(processedBlob);
+    vi.spyOn(persistence, 'uploadUserAvatar').mockResolvedValue({
+      publicUrl: 'https://demo.supabase.co/storage/v1/object/public/avatars/usr-cloud-1/avatar.webp?v=99',
+    });
+
+    const validPng = new File([new Uint8Array(64)], 'foto.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [validPng] } });
+    fireEvent.click(screen.getByRole('button', { name: /Guardar Cambios/i }));
+
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          avatar_url:
+            'https://demo.supabase.co/storage/v1/object/public/avatars/usr-cloud-1/avatar.webp?v=99',
+        })
+      );
+    });
+
+    // 3. Quitar foto personalizada -> borra de Storage y envía avatar_url: null para restaurar avatar del proveedor
+    vi.spyOn(persistence, 'removeUserAvatar').mockResolvedValue({ success: true });
+    rerender(
+      <EditProfileModal
+        profile={{
+          id: 'usr-cloud-1',
+          username: 'erick_sql',
+          full_name: 'Erick Bonilla',
+          avatar_url: 'https://demo.supabase.co/storage/v1/object/public/avatars/usr-cloud-1/avatar.webp?v=99',
+          bio: 'Data Engineer',
+          total_xp: 500,
+          current_level: 2,
+          current_streak_days: 3,
+          max_streak_days: 5,
+          preferred_theme: 'dark',
+          created_at: '2026-11-01T00:00:00Z',
+        }}
+        isOpen={true}
+        isCloudAuth={true}
+        providerAvatarUrl="https://lh3.googleusercontent.com/provider-avatar.jpg"
+        onClose={onClose}
+        onSave={onSave}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Quitar foto/i }));
+    expect(screen.getByText(/Se restaurará tu avatar del proveedor al guardar/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Guardar Cambios/i }));
+
+    await waitFor(() => {
+      expect(persistence.removeUserAvatar).toHaveBeenCalledWith('usr-cloud-1');
+      expect(onSave).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          avatar_url: null,
+        })
+      );
+    });
+
+    createObjectUrlMock.mockRestore();
+    revokeObjectUrlMock.mockRestore();
+    vi.restoreAllMocks();
   });
 
   it('UserProfileView limita historial rápido a 5 filas y abre QueryHistoryModal con búsqueda y paginación de 10', () => {

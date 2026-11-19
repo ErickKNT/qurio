@@ -15,6 +15,7 @@ import {
   BookMarked,
 } from 'lucide-react';
 import { Button } from '@/components/atoms/Button/Button';
+import { UserAvatar } from '@/components/atoms/UserAvatar/UserAvatar';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
@@ -218,10 +219,12 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         ) : !effectiveCollapsed ? (
           <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-surface/60 border border-border-subtle/60 shadow-sm animate-fadeIn">
             <div className="flex items-center gap-2">
-              <img
-                src={profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'user'}`}
+              <UserAvatar
+                src={profile?.avatar_url}
+                fallbackSeed={profile?.username || 'user'}
                 alt={`Avatar de ${profile?.username || 'Usuario'}`}
-                className="w-7 h-7 rounded-full object-cover border border-emerald/50 shrink-0"
+                size="sm"
+                className="border border-emerald/50"
               />
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-xs font-bold text-content-primary truncate font-mono">
@@ -262,10 +265,12 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 animate-fadeIn">
-            <img
-              src={profile?.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'user'}`}
+            <UserAvatar
+              src={profile?.avatar_url}
+              fallbackSeed={profile?.username || 'user'}
               alt={`Avatar de ${profile?.username || 'Estudiante'}`}
-              className="w-7 h-7 rounded-full object-cover border border-emerald/50"
+              size="sm"
+              className="border border-emerald/50"
             />
             <button
               onClick={signOut}

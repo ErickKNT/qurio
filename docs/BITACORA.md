@@ -6,9 +6,9 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 
 ## 1. Estado Actual del Proyecto
 
-* **Fase Actual:** **Fase 18: Ruta 4 — Ingeniería y Manipulación de Datos (DML & DDL: INSERT, UPDATE, DELETE, CREATE/ALTER/DROP TABLE, CREATE INDEX) en Sandbox Efímero `pg_temp` — Completada**  
-* **Próxima Fase:** **Sincronización con GitHub (`git push`) y fusión de `feat/track-4-dml-ddl-engineering` hacia `main`**  
-* **Rama Git Activa:** `feat/track-4-dml-ddl-engineering` (bifurcada desde `main`)  
+* **Fase Actual:** **Fase 19: Actualización de Imagen de Perfil con Supabase Storage (`feat/profile-avatar-upload`) — Completada**  
+* **Próxima Fase:** **Ejecución manual aprobada de `database/supabase/07_avatar_storage.sql` en Supabase Cloud y pruebas en vivo**  
+* **Rama Git Activa:** `main` (con `feat/profile-avatar-upload` fusionada y sincronizada)  
 * **Estado Operativo Real de Infraestructura (Verificación Forense y Ejecutable):**
   * Contenedor Docker Sandbox (`qurio-postgres-sandbox` en `localhost:5433`): Activo y saludable (`healthy`).
   * API FastAPI (`apps/api`, `uvicorn` en `http://127.0.0.1:8000`): **100% Verificado** — Suite de **96 pruebas automatizadas pasando limpiamente en 93.28s** en `apps/api/tests/` (`85` existentes + `11` nuevas en `test_admin.py`).
@@ -42,6 +42,7 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 | **16** | **Constancias Verificables PDF/QR, LinkedIn & Modo QA Admin** | ✅ Concluida | `main` (vía `feat/verifiable-certificates-pdf-linkedin`) | Emisión idempotente (`user_certificates`), PDF vectorial A4 oscuro con QR (`reportlab`), enlace público `/verify/:code`, QR SVG, *Añadir a LinkedIn*, UI *Terminal Glow Minimal* y desbloqueo QA Admin (`app_metadata.role === 'admin'`). |
 | **17** | **Rediseño Bento del Perfil de Usuario & Métricas Reales** | ✅ Concluida | `main` (vía `feat/profile-bento-redesign`) | Banner heroico, edición CLS (`display_name`, `bio`, `avatar_url`), heatmap anual 52 semanas (`user_daily_activity` 365d), rutas activas, vitrina de insignias, precisión SQL real y certificaciones. |
 | **18** | **Ruta 4: Ingeniería y Manipulación de Datos (DML & DDL)** | ✅ Concluida | `feat/track-4-dml-ddl-engineering` | Motor transaccional efímero en `pg_temp` con `ROLLBACK` determinista, seguridad AST contextual (`read_only`, `dml`, `ddl`), 16 nuevos retos (`sort_order` 61..76 en Módulos 13 a 16), 4 guías interactivas, snippets DML/DDL en Monaco y constancia PDF/QR. |
+| **19** | **Actualización de Imagen de Perfil (Supabase Storage)** | ✅ Concluida | `feat/profile-avatar-upload` | Script `07_avatar_storage.sql` (bucket `avatars` sin SVG + RLS `auth.uid()`), procesamiento 256×256 WebP en `<canvas>`, Átomo `UserAvatar`, Molécula `AvatarUploader`, eliminación del campo URL externa y restauración al avatar del proveedor OAuth. |
 
 ---
 
@@ -1836,6 +1837,29 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
 * **Verificación:**
   * **Frontend (`npm.cmd --prefix apps/web test`):** **9 archivos / 67 pruebas aprobadas** (incluyendo pruebas unitarias en [`progress.test.ts`](../apps/web/src/lib/__tests__/progress.test.ts) y pruebas UI en [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).
   * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (0 errores TypeScript).
+
+---
+
+### Entrada 63: Actualización de Imagen de Perfil con Supabase Storage y Normalización Raster
+
+* **Fecha:** 19 de Noviembre de 2026
+* **Rama de Trabajo:** `feat/profile-avatar-upload`
+* **Objetivo:** Permitir que los estudiantes autenticados suban, previsualicen y eliminen su foto de perfil directamente hacia Supabase Storage, eliminando la entrada insegura de URLs externas arbitrarias y restaurando el avatar del proveedor OAuth al quitar la foto personalizada.
+* **Entregables Implementados:**
+  1. **Infraestructura Supabase Storage ([`07_avatar_storage.sql`](../database/supabase/07_avatar_storage.sql)):**
+     * Creación idempotente del bucket `avatars` (`public = true`, límite `2 MiB`, allowlist estricto `image/jpeg`, `image/png`, `image/webp` excluyendo `image/svg+xml` para prevenir Stored XSS).
+     * Políticas RLS sobre `storage.objects` restringiendo `INSERT`, `UPDATE` y `DELETE` al prefijo `auth.uid()::text` y nombres deterministas `avatar.webp` / `avatar.png`.
+  2. **Procesamiento de Imagen, Persistencia y Estado Auth ([`avatar.ts`](../apps/web/src/lib/avatar.ts), [`persistence.ts`](../apps/web/src/lib/persistence.ts), [`useAuth.tsx`](../apps/web/src/hooks/useAuth.tsx), [`types/index.ts`](../apps/web/src/types/index.ts)):**
+     * Validación de tipo/tamaño (`<= 5 MB` de entrada), recorte cuadrado centrado `256×256` y re-codificación en `<canvas>` a `image/webp` (eliminando metadatos EXIF).
+     * `uploadUserAvatar` (ruta fija con `upsert: true` + `?v=${Date.now()}` para evitar huérfanos y caché obsoleto) y `removeUserAvatar`.
+     * Corrección en `persistence.updateProfile` para persistir en `localStorage` únicamente tras éxito en Supabase, evitando estado divergente ante errores RLS/red.
+     * Exposición de `providerAvatarUrl` en `useAuth` y resolución automática al avatar de Google/GitHub (o DiceBear si no existe proveedor) cuando `avatar_url` se limpia a `null`.
+  3. **Atomic Design Pragmático ([`UserAvatar.tsx`](../apps/web/src/components/atoms/UserAvatar/UserAvatar.tsx), [`AvatarUploader.tsx`](../apps/web/src/components/molecules/AvatarUploader/AvatarUploader.tsx), [`EditProfileModal.tsx`](../apps/web/src/components/molecules/EditProfileModal/EditProfileModal.tsx), [`UserProfileView.tsx`](../apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx), [`TopHeader.tsx`](../apps/web/src/components/organisms/TopHeader/TopHeader.tsx), [`SidebarNav.tsx`](../apps/web/src/components/organisms/SidebarNav/SidebarNav.tsx), [`ExerciseHeaderBar.tsx`](../apps/web/src/components/organisms/ExerciseHeaderBar/ExerciseHeaderBar.tsx)):**
+     * Unificación de avatares con `UserAvatar` y fallback automático `onError`.
+     * Eliminación del input de URL externa en `EditProfileModal` y reemplazo por `AvatarUploader` con drag-and-drop, previsualización en vivo, errores inline (`role="alert"`), botón *Quitar foto* y bloqueo informativo en modo local.
+* **Verificación:**
+  * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **10 archivos / 76 pruebas aprobadas** (incluyendo [`avatar.test.ts`](../apps/web/src/lib/__tests__/avatar.test.ts), [`persistence.test.ts`](../apps/web/src/lib/__tests__/persistence.test.ts) y [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).
+  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,306 módulos**, 0 errores TypeScript).
 
 
 

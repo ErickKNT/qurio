@@ -5,3 +5,4 @@ export * from './KbdShortcut/KbdShortcut';
 export * from './RadioTab/RadioTab';
 export * from './Select/Select';
 export * from './SplitResizeHandle/SplitResizeHandle';
+export * from './UserAvatar/UserAvatar';

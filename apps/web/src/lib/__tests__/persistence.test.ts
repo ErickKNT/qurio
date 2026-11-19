@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { supabase } from '../supabase';
 import {
   persistence,
   GUEST_PROGRESS_STORAGE_KEY,
@@ -226,21 +227,79 @@ describe('persistence — Borrador de código SQL del editor (C-05)', () => {
   });
 });
 
-describe('persistence — Protección de perfil (C-02)', () => {
+describe('persistence — Protección de perfil y Storage de avatar (C-02)', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.restoreAllMocks();
   });
 
-  it('actualiza el perfil localmente sin errores', async () => {
-    await persistence.updateProfile('usr-test', {
-      username: 'erick_dev',
-      full_name: 'Erick Test',
-      total_xp: 300,
-      current_level: 2,
-    });
+  it('actualiza el perfil localmente cuando syncCloud es false', async () => {
+    const result = await persistence.updateProfile(
+      'usr-test',
+      {
+        username: 'erick_dev',
+        full_name: 'Erick Test',
+        total_xp: 300,
+        current_level: 2,
+      },
+      false
+    );
 
+    expect(result.success).toBe(true);
     const local = persistence.getLocalProfile();
     expect(local.username).toBe('erick_dev');
     expect(local.full_name).toBe('Erick Test');
+  });
+
+  it('no corrompe localStorage si Supabase rechaza el UPDATE de perfil', async () => {
+    await persistence.updateProfile('usr-test', { full_name: 'Nombre Original' }, false);
+
+    const eqMock = vi.fn().mockResolvedValue({ error: { message: 'permission denied' } });
+    const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
+    vi.spyOn(supabase, 'from').mockReturnValue({ update: updateMock } as any);
+
+    const result = await persistence.updateProfile('usr-test', {
+      full_name: 'Nombre Fallido',
+      avatar_url: null,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('permission denied');
+    expect(persistence.getLocalProfile().full_name).toBe('Nombre Original');
+  });
+
+  it('sube el avatar a Supabase Storage con upsert y cache-buster', async () => {
+    const uploadMock = vi.fn().mockResolvedValue({ error: null });
+    const getPublicUrlMock = vi.fn().mockReturnValue({
+      data: { publicUrl: 'https://demo.supabase.co/storage/v1/object/public/avatars/usr-1/avatar.webp' },
+    });
+
+    vi.spyOn(supabase.storage, 'from').mockReturnValue({
+      upload: uploadMock,
+      getPublicUrl: getPublicUrlMock,
+    } as any);
+
+    const blob = new Blob([new Uint8Array(64)], { type: 'image/webp' });
+    const result = await persistence.uploadUserAvatar('usr-1', blob);
+
+    expect(supabase.storage.from).toHaveBeenCalledWith('avatars');
+    expect(uploadMock).toHaveBeenCalledWith(
+      'usr-1/avatar.webp',
+      blob,
+      expect.objectContaining({ upsert: true, contentType: 'image/webp' })
+    );
+    expect(result.publicUrl).toMatch(/^https:\/\/demo\.supabase\.co\/storage\/v1\/object\/public\/avatars\/usr-1\/avatar\.webp\?v=\d+$/);
+  });
+
+  it('elimina los objetos del usuario en Storage al quitar avatar', async () => {
+    const removeMock = vi.fn().mockResolvedValue({ error: null });
+    vi.spyOn(supabase.storage, 'from').mockReturnValue({
+      remove: removeMock,
+    } as any);
+
+    const result = await persistence.removeUserAvatar('usr-1');
+
+    expect(result.success).toBe(true);
+    expect(removeMock).toHaveBeenCalledWith(['usr-1/avatar.webp', 'usr-1/avatar.png']);
   });
 });
