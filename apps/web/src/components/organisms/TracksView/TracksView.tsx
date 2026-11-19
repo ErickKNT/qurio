@@ -4,9 +4,14 @@ import { Track, Exercise } from '@/types';
 import { TrackCard } from '@/components/molecules/TrackCard/TrackCard';
 import { ModuleAccordion } from '@/components/molecules/ModuleAccordion/ModuleAccordion';
 import { PedagogyPillarsCard } from '@/components/molecules/PedagogyPillarsCard/PedagogyPillarsCard';
+import { ModuleCompletedModal } from '@/components/molecules/ModuleCompletedModal/ModuleCompletedModal';
 import { LearningRoadmapMap } from '@/components/organisms/LearningRoadmapMap/LearningRoadmapMap';
 import { ModuleGuideModal } from '@/components/organisms/ModuleGuideModal/ModuleGuideModal';
 import { getModuleGuide } from '@/lib/moduleGuides';
+import {
+  buildAdminModuleCompletionPreview,
+  ModuleCompletionSummary,
+} from '@/lib/progress';
 import { Button, Badge } from '@/components/atoms';
 
 export interface TracksViewProps {
@@ -33,6 +38,8 @@ export const TracksView: React.FC<TracksViewProps> = ({
 }) => {
   const [selectedTrackId, setSelectedTrackId] = useState<string>(tracks[0]?.id || 'sql-foundations');
   const [guideModuleId, setGuideModuleId] = useState<string | null>(null);
+  const [previewModuleSummary, setPreviewModuleSummary] =
+    useState<ModuleCompletionSummary | null>(null);
 
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId) || tracks[0];
 
@@ -109,6 +116,14 @@ export const TracksView: React.FC<TracksViewProps> = ({
             isSelected={track.id === selectedTrackId}
             onSelect={(t) => setSelectedTrackId(t.id)}
             onStartTrack={handleStartTrackFirstAvailable}
+            onPreviewModuleModal={
+              isAdmin
+                ? (t) =>
+                    setPreviewModuleSummary(
+                      buildAdminModuleCompletionPreview(t, exercises, tracks)
+                    )
+                : undefined
+            }
           />
         ))}
       </div>
@@ -212,6 +227,23 @@ export const TracksView: React.FC<TracksViewProps> = ({
         isOpen={Boolean(guideModuleId)}
         onClose={() => setGuideModuleId(null)}
       />
+
+      {isAdmin && (
+        <ModuleCompletedModal
+          isOpen={Boolean(previewModuleSummary)}
+          summary={previewModuleSummary}
+          lastXpAwarded={35}
+          onClose={() => setPreviewModuleSummary(null)}
+          onContinueNextModule={() => {
+            const nextEx = previewModuleSummary?.nextExercise;
+            setPreviewModuleSummary(null);
+            if (nextEx) {
+              onSelectExercise(nextEx);
+            }
+          }}
+          onViewTracks={() => setPreviewModuleSummary(null)}
+        />
+      )}
     </div>
   );
 };

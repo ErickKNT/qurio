@@ -228,14 +228,14 @@
     "semantic_hash": "bde7cc12feb8fb01411064c10d37199b"
   },
   "apps/web/src/components/molecules/TrackCard/TrackCard.tsx": {
-    "mtime": 1795102967.6141508,
-    "seen": 1795117670.631179,
-    "ast_hash": "b29249d245d8e545d81567ead7f3b42f",
+    "mtime": 1795117821.3071022,
+    "seen": 1795117891.7391925,
+    "ast_hash": "5e82c6387e8ba59d2dd4ca749caf02ce",
     "semantic_hash": ""
   },
   "apps/web/src/components/molecules/index.ts": {
-    "mtime": 1795117499.3011744,
-    "seen": 1795117670.631185,
+    "mtime": 1795117736.1135943,
+    "seen": 1795117891.739523,
     "ast_hash": "9de388eac940e3cd5251e0a58dfbac57",
     "semantic_hash": ""
   },
@@ -252,8 +252,8 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx": {
-    "mtime": 1795117510.1106756,
-    "seen": 1795117670.6324453,
+    "mtime": 1795117736.2088513,
+    "seen": 1795117891.7425008,
     "ast_hash": "ee23eb934eb3d0b22e767d1ba522f876",
     "semantic_hash": ""
   },
@@ -306,9 +306,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/TracksView/TracksView.tsx": {
-    "mtime": 1795117388.5337129,
-    "seen": 1795117670.6337698,
-    "ast_hash": "01525cc5f6cb4e93442d2a8a8f585b4a",
+    "mtime": 1795117836.7838051,
+    "seen": 1795117891.7468886,
+    "ast_hash": "e8f2f16f18b8ae0f3ed4f2bee7347e4a",
     "semantic_hash": ""
   },
   "apps/web/src/components/organisms/UserProfileView/UserProfileView.tsx": {
@@ -708,9 +708,9 @@
     "semantic_hash": ""
   },
   "docs/BITACORA.md": {
-    "mtime": 1795117649.8710756,
-    "seen": 1795117670.6563034,
-    "ast_hash": "b870427cbd2b02a2f11cf1724c92d396",
+    "mtime": 1795117873.2026129,
+    "seen": 1795117891.775466,
+    "ast_hash": "1c1640e35eb230e1950676773f403ce0",
     "semantic_hash": ""
   },
   "docs/PRD.md": {
@@ -900,15 +900,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/__tests__/progress.test.ts": {
-    "mtime": 1795117581.3931313,
-    "seen": 1795117670.6359844,
+    "mtime": 1795117736.414613,
+    "seen": 1795117891.7506166,
     "ast_hash": "ce7f2d04be18ca8756a2447e408bf42c",
     "semantic_hash": ""
   },
   "apps/web/src/lib/progress.ts": {
-    "mtime": 1795117479.9895225,
-    "seen": 1795117670.6375551,
-    "ast_hash": "c96b5ce347e9f4b5b7eff87ca1432cba",
+    "mtime": 1795117809.1761138,
+    "seen": 1795117891.753523,
+    "ast_hash": "a4525ad5f01bd3b2e5d7d369b86e2548",
     "semantic_hash": ""
   },
   "docs/ACTUALIZACION_DOCUMENTAL_V1_1.md": {
@@ -1290,9 +1290,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/tests/uxUpgrade.test.tsx": {
-    "mtime": 1795117594.9705849,
-    "seen": 1795117670.6396985,
-    "ast_hash": "13c771746ee7066ba4927526545da8c7",
+    "mtime": 1795117845.8887699,
+    "seen": 1795117891.7568383,
+    "ast_hash": "44472feef33c1acc022e66f43097e983",
     "semantic_hash": ""
   },
   "apps/api/app/modules/certificates/__init__.py": {
@@ -1422,8 +1422,8 @@
     "semantic_hash": ""
   },
   "apps/web/src/hooks/useExerciseWorkspace.ts": {
-    "mtime": 1795117550.1359794,
-    "seen": 1795117670.635069,
+    "mtime": 1795117736.3157263,
+    "seen": 1795117891.7493975,
     "ast_hash": "266da60741c7a004ae949b4d7a65b992",
     "semantic_hash": ""
   },

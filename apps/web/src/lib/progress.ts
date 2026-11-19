@@ -284,3 +284,53 @@ export function getNextExerciseTransition(
     shouldNavigateToTracks: false,
   };
 }
+
+/**
+ * Construye un resumen sintético para previsualizar `ModuleCompletedModal` en modo QA Admin
+ * reutilizando exactamente `evaluateModuleCompletion` para garantizar paridad total.
+ */
+export function buildAdminModuleCompletionPreview(
+  track: Track,
+  exercises: Exercise[],
+  tracks: Track[]
+): ModuleCompletionSummary | null {
+  const sortedModules = [...(track.modules || [])].sort((a, b) => a.sort_order - b.sort_order);
+  if (sortedModules.length === 0) return null;
+
+  const isTrackDone =
+    typeof track.total_exercises === 'number' &&
+    track.total_exercises > 0 &&
+    track.completed_exercises === track.total_exercises;
+
+  const targetModule = isTrackDone
+    ? sortedModules[sortedModules.length - 1]
+    : sortedModules[0];
+
+  const moduleExercises = exercises
+    .filter((ex) => ex.module_id === targetModule.id)
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  if (moduleExercises.length === 0) return null;
+
+  const lastExercise = moduleExercises[moduleExercises.length - 1];
+  const syntheticPreviousIds = new Set<string>(
+    moduleExercises.slice(0, -1).map((ex) => ex.id)
+  );
+
+  if (isTrackDone) {
+    for (const mod of sortedModules) {
+      if (mod.id === targetModule.id) continue;
+      for (const ex of exercises) {
+        if (ex.module_id === mod.id) syntheticPreviousIds.add(ex.id);
+      }
+    }
+  }
+
+  return evaluateModuleCompletion({
+    completedExercise: lastExercise,
+    exercises,
+    tracks,
+    previousCompletedIds: syntheticPreviousIds,
+    isGuest: false,
+  });
+}

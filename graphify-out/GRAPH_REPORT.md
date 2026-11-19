@@ -1,17 +1,17 @@
 # Graph Report - Qurio  (2026-11-19)
 
 ## Corpus Check
-- 239 files · ~451,765 words
+- 239 files · ~452,114 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 8 file(s) not represented in the graph (top: (none) 3, .example 2, .ini 1)
 
 ## Summary
-- 2869 nodes · 5476 edges · 181 communities (159 shown, 22 thin omitted)
-- Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 753 edges (avg confidence: 0.95)
+- 2870 nodes · 5486 edges · 163 communities (142 shown, 21 thin omitted)
+- Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 754 edges (avg confidence: 0.95)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3e0e2053`
+- Built from commit: `9adaa426`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -27,12 +27,12 @@
 - validate_sql_security
 - admin/service.py
 - test_integration.py
-- create_test_user
+- test_supabase_migration.py
 - 3. Desglose Técnico de Hallazgos
-- UserProfileView.tsx
+- AuthModal
 - TypeScript Node Configuration
 - test_rollback_script_preserves_strict_security
-- LearningRoadmapMap.tsx
+- Exercise
 - Automated Quality Gate Scripts
 - Design System and Architecture Concepts
 - Agent Workflow Automation Shell
@@ -46,7 +46,7 @@
 - Test-Driven Development
 - Context Engineering
 - test_auth.py
-- admin.test.ts
+- cn
 - Git Workflow and Versioning
 - Optimization Patterns
 - Shipping and Launch
@@ -80,7 +80,7 @@
 - test_admin.py
 - Ideation Frameworks Reference
 - Ponytail Help
-- Qurio — Revisión de Seguridad y Hardening de Supabase Cloud (Fase 11.2)
+- useExerciseWorkspace.ts
 - 6.5 Arquitectura de la Experiencia de Invitados (Decisión Aprobada `D-05`)
 - Modalidades de aprendizaje
 - 4. Arquitectura técnica
@@ -90,14 +90,14 @@
 - ponytail-review/SKILL.md
 - Ponytail
 - Informe de Resultados de Remediación y Hardening de Seguridad (Fase 9) — Qurio
-- supabase.ts
+- useAuth.tsx
 - ponytail-debt/SKILL.md
 - 4. Modelo de Negocio y Estrategia de Monetización
 - 2. Auditoría Detallada de los 8 Criterios del Rollback
 - 1. Atomic Design pragmático
 - 15. Documentación técnica que debe elaborarse
 - 6. Motor de evaluación SQL
-- security.py
+- progress.ts
 - 12. Diseño visual e identidad
 - 14. Criterios de calidad
 - 1. Visión del producto
@@ -106,7 +106,7 @@
 - 9. Alcance del MVP
 - Qurio — Informe de Auditoría del Estado Operativo y Diagnóstico Técnico
 - QURIO — Product & Business Blueprint
-- test_supabase_migration.py
+- fallbackCurriculum.ts
 - terminal_glow_minimal/DESIGN.md
 - enforce_row_limit
 - pytest
@@ -118,73 +118,56 @@
 - 🏛️ Ruta 3: Advanced Queries
 - Spec: Ruta 4 — Ingeniería y Manipulación de Datos (DML & DDL) en Qurio
 - 1. Clasificación Honesta y Transparente de las Pruebas E2E
-- CertificateVerifyView.tsx
+- CertificateShowcase.tsx
 - 11.2 Clasificación de Gobernanza: Decisiones Establecidas, Recomendaciones, Hipótesis y Aprobaciones Pendientes
 - sqlCompleter.ts
 - Reporte de Actualización Documental — Qurio Blueprint v1.1 y Phase 10 Stabilization Plan v1.1
 - Qurio — Reporte de Revisión Final de Consistencia Técnica Documental v1.2
 - vite.config.ts
 - scripts
-- 8. Roadmap de Producto de 12 Meses
+- 1. Contexto Estratégico, Visión y Posicionamiento
 - Qurio — Informe de Pruebas de Contingencia y Rollback (Fase 11.3)
 - Implementation Plan: Ruta 4 — Ingeniería y Manipulación de Datos (DML & DDL)
 - Qurio — Dictamen de Preparación y Validación del Piloto (Fase 11.1)
 - InMemoryRateLimiter
 - QURIO — Plan de Ingeniería de Fase 10: Estabilización Técnica y Preparación Comercial
 - evaluate_solution
+- BITACORA.md
 - Guía de Ejecución Local — Qurio
 - 9.4 Especificación Conceptual de Entidades Clave y Reglas de Negocio
-- AdminDashboardView.tsx
 - Qurio — Auditoría Técnica y Revisión de Código (Fase 11.2)
 - playwright
 - Qurio — Informe Final de Certificación Técnica y Cierre de Fase 10
 - constancias/DESIGN.md
 - ExercisePublicDTO
-- 3. Especificación Técnica de `C-01` (`PR-10.1`): Protección Estricta de `solution_query`
 - test_contingency_mode_with_realistic_pgrst202_postgrest_error
 - 📦 Módulo 7: Consultas Multi-Tabla en Cascada
 - 4. Estado de la Integración con Supabase Cloud
 - 📦 Módulo 4: Agregación y Agrupamiento
-- 3. Desglose Exhaustivo de Pruebas Automatizadas
+- Qurio — Informe Integral de Estabilización de Fase 10 y Cierre de Línea Base Operativa
 - ErDiagramModal.tsx
 - 🏛️ Ruta 1: SQL Foundations
 - runner/service.py
 - 4.6 Evaluación Técnica y Operativa del Proveedor de Pagos: Stripe México y Alternativas (Decisión Aprobada `D-03`)
 - 📦 Módulo 2: Filtrado con WHERE y Operadores Lógicos
-- AdminUsersPanel.tsx
 - 📦 Módulo 5: Uniones Fundamentales (INNER JOIN)
 - SystemOperationalState
-- test_regression_authenticated_user_passes_exercise_4_and_receives_xp
 - 📦 Módulo 6: Detección de Ausencias (LEFT JOIN & NULL)
 - Patrones de `Wikipedia:Signs of AI writing` (`WP:AISIGNS`)
 - 📦 Módulo 1: SELECT & Proyecciones de Datos
 - 📦 Módulo 3: Ordenamiento y Paginación
 - 📦 Módulo 9: Subconsultas Analíticas
-- 5. Auditoría de Autenticación, Sesiones y Persistencia
-- 2. Auditoría Detallada de los 8 Criterios del Rollback
 - App.tsx
 - test_contingency_mode_preserves_practice_and_allows_subsequent_reward_when_rpc_restored
-- Settings
-- ExercisePublicDTO
+- useTheme.tsx
 - Patrones que delatan texto de IA (prohibidos)
-- Core Principles
-- Components
 - Qurio — Informe Integral de Estabilización de Fase 10 y Cierre de Línea Base Operativa
 - critical-sparring.md
-- json
 - admin.ts
 - runner/router.py
 - Regla de Ingeniería Curricular y Pedagógica SQL — Qurio
-- Lista de Tareas Activas (Todo)
-- AdminDashboardView
-- record_verified_progress
-- 4. Auditoría Funcional del Núcleo de Aprendizaje
-- AdminBadge.tsx
+- admin/router.py
 - The Planning Process
-- LocalStorageMock
-- 2.1 Cambios en `docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`
-- test_public_exercises_never_expose_solution_query
-- AdminMetricTile.tsx
 - row_to_comparable_tuple
 
 ## God Nodes (most connected - your core abstractions)
@@ -208,21 +191,21 @@
   docs/ACTUALIZACION_DOCUMENTAL_V1_1.md → apps/api/app/modules/curriculum/seed_data.py
 - `3. Análisis de Impacto: Cero Fuga de Soluciones y Compatibilidad del Frontend` --references--> `ExercisePublicDTO`  [INFERRED]
   docs/audits/QURIO_PHASE_11_SECURITY_REVIEW.md → apps/api/app/modules/curriculum/seed_data.py
-- `Fase 10 (Pre-Requisito Inmediato): Estabilización Técnica y Preparación Comercial (`C-01` a `C-05`)` --references--> `ExercisePublicDTO`  [INFERRED]
+- `2.3 Especificación de Seguridad para la Protección de Soluciones (`C-01`)` --references--> `ExercisePublicDTO`  [INFERRED]
   docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md → apps/api/app/modules/curriculum/seed_data.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (181 total, 22 thin omitted)
+## Communities (163 total, 21 thin omitted)
 
 ### Community 0 - "react"
-Cohesion: 0.08
-Nodes (45): Badge(), BadgeProps, Button, ButtonProps, KbdShortcutProps, RadioTabProps, SplitResizeHandleProps, TextInput (+37 more)
+Cohesion: 0.06
+Nodes (43): KbdShortcutProps, SplitResizeHandleProps, AchievementCardProps, ICON_MAP, EditProfileModal(), GuestTrialCompleteModalProps, ACADEMIC_REFERENCES, MethodologyModalProps (+35 more)
 
 ### Community 1 - "3. Registro Cronológico de Entradas"
-Cohesion: 0.11
-Nodes (29): main(), 1. Resumen Ejecutivo y Declaración de Intención, 4. Inventario de Archivos Modificados y Creados, 6. Conclusión y Recomendación Operativa, Qurio — Informe Integral de Estabilización de Fase 10 y Cierre de Línea Base Operativa, 2.1 Topología de Ramas y Política de Confinamiento, 2. Historial Git y Diff Comparativo vs `main`, 1. Estado Actual del Proyecto (+21 more)
+Cohesion: 0.09
+Nodes (32): main(), 2.1 Estado de Ramas y Sincronización, 2.2 Distinción de Cambios, 2. Auditoría del Estado de Git y Control de Versiones, 1. Estado Actual del Proyecto, [2026-11-07] — Entrada 01: Inicio, Inspección y Setup de Skills, [2026-11-07] — Entrada 02: Revisión del Sistema de Diseño Visual, [2026-11-07] — Entrada 03: Entrevista de Requerimientos y Declaración de Intención (+24 more)
 
 ### Community 2 - "Docker Sandbox Infrastructure"
 Cohesion: 0.04
@@ -253,48 +236,48 @@ Cohesion: 0.08
 Nodes (24): record_security_violation(), validate_sql_security(), test_all_curriculum_queries_pass_security(), test_allow_parenthesized_subqueries(), test_allow_recursive_cte(), test_allow_set_operations_union_intersect_except(), test_block_alter_table(), test_block_cte_with_mutation() (+16 more)
 
 ### Community 9 - "admin/service.py"
-Cohesion: 0.06
-Nodes (42): cancel_sandbox_query(), delete_user_account(), get_curriculum_metrics(), get_live_ops(), get_security_audit_log(), list_attempts(), list_users(), recycle_pool() (+34 more)
+Cohesion: 0.10
+Nodes (27): ActiveQueryInfo, AdminUserRecord, AdminUsersPageResponse, AdminUsersSummary, AttemptRecord, AttemptsPageResponse, CancelQueryResponse, CurriculumExerciseMetric (+19 more)
 
 ### Community 10 - "test_integration.py"
-Cohesion: 0.23
-Nodes (13): test_ephemeral_pg_temp_dml_and_ddl_isolation_leaves_public_intact(), test_health_endpoint(), test_list_and_get_exercises(), test_playground_blocked_cte_delete(), test_playground_execute_security_block(), test_playground_execute_syntax_error(), test_playground_execute_valid_query(), test_playground_recursive_cte_timeout() (+5 more)
+Cohesion: 0.12
+Nodes (24): test_ephemeral_pg_temp_dml_and_ddl_isolation_leaves_public_intact(), test_guest_trial_limit_enforced(), test_health_endpoint(), test_list_and_get_exercises(), test_playground_blocked_cte_delete(), test_playground_execute_security_block(), test_playground_execute_syntax_error(), test_playground_execute_valid_query() (+16 more)
 
-### Community 11 - "create_test_user"
-Cohesion: 0.13
-Nodes (12): create_test_user(), test_authoritative_xp_calculation_across_rewards_and_hints(), test_regression_scenario_1_first_pass_with_xp(), test_regression_scenario_2_second_pass_no_duplicate_xp(), test_regression_scenario_6_reject_inconsistent_and_exceeding_xp(), test_regression_scenario_7_nonexistent_user(), test_regression_scenario_8_nonexistent_exercise(), test_rpc_validation_rejects_null_parameters() (+4 more)
+### Community 11 - "test_supabase_migration.py"
+Cohesion: 0.05
+Nodes (37): api_request(), create_test_user(), db_conn(), setup_mock_supabase_environment(), test_authoritative_xp_calculation_across_rewards_and_hints(), test_concurrent_different_exercises_no_lost_updates(), test_concurrent_same_exercise_independent_connections(), test_effective_privileges_matrix() (+29 more)
 
 ### Community 12 - "3. Desglose Técnico de Hallazgos"
 Cohesion: 0.09
 Nodes (21): 1. Resumen Ejecutivo, 3. Desglose Técnico de Hallazgos, 4.1 Mapa de Dependencias (Análisis de Impacto), 4.2 Arquitectura Destino (Cumplimiento de Atomic Design Regla 1.3), 4.3 Fases de Ejecución Incremental (Strangler Fig Pattern), 4.4 Protocolo de Verificación Anti-Regresión, 4. Plan Maestro de Refactorización (Sin Romper Dependencias), Auditoría Técnica y Plan Maestro de Refactorización — `App.tsx` (+13 more)
 
-### Community 13 - "UserProfileView.tsx"
-Cohesion: 0.13
-Nodes (23): AchievementCardProps, EditProfileModal(), CATEGORY_META, ProfileBadgesShowcase(), ProfileBadgesShowcaseProps, renderBadgeIcon(), ProfilePrecisionCard(), ProfilePrecisionCardProps (+15 more)
+### Community 13 - "AuthModal"
+Cohesion: 0.19
+Nodes (12): BadgeProps, TextInput, TextInputProps, AuthModal(), AuthModalProps, AuthMode, GithubLogo(), GoogleLogo() (+4 more)
 
 ### Community 14 - "TypeScript Node Configuration"
 Cohesion: 0.18
 Nodes (10): compilerOptions, allowSyntheticDefaultImports, composite, lib, module, moduleResolution, skipLibCheck, target (+2 more)
 
 ### Community 15 - "test_rollback_script_preserves_strict_security"
-Cohesion: 0.22
-Nodes (10): test_rollback_script_preserves_strict_security(), 3. Verificación Exhaustiva de los 11 Criterios de Certificación, Criterio 10: Reversibilidad y Re-aplicación sin Conflictos, Criterio 11: Coherencia Integral con el Blueprint Qurio v1.2, Criterio 1: Firma Exacta de la Función Eliminada, Criterio 2: Conservación del Índice Único Parcial de Integridad, Criterio 3: Revocación Completa de Privilegios de Escritura a Clientes, Criterio 4: Ausencia Total de Permisos Residuales de Actualización por Columna (+2 more)
+Cohesion: 0.15
+Nodes (12): test_public_exercises_never_expose_solution_query(), 11. Certificación de Cierre de Brechas (`QURIO-OPERATIONAL-BASELINE-02`), 3. Verificación Exhaustiva de los 11 Criterios de Certificación, Criterio 10: Reversibilidad y Re-aplicación sin Conflictos, Criterio 11: Coherencia Integral con el Blueprint Qurio v1.2, Criterio 1: Firma Exacta de la Función Eliminada, Criterio 2: Conservación del Índice Único Parcial de Integridad, Criterio 3: Revocación Completa de Privilegios de Escritura a Clientes (+4 more)
 
-### Community 16 - "LearningRoadmapMap.tsx"
-Cohesion: 0.22
-Nodes (9): ComputedEdge, getAncestors(), LearningRoadmapMap(), RoadmapViewMode, SKILL_META, SKILL_ZONES, SkillNodeMeta, Entrada 52: Corrección de Condición de Carrera en Rutas y Mapa Visual Curricular Dual (`LearningRoadmapMap`) (+1 more)
+### Community 16 - "Exercise"
+Cohesion: 0.13
+Nodes (22): ModuleAccordionProps, ModuleCompletedModalProps, TrackCardProps, DashboardHomeViewProps, ExerciseSpecPanelProps, ComputedEdge, getAncestors(), LearningRoadmapMapProps (+14 more)
 
 ### Community 29 - "Hardening Controls"
 Cohesion: 0.05
 Nodes (42): Broken Access Control, Broken Authentication, Cross-Site Scripting (XSS), Data Classification, Dependency Audit Triage, Destructive Operations on Derived Paths, File Upload Safety, Hardening Patterns (+34 more)
 
 ### Community 30 - "types/index.ts"
-Cohesion: 0.06
-Nodes (61): EditProfileModalProps, ModuleAccordionProps, ModuleCompletedModalProps, SchemaTableItemProps, TrackCardProps, DashboardHomeViewProps, DesignSystemShowcase, DesignSystemShowcaseProps (+53 more)
+Cohesion: 0.10
+Nodes (24): SchemaTableItemProps, SqlPlaygroundViewProps, GUEST_TRIAL_EXERCISE_IDS, ACHIEVEMENTS_CATALOG, API_BASE_URL, ApiError, DEFAULT_QUERY_HISTORY, ECOMMERCE_TABLES_SCHEMA (+16 more)
 
 ### Community 31 - "Qurio: plataforma interactiva de SQL y analítica relacional"
-Cohesion: 0.07
-Nodes (28): 1. Aislamiento del sandbox (PostgreSQL en Docker), 1. Clonar el repositorio, 2. Backend y Supabase Cloud (Hardening v5.0+), 2. Iniciar contenedores sandbox y API (Docker), 2. Paleta *Terminal Glow Minimal*, 3. Ejecutar la API manualmente con Python (opcional), 4. Configurar y ejecutar el frontend (React + Vite), 5. Ejecutar la suite de pruebas automatizadas (+20 more)
+Cohesion: 0.08
+Nodes (24): 1. Aislamiento del sandbox (PostgreSQL en Docker), 1. Clonar el repositorio, 2. Backend y Supabase Cloud (Hardening v5.0+), 2. Iniciar contenedores sandbox y API (Docker), 2. Paleta *Terminal Glow Minimal*, 3. Ejecutar la API manualmente con Python (opcional), 4. Configurar y ejecutar el frontend (React + Vite), 5. Ejecutar la suite de pruebas automatizadas (+16 more)
 
 ### Community 32 - "Qurio — Product Requirements Document (PRD)"
 Cohesion: 0.07
@@ -317,16 +300,16 @@ Cohesion: 0.07
 Nodes (28): Anti-Patterns, Common Rationalizations, Compress before dropping, Confusion Management, Context Budget Management, Context Engineering, Context Packing Strategies, Level 1: Rules Files (+20 more)
 
 ### Community 37 - "test_auth.py"
-Cohesion: 0.10
-Nodes (16): AuthenticatedUser, get_optional_current_user(), get_required_current_user(), ec_key_pair(), make_valid_token(), test_expired_token_raises_401(), test_guest_user_when_no_authorization_header(), test_malformed_header_raises_401() (+8 more)
+Cohesion: 0.08
+Nodes (18): AuthenticatedUser, decode_jwt_token(), get_jwk_client(), get_optional_current_user(), get_required_current_user(), ec_key_pair(), make_valid_token(), test_expired_token_raises_401() (+10 more)
 
-### Community 38 - "admin.test.ts"
-Cohesion: 0.13
-Nodes (15): computeSqlLineDiff(), renderHighlightedSql(), SQL_KEYWORDS, SqlDiffLine, SqlDiffViewer(), SqlDiffViewerProps, mockDeleteUser, mockGetCurriculumMetrics (+7 more)
+### Community 38 - "cn"
+Cohesion: 0.08
+Nodes (44): AdminBadge(), STATUS_MAP, ButtonProps, RadioTabProps, Select(), SelectOption, SelectProps, ACCENT_STYLES (+36 more)
 
 ### Community 39 - "Git Workflow and Versioning"
-Cohesion: 0.10
-Nodes (19): Branch Naming, Branching Strategy, Change Summaries, Common Rationalizations, Feature Branches, Git Workflow and Versioning, Handling Generated Files, Keep a changelog written for humans (+11 more)
+Cohesion: 0.07
+Nodes (26): 1. Commit Early, Commit Often, 2. Atomic Commits, 3. Descriptive Messages, 4. Keep Concerns Separate, 5. Size Your Changes, Branch Naming, Branching Strategy, Change Summaries (+18 more)
 
 ### Community 40 - "Optimization Patterns"
 Cohesion: 0.07
@@ -349,8 +332,8 @@ Cohesion: 0.08
 Nodes (24): Accessibility (WCAG 2.1 AA), ARIA Labels, Avoid the AI Aesthetic, Color, Common Rationalizations, Component Architecture, Component Patterns, Design System Adherence (+16 more)
 
 ### Community 45 - "Button"
-Cohesion: 0.07
-Nodes (48): ACCENT_STYLES, MiniTableCard(), MiniTablePreview, SqlTransformDiagram(), SqlTransformDiagramData, SqlTransformDiagramProps, CommandPaletteModalProps, PaletteItem (+40 more)
+Cohesion: 0.08
+Nodes (60): Badge(), Button, ModuleAccordion(), ModuleCompletedModal(), PedagogyPillarsCard(), PedagogyPillarsCardProps, PILLARS, ACCENT_STYLES (+52 more)
 
 ### Community 46 - "CI/CD and Automation"
 Cohesion: 0.08
@@ -433,8 +416,8 @@ Cohesion: 0.17
 Nodes (11): 1. User Value, 2. Feasibility, 3. Differentiation, Assumption Audit, Core Evaluation Dimensions, Decision Framework, Might Be True (Nice to Have), Must Be True (Dealbreakers) (+3 more)
 
 ### Community 66 - "package.json"
-Cohesion: 0.12
-Nodes (21): dependencies, clsx@^2.1.1, lucide-react@^1.16.0, @monaco-editor/react@^4.7.0, react@^18.3.1, react-dom@^18.3.1, sql-formatter@^15.9.0, @supabase/supabase-js@^2.49.1 (+13 more)
+Cohesion: 0.13
+Nodes (19): dependencies, clsx@^2.1.1, lucide-react@^1.16.0, @monaco-editor/react@^4.7.0, react@^18.3.1, react-dom@^18.3.1, sql-formatter@^15.9.0, tailwind-merge@^2.6.0 (+11 more)
 
 ### Community 67 - "SQL Academy --- Propuesta de producto y arquitectura del MVP"
 Cohesion: 0.17
@@ -456,9 +439,9 @@ Nodes (8): Analogous Inspiration, Constraint-Based Ideation, First Principles Th
 Cohesion: 0.22
 Nodes (8): Band (Claude Code), Configure Default Mode, Deactivate, Levels, More, Ponytail Help, Skills, Update
 
-### Community 72 - "Qurio — Revisión de Seguridad y Hardening de Supabase Cloud (Fase 11.2)"
-Cohesion: 0.12
-Nodes (15): 1. Resumen Ejecutivo de Seguridad, 2. Matriz Exhaustiva de Roles y Permisos (Supabase Cloud), 3. Análisis de Impacto: Cero Fuga de Soluciones y Compatibilidad del Frontend, 4.1 Características Técnicas Principales, 4. Script SQL de Hardening v6.1 (`03_security_hardening.sql`), 5.1 Instrucciones de Aplicación, 5.2 Consultas de Verificación en Supabase SQL Editor, 5. Procedimiento de Aplicación y Verificación para el Propietario (+7 more)
+### Community 72 - "useExerciseWorkspace.ts"
+Cohesion: 0.25
+Nodes (12): DesignSystemShowcaseProps, useAppRouter(), UseAppRouterOptions, UseExerciseWorkspaceOptions, parseLocation(), pathToUrl(), RouteParams, AppPath (+4 more)
 
 ### Community 73 - "6.5 Arquitectura de la Experiencia de Invitados (Decisión Aprobada `D-05`)"
 Cohesion: 0.15
@@ -496,9 +479,9 @@ Nodes (4): Before you write, Levels, Ponytail, The smallest complete change
 Cohesion: 0.15
 Nodes (12): 1. Resumen Ejecutivo, 2.1 Revocación Explícita de `SELECT` por Columna en `exercise_attempts`, 2.2 Conservación del Índice Único Parcial en el Procedimiento de Rollback, 2.3 Confirmación de Datos Históricos y Conciliación Multi-Fuente de XP, 2. Ajustes Finales Implementados (Versión 5.0), 3.1 Privilegios a Nivel de Tabla (`has_table_privilege`), 3.2 Privilegios a Nivel de Columna (CLS) en `public.exercise_attempts`, 3. Matriz de Privilegios Efectivos Auditada (+4 more)
 
-### Community 82 - "supabase.ts"
-Cohesion: 0.20
-Nodes (10): vitest@^5.1.0, AuthCallbackErrorInfo, captureAndNormalizeInitialAuthUrl(), extractNormalizedCallbackPathAndHash(), initialAuthCallbackError, rawUrl, supabaseAnonKey, supabaseUrl (+2 more)
+### Community 82 - "useAuth.tsx"
+Cohesion: 0.07
+Nodes (31): @supabase/supabase-js@^2.49.1, vitest@^5.1.0, EditProfileModalProps, ProfilePrecisionCardProps, ExerciseHeaderBarProps, UserProfileViewProps, AuthContext, AuthContextType (+23 more)
 
 ### Community 83 - "ponytail-debt/SKILL.md"
 Cohesion: 0.50
@@ -509,12 +492,12 @@ Cohesion: 0.15
 Nodes (13): 1. Referencia Inicial de Catálogo Gratuito vs. Premium, 2. Autorización Basada en Identificadores Estables y Verificación Backend, 3. Preservación del Progreso de Usuarios Existentes y Manejo de Modificaciones del Catálogo, 4.1 Arquitectura de Planes (Freemium B2C + Licenciamiento B2B), 4.2 Filosofía del Recorte Freemium: ¿Qué es Gratis y por qué?, 4.3 Estrategia de Conversión, Retención y Prevención de Cancelaciones (*Anti-Churn*), 4.4 Futuro Modelo B2B, Licenciamiento Institucional y Vías de Ingreso Adicionales (`D-06`), 4.5 Reglas de Autorización `Free` vs. `Plus` y Evolución del Catálogo sin Pérdida de Progreso (Decisión Aprobada `D-01`) (+5 more)
 
 ### Community 85 - "2. Auditoría Detallada de los 8 Criterios del Rollback"
-Cohesion: 0.20
-Nodes (9): 1. Resumen Ejecutivo y Alcance, 3. Delimitación Conceptual del Procedimiento, 4. Análisis de Continuidad Operativa en Backend FastAPI, 5. Conciliación de Versiones Documentales, 6. Dictamen Final, Alternativa A: Persistencia Transaccional Directa desde FastAPI, Alternativa B (Estrategia Aprobada): Modo de Contingencia sin Adjudicación Falsa, Dictamen: APROBADO CON RESTRICCIONES (+1 more)
+Cohesion: 0.11
+Nodes (18): 1. Resumen Ejecutivo y Alcance, 2.1 Firma Exacta de la Función Eliminada, 2.2 Conservación del Índice Único Parcial (`idx_single_awarded_passed_attempt`), 2.3 Revocación Completa de Permisos de Escritura para Clientes, 2.4 Ausencia de Permisos Residuales de Actualización por Columna en `user_profiles`, 2.5 Protección Permanente de `solution_query` (CLS Preservado), 2.6 Conservación de Políticas RLS en las 11 Tablas, 2.7 Comportamiento de Secuencias y Privilegios Asociados (+10 more)
 
 ### Community 86 - "1. Atomic Design pragmático"
-Cohesion: 0.07
-Nodes (89): KbdShortcut(), RadioTab(), SplitResizeHandle(), AchievementCard(), MetricTile(), ModuleAccordion(), SchemaTableItem(), SearchInput() (+81 more)
+Cohesion: 0.09
+Nodes (64): KbdShortcut(), RadioTab(), SplitResizeHandle(), AchievementCard(), MetricTile(), PrivacyModal(), SchemaTableItem(), SearchInput() (+56 more)
 
 ### Community 87 - "15. Documentación técnica que debe elaborarse"
 Cohesion: 0.50
@@ -524,9 +507,9 @@ Nodes (4): 15.1 Product Requirements Document (PRD), 15.2 Software Architecture 
 Cohesion: 0.50
 Nodes (4): 6. Motor de evaluación SQL, Criterios de evaluación, Ejemplo de equivalencia semántica, Flujo de evaluación
 
-### Community 89 - "security.py"
-Cohesion: 0.18
-Nodes (3): inspect_pedagogical_requirements(), ExecutionMode, 8. Success Criteria (Criterios de Éxito Verificables)
+### Community 89 - "progress.ts"
+Cohesion: 0.23
+Nodes (14): useCurriculumState(), useExerciseWorkspace(), buildAdminModuleCompletionPreview(), computeGuestTrialTracksProgress(), evaluateModuleCompletion(), findTargetExerciseInModule(), findTrackForModule(), getNextExerciseTransition() (+6 more)
 
 ### Community 90 - "12. Diseño visual e identidad"
 Cohesion: 0.67
@@ -553,28 +536,28 @@ Cohesion: 0.67
 Nodes (3): 9. Alcance del MVP, Fuera del MVP, Incluido
 
 ### Community 96 - "Qurio — Informe de Auditoría del Estado Operativo y Diagnóstico Técnico"
-Cohesion: 0.09
-Nodes (22): 10.1 Limitaciones Metodológicas, 10.2 Conclusión Técnica y Estado de Cierre, 10. Riesgos Técnicos y Limitaciones de la Auditoría, 1.1 Contexto de la Auditoría, 1.2 Hallazgos Más Relevantes a Nivel Directivo, 1. Resumen Ejecutivo, 2.1 Estado de Ramas y Sincronización, 2.2 Distinción de Cambios (+14 more)
+Cohesion: 0.07
+Nodes (28): AuthProvider(), 1.1 Contexto de la Auditoría, 1.2 Hallazgos Más Relevantes a Nivel Directivo, 1. Resumen Ejecutivo, 3. Estado de la Arquitectura del Sistema, 4.1 Catálogo Curricular, 4.2 Ejecución SQL y Validación de Seguridad, 4.3 Evaluación Pedagógica Semántica (+20 more)
 
 ### Community 97 - "QURIO — Product & Business Blueprint"
-Cohesion: 0.17
-Nodes (12): 10.1 Diccionario de Métricas Fundamentales (KPIs de Producto y Negocio), 10.2 Análisis de Unit Economics y Margen Bruto por Suscriptor `Qurio Plus`, 10.3 Escenarios Financieros a 12 Meses (Conservador, Intermedio y Ambicioso), 10. Métricas de Negocio, Unit Economics y Escenarios Financieros, 1.1 Propósito y Declaración de Visión, 1.2 Tesis de Mercado: ¿Por qué México y Latinoamérica necesitan a Qurio?, 1.3 Posicionamiento Competitivo, 1. Contexto Estratégico, Visión y Posicionamiento (+4 more)
+Cohesion: 0.14
+Nodes (14): 10.1 Diccionario de Métricas Fundamentales (KPIs de Producto y Negocio), 10.2 Análisis de Unit Economics y Margen Bruto por Suscriptor `Qurio Plus`, 10.3 Escenarios Financieros a 12 Meses (Conservador, Intermedio y Ambicioso), 10. Métricas de Negocio, Unit Economics y Escenarios Financieros, 8. Roadmap de Producto de 12 Meses, Alcance y Estado de Gobernanza del Documento, Etapa 1 (Meses 1–3): MVP Comercial B2C, Etapa 2 (Meses 4–6): Retención y Profundidad Pedagógica (+6 more)
 
-### Community 98 - "test_supabase_migration.py"
-Cohesion: 0.16
-Nodes (5): db_conn(), setup_mock_supabase_environment(), test_concurrent_different_exercises_no_lost_updates(), test_concurrent_same_exercise_independent_connections(), test_regression_scenario_5_concurrent_requests_same_user_and_exercise()
+### Community 98 - "fallbackCurriculum.ts"
+Cohesion: 0.15
+Nodes (12): loadFallbackCurriculum(), SAMPLE_TABLE_ALMACENES, SAMPLE_TABLE_CATEGORIAS, SAMPLE_TABLE_CLIENTES, SAMPLE_TABLE_DETALLE_PEDIDOS, SAMPLE_TABLE_FACTURAS, SAMPLE_TABLE_INVENTARIO, SAMPLE_TABLE_PAGOS (+4 more)
 
 ### Community 99 - "terminal_glow_minimal/DESIGN.md"
-Cohesion: 0.20
-Nodes (8): 1. Declaración de Intención, Declaración de Intención: Qurio MVP, Brand & Style, Colors, Elevation & Depth, Layout & Spacing, Shapes, Typography
+Cohesion: 0.14
+Nodes (13): Botones de Acción, Brand & Style, Casillas de Verificación y Selección (Checkboxes), Chips y Filtros, Colors, Components, Editor de Código y Consola, Elevation & Depth (+5 more)
 
 ### Community 100 - "enforce_row_limit"
 Cohesion: 0.18
 Nodes (8): enforce_row_limit(), strip_sql_comments(), test_enforce_row_limit_adds_limit(), test_enforce_row_limit_caps_excessive_limit(), test_enforce_row_limit_leaves_dml_and_ddl_unchanged(), test_enforce_row_limit_preserves_smaller_limit(), test_enforce_row_limit_with_cte(), Fase 18: Ruta 4 — Ingeniería y Manipulación de Datos (DML & DDL) (`feat/track-4-dml-ddl-engineering`) — En Progreso
 
 ### Community 101 - "pytest"
-Cohesion: 0.21
-Nodes (5): client(), sandbox_db(), 5.1 Desacoplamiento en Backend (`apps/api/tests/conftest.py`), 5.3 Resultados de la Suite Automatizada del Frontend (Vitest), 5. Calidad de Pruebas y Desacoplamiento Arquitectónico (Bloque E)
+Cohesion: 0.18
+Nodes (10): client(), sandbox_db(), computeOfficialTracksProgress(), 10.1 Limitaciones Metodológicas, 10.2 Conclusión Técnica y Estado de Cierre, 10. Riesgos Técnicos y Limitaciones de la Auditoría, 5.1 Desacoplamiento en Backend (`apps/api/tests/conftest.py`), 5.3 Resultados de la Suite Automatizada del Frontend (Vitest) (+2 more)
 
 ### Community 102 - "9. Arquitectura Técnica Actual y Evolución SaaS"
 Cohesion: 0.18
@@ -608,9 +591,9 @@ Nodes (14): 1. Declaración de Intención (`Statement of Intent`), Declaración 
 Cohesion: 0.17
 Nodes (11): 1. Clasificación Honesta y Transparente de las Pruebas E2E, 2. Resumen Consolidado de Resultados, 3.1 Prueba T06: Demostración de Cero XP Oficial para Invitados (C-03 & D-05), 3.2 Prueba T07: Límite de Prueba para Invitados (D-05), 3. Evidencias Destacadas y Verificaciones Clave, 4. Sección de Reconciliación con Informes Anteriores, Nivel 1 (Tier A): Navegador Real contra Stack Local Real (FastAPI + Sandbox Docker PostgreSQL), Nivel 2 (Tier B): Pruebas con Interceptación Controlada de Red (`page.route()`) (+3 more)
 
-### Community 110 - "CertificateVerifyView.tsx"
-Cohesion: 0.21
-Nodes (15): CertificateModalProps, mapCertificateRecordToData(), CertificateData, CertificateShowcase(), CertificateShowcaseProps, computeDisplayDigest(), CornerTechBracket(), DEFAULT_SKILLS_BY_TRACK (+7 more)
+### Community 110 - "CertificateShowcase.tsx"
+Cohesion: 0.33
+Nodes (8): CertificateShowcase(), CertificateShowcaseProps, computeDisplayDigest(), CornerTechBracket(), DEFAULT_SKILLS_BY_TRACK, LinkedInLogo(), XSocialLogo(), Entrada 55: Constancias Verificables PDF/QR, LinkedIn (`/verify/:code`) y Desbloqueo QA Admin
 
 ### Community 111 - "11.2 Clasificación de Gobernanza: Decisiones Establecidas, Recomendaciones, Hipótesis y Aprobaciones Pendientes"
 Cohesion: 0.29
@@ -621,28 +604,28 @@ Cohesion: 0.23
 Nodes (16): CteDefinition, detectClauseContext(), extractAliasesFromScope(), extractCtesFromStatement(), extractExecutableStatementAtOffset(), extractProjectedColumns(), extractTableAliases(), getActiveStatementAtOffset() (+8 more)
 
 ### Community 113 - "Reporte de Actualización Documental — Qurio Blueprint v1.1 y Phase 10 Stabilization Plan v1.1"
-Cohesion: 0.12
-Nodes (17): 1. Documentos Actualizados, 2.2 Cambios en `docs/roadmap/PHASE_10_STABILIZATION_PLAN.md` (Versión `1.1`), 2. Resumen de Cambios por Documento, 3.1 Diff de `docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`, 3.2 Diff de `docs/roadmap/PHASE_10_STABILIZATION_PLAN.md`, 3. Diffs de Ambos Documentos, 4. Estado de Git Antes y Después, 5. Observaciones Pendientes de Información Externa al Repositorio (+9 more)
+Cohesion: 0.09
+Nodes (23): 1.1 Protección de soluciones de ejercicios (`C-01` — Secciones 2.2, 2.3, 8, 9.5 y 11.2), 1.2 Arquitectura de ejecución Python (`D-04` — Secciones 9.2, 9.5, 9.6 y 11.2), 1.3 Migración de usuarios invitados (`D-05` — Secciones 6.5 y 11.2), 1.4 Rutas y referencias documentales, 1.5 Estado del documento (Encabezado, Alcance y Sección 11.2), 1. Documentos Actualizados, 2.1 Cambios en `docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`, 2.2 Cambios en `docs/roadmap/PHASE_10_STABILIZATION_PLAN.md` (Versión `1.1`) (+15 more)
 
 ### Community 114 - "Qurio — Reporte de Revisión Final de Consistencia Técnica Documental v1.2"
-Cohesion: 0.20
-Nodes (9): 1. Confirmación Explícita de Restricciones y Reglas de Gobernanza, 2.2 Corrección D-05: Recuperación de Migraciones Interrumpidas e Idempotencia, 2.3 Corrección C-01: Fuente Maestra Única del Currículo y Representaciones Derivadas, 2. Resumen de las Cuatro Correcciones Técnicas Incorporadas en v1.2, 4.1 Estado de Git Antes de Iniciar la Tarea, 4.2 Estado de Git Después de Concluir la Tarea, 4.3 Diferenciación Rigurosa entre Cambios Previos y Cambios de esta Tarea, 4. Estado de Git Antes y Después (+1 more)
+Cohesion: 0.18
+Nodes (10): 1. Confirmación Explícita de Restricciones y Reglas de Gobernanza, 2.2 Corrección D-05: Recuperación de Migraciones Interrumpidas e Idempotencia, 2.3 Corrección C-01: Fuente Maestra Única del Currículo y Representaciones Derivadas, 2. Resumen de las Cuatro Correcciones Técnicas Incorporadas en v1.2, 3. Matriz de Pruebas Nuevas y Modificadas en la Fase 10 v1.2, 4.1 Estado de Git Antes de Iniciar la Tarea, 4.2 Estado de Git Después de Concluir la Tarea, 4.3 Diferenciación Rigurosa entre Cambios Previos y Cambios de esta Tarea (+2 more)
 
 ### Community 115 - "vite.config.ts"
-Cohesion: 0.25
-Nodes (6): vite@^6.2.0, @vitejs/plugin-react@^4.3.4, manualChunks(), 8. Matriz de Hallazgos y Remediaciones, vite, @vitejs/plugin-react
+Cohesion: 0.29
+Nodes (5): vite@^6.2.0, @vitejs/plugin-react@^4.3.4, manualChunks(), vite, @vitejs/plugin-react
 
 ### Community 116 - "scripts"
 Cohesion: 0.33
 Nodes (6): scripts, build, dev, lint, preview, test
 
-### Community 117 - "8. Roadmap de Producto de 12 Meses"
-Cohesion: 0.33
-Nodes (6): 8. Roadmap de Producto de 12 Meses, Etapa 1 (Meses 1–3): MVP Comercial B2C, Etapa 2 (Meses 4–6): Retención y Profundidad Pedagógica, Etapa 3 (Meses 7–9): Preparación Laboral y Pilotos B2B, Etapa 4 (Meses 10–12): Expansión Comercial, BI y Escala Regional, Fase 10 (Pre-Requisito Inmediato): Estabilización Técnica y Preparación Comercial (`C-01` a `C-05`)
+### Community 117 - "1. Contexto Estratégico, Visión y Posicionamiento"
+Cohesion: 0.50
+Nodes (4): 1.1 Propósito y Declaración de Visión, 1.2 Tesis de Mercado: ¿Por qué México y Latinoamérica necesitan a Qurio?, 1.3 Posicionamiento Competitivo, 1. Contexto Estratégico, Visión y Posicionamiento
 
 ### Community 118 - "Qurio — Informe de Pruebas de Contingencia y Rollback (Fase 11.3)"
-Cohesion: 0.13
-Nodes (14): 1. Resumen de la Validación Empírica, 2. Matriz de Cobertura de Pruebas de Contingencia, 3.1 Prueba de Aislamiento de Base de Datos tras Rollback, 3.2 Prueba del Modo de Contingencia en Backend FastAPI, 3.3 Prueba de Recuperación sin Pérdida de Recompensa al Restaurar la RPC, 3. Detalle de Pruebas Críticas y Evidencias Reproducibles, 4.1 Backend Pytest (80/80 Pruebas Pasadas), 4.2 Frontend Vitest (17/17 Pruebas Pasadas) (+6 more)
+Cohesion: 0.14
+Nodes (13): 1. Resumen de la Validación Empírica, 3.1 Prueba de Aislamiento de Base de Datos tras Rollback, 3.2 Prueba del Modo de Contingencia en Backend FastAPI, 3.3 Prueba de Recuperación sin Pérdida de Recompensa al Restaurar la RPC, 3. Detalle de Pruebas Críticas y Evidencias Reproducibles, 4.1 Backend Pytest (80/80 Pruebas Pasadas), 4.2 Frontend Vitest (17/17 Pruebas Pasadas), 4.3 Frontend Production Build (+5 more)
 
 ### Community 119 - "Implementation Plan: Ruta 4 — Ingeniería y Manipulación de Datos (DML & DDL)"
 Cohesion: 0.17
@@ -654,7 +637,7 @@ Nodes (11): 1. Declaración Ejecutiva y Veredicto Formal, 2. Matriz Consolidada 
 
 ### Community 122 - "QURIO — Plan de Ingeniería de Fase 10: Estabilización Técnica y Preparación Comercial"
 Cohesion: 0.05
-Nodes (43): 1. Enriquecimiento de `EvaluationResponse` en FastAPI ([`schemas.py`](../../apps/api/app/modules/runner/schemas.py) y [`router.py`](../../apps/api/app/modules/runner/router.py)), 1. Propósito, Alcance y Estado Normativo de la Fase 10, 2. Hidratación Segura del Catálogo al Abrir `/exercises/:exerciseId` y `/tracks/:trackId`, 2. Invariantes de Seguridad de Fase 9 y Alineación Estratégica (`D-01` a `D-07`), 2. Refactorización de [`apps/web/src/lib/persistence.ts`](../../apps/web/src/lib/persistence.ts), [`useAuth.tsx`](../../apps/web/src/hooks/useAuth.tsx) y [`App.tsx`](../../apps/web/src/App.tsx), 3. Comportamiento según Estado de Sesión (Autenticado vs. No Autenticado), 3. Especificación de Migración de Invitados (`D-05`): Recuperación ante Interrupciones, Idempotencia y Cero Falsos Descartes, 4.1 Diagnóstico Forense (+35 more)
+Nodes (44): 1. Enriquecimiento de `EvaluationResponse` en FastAPI ([`schemas.py`](../../apps/api/app/modules/runner/schemas.py) y [`router.py`](../../apps/api/app/modules/runner/router.py)), 1. Propósito, Alcance y Estado Normativo de la Fase 10, 2. Hidratación Segura del Catálogo al Abrir `/exercises/:exerciseId` y `/tracks/:trackId`, 2. Invariantes de Seguridad de Fase 9 y Alineación Estratégica (`D-01` a `D-07`), 2. Refactorización de [`apps/web/src/lib/persistence.ts`](../../apps/web/src/lib/persistence.ts), [`useAuth.tsx`](../../apps/web/src/hooks/useAuth.tsx) y [`App.tsx`](../../apps/web/src/App.tsx), 3. Comportamiento según Estado de Sesión (Autenticado vs. No Autenticado), 3. Especificación de Migración de Invitados (`D-05`): Recuperación ante Interrupciones, Idempotencia y Cero Falsos Descartes, 4.1 Diagnóstico Forense (+36 more)
 
 ### Community 123 - "evaluate_solution"
 Cohesion: 0.10
@@ -668,13 +651,9 @@ Nodes (16): 1. Ubícate en la raíz del repositorio y selecciona la rama deseada
 Cohesion: 0.25
 Nodes (8): 1. `plans` (Catálogo Maestro de Planes Comerciales), 2. `subscriptions` (Ciclo de Vida de Suscripciones B2C y B2B), 3. `user_entitlements` (Fuente de Verdad Materializada de Permisos Efectivos), 4. `billing_events` (Libro Mayor Inmutable e Idempotencia de Webhooks), 5. `organizations` y `organization_members` (Soporte Multi-Tenant para `Qurio Teams`), 6. Evolución de `learning_paths` y `exercises`, 7. `learning_path_progress` (Seguimiento Integral y Criterio de Certificación), 9.4 Especificación Conceptual de Entidades Clave y Reglas de Negocio
 
-### Community 127 - "AdminDashboardView.tsx"
-Cohesion: 0.12
-Nodes (20): AdminDashboardViewProps, AdminTab, adminApi, AdminApiError, API_BASE_URL, AttemptFilters, getAdminAuthHeaders(), requestAdminJson() (+12 more)
-
 ### Community 128 - "Qurio — Auditoría Técnica y Revisión de Código (Fase 11.2)"
-Cohesion: 0.17
-Nodes (11): 10. Conclusión de la Auditoría Técnica, 1. Resumen Ejecutivo y Alcance, 3. Fidelidad Irrestricta a Decisiones Canónicas D-01 a D-07 (Blueprint v1.2), 5. Verificación de Correcciones de Estabilización (C-01 a C-05), 6. Sección de Reconciliación con Informes Anteriores, 7. Auditoría de Secretos y Cumplimiento de `.gitignore`, 8.1 Frontend (`apps/web`), 8.2 Backend (`apps/api`) (+3 more)
+Cohesion: 0.14
+Nodes (13): 10. Conclusión de la Auditoría Técnica, 1. Resumen Ejecutivo y Alcance, 2.1 Topología de Ramas y Política de Confinamiento, 2. Historial Git y Diff Comparativo vs `main`, 3. Fidelidad Irrestricta a Decisiones Canónicas D-01 a D-07 (Blueprint v1.2), 5. Verificación de Correcciones de Estabilización (C-01 a C-05), 6. Sección de Reconciliación con Informes Anteriores, 7. Auditoría de Secretos y Cumplimiento de `.gitignore` (+5 more)
 
 ### Community 130 - "Qurio — Informe Final de Certificación Técnica y Cierre de Fase 10"
 Cohesion: 0.18
@@ -685,44 +664,40 @@ Cohesion: 0.14
 Nodes (13): Botones de Acción, Brand & Style, Casillas de Verificación y Selección (Checkboxes), Chips y Filtros, Colors, Components, Editor de Código y Consola, Elevation & Depth (+5 more)
 
 ### Community 132 - "ExercisePublicDTO"
-Cohesion: 0.18
-Nodes (12): ExerciseRepository, 3.6 Especificación Verificable de Pruebas para `PR-10.1` (`C-01`), 5.2 Diff Completo de `PHASE_10_STABILIZATION_PLAN.md` (v1.2 vs. v1.1), 3.1 Bloque A — Certificación de Seguridad Curricular (`C-01`), 3.2 Bloque B — Persistencia, Límite de Invitados y Aislamiento Estricto de XP (`C-02` + `D-05`), 3. Revisión Correctiva por Bloques Funcionales, [2026-11-10] — Entrada 24: Cierre de Auditoría Operativa, Validación Ejecutable y Consolidación de la Línea Base (`QURIO-OPERATIONAL-BASELINE-02`), Entrada 38: Restauración de Metadatos Pedagógicos (Guía Didáctica de Conceptos y Checklist de Objetivos) (+4 more)
-
-### Community 133 - "3. Especificación Técnica de `C-01` (`PR-10.1`): Protección Estricta de `solution_query`"
-Cohesion: 0.18
-Nodes (9): 1. Separación de Modelos Pydantic en Backend ([`seed_data.py`](../../apps/api/app/modules/curriculum/seed_data.py)), 2. Revocación de Permiso General y Concesión Explícita de Columnas en PostgreSQL/Supabase, 3.1 Diagnóstico Forense, 3.3 Riesgo y Requisitos de Seguridad de Credenciales, 3.4 Dependencias, 3.5 Solución Propuesta, 3.7 Criterios de Aceptación de `PR-10.1`, 3.8 Estimación de Complejidad y Orden Recomendado (+1 more)
+Cohesion: 0.10
+Nodes (29): ExerciseRepository, ExerciseConcept, ExerciseDetail, ExercisePublicDTO, SampleTableData, 3.6 Especificación Verificable de Pruebas para `PR-10.1` (`C-01`), 4.8 Estimación de Complejidad y Orden Recomendado, 5.1 Diff Completo de `QURIO_PRODUCT_BUSINESS_BLUEPRINT.md` (v1.2 vs. v1.1) (+21 more)
 
 ### Community 134 - "test_contingency_mode_with_realistic_pgrst202_postgrest_error"
-Cohesion: 0.13
-Nodes (13): test_effective_privileges_matrix(), 1.1 Veredicto Final: APROBADO CON RESTRICCIONES OPERATIVAS EXTERNAS, 1.2 Restricción Operativa Externa y Alcance del Despliegue, 1. Resumen Ejecutivo y Veredicto Único Final, 2.1 Puntos Clave de Seguridad Garantizados por la Matriz, 2. Matriz Definitiva de Permisos por Rol y Tabla (PostgreSQL / Supabase), 4.1 Configuración de la Simulación, 4.2 Resultados Obtenidos (+5 more)
+Cohesion: 0.10
+Nodes (16): record_verified_progress(), test_contingency_mode_with_realistic_pgrst202_postgrest_error(), 1.1 Veredicto Final: APROBADO CON RESTRICCIONES OPERATIVAS EXTERNAS, 1.2 Restricción Operativa Externa y Alcance del Despliegue, 1. Resumen Ejecutivo y Veredicto Único Final, 2.1 Puntos Clave de Seguridad Garantizados por la Matriz, 2. Matriz Definitiva de Permisos por Rol y Tabla (PostgreSQL / Supabase), 4.1 Configuración de la Simulación (+8 more)
 
 ### Community 135 - "📦 Módulo 7: Consultas Multi-Tabla en Cascada"
 Cohesion: 0.18
 Nodes (11): 📦 Módulo 7: Consultas Multi-Tabla en Cascada, 📦 Módulo 8: Operaciones de Conjunto y Joins Especiales, Reto #33: Desglose Completo de Líneas de Pedido, Reto #34: Historial de Ventas por Ciudad y Categoría, Reto #35: Conciliación de Pedidos, Facturación y Pagos, Reto #36: Trazabilidad Física de Inventario por Almacén, Reto #37: Directorio Operativo Unificado (UNION), Reto #38: Ciudades sin Presencia de Almacenes (EXCEPT) (+3 more)
 
 ### Community 136 - "4. Estado de la Integración con Supabase Cloud"
-Cohesion: 0.12
-Nodes (16): 4. Estado de la Integración con Supabase Cloud, Entrada 27: Fase 11 — Preparación y Validación Controlada del Piloto, Entrada 29: Fase 11.2 — Certificación Final de Seguridad, Consistencia y Preparación del Piloto, Entrada 33: Onboarding Dinámico de Invitados, Corrección de Logout y Aplicación en Supabase Cloud, Entrada 34: Configuración de Entorno VS Code para Pylance y Corrección de Ergonomía Visual en Botones del Hero Banner, Entrada 35: Optimización de Identidad de Marca y Adaptación Responsiva del Sidebar Colapsable, Entrada 36: Sincronización Integral de Métricas Auténticas: Racha Diaria, Actividad de 30 Días, Reto Inteligente y Desbloqueo Reactivo de Logros, Entrada 40: Experiencia de Onboarding de Invitados (Modal de Celebración & Conversión) y Alineación del Trial (+8 more)
+Cohesion: 0.13
+Nodes (15): 4. Estado de la Integración con Supabase Cloud, Entrada 27: Fase 11 — Preparación y Validación Controlada del Piloto, Entrada 29: Fase 11.2 — Certificación Final de Seguridad, Consistencia y Preparación del Piloto, Entrada 32: Corrección Puntual de Privacidad en Perfiles de Usuario (`user_profiles`), Entrada 33: Onboarding Dinámico de Invitados, Corrección de Logout y Aplicación en Supabase Cloud, Entrada 34: Configuración de Entorno VS Code para Pylance y Corrección de Ergonomía Visual en Botones del Hero Banner, Entrada 35: Optimización de Identidad de Marca y Adaptación Responsiva del Sidebar Colapsable, Entrada 36: Sincronización Integral de Métricas Auténticas: Racha Diaria, Actividad de 30 Días, Reto Inteligente y Desbloqueo Reactivo de Logros (+7 more)
 
 ### Community 137 - "📦 Módulo 4: Agregación y Agrupamiento"
 Cohesion: 0.22
 Nodes (9): 📦 Módulo 4: Agregación y Agrupamiento, Reto #15: Conteo de Productos por Categoría, Reto #16: Métricas Globales de Ventas, Reto #17: Rango de Precios por Categoría (MAX/MIN), Reto #18: Distribución de Clientes por País, Reto #19: Stock Total por Proveedor, Reto #20: Proveedores de Alto Volumen (HAVING SUM), Reto #21: Clientes con Ticket Promedio Alto (HAVING AVG) (+1 more)
 
-### Community 138 - "3. Desglose Exhaustivo de Pruebas Automatizadas"
-Cohesion: 0.17
-Nodes (11): test_guest_trial_limit_enforced(), test_submit_exercise_star_challenge_left_join_authenticated(), test_submit_exercise_success_guest(), 5.2 Resultados de la Suite Automatizada del Backend (Pytest), 3.1 Suite de Pruebas del Backend (FastAPI + Pytest), 3.2 Suite de Pruebas del Frontend (React + Vitest), 3.3 Verificación del Empaquetado de Producción (Vite Build), 3.4 Sincronización del Grafo de Conocimiento (Graphify) (+3 more)
+### Community 138 - "Qurio — Informe Integral de Estabilización de Fase 10 y Cierre de Línea Base Operativa"
+Cohesion: 0.18
+Nodes (11): 1. Resumen Ejecutivo y Declaración de Intención, 3.1 Suite de Pruebas del Backend (FastAPI + Pytest), 3.2 Suite de Pruebas del Frontend (React + Vitest), 3.3 Verificación del Empaquetado de Producción (Vite Build), 3.4 Sincronización del Grafo de Conocimiento (Graphify), 3. Desglose Exhaustivo de Pruebas Automatizadas, 4. Inventario de Archivos Modificados y Creados, 5. Matriz de Cumplimiento de los Quality Gates del Piloto (+3 more)
 
 ### Community 139 - "ErDiagramModal.tsx"
-Cohesion: 0.24
-Nodes (11): ErDiagramModalProps, getColumnAnchor(), ER_CANVAS_HEIGHT, ER_CANVAS_WIDTH, ER_CARD_WIDTH, ER_RELATIONS, ER_TABLES, ErColumnNode (+3 more)
+Cohesion: 0.16
+Nodes (17): ErDiagramModal(), ErDiagramModalProps, getColumnAnchor(), ER_CANVAS_HEIGHT, ER_CANVAS_WIDTH, ER_CARD_WIDTH, ER_RELATIONS, ER_TABLES (+9 more)
 
 ### Community 140 - "🏛️ Ruta 1: SQL Foundations"
 Cohesion: 0.25
 Nodes (7): 1.1 Justificación Pedagógica y Prevención de Abandono, 1.2 Flujo y Estados de Interfaz (UX), 1.3 Arquitectura Técnica de Implementación, 1. Nueva Funcionalidad: Botón 'Ver Solución' (Unlock a 2 Intentos Fallidos + Telemetría), 2. Rediseño de Objetivos (Checklist Libre de Spoilers), Catálogo Pedagógico Refinado: Humanización y Botón 'Ver Solución', 🏛️ Ruta 1: SQL Foundations
 
 ### Community 141 - "runner/service.py"
-Cohesion: 0.11
-Nodes (7): decode_jwt_token(), get_jwk_client(), require_admin(), add_security_headers(), lifespan(), root(), [2026-11-07] — Entrada 08: Fase 2 — Motor de Ejecución y Evaluación en FastAPI
+Cohesion: 0.08
+Nodes (7): Settings, add_security_headers(), lifespan(), root(), ExecutionMode, test_guest_rate_limit(), [2026-11-07] — Entrada 08: Fase 2 — Motor de Ejecución y Evaluación en FastAPI
 
 ### Community 142 - "4.6 Evaluación Técnica y Operativa del Proveedor de Pagos: Stripe México y Alternativas (Decisión Aprobada `D-03`)"
 Cohesion: 0.29
@@ -732,17 +707,9 @@ Nodes (7): 1. Ciclo de Vida de Suscripciones, Renovaciones y Cancelaciones, 2. W
 Cohesion: 0.29
 Nodes (7): 📦 Módulo 2: Filtrado con WHERE y Operadores Lógicos, Reto #10: Facturas de Alto Valor No Pagadas (AND + NOT), Reto #5: Productos Premium (> 500€), Reto #6: Productos en Rango Medio (BETWEEN), Reto #7: Búsqueda por Patrón de Correo (LIKE), Reto #8: Filtro de Ciudades Específicas (IN), Reto #9: Productos en Riesgo de Stock (OR)
 
-### Community 144 - "AdminUsersPanel.tsx"
-Cohesion: 0.29
-Nodes (9): SelectOption, SelectProps, formatDateTime(), UserModerationDrawer(), UserModerationDrawerProps, AdminUsersPanelProps, AdminUserRecord, AdminUserRole (+1 more)
-
 ### Community 145 - "📦 Módulo 5: Uniones Fundamentales (INNER JOIN)"
 Cohesion: 0.33
 Nodes (6): 📦 Módulo 5: Uniones Fundamentales (INNER JOIN), Reto #23: Pedidos con Identidad del Cliente, Reto #24: Gasto Acumulado por Cliente, Reto #25: Catálogo con Nombre de Categoría, Reto #26: Productos y sus Proveedores Directos, Reto #27: Facturación Detallada con Pagos Aprobados
-
-### Community 147 - "test_regression_authenticated_user_passes_exercise_4_and_receives_xp"
-Cohesion: 0.18
-Nodes (6): test_regression_authenticated_user_passes_exercise_4_and_receives_xp(), test_regression_guest_xp_strictly_zero_and_no_rpc_called(), test_submit_exercise_awards_zero_xp_when_solution_viewed(), test_submit_exercise_success_authenticated(), fake_record_verified_progress(), Entrada 28: Fase 11.1 — Conciliación Final, Cierre de Hallazgos y Certificación del Piloto
 
 ### Community 148 - "📦 Módulo 6: Detección de Ausencias (LEFT JOIN & NULL)"
 Cohesion: 0.33
@@ -764,113 +731,61 @@ Nodes (5): 📦 Módulo 3: Ordenamiento y Paginación, Reto #11: Clientes Españ
 Cohesion: 0.50
 Nodes (4): 📦 Módulo 9: Subconsultas Analíticas, Reto #41: Productos sobre el Promedio de Precio, Reto #42: Clientes con Pedidos de Alto Monto (IN Subquery), Reto #43: Comprobación de Existencia Eficiente (EXISTS)
 
-### Community 153 - "5. Auditoría de Autenticación, Sesiones y Persistencia"
-Cohesion: 0.33
-Nodes (6): AuthProvider(), 5.1 Estado de la Autenticación, 5.2 Persistencia de Progreso y Doble Escritura, 5.3 Contaminación de IDs Completados por `localStorage`, 5.4 Modo Invitado (Decisión D-05), 5. Auditoría de Autenticación, Sesiones y Persistencia
-
-### Community 154 - "2. Auditoría Detallada de los 8 Criterios del Rollback"
-Cohesion: 0.22
-Nodes (9): 2.1 Firma Exacta de la Función Eliminada, 2.2 Conservación del Índice Único Parcial (`idx_single_awarded_passed_attempt`), 2.3 Revocación Completa de Permisos de Escritura para Clientes, 2.4 Ausencia de Permisos Residuales de Actualización por Columna en `user_profiles`, 2.5 Protección Permanente de `solution_query` (CLS Preservado), 2.6 Conservación de Políticas RLS en las 11 Tablas, 2.7 Comportamiento de Secuencias y Privilegios Asociados, 2.8 Compatibilidad con Hardening v6.1 y Reversibilidad (+1 more)
-
 ### Community 155 - "App.tsx"
 Cohesion: 0.09
-Nodes (42): AchievementsView, AdminDashboardView, App(), AuthConfirmView, CertificateModal, CertificateVerifyView, CommandPaletteModal, ExerciseSpecPanel (+34 more)
+Nodes (38): AchievementsView, AdminDashboardView, App(), AuthConfirmView, CertificateModal, CertificateVerifyView, CommandPaletteModal, ExerciseSpecPanel (+30 more)
 
 ### Community 156 - "test_contingency_mode_preserves_practice_and_allows_subsequent_reward_when_rpc_restored"
-Cohesion: 0.29
-Nodes (4): test_contingency_mode_preserves_practice_and_allows_subsequent_reward_when_rpc_restored(), test_contingency_mode_when_rpc_unavailable_awards_zero_xp_and_informs_user(), fake_failed_rpc(), Entrada 30: Fase 11.3 — Auditoría Final del Procedimiento de Rollback y Continuidad Operativa
+Cohesion: 0.25
+Nodes (5): test_contingency_mode_preserves_practice_and_allows_subsequent_reward_when_rpc_restored(), test_contingency_mode_when_rpc_unavailable_awards_zero_xp_and_informs_user(), fake_failed_rpc(), Criterio 9: No Pérdida Silenciosa de Progreso, Entrada 30: Fase 11.3 — Auditoría Final del Procedimiento de Rollback y Continuidad Operativa
 
-### Community 158 - "ExercisePublicDTO"
-Cohesion: 0.23
-Nodes (11): ExerciseConcept, ExerciseDetail, ExercisePublicDTO, SampleTableData, 2.1.2 Solución Arquitectónica en Backend (`apps/api/`), 2.1 Inventario Técnico Verificado en el Código Actual, 2.2 Contradicciones y Brechas entre la Visión Comercial y el Estado Actual del Código, 2.3 Especificación de Seguridad para la Protección de Soluciones (`C-01`) (+3 more)
+### Community 158 - "useTheme.tsx"
+Cohesion: 0.22
+Nodes (10): getInitialTheme(), syncDOMWithTheme(), Theme, ThemeContext, ThemeContextType, ThemeProvider(), 2.1 Inventario Técnico Verificado en el Código Actual, 2.2 Contradicciones y Brechas entre la Visión Comercial y el Estado Actual del Código (+2 more)
 
 ### Community 159 - "Patrones que delatan texto de IA (prohibidos)"
 Cohesion: 0.29
 Nodes (6): Contenido y tono, Cómo escribir en su lugar, Formato y estructura, Gramática y estilo, Patrones que delatan texto de IA (prohibidos), Regla de Redacción Humana (Anti-Tono IA) — Qurio
 
-### Community 160 - "Core Principles"
-Cohesion: 0.29
-Nodes (7): 1. Commit Early, Commit Often, 2. Atomic Commits, 3. Descriptive Messages, 4. Keep Concerns Separate, 5. Size Your Changes, Core Principles, Trunk-Based Development (Recommended)
-
-### Community 161 - "Components"
-Cohesion: 0.29
-Nodes (7): Botones de Acción, Casillas de Verificación y Selección (Checkboxes), Chips y Filtros, Components, Editor de Código y Consola, Entradas de Datos (Inputs), Indicadores de Gamificación (XP & Rachas)
-
 ### Community 162 - "Qurio — Informe Integral de Estabilización de Fase 10 y Cierre de Línea Base Operativa"
-Cohesion: 0.12
-Nodes (17): 2.1.1 Diagnóstico de la Brecha, 2.1.3 Solución en Frontend (`apps/web/`), 2.1.4 Modelo de Permisos de PostgreSQL / Supabase Cloud, 2.1 Bloque A — Seguridad Curricular (`C-01`): Protección Absoluta de `solution_query`, 2.2.1 Diagnóstico de la Brecha, 2.2.2 Remediación en Frontend ([`persistence.ts`](../../apps/web/src/lib/persistence.ts)), 2.2.3 Límite de Prueba de Invitados en Backend ([`router.py`](../../apps/api/app/modules/runner/router.py)), 2.2.4 Protocolo de Migración de Invitados y Recuperación de Interrupciones (`D-05`) (+9 more)
-
-### Community 164 - "json"
-Cohesion: 0.22
-Nodes (4): api_request(), test_regression_scenario_3_and_4_first_pass_zero_xp_then_legitimate_reward(), test_user_progress_consistency_on_failed_and_error(), Criterio 9: No Pérdida Silenciosa de Progreso
+Cohesion: 0.15
+Nodes (13): 2.2.1 Diagnóstico de la Brecha, 2.2.2 Remediación en Frontend ([`persistence.ts`](../../apps/web/src/lib/persistence.ts)), 2.2.3 Límite de Prueba de Invitados en Backend ([`router.py`](../../apps/api/app/modules/runner/router.py)), 2.2.4 Protocolo de Migración de Invitados y Recuperación de Interrupciones (`D-05`), 2.2 Bloque B — Persistencia y Experiencia de Usuario Autenticado e Invitado (`C-02` + `D-05`), 2.3.1 Diagnóstico de la Brecha, 2.3.2 Módulo de Progreso Puro ([`progress.ts`](../../apps/web/src/lib/progress.ts)), 2.3.3 Tratamiento de Carga y Shimmer Skeleton ([`TrackCard.tsx`](../../apps/web/src/components/molecules/TrackCard/TrackCard.tsx)) (+5 more)
 
 ### Community 165 - "admin.ts"
-Cohesion: 0.13
-Nodes (18): DataGridResultsProps, ExerciseAttemptData, AdminActiveQueryInfo, AdminAttemptRecord, AdminCancelQueryResponse, AdminCurriculumExerciseMetric, AdminForensicDiffDetail, AdminGuestConversionSummary (+10 more)
+Cohesion: 0.07
+Nodes (38): AdminBadgeProps, ConnectionGaugeProps, DataGridResultsProps, adminApi, AdminApiError, API_BASE_URL, AttemptFilters, getAdminAuthHeaders() (+30 more)
 
 ### Community 166 - "runner/router.py"
-Cohesion: 0.14
-Nodes (15): check_rate_limit(), get_client_ip(), execute_playground_query(), get_exercise(), health_check(), list_exercises(), reveal_exercise_solution(), submit_exercise_solution() (+7 more)
+Cohesion: 0.11
+Nodes (17): check_rate_limit(), get_client_ip(), inspect_pedagogical_requirements(), execute_playground_query(), get_exercise(), health_check(), list_exercises(), reveal_exercise_solution() (+9 more)
 
-### Community 169 - "Lista de Tareas Activas (Todo)"
-Cohesion: 0.29
-Nodes (6): Autocompletado Inteligente en Monaco Editor (`feat/monaco-sql-intellisense-and-aliases`) — Completada, Fase 1: Cimientos de Datos & Docker (`feat/database-and-docker-infra`) — Completada, Fase 2: Motor de Ejecución y Evaluación en FastAPI (`feat/fastapi-runner-evaluator`) — Completada, Fase 8: Pedagogía Interactiva y Enriquecimiento Didáctico al Estilo SQLBolt (`feat/interactive-pedagogy-and-sqlbolt-learning`) — Completada, Fase 9: Expansión del Currículum Completo de Retos (`feat/curriculum-expansion-3-tracks`) — Completada, Lista de Tareas Activas (Todo)
-
-### Community 170 - "AdminDashboardView"
-Cohesion: 0.32
-Nodes (12): AdminBadge(), Select(), AdminMetricTile(), ConnectionGauge(), KillswitchToggle(), KillswitchToggleProps, AdminDashboardView(), TRACK_INFO_BY_ORDER() (+4 more)
-
-### Community 171 - "record_verified_progress"
-Cohesion: 0.29
-Nodes (4): record_verified_progress(), test_contingency_mode_with_realistic_pgrst202_postgrest_error(), Criterio 8: Manejo Resiliente en FastAPI — Modo de Contingencia (Alternativa B), Entrada 31: Cierre Definitivo de Fase 11.3 — Corrección Sintáctica, Blindaje de Secuencias, Simulación Realista PGRST202 y Congelamiento de Seguridad
-
-### Community 172 - "4. Auditoría Funcional del Núcleo de Aprendizaje"
-Cohesion: 0.40
-Nodes (5): 4.1 Catálogo Curricular, 4.2 Ejecución SQL y Validación de Seguridad, 4.3 Evaluación Pedagógica Semántica, 4. Auditoría Funcional del Núcleo de Aprendizaje, Resultados Verificados:
-
-### Community 174 - "AdminBadge.tsx"
-Cohesion: 0.38
-Nodes (5): AdminBadgeProps, STATUS_MAP, ConnectionGaugeProps, AdminPoolMetrics, AdminStatusVariant
+### Community 170 - "admin/router.py"
+Cohesion: 0.08
+Nodes (17): require_admin(), cancel_sandbox_query(), delete_user_account(), get_curriculum_metrics(), get_live_ops(), get_security_audit_log(), list_attempts(), list_users() (+9 more)
 
 ### Community 175 - "The Planning Process"
 Cohesion: 0.33
 Nodes (6): Step 1: Enter Plan Mode, Step 2: Identify the Dependency Graph, Step 3: Slice Vertically, Step 4: Write Tasks, Step 5: Order and Checkpoint, The Planning Process
 
-### Community 176 - "LocalStorageMock"
-Cohesion: 0.22
-Nodes (4): DRAFT_SQL_PREFIX, GUEST_PROGRESS_STORAGE_KEY, GuestProgressItem, LocalStorageMock
-
-### Community 177 - "2.1 Cambios en `docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`"
-Cohesion: 0.33
-Nodes (6): 1.1 Protección de soluciones de ejercicios (`C-01` — Secciones 2.2, 2.3, 8, 9.5 y 11.2), 1.2 Arquitectura de ejecución Python (`D-04` — Secciones 9.2, 9.5, 9.6 y 11.2), 1.3 Migración de usuarios invitados (`D-05` — Secciones 6.5 y 11.2), 1.4 Rutas y referencias documentales, 1.5 Estado del documento (Encabezado, Alcance y Sección 11.2), 2.1 Cambios en `docs/product/QURIO_PRODUCT_BUSINESS_BLUEPRINT.md`
-
-### Community 178 - "test_public_exercises_never_expose_solution_query"
-Cohesion: 0.50
-Nodes (3): test_public_exercises_never_expose_solution_query(), 11. Certificación de Cierre de Brechas (`QURIO-OPERATIONAL-BASELINE-02`), Criterio 5: Protección Rigurosa de `solution_query` en `exercises`
-
-### Community 179 - "AdminMetricTile.tsx"
-Cohesion: 0.50
-Nodes (3): ACCENT_STYLES, AdminMetricAccent, AdminMetricTileProps
-
 ## Knowledge Gaps
 - **3 isolated node(s):** `Pragmatic Atomic Design`, `Supabase Cloud Authentication & Persistence`, `PostgreSQL Docker Sandbox`
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1530 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **22 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **21 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `QURIO — Product & Business Blueprint` connect `QURIO — Product & Business Blueprint` to `9. Arquitectura Técnica Actual y Evolución SaaS`, `5.4 Desglose Curricular Detallado por Ruta`, `3.3 Desarrollo Detallado por Segmento`, `6.5 Arquitectura de la Experiencia de Invitados (Decisión Aprobada `D-05`)`, `7.1 Estrategia Go-To-Market (GTM): Foco Inicial México $\to$ Expansión LATAM`, `11.2 Clasificación de Gobernanza: Decisiones Establecidas, Recomendaciones, Hipótesis y Aprobaciones Pendientes`, `4. Modelo de Negocio y Estrategia de Monetización`, `8. Roadmap de Producto de 12 Meses`, `BITACORA.md`, `ExercisePublicDTO`?**
-  _High betweenness centrality (0.067) - this node is a cross-community bridge._
+- **Why does `QURIO — Product & Business Blueprint` connect `QURIO — Product & Business Blueprint` to `9. Arquitectura Técnica Actual y Evolución SaaS`, `5.4 Desglose Curricular Detallado por Ruta`, `3.3 Desarrollo Detallado por Segmento`, `6.5 Arquitectura de la Experiencia de Invitados (Decisión Aprobada `D-05`)`, `7.1 Estrategia Go-To-Market (GTM): Foco Inicial México $\to$ Expansión LATAM`, `11.2 Clasificación de Gobernanza: Decisiones Establecidas, Recomendaciones, Hipótesis y Aprobaciones Pendientes`, `4. Modelo de Negocio y Estrategia de Monetización`, `1. Contexto Estratégico, Visión y Posicionamiento`, `BITACORA.md`, `useTheme.tsx`?**
+  _High betweenness centrality (0.060) - this node is a cross-community bridge._
 - **Are the 58 inferred relationships involving `main()` (e.g. with `Feature Branches` and `Trunk-Based Development (Recommended)`) actually correct?**
   _`main()` has 58 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Pragmatic Atomic Design`, `Supabase Cloud Authentication & Persistence`, `PostgreSQL Docker Sandbox` to the rest of the system?**
   _3 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `react` be split into smaller, more focused modules?**
-  _Cohesion score 0.08235294117647059 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05995975855130785 - nodes in this community are weakly interconnected._
 - **Why does `Bitácora de Desarrollo — Qurio` connect `3. Registro Cronológico de Entradas` to `4. Estado de la Integración con Supabase Cloud`, `BITACORA.md`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+  _High betweenness centrality (0.059) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `Badge()` (e.g. with `3.1 Monorepo y Componentes` and `2.2 Inventario Estructural de Archivos Modificados vs `main``) actually correct?**
   _`Badge()` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **Should `3. Registro Cronológico de Entradas` be split into smaller, more focused modules?**
-  _Cohesion score 0.10591133004926108 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.0928030303030303 - nodes in this community are weakly interconnected._

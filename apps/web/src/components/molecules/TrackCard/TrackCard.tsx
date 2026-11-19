@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Clock, ChevronRight } from 'lucide-react';
+import { BookOpen, Clock, ChevronRight, Sparkles } from 'lucide-react';
 import { Track } from '@/types';
 import { Badge, Button } from '@/components/atoms';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ export interface TrackCardProps {
   isSelected?: boolean;
   onSelect: (track: Track) => void;
   onStartTrack: (track: Track) => void;
+  onPreviewModuleModal?: (track: Track) => void;
   className?: string;
 }
 
@@ -17,6 +18,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({
   isSelected = false,
   onSelect,
   onStartTrack,
+  onPreviewModuleModal,
   className,
 }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -149,7 +151,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({
         </div>
 
         {/* Meta Stats */}
-        <div className="flex items-center justify-between pt-3 border-t border-border-subtle/40 text-xs font-mono text-content-muted">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border-subtle/40 text-xs font-mono text-content-muted">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <BookOpen className="w-3.5 h-3.5" />
@@ -161,18 +163,36 @@ export const TrackCard: React.FC<TrackCardProps> = ({
             </span>
           </div>
 
-          <Button
-            size="sm"
-            variant={isSelected ? 'primary' : 'ghost'}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              onStartTrack(track);
-            }}
-            className="text-xs"
-          >
-            <span>{completed > 0 ? 'Continuar' : 'Explorar'}</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-1" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {onPreviewModuleModal && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  onPreviewModuleModal(track);
+                }}
+                leftIcon={<Sparkles className="w-3.5 h-3.5 shrink-0" />}
+                className="text-xs whitespace-nowrap"
+                title="Vista previa QA del modal de cierre de módulo"
+              >
+                Probar modal (QA)
+              </Button>
+            )}
+
+            <Button
+              size="sm"
+              variant={isSelected ? 'primary' : 'ghost'}
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onStartTrack(track);
+              }}
+              className="text-xs"
+            >
+              <span>{completed > 0 ? 'Continuar' : 'Explorar'}</span>
+              <ChevronRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -1831,9 +1831,11 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
      * Modal accesible (`Escape`, clic en backdrop, tokens *Terminal Glow Minimal*) que reemplaza al antiguo `SuccessModal` sin usar, mostrando progreso del módulo, porcentaje de ruta, XP acumulado y vista previa del siguiente módulo o acceso a constancias al cerrar una ruta.
   3. **Integración en Workspace y Banner de Resultados ([`useExerciseWorkspace.ts`](../apps/web/src/hooks/useExerciseWorkspace.ts), [`DataGridResults.tsx`](../apps/web/src/components/organisms/DataGridResults/DataGridResults.tsx), [`App.tsx`](../apps/web/src/App.tsx)):**
      * Captura del estado previo de completados antes de registrar la entrega aprobada y etiqueta dinámica en el botón del banner inline.
+  4. **Previsualización QA en Tarjetas de Ruta para Administradores ([`TrackCard.tsx`](../apps/web/src/components/molecules/TrackCard/TrackCard.tsx), [`TracksView.tsx`](../apps/web/src/components/organisms/TracksView/TracksView.tsx), [`progress.ts`](../apps/web/src/lib/progress.ts)):**
+     * Botón `Probar modal (QA)` visible únicamente cuando `isAdmin` es `true`, respaldado por `buildAdminModuleCompletionPreview` que reutiliza `evaluateModuleCompletion`.
 * **Verificación:**
-  * **Frontend (`npm.cmd --prefix apps/web test`):** **9 archivos / 66 pruebas aprobadas** en `4.26s` (incluyendo pruebas unitarias en [`progress.test.ts`](../apps/web/src/lib/__tests__/progress.test.ts) y pruebas UI en [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).
-  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,303 módulos**, 0 errores TypeScript) en `6.23s`.
+  * **Frontend (`npm.cmd --prefix apps/web test`):** **9 archivos / 67 pruebas aprobadas** (incluyendo pruebas unitarias en [`progress.test.ts`](../apps/web/src/lib/__tests__/progress.test.ts) y pruebas UI en [`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)).
+  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (0 errores TypeScript).
 
 
 

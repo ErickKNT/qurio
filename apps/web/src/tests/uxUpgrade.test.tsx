@@ -474,4 +474,33 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
 
     expect(screen.getByRole('button', { name: /Siguiente Módulo/i })).toBeInTheDocument();
   });
+
+  it('TracksView muestra el botón Probar modal (QA) solo para administradores y abre ModuleCompletedModal', () => {
+    render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        onSelectExercise={() => {}}
+        isAdmin={false}
+      />
+    );
+    expect(screen.queryAllByRole('button', { name: /Probar modal \(QA\)/i })).toHaveLength(0);
+
+    cleanup();
+
+    render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        onSelectExercise={() => {}}
+        isAdmin={true}
+      />
+    );
+    const qaButtons = screen.getAllByRole('button', { name: /Probar modal \(QA\)/i });
+    expect(qaButtons).toHaveLength(FALLBACK_TRACKS.length);
+
+    fireEvent.click(qaButtons[0]);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Módulo completado')).toBeInTheDocument();
+  });
 });
