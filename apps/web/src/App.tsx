@@ -133,6 +133,7 @@ export const App: React.FC = () => {
     profile,
     user,
     isCloudAuth,
+    providerAvatarUrl,
     isAuthenticated,
     isAdmin,
     isPasswordRecovery,
@@ -471,6 +472,7 @@ export const App: React.FC = () => {
                 onNavigateAchievements={() => navigate('achievements')}
                 onUpdateProfile={updateProfile}
                 isCloudAuth={isCloudAuth}
+                providerAvatarUrl={providerAvatarUrl}
                 isAdmin={isAdmin}
               />
             </React.Suspense>

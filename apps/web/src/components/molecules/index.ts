@@ -17,3 +17,4 @@ export * from './EditProfileModal/EditProfileModal';
 export * from './ProfileBadgesShowcase/ProfileBadgesShowcase';
 export * from './ProfilePrecisionCard/ProfilePrecisionCard';
 export * from './QueryHistoryModal/QueryHistoryModal';
+export * from './AvatarUploader/AvatarUploader';

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { KbdShortcut } from '@/components/atoms/KbdShortcut/KbdShortcut';
 import { Button } from '@/components/atoms/Button/Button';
+import { UserAvatar } from '@/components/atoms/UserAvatar/UserAvatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
@@ -60,8 +61,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     setUserMenuOpen(false);
     await signOut();
   };
-
-  const defaultAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${profile?.username || 'student'}`;
 
   return (
     <header
@@ -180,10 +179,12 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               aria-expanded={userMenuOpen}
             >
               <div className="relative">
-                <img
-                  src={profile?.avatar_url || defaultAvatar}
+                <UserAvatar
+                  src={profile?.avatar_url}
+                  fallbackSeed={profile?.username || 'student'}
                   alt={`Avatar de ${profile?.username || user?.email || 'Usuario'}`}
-                  className="w-7 h-7 rounded-full object-cover border border-emerald/60 shadow-sm"
+                  size="sm"
+                  className="border border-emerald/60 shadow-sm"
                 />
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald border-2 border-surface animate-pulse" />
               </div>
@@ -203,10 +204,12 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
               <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-surface border border-border-subtle/80 shadow-2xl p-3 z-50 animate-scaleUp font-sans">
                 {/* Cabecera del usuario */}
                 <div className="flex items-center gap-2.5 p-2 rounded-xl bg-surface-dim border border-border-subtle/50 mb-2">
-                  <img
-                    src={profile?.avatar_url || defaultAvatar}
-                    alt="Avatar de usuario"
-                    className="w-9 h-9 rounded-full object-cover border border-emerald/50 shrink-0"
+                  <UserAvatar
+                    src={profile?.avatar_url}
+                    fallbackSeed={profile?.username || 'student'}
+                    alt={`Avatar de ${profile?.username || user?.email || 'Usuario'}`}
+                    size="md"
+                    className="border border-emerald/50"
                   />
                   <div className="flex flex-col min-w-0 flex-1">
                     <span className="text-xs font-bold text-content-primary truncate font-mono">
