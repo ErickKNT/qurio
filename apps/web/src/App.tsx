@@ -156,6 +156,7 @@ export const App: React.FC = () => {
     undefined
   );
   const [tracksCertificate, setTracksCertificate] = useState<CertificateData | null>(null);
+  const [manualSelectedTrackId, setManualSelectedTrackId] = useState<string | null>(null);
 
   // Atajo global Cmd+K / Ctrl+K para Búsqueda Rápida en toda la aplicación (H06)
   useEffect(() => {
@@ -263,6 +264,16 @@ export const App: React.FC = () => {
     tracks,
     isAdmin,
   });
+
+  // Ruta seleccionada en Rutas de Aprendizaje (Opción A: sigue la ruta en curso salvo selección manual en sesión)
+  const activeTrackId = activeLearningData.activeTrack?.id || tracks[0]?.id || 'sql-foundations';
+  useEffect(() => {
+    setManualSelectedTrackId(null);
+  }, [activeTrackId]);
+  const selectedTracksViewId =
+    manualSelectedTrackId && tracks.some((t) => t.id === manualSelectedTrackId)
+      ? manualSelectedTrackId
+      : activeTrackId;
 
   // Iniciar un reto por ID desde el Dashboard apilando en el historial (H08)
   const handleStartExerciseById = useCallback(
@@ -408,6 +419,8 @@ export const App: React.FC = () => {
                 tracks={tracks}
                 exercises={exercises}
                 completedExerciseIds={authoritativeCompletedIds}
+                selectedTrackId={selectedTracksViewId}
+                onSelectTrack={(trackId) => setManualSelectedTrackId(trackId)}
                 onSelectExercise={handleOpenExerciseFromCatalog}
                 onOpenMethodology={() => setMethodologyModalOpen(true)}
                 onIssueTrackCertificate={handleIssueTrackCertificate}

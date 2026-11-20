@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, ChevronRight, CheckCircle2, Circle, ArrowRight, BookOpen } from 'lucide-react';
 import { Module, Exercise } from '@/types';
 import { Badge, Button } from '@/components/atoms';
@@ -27,6 +27,10 @@ export const ModuleAccordion: React.FC<ModuleAccordionProps> = ({
   className,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  useEffect(() => {
+    setIsOpen(defaultOpen);
+  }, [defaultOpen]);
 
   const isExerciseDone = (ex: Exercise) => {
     if (completedExerciseIds) {

@@ -1908,6 +1908,27 @@ Este documento registra cronológicamente las fases, decisiones arquitectónicas
   * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,306 módulos**, 0 errores).
   * **Consistencia Curricular (`pytest apps/api/tests/test_schema_consistency.py -v`):** **5/5 pruebas aprobadas** contra PostgreSQL 16 Sandbox.
 
+---
+
+### Entrada 66: Seguimiento de Ruta Activa y Módulo Incompleto en `TracksView` (Opción A)
+
+* **Fecha:** 19 de Noviembre de 2026
+* **Rama de Trabajo:** `main`
+* **Objetivo:** Corregir el comportamiento por defecto en *Rutas de aprendizaje* (`TracksView`) para que al entrar o regresar desde otra vista muestre la ruta que el usuario está cursando actualmente (en lugar de reiniciar siempre a la Ruta 1), conserve selecciones manuales de tarjeta durante la sesión, las reinicie al avanzar de ruta y abra automáticamente el primer módulo incompleto.
+* **Entregables Implementados:**
+  1. **Control de Ruta Activa y Memoria de Sesión ([`App.tsx`](../apps/web/src/App.tsx)):**
+     * Incorporación del estado `manualSelectedTrackId` derivado junto con `activeTrackId = activeLearningData.activeTrack?.id || tracks[0]?.id || 'sql-foundations'`.
+     * Limpieza automática de `manualSelectedTrackId` mediante `useEffect` cuando `activeTrackId` cambia (al hidratarse el progreso desde Supabase o al completar una ruta y avanzar a la siguiente).
+     * Paso controlado de `selectedTrackId={selectedTracksViewId}` y `onSelectTrack` hacia `<TracksView />` para preservar selecciones manuales al cambiar entre pantallas.
+  2. **Inferencia de Ruta y Primer Módulo Incompleto ([`TracksView.tsx`](../apps/web/src/components/organisms/TracksView/TracksView.tsx), [`ModuleAccordion.tsx`](../apps/web/src/components/molecules/ModuleAccordion/ModuleAccordion.tsx)):**
+     * Soporte controlado (`selectedTrackId`, `onSelectTrack`) y fallback autónomo `inferredActiveTrackId` basado en el primer ejercicio pendiente (o la última ruta si todo el catálogo está completado).
+     * Cálculo de `defaultOpenModuleId` para abrir por defecto el primer módulo incompleto de la ruta seleccionada, sincronizando el estado abierto de `ModuleAccordion` mediante `useEffect` cuando `defaultOpen` cambia de forma asíncrona.
+  3. **Pruebas Unitarias ([`uxUpgrade.test.tsx`](../apps/web/src/tests/uxUpgrade.test.tsx)):**
+     * Nuevas pruebas verificando selección automática de la Ruta 2 al completar la Ruta 1, apertura progresiva del primer módulo incompleto (M5 → M6) y persistencia controlada de `selectedTrackId` + `onSelectTrack` entre montajes.
+* **Verificación:**
+  * **Frontend (`npm.cmd --prefix apps/web test -- --run`):** **10 archivos / 78 pruebas aprobadas**.
+  * **Build de producción (`npm.cmd --prefix apps/web run build`):** `tsc && vite build` limpio (**2,306 módulos**, 0 errores).
+
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { GitBranch, Play, Award } from 'lucide-react';
 import { Track, Exercise } from '@/types';
 import { TrackCard } from '@/components/molecules/TrackCard/TrackCard';
@@ -18,6 +18,8 @@ export interface TracksViewProps {
   tracks: Track[];
   exercises: Exercise[];
   completedExerciseIds?: Set<string>;
+  selectedTrackId?: string;
+  onSelectTrack?: (trackId: string) => void;
   onSelectExercise: (exercise: Exercise) => void;
   onOpenMethodology?: () => void;
   onIssueTrackCertificate?: (track: Track, qaPreview: boolean) => void;
@@ -30,23 +32,63 @@ export const TracksView: React.FC<TracksViewProps> = ({
   tracks,
   exercises,
   completedExerciseIds,
+  selectedTrackId: controlledTrackId,
+  onSelectTrack,
   onSelectExercise,
   onOpenMethodology,
   onIssueTrackCertificate,
   isAdmin = false,
   isLoading = false,
 }) => {
-  const [selectedTrackId, setSelectedTrackId] = useState<string>(tracks[0]?.id || 'sql-foundations');
+  const isExerciseDone = (e: Exercise) => {
+    if (completedExerciseIds) return completedExerciseIds.has(e.id);
+    return Boolean(e.is_completed);
+  };
+
+  const inferredActiveTrackId = useMemo(() => {
+    const firstPending = exercises.find((ex) => !isExerciseDone(ex));
+    const target = firstPending || exercises[exercises.length - 1];
+    if (target) {
+      const matched = tracks.find((t) => t.modules?.some((m) => m.id === target.module_id));
+      if (matched) return matched.id;
+    }
+    return tracks[0]?.id || 'sql-foundations';
+  }, [tracks, exercises, completedExerciseIds]);
+
+  const [internalTrackId, setInternalTrackId] = useState<string>(inferredActiveTrackId);
+  const [hasInternalManualChoice, setHasInternalManualChoice] = useState(false);
+
+  useEffect(() => {
+    if (!controlledTrackId && !hasInternalManualChoice) {
+      setInternalTrackId(inferredActiveTrackId);
+    }
+  }, [controlledTrackId, hasInternalManualChoice, inferredActiveTrackId]);
+
+  const selectedTrackId = controlledTrackId || internalTrackId;
+  const handleSelectTrackId = (trackId: string) => {
+    if (onSelectTrack) {
+      onSelectTrack(trackId);
+    } else {
+      setHasInternalManualChoice(true);
+      setInternalTrackId(trackId);
+    }
+  };
+
   const [guideModuleId, setGuideModuleId] = useState<string | null>(null);
   const [previewModuleSummary, setPreviewModuleSummary] =
     useState<ModuleCompletionSummary | null>(null);
 
   const selectedTrack = tracks.find((t) => t.id === selectedTrackId) || tracks[0];
 
-  const isExerciseDone = (e: Exercise) => {
-    if (completedExerciseIds) return completedExerciseIds.has(e.id);
-    return Boolean(e.is_completed);
-  };
+  const defaultOpenModuleId = useMemo(() => {
+    const mods = selectedTrack?.modules || [];
+    const firstIncompleteMod = mods.find((mod) => {
+      const modExs = exercises.filter((e) => e.module_id === mod.id);
+      if (modExs.length === 0) return false;
+      return modExs.some((e) => !isExerciseDone(e));
+    });
+    return firstIncompleteMod?.id || mods[0]?.id;
+  }, [selectedTrack, exercises, completedExerciseIds]);
 
   // Helper to get exercises belonging to a module
   const getExercisesForModule = (moduleId: string) => {
@@ -54,7 +96,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
   };
 
   const handleStartTrackFirstAvailable = (track: Track) => {
-    setSelectedTrackId(track.id);
+    handleSelectTrackId(track.id);
     const firstUnfinished =
       exercises.find(
         (e) => !isExerciseDone(e) && track.modules?.some((m) => m.id === e.module_id)
@@ -114,7 +156,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
             key={track.id}
             track={track}
             isSelected={track.id === selectedTrackId}
-            onSelect={(t) => setSelectedTrackId(t.id)}
+            onSelect={(t) => handleSelectTrackId(t.id)}
             onStartTrack={handleStartTrackFirstAvailable}
             onPreviewModuleModal={
               isAdmin
@@ -200,7 +242,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
                     completedExerciseIds={completedExerciseIds}
                     onSelectExercise={onSelectExercise}
                     onOpenGuide={(modId) => setGuideModuleId(modId)}
-                    defaultOpen={idx === 0}
+                    defaultOpen={mod.id === defaultOpenModuleId}
                   />
                 );
               })}
@@ -215,7 +257,7 @@ export const TracksView: React.FC<TracksViewProps> = ({
         exercises={exercises}
         completedExerciseIds={completedExerciseIds}
         selectedTrackId={selectedTrackId}
-        onSelectTrack={(trackId) => setSelectedTrackId(trackId)}
+        onSelectTrack={(trackId) => handleSelectTrackId(trackId)}
         onSelectExercise={onSelectExercise}
       />
 

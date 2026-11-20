@@ -493,6 +493,89 @@ describe('Qurio UX, ER, Guías y Referencia SQL', () => {
     expect(screen.getByText(/Etapa 4: Ingeniería y Manipulación de Datos/i)).toBeInTheDocument();
   });
 
+  it('TracksView selecciona por defecto la ruta actual en curso y abre su primer módulo incompleto', () => {
+    const track1ModuleIds = new Set(FALLBACK_TRACKS[0].modules!.map((m) => m.id));
+    const track1Ids = FALLBACK_EXERCISES
+      .filter((ex) => track1ModuleIds.has(ex.module_id))
+      .map((ex) => ex.id);
+    const track2 = FALLBACK_TRACKS[1];
+    const track2Mod1 = track2.modules![0];
+    const track2Mod2 = track2.modules![1];
+    const mod1FirstExercise = FALLBACK_EXERCISES.find(
+      (ex) => ex.module_id === track2Mod1.id
+    )!;
+    const mod2FirstExercise = FALLBACK_EXERCISES.find(
+      (ex) => ex.module_id === track2Mod2.id
+    )!;
+
+    // Con la Ruta 1 completada, debe seleccionar la Ruta 2 y abrir su primer módulo incompleto
+    const { rerender } = render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        completedExerciseIds={new Set(track1Ids)}
+        onSelectExercise={() => {}}
+      />
+    );
+
+    expect(screen.getByText(`Temario: ${track2.title}`)).toBeInTheDocument();
+    expect(screen.getByText(mod1FirstExercise.title)).toBeInTheDocument();
+    expect(screen.queryByText(mod2FirstExercise.title)).not.toBeInTheDocument();
+
+    // Si también se completa el primer módulo de la Ruta 2, debe abrir automáticamente el segundo módulo
+    const track2Mod1Ids = FALLBACK_EXERCISES
+      .filter((ex) => ex.module_id === track2Mod1.id)
+      .map((ex) => ex.id);
+
+    rerender(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        completedExerciseIds={new Set([...track1Ids, ...track2Mod1Ids])}
+        onSelectExercise={() => {}}
+      />
+    );
+
+    expect(screen.getByText(`Temario: ${track2.title}`)).toBeInTheDocument();
+    expect(screen.getByText(mod2FirstExercise.title)).toBeInTheDocument();
+  });
+
+  it('TracksView controlado respeta selectedTrackId entre montajes y notifica selección manual vía onSelectTrack', () => {
+    const track2 = FALLBACK_TRACKS[1];
+    const track3 = FALLBACK_TRACKS[2];
+    const selectedHistory: string[] = [];
+
+    const { unmount } = render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        selectedTrackId={track2.id}
+        onSelectTrack={(trackId) => selectedHistory.push(trackId)}
+        onSelectExercise={() => {}}
+      />
+    );
+
+    expect(screen.getByText(`Temario: ${track2.title}`)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('heading', { name: track3.title }));
+    expect(selectedHistory).toEqual([track3.id]);
+
+    // Simula salir de Rutas de aprendizaje y volver manteniendo el track seleccionado
+    unmount();
+
+    render(
+      <TracksView
+        tracks={FALLBACK_TRACKS}
+        exercises={FALLBACK_EXERCISES}
+        selectedTrackId={track3.id}
+        onSelectTrack={(trackId) => selectedHistory.push(trackId)}
+        onSelectExercise={() => {}}
+      />
+    );
+
+    expect(screen.getByText(`Temario: ${track3.title}`)).toBeInTheDocument();
+  });
+
   it('ModuleCompletedModal felicita el cierre del módulo y permite continuar al siguiente o revisar consulta', () => {
     const track = FALLBACK_TRACKS[0];
     const mod1 = track.modules![0];
